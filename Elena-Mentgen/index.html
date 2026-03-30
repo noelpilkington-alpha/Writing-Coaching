@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Elena's Writing Test Review — G5.4</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar { display: flex; gap: 6px; margin-bottom: 16px; }
+  .progress-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: #ccc; transition: background 0.3s; cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container { position: relative; width: 660px; min-height: 420px; }
+
+  .card {
+    position: absolute; top: 0; left: 0; width: 100%;
+    background: #fff; border: 2.5px solid #1a1a2e; border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0; pointer-events: none; transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1; pointer-events: auto; transform: translateX(0); position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e; color: #fff; padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+  .card-header .card-subtitle { font-size: 9.5pt; color: #aaa; margin-top: 2px; }
+
+  .card-body { padding: 18px 22px 22px; line-height: 1.55; }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px; margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc; border: 1.5px solid #e0e0e8;
+    border-radius: 8px; padding: 10px 14px; text-align: center;
+  }
+  .score-box .big { font-size: 20pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3; border-left: 3px solid #cc0000;
+    padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+    font-style: italic; font-size: 10.5pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9; border-left: 3px solid #2d6a2d;
+    padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+    font-size: 10.5pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5; border-left: 3px solid #1a1a2e;
+    padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+  .error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+
+  .essay-excerpt {
+    background: #fafafa; border: 1px solid #e0e0e8;
+    border-radius: 6px; padding: 10px 14px; font-size: 10.5pt;
+    margin: 8px 0; line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700; font-size: 9pt; color: #888;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;
+  }
+
+  .pattern-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 6px 0; border-bottom: 1px solid #eee; font-size: 11pt;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; }
+
+  table.compare {
+    width: 100%; border-collapse: collapse; font-size: 10.5pt; margin: 8px 0;
+  }
+  table.compare th {
+    background: #1a1a2e; color: #fff; padding: 6px 10px;
+    text-align: left; font-size: 9.5pt;
+  }
+  table.compare td { padding: 6px 10px; border: 1px solid #ddd; vertical-align: top; }
+
+  .goal-num {
+    display: inline-block; background: #1a1a2e; color: #fff;
+    border-radius: 50%; width: 24px; height: 24px; text-align: center;
+    line-height: 24px; font-size: 11pt; font-weight: 700; margin-right: 8px; flex-shrink: 0;
+  }
+  .goal-row { display: flex; align-items: flex-start; gap: 4px; margin: 10px 0; }
+
+  .nav { display: flex; gap: 12px; margin-top: 16px; }
+  .nav button {
+    padding: 8px 28px; border: 2px solid #1a1a2e; border-radius: 8px;
+    background: #fff; color: #1a1a2e; font-family: inherit;
+    font-size: 11pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover { background: #1a1a2e; color: #fff; }
+
+  @media (max-width: 700px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Score Overview ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G5.4</div>
+  </div>
+  <div class="card-body">
+    <p>Elena, let's walk through your writing test. You did really well — here's the breakdown.</p>
+    <div class="score-grid">
+      <div class="score-box score-good">
+        <div class="big">89%</div>
+        <div class="label">Overall Score (40/45)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">8/11</div>
+        <div class="label">Perfect Answers</div>
+      </div>
+      <div class="score-box score-warn">
+        <div class="big">17/20</div>
+        <div class="label">Paragraph</div>
+      </div>
+    </div>
+    <p><b>What you did really well:</b></p>
+    <ul>
+      <li><b>Perfect on all 5 edit questions</b> (Q1–5) — appositives, conjunctions, combining, expanding, and question conversion</li>
+      <li>Strong sentence writing — Q7, Q8, and Q9 were all <b>perfect</b></li>
+      <li>Your paragraph has <b>clear structure</b> with transitions (For example, Also, Lastly, Overall)</li>
+    </ul>
+    <p>You lost 5 points across just 3 questions. The next cards show you exactly what to fix.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: Q6 — Cause vs Consequence ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q6: Why Were Her Actions Brave?</h2>
+    <div class="card-subtitle">Skill: Explain why something was brave</div>
+  </div>
+  <div class="card-body">
+    <p><b>The question:</b> Write one sentence that explains why Claudette Colvin's actions were brave.</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Her actions were very brave because afterward the people in her community treated her as <span class="error-mark">qa</span> troublemaker.
+    </div>
+    <p>Two things to fix here:</p>
+    <p><b>1. Spelling:</b> "qa" should be "a" — likely a typo.</p>
+    <p><b>2. The logic:</b> Your sentence says her actions were brave <i>because</i> people treated her as a troublemaker. But being treated badly is what happened <b>after</b> — it's the <i>consequence</i>, not the <i>reason</i> she was brave.</p>
+    <p>She was brave because she <b>risked</b> being treated badly and did it anyway.</p>
+    <div class="better">
+      <div class="label">STRONGER VERSION</div>
+      Her actions were brave because she stood up for her rights even though she knew her community might treat her badly.
+    </div>
+    <div class="tip-box">
+      <div class="label">CAUSE vs CONSEQUENCE</div>
+      <b>Cause</b> (why it was brave): She did it <i>despite</i> the risk.<br>
+      <b>Consequence</b> (what happened after): People treated her as a troublemaker.<br><br>
+      When a question asks <b>why</b>, give the <b>cause</b> — not what happened next. A good check: does your "because" explain the <i>reason before</i> or the <i>result after</i>?
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: Q10 — Be Specific ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q10: Be Specific — Avoid Vague Words</h2>
+    <div class="card-subtitle">Skill: Explain how a story reminds us about history</div>
+  </div>
+  <div class="card-body">
+    <p><b>The question:</b> Write one sentence that explains how Colvin's story reminds us about history.</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      <span class="highlight">It</span> talks about how <span class="highlight">this act</span> changed history.
+    </div>
+    <p>The idea is there, but the sentence is too vague. Two problems:</p>
+    <ul>
+      <li><b>"It"</b> — what does "it" refer to? The story? The book? The reader doesn't know.</li>
+      <li><b>"this act"</b> — which act? Refusing to move? Being arrested? Be specific.</li>
+    </ul>
+    <div class="better">
+      <div class="label">STRONGER VERSION</div>
+      Colvin's story reminds us that ordinary people can change history by standing up for what is right, even when it is scary.
+    </div>
+    <div class="tip-box">
+      <div class="label">THE RULE</div>
+      Avoid starting sentences with <b>"It"</b> or <b>"This"</b> unless the reader already knows exactly what you mean. Instead, <b>name the thing directly</b>:<br><br>
+      <span class="pattern-wrong">"It talks about..."</span> &rarr; <span class="pattern-right">"Colvin's story shows..."</span><br>
+      <span class="pattern-wrong">"This act changed..."</span> &rarr; <span class="pattern-right">"Her decision to stay in her seat changed..."</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Q11 — What Went Well ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q11: Your Paragraph — What Went Well</h2>
+    <div class="card-subtitle">Score: 17/20 — solid foundation</div>
+  </div>
+  <div class="card-body">
+    <div class="essay-excerpt">
+      <div class="para-label">Your Paragraph</div>
+      The author thinks that high-speed trains could improve travel in the United States. For example, many other vehicles are not clean and create lots of exhaust. Also, cars are much slower then high-speed trains, so you can get to the place you want much faster on a high-speed train. Lastly, trains can save people a lot of money and less money spent on gas Overall, the author creates good points that explain why high-speed trains are much better than other vehicles.
+    </div>
+    <p><b>What you did well:</b></p>
+    <ul>
+      <li><b>Clear topic sentence</b> that answers the question</li>
+      <li><b>Three supporting points</b> — environment, speed, cost. That's great organization.</li>
+      <li><b>Transitions</b> — "For example," "Also," "Lastly," "Overall" — these guide the reader through your argument perfectly.</li>
+      <li><b>Concluding sentence</b> that wraps everything up</li>
+    </ul>
+    <p>You lost 3 points. The next two cards show you exactly why.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: Q11 — Use Specific Evidence ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q11: Use Specific Details from the Article</h2>
+    <div class="card-subtitle">The biggest way to earn more points</div>
+  </div>
+  <div class="card-body">
+    <p>Your three points (environment, speed, cost) are the right ideas. But the prompt says: <b>"use evidence from the selection."</b> Right now, your details are general — they could be about any article. You need <b>specific facts</b> from this article.</p>
+    <table class="compare">
+      <tr>
+        <th>You wrote (general)</th>
+        <th>What specific evidence looks like</th>
+      </tr>
+      <tr>
+        <td>"many other vehicles are not clean and create lots of exhaust"</td>
+        <td style="color:#2d6a2d;"><b>According to the article,</b> high-speed trains produce less pollution than cars and airplanes. <b>This matters because</b> cleaner transportation helps protect the environment.</td>
+      </tr>
+      <tr>
+        <td>"cars are much slower then high-speed trains"</td>
+        <td style="color:#2d6a2d;"><b>The article explains that</b> high-speed trains can travel at very fast speeds, making trips between cities much shorter. <b>This shows that</b> trains could save people hours of travel time compared to driving.</td>
+      </tr>
+      <tr>
+        <td>"trains can save people a lot of money and less money spent on gas"</td>
+        <td style="color:#2d6a2d;"><b>The article also says that</b> trains could reduce the amount people spend on gas and car maintenance. <b>This is important because</b> saving money on travel makes high-speed trains a practical choice for many families.</td>
+      </tr>
+    </table>
+    <div class="tip-box">
+      <div class="label">AFTER EVERY DETAIL, ADD</div>
+      <b>"This matters because..."</b> or <b>"This shows that..."</b> or <b>"This is important because..."</b><br><br>
+      Right now, you list the reasons but don't explain <i>why they matter</i>. Adding one explanation sentence after each detail is the fastest way to earn more points.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Spelling & Grammar ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Spelling &amp; Grammar Fixes</h2>
+    <div class="card-subtitle">Three small things to catch before submitting</div>
+  </div>
+  <div class="card-body">
+    <div style="margin:10px 0;">
+      <div class="pattern-row">
+        <span class="pattern-wrong">qa</span>
+        <span class="pattern-arrow">&rarr;</span>
+        <span class="pattern-right">a</span>
+        <span style="color:#888;font-size:9.5pt;margin-left:auto;">(Q6 — typo)</span>
+      </div>
+      <div class="pattern-row">
+        <span class="pattern-wrong">then</span>
+        <span class="pattern-arrow">&rarr;</span>
+        <span class="pattern-right">than</span>
+        <span style="color:#888;font-size:9.5pt;margin-left:auto;">(Q11 — comparing = "than")</span>
+      </div>
+      <div class="pattern-row">
+        <span class="pattern-wrong">...money spent on gas Overall,</span>
+        <span class="pattern-arrow">&rarr;</span>
+        <span class="pattern-right">...money spent on gas. Overall,</span>
+        <span style="color:#888;font-size:9.5pt;margin-left:auto;">(Q11 — missing period)</span>
+      </div>
+    </div>
+    <div class="tip-box">
+      <div class="label">THEN vs THAN</div>
+      <b>Then</b> = time ("First we ate, <i>then</i> we played.")<br>
+      <b>Than</b> = comparing ("Trains are faster <i>than</i> cars.")<br><br>
+      If you're saying one thing is <b>more/less/better/worse</b> than another, it's always <b>"than."</b>
+    </div>
+    <div class="tip-box">
+      <div class="label">QUICK PROOFREAD TIP</div>
+      Before you submit, read your paragraph out loud. When you naturally <b>pause</b>, check: is there a period or comma there? The missing period before "Overall" would be easy to catch this way.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 7: Paragraph Pattern ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>The Paragraph Pattern</h2>
+    <div class="card-subtitle">You already have the structure — add explanation to each point</div>
+  </div>
+  <div class="card-body">
+    <p>Your paragraph already follows a strong pattern. Here's how to upgrade it:</p>
+    <table class="compare">
+      <tr>
+        <th>What you already do &#10003;</th>
+        <th>What to add</th>
+      </tr>
+      <tr>
+        <td>Topic Sentence</td>
+        <td style="color:#2d6a2d;">&#10003; You do this well</td>
+      </tr>
+      <tr>
+        <td>Detail 1 with transition</td>
+        <td><b>+ Explanation:</b> "This matters because..."</td>
+      </tr>
+      <tr>
+        <td>Detail 2 with transition</td>
+        <td><b>+ Explanation:</b> "This shows that..."</td>
+      </tr>
+      <tr>
+        <td>Detail 3 with transition</td>
+        <td><b>+ Explanation:</b> "This is important because..."</td>
+      </tr>
+      <tr>
+        <td>Concluding Sentence</td>
+        <td style="color:#2d6a2d;">&#10003; You do this well</td>
+      </tr>
+    </table>
+    <p>You're not missing the structure — you're missing the <b>explanation layer</b>. Each detail from the article needs one sentence that says <i>why it matters</i> or <i>what it shows</i>.</p>
+    <div class="tip-box">
+      <div class="label">THE UPGRADED PATTERN</div>
+      <b>TS</b> &rarr; Topic Sentence<br>
+      <b>D1</b> &rarr; Detail from the article + <b>"This matters because..."</b><br>
+      <b>D2</b> &rarr; Detail from the article + <b>"This shows that..."</b><br>
+      <b>D3</b> &rarr; Detail from the article + <b>"This is important because..."</b><br>
+      <b>CS</b> &rarr; Concluding Sentence
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 8: Goals ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">You're at 89% — these will push you to 95%+</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>After every detail in your paragraph, explain why it matters.</b><br>
+        <span style="font-size:10.5pt;color:#555;">You already list great points — now add "This matters because..." or "This shows that..." after each one. This is the single change that will earn the most points.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>Be specific — avoid vague words like "it" and "this act."</b><br>
+        <span style="font-size:10.5pt;color:#555;">Name the person, the thing, or the event directly. Instead of "It talks about how this act changed history," write "Colvin's story reminds us that standing up for what is right can change history." This makes your writing clearer and more convincing.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Check "because" logic — does it give the reason, or the result?</b><br>
+        <span style="font-size:10.5pt;color:#555;">When you use "because," make sure the part after it explains <i>why</i>, not <i>what happened next</i>. "She was brave because she risked punishment" (reason) vs. "She was brave because people treated her badly" (result).</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">THE BIG PICTURE</div>
+      You scored <b>89%</b> with <b>8 out of 11 questions perfect</b>. Your edit skills are flawless (5/5), your sentence writing is strong, and your paragraph has excellent structure with transitions. The gap to 95%+ is about adding <b>explanations</b> after your evidence and being <b>more specific</b> in your word choices. You're very close.
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+let current = 0;
+
+cards.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  bar.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done' : 'Next \u2192';
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) return;
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+goTo(0);
+</script>
+</body>
+</html>
