@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Raegan's Writing Test Review — G4.2</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .progress-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ccc;
+    transition: background 0.3s;
+    cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container {
+    position: relative;
+    width: 640px;
+    min-height: 420px;
+  }
+
+  .card {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    background: #fff;
+    border: 2.5px solid #1a1a2e;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 {
+    font-size: 15pt;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .card-header .card-subtitle {
+    font-size: 9.5pt;
+    color: #aaa;
+    margin-top: 2px;
+  }
+
+  .card-body {
+    padding: 18px 22px 22px;
+    line-height: 1.55;
+  }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+  }
+  .score-box .big { font-size: 22pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3;
+    border-left: 3px solid #cc0000;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    font-size: 11pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9;
+    border-left: 3px solid #2d6a2d;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    font-size: 11pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5;
+    border-left: 3px solid #1a1a2e;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+  .strike { text-decoration: line-through; color: #cc0000; }
+  .fix { color: #2d6a2d; font-weight: 600; }
+
+  .pattern-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; font-size: 13pt; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; font-size: 13pt; }
+
+  .goal-num {
+    display: inline-block;
+    background: #1a1a2e;
+    color: #fff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    line-height: 24px;
+    font-size: 11pt;
+    font-weight: 700;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .goal-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    margin: 10px 0;
+  }
+
+  .nav {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .nav button {
+    padding: 8px 28px;
+    border: 2px solid #1a1a2e;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a2e;
+    font-family: inherit;
+    font-size: 11pt;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover {
+    background: #1a1a2e;
+    color: #fff;
+  }
+
+  @media (max-width: 680px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Progress dots -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Card container -->
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Your Score ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G4.2 — The Texas Bluebonnet / Are People Ready for Robots?</div>
+  </div>
+  <div class="card-body">
+    <p>Hi Raegan! Let's go through your writing test together so you can see what you did well and what to work on next time.</p>
+    <div class="score-grid">
+      <div class="score-box score-good">
+        <div class="big">87%</div>
+        <div class="label">Overall Score</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">7 / 11</div>
+        <div class="label">Perfect Answers</div>
+      </div>
+    </div>
+    <p><b>What you did really well:</b></p>
+    <ul>
+      <li>You nailed the <b>appositive</b> question (Q4) — that's a tough skill!</li>
+      <li>You used <b>"because"</b> correctly to finish sentences (Q3, Q5)</li>
+      <li>Your sentence-writing answers (Q6, Q8, Q9, Q10) were all <b>perfect</b></li>
+      <li>Your paragraph (Q11) had a <b>clear topic sentence</b> and stayed on topic</li>
+    </ul>
+    <p>The next cards will show you the few things to fix for next time.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: Q1 — Combining Sentences ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q1: Combining Sentences</h2>
+    <div class="card-subtitle">Skill: Combine two sentences into one</div>
+  </div>
+  <div class="card-body">
+    <p><b>The question:</b> Combine sentences 3 and 4.</p>
+    <p style="color:#888;font-size:10.5pt;margin:2px 0;">3. Roadsides and hills take on a whole new look. &nbsp; 4. Meadows do too.</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Roadsides, hills, and meadows take on a whole new look.
+    </div>
+    <p>Your idea was right — you combined both sentences into one. Nice work using a list with commas!</p>
+    <div class="better">
+      <div class="label">EVEN STRONGER VERSION</div>
+      Roadsides, hills, and meadows all take on a whole new look.
+    </div>
+    <div class="tip-box">
+      <div class="label">TIP</div>
+      Adding the word <b>"all"</b> helps emphasize that every item in the list shares the same action. When combining sentences, look for small words that tie the ideas together smoothly.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: Q2 — Spelling: Pedals vs Petals ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q2: Watch Your Spelling</h2>
+    <div class="card-subtitle">Skill: Expand a fragment into a complete sentence</div>
+  </div>
+  <div class="card-body">
+    <p><b>The question:</b> Expand the fragment: <i>"A wildflower with bright blue petals."</i></p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      People love the wildflowers with bright blue <span class="highlight">pedals</span>.
+    </div>
+    <p>Good news: you turned the fragment into a complete sentence — that's the right skill! But one word tripped you up:</p>
+    <div style="text-align:center;margin:14px 0;">
+      <span class="pattern-wrong">pedals</span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">petals</span>
+    </div>
+    <div class="tip-box">
+      <div class="label">HOW TO REMEMBER</div>
+      <b>Pedals</b> are what you push on a bike.<br>
+      <b>Petals</b> are the soft parts of a flower.<br><br>
+      A quick trick: <b>pet</b>als — you can <b>pet</b> the soft part of a flower.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Q7 — Comma Between Subject and Verb ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q7: The Comma Trap</h2>
+    <div class="card-subtitle">Skill: Write one sentence about a change in nature</div>
+  </div>
+  <div class="card-body">
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      A change I see in nature in springtime<span class="highlight">,</span> is the arrival of many bluebonnets.
+    </div>
+    <p>Your answer and your idea were great! The only problem is a <b>sneaky comma</b> that doesn't belong.</p>
+    <div class="better">
+      <div class="label">FIXED VERSION</div>
+      A change I see in nature in springtime is the arrival of many bluebonnets.
+    </div>
+    <div class="tip-box">
+      <div class="label">THE RULE</div>
+      <b>Never put a comma between the subject and the verb.</b><br><br>
+      The subject is <i>"A change I see in nature in springtime"</i> and the verb is <i>"is."</i> They belong together — no comma in between!<br><br>
+      <b>Quick check:</b> Before you finish a sentence, read it out loud. If you pause where the comma is, ask yourself: "Is this comma separating the <i>who/what</i> from the <i>does/is</i>?" If yes, take it out.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: Q11 — Your Paragraph (What Went Well) ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q11: Your Paragraph — What Went Well</h2>
+    <div class="card-subtitle">Topic: How humans benefit from robots doing simple tasks</div>
+  </div>
+  <div class="card-body">
+    <div class="you-wrote">
+      <div class="label">YOUR PARAGRAPH</div>
+      Humans can benefit greatly from allowing robots to complete simpele tasks at home or in the workplace. At home, it can help you complete chores or help do laundry which can take those tasks off your hands so you can do other things around the house. In the workplace, they can help put things tohgether like machines. They can also help take deliveries.
+    </div>
+    <p><b>What you did well:</b></p>
+    <ul>
+      <li>Strong topic sentence that directly answers the question</li>
+      <li>You organized your paragraph by location: <b>home</b> first, then <b>workplace</b></li>
+      <li>You stayed on topic the whole time — every sentence is about robot benefits</li>
+    </ul>
+    <p>Score: <b>17/20</b> — you lost 3 points. The next two cards show you exactly what to fix.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Q11 — Use Details from the Article ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q11: Use Details from the Article</h2>
+    <div class="card-subtitle">The biggest way to earn more points</div>
+  </div>
+  <div class="card-body">
+    <p>Your paragraph talked about robots in general terms. But the question said: <b>"use evidence from the selection."</b> That means you need to use <i>specific facts</i> from the article.</p>
+    <p><b>What you wrote vs. what the article says:</b></p>
+    <table style="width:100%;border-collapse:collapse;font-size:10.5pt;margin:8px 0;">
+      <tr style="background:#1a1a2e;color:#fff;">
+        <th style="padding:6px 8px;text-align:left;">You wrote (general)</th>
+        <th style="padding:6px 8px;text-align:left;">The article says (specific)</th>
+      </tr>
+      <tr>
+        <td style="padding:6px 8px;border:1px solid #ddd;">"help put things together like machines"</td>
+        <td style="padding:6px 8px;border:1px solid #ddd;color:#2d6a2d;"><b>"workers use robot arms to put together machine parts"</b> and make more each hour</td>
+      </tr>
+      <tr>
+        <td style="padding:6px 8px;border:1px solid #ddd;">"help take deliveries"</td>
+        <td style="padding:6px 8px;border:1px solid #ddd;color:#2d6a2d;"><b>"robots named Cleo and Leo bring items to guests"</b> at Hotel EMC2</td>
+      </tr>
+      <tr>
+        <td style="padding:6px 8px;border:1px solid #ddd;">"help you complete chores or do laundry"</td>
+        <td style="padding:6px 8px;border:1px solid #ddd;color:#2d6a2d;"><b>"small robots clean floors"</b> and <b>"do simple chores"</b></td>
+      </tr>
+    </table>
+    <div class="tip-box">
+      <div class="label">TRY THIS PATTERN</div>
+      <b>According to the article, [specific detail]. This shows that [why it matters].</b><br><br>
+      Example: <i>"According to the article, workers in a factory use robot arms to put together machine parts, which helps them make more parts each hour. This shows that robots save people time at work."</i>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 7: Q11 — Add a Closing Sentence ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q11: End with a Closing Sentence</h2>
+    <div class="card-subtitle">Wrap up your paragraph so it feels complete</div>
+  </div>
+  <div class="card-body">
+    <p>Your paragraph ends with:</p>
+    <div class="you-wrote">
+      <div class="label">YOUR LAST SENTENCE</div>
+      They can also help take deliveries.
+    </div>
+    <p>This is a supporting detail, not a closing sentence. A closing sentence <b>wraps up your main idea</b> without adding a new fact. It tells the reader: "I'm done, and here's the big takeaway."</p>
+    <div class="better">
+      <div class="label">EXAMPLE CLOSING SENTENCE</div>
+      Because robots can handle simple jobs quickly, they help make everyday life and work easier for people.
+    </div>
+    <div class="tip-box">
+      <div class="label">PARAGRAPH PLAN FOR NEXT TIME</div>
+      <b>Topic Sentence:</b> Answer the question<br>
+      <b>Detail 1:</b> One example from the article + why it matters<br>
+      <b>Detail 2:</b> Another example from the article + why it matters<br>
+      <b>Closing Sentence:</b> Restate your main idea in new words<br><br>
+      This is called the <b>SPO</b> (Single Paragraph Outline). Use it every time you write a paragraph on the test!
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 8: Spelling Spotlight ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Spelling Spotlight</h2>
+    <div class="card-subtitle">Words to practice before your next test</div>
+  </div>
+  <div class="card-body">
+    <p>You misspelled three words on the test. In each case, letters got <b>mixed up or added</b> in the middle of the word:</p>
+    <div style="margin:12px 0;">
+      <div class="pattern-row">
+        <span class="pattern-wrong">simpele</span>
+        <span class="pattern-arrow">&rarr;</span>
+        <span class="pattern-right">simple</span>
+        <span style="color:#888;font-size:9.5pt;margin-left:auto;">(Q11 — extra 'e')</span>
+      </div>
+      <div class="pattern-row">
+        <span class="pattern-wrong">tohgether</span>
+        <span class="pattern-arrow">&rarr;</span>
+        <span class="pattern-right">together</span>
+        <span style="color:#888;font-size:9.5pt;margin-left:auto;">(Q11 — 'h' and 'g' swapped)</span>
+      </div>
+      <div class="pattern-row">
+        <span class="pattern-wrong">pedals</span>
+        <span class="pattern-arrow">&rarr;</span>
+        <span class="pattern-right">petals</span>
+        <span style="color:#888;font-size:9.5pt;margin-left:auto;">(Q2 — wrong word)</span>
+      </div>
+    </div>
+    <div class="tip-box">
+      <div class="label">BEFORE YOU SUBMIT</div>
+      After you finish writing, go back and <b>read each sentence slowly</b>. Point to each word with your cursor and ask: "Does this look right?"<br><br>
+      Spelling counts in <b>every</b> section of the test — Q1-5, Q6-10, and Q11. Catching even one mistake can earn you an extra point.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 9: Your 3 Goals ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">You're already at 87% — these will push you even higher</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Use specific details from the article in Q11.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Don't just say "robots help with chores." Say what the article actually told you: names, places, and facts. Use the pattern: <i>"According to the article, [detail]. This shows that [why it matters]."</i></span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>Plan your paragraph before you write it.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Use the SPO: Topic Sentence &rarr; Detail 1 + why it matters &rarr; Detail 2 + why it matters &rarr; Closing Sentence. This takes 1 minute and makes your paragraph much stronger.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Proofread for spelling before you submit.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Read your answers slowly one more time. Look for letters that are swapped, extra, or missing. Fixing just the three spelling errors on this test would have earned you 2 more points.</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">REMEMBER</div>
+      You already got <b>7 out of 11 questions perfect</b>. You know how to write strong sentences, use appositives, and use "because" correctly. These three goals are about turning your 87% into a 95%+. You've got this!
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<!-- Navigation -->
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+let current = 0;
+
+// Build progress dots
+cards.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  bar.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done' : 'Next \u2192';
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) return;
+  goTo(current + dir);
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+// Initialize
+goTo(0);
+</script>
+</body>
+</html>
