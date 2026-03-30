@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Savannah's Writing Test Review — G6.2</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar { display: flex; gap: 6px; margin-bottom: 16px; }
+  .progress-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: #ccc; transition: background 0.3s; cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container { position: relative; width: 680px; min-height: 420px; }
+
+  .card {
+    position: absolute; top: 0; left: 0; width: 100%;
+    background: #fff; border: 2.5px solid #1a1a2e; border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0; pointer-events: none; transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1; pointer-events: auto; transform: translateX(0); position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e; color: #fff; padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+  .card-header .card-subtitle { font-size: 9.5pt; color: #aaa; margin-top: 2px; }
+
+  .card-body { padding: 18px 22px 22px; line-height: 1.55; }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px; margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc; border: 1.5px solid #e0e0e8;
+    border-radius: 8px; padding: 10px 14px; text-align: center;
+  }
+  .score-box .big { font-size: 20pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3; border-left: 3px solid #cc0000;
+    padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+    font-style: italic; font-size: 10.5pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9; border-left: 3px solid #2d6a2d;
+    padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+    font-size: 10.5pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5; border-left: 3px solid #1a1a2e;
+    padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+  .error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+
+  .essay-excerpt {
+    background: #fafafa; border: 1px solid #e0e0e8;
+    border-radius: 6px; padding: 10px 14px; font-size: 10.5pt;
+    margin: 8px 0; line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700; font-size: 9pt; color: #888;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;
+  }
+
+  .option-box {
+    display: flex; gap: 10px; margin: 8px 0;
+  }
+  .option {
+    flex: 1; border: 1.5px solid #e0e0e8; border-radius: 8px;
+    padding: 10px 12px; text-align: center; font-size: 10.5pt;
+  }
+  .option-wrong { border-color: #cc0000; background: #fff3f3; }
+  .option-wrong .opt-label { color: #cc0000; font-weight: 700; font-size: 9pt; }
+  .option-right { border-color: #2d6a2d; background: #e8f5e9; }
+  .option-right .opt-label { color: #2d6a2d; font-weight: 700; font-size: 9pt; }
+
+  table.compare {
+    width: 100%; border-collapse: collapse; font-size: 10.5pt; margin: 8px 0;
+  }
+  table.compare th {
+    background: #1a1a2e; color: #fff; padding: 6px 10px;
+    text-align: left; font-size: 9.5pt;
+  }
+  table.compare td { padding: 6px 10px; border: 1px solid #ddd; vertical-align: top; }
+
+  .goal-num {
+    display: inline-block; background: #1a1a2e; color: #fff;
+    border-radius: 50%; width: 24px; height: 24px; text-align: center;
+    line-height: 24px; font-size: 11pt; font-weight: 700; margin-right: 8px; flex-shrink: 0;
+  }
+  .goal-row { display: flex; align-items: flex-start; gap: 4px; margin: 10px 0; }
+
+  .nav { display: flex; gap: 12px; margin-top: 16px; }
+  .nav button {
+    padding: 8px 28px; border: 2px solid #1a1a2e; border-radius: 8px;
+    background: #fff; color: #1a1a2e; font-family: inherit;
+    font-size: 11pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover { background: #1a1a2e; color: #fff; }
+
+  @media (max-width: 720px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Score Overview ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G6.2</div>
+  </div>
+  <div class="card-body">
+    <p>Savannah, let's walk through your writing test together. You did well — here's the breakdown.</p>
+    <div class="score-grid">
+      <div class="score-box score-good">
+        <div class="big">87%</div>
+        <div class="label">Overall Score (26/30)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">9/10</div>
+        <div class="label">Multiple Choice</div>
+      </div>
+      <div class="score-box score-warn">
+        <div class="big">17/20</div>
+        <div class="label">Essay</div>
+      </div>
+    </div>
+    <p><b>What you did really well:</b></p>
+    <ul>
+      <li>You identified fragments, appositives, topic sentences, transitions, and supporting details — <b>9 out of 10 correct</b></li>
+      <li>Your essay <b>stayed on topic</b> and showed <b>strong thinking</b> about the passage</li>
+      <li>Your conclusion was genuinely strong — it tied your ideas together with a clear message</li>
+    </ul>
+    <p>You missed 1 multiple choice question and lost 3 points on the essay. The next cards show you exactly what happened.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: Q3 — Because vs But ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q3: Choosing the Right Conjunction</h2>
+    <div class="card-subtitle">Skill: Combine sentences using a logical conjunction</div>
+  </div>
+  <div class="card-body">
+    <p><b>The question:</b> Combine these two ideas with a logical conjunction:</p>
+    <p style="color:#555;font-size:10.5pt;margin:4px 0;"><i>Animated movies are fun. They also include valuable lessons.</i></p>
+    <div class="option-box">
+      <div class="option option-wrong">
+        <div class="opt-label">YOU CHOSE</div>
+        Animated movies are fun <b>because</b> they include valuable lessons.
+      </div>
+      <div class="option option-right">
+        <div class="opt-label">CORRECT ANSWER</div>
+        Animated movies are fun <b>but</b> they include valuable lessons.
+      </div>
+    </div>
+    <p><b>What happened:</b> "Because" means the lessons are the <i>reason</i> the movies are fun. But the original sentences say two separate things — movies are fun AND they also have lessons. These are two different qualities, not cause and effect.</p>
+    <p>"But" works because it shows a gentle contrast: you might think fun movies are <i>only</i> entertaining, <b>but</b> they actually also include lessons.</p>
+    <div class="tip-box">
+      <div class="label">HOW TO CHOOSE</div>
+      <b>Because</b> = one thing <i>causes</i> the other (cause → effect)<br>
+      <b>But / Although</b> = both things are true, and the second one is <i>surprising or different</i><br>
+      <b>And / Also</b> = both things are true and go in the <i>same direction</i><br><br>
+      Ask yourself: "Is the second idea the <i>reason</i> for the first?" If not, don't use "because."
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: What Your Essay Did Well ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>What Your Essay Did Well</h2>
+    <div class="card-subtitle">You have strong ideas — the upgrades are about structure and evidence</div>
+  </div>
+  <div class="card-body">
+    <p>Before we look at what to improve, here's what worked:</p>
+    <ul>
+      <li><b>5 paragraphs</b> — intro, three body paragraphs, conclusion. Correct structure.</li>
+      <li><b>Strong vocabulary</b> — words like "resilience," "perseverance," "perspectives," and "effectively" show formal, expository language.</li>
+      <li><b>Transitions</b> — "In most animated movies," "also revolve around," "Lastly," "Even though" guide the reader through your argument.</li>
+      <li><b>Stayed on topic</b> — every paragraph connects to the prompt about how animated movies teach life lessons.</li>
+      <li><b>Excellent conclusion</b> — your final sentence ties together all three points (resilience, kindness, teamwork, perspectives) and acknowledges a limitation. That's advanced writing.</li>
+    </ul>
+    <p>Nearly perfect on spelling too — just one error: <span class="error-mark">charecters</span> → <b>characters</b>.</p>
+    <p>The 3 points you lost come down to two things: <b>your introduction</b> and <b>specific evidence from the passage</b>.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Introduction ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Expand Your Introduction</h2>
+    <div class="card-subtitle">One sentence isn't enough — you need three</div>
+  </div>
+  <div class="card-body">
+    <div class="essay-excerpt">
+      <div class="para-label">Your Entire Introduction</div>
+      Animated movies often teach kids very valuable life lessons about their feelings and how to treat others.
+    </div>
+    <p>This is a <b>good topic sentence</b>, but it's your entire introduction. An introduction paragraph needs at least <b>three sentences</b>:</p>
+    <div class="better">
+      <div class="label">STRONGER INTRODUCTION</div>
+      <p><b>General statement:</b> Animated movies have been popular with children for decades, offering colorful stories and memorable characters.</p>
+      <p><b>Specific statement:</b> The passage explains that these movies do more than entertain — they teach children how to handle emotions, treat others kindly, and understand the world around them.</p>
+      <p><b>Thesis with preview:</b> Animated movies teach children important life lessons by showing them how to be resilient, how to show kindness and teamwork, and how to appreciate different perspectives.</p>
+    </div>
+    <div class="tip-box">
+      <div class="label">THE 3-SENTENCE INTRO FORMULA</div>
+      <b>Sentence 1:</b> General statement — ease the reader into the topic<br>
+      <b>Sentence 2:</b> Specific statement — connect to the passage<br>
+      <b>Sentence 3:</b> Thesis — state your main argument AND preview your 3 body paragraph topics<br><br>
+      Notice how the thesis lists <b>resilience, kindness/teamwork, and perspectives</b> — those are exactly the three body paragraphs. This gives your essay a clear roadmap.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: Evidence ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Use Specific Evidence from the Passage</h2>
+    <div class="card-subtitle">Your ideas are right — now anchor them to the text</div>
+  </div>
+  <div class="card-body">
+    <p>Your essay discusses resilience, kindness, teamwork, and perspectives — all ideas from the passage. But you never <b>cite specific details</b>. The rubric says: <i>"Support each point with facts or examples from the passage and explain what they show."</i></p>
+    <table class="compare">
+      <tr>
+        <th>You wrote (general)</th>
+        <th>What specific evidence looks like</th>
+      </tr>
+      <tr>
+        <td>"characters go through a plot twist that often includes a big problem or mistake"</td>
+        <td style="color:#2d6a2d;"><b>The passage explains that</b> characters sometimes lose something they love or make a serious mistake. <b>This shows</b> children that problems are a normal part of life and can be overcome.</td>
+      </tr>
+      <tr>
+        <td>"they have to stay honest and true to themselves"</td>
+        <td style="color:#2d6a2d;"><b>According to the passage,</b> some animated movies show characters helping friends or telling the truth even when it is hard. <b>This teaches</b> children the importance of honesty and kindness.</td>
+      </tr>
+      <tr>
+        <td>"help kids learn about different cultures, people, and perspectives"</td>
+        <td style="color:#2d6a2d;"><b>The passage says that</b> many animated movies show different people, places, and ideas. <b>This helps</b> children become more open-minded about others who are different from them.</td>
+      </tr>
+    </table>
+    <div class="tip-box">
+      <div class="label">THE EVIDENCE + EXPLANATION PAIR</div>
+      Every time you make a point, follow it with:<br>
+      <b>Evidence:</b> <i>"The passage explains that [specific detail]."</i><br>
+      <b>Explanation:</b> <i>"This shows that [why it matters]."</i><br><br>
+      Use this pair <b>twice per body paragraph</b> to earn full evidence points.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Develop Body Paragraph 3 ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Develop Your Third Body Paragraph</h2>
+    <div class="card-subtitle">Two sentences isn't enough — aim for five or six</div>
+  </div>
+  <div class="card-body">
+    <div class="essay-excerpt">
+      <div class="para-label">Your Body Paragraph 3</div>
+      Lastly, animated movies also help kids learn about different cultures, people, and perspectives. The different settings and plots that happen in these movies often help children gain some insight about the world around them.
+    </div>
+    <p>This paragraph has a good topic sentence, but only <b>one supporting sentence</b> with no specific evidence. Compare it to your Body Paragraph 1, which has 3 sentences. Your third body paragraph should be just as developed.</p>
+    <div class="better">
+      <div class="label">STRONGER VERSION</div>
+      <p><b>Topic sentence:</b> Lastly, animated movies help children learn about different cultures, people, and perspectives.</p>
+      <p><b>Evidence 1:</b> The passage explains that many animated movies feature characters and settings from different parts of the world.</p>
+      <p><b>Explanation:</b> This helps children see that people in other places have different traditions and ways of life, which can make them more open-minded.</p>
+      <p><b>Evidence 2:</b> The passage also says that these movies show different ideas and ways of thinking.</p>
+      <p><b>Explanation:</b> This teaches children that there is not just one way to see the world, which builds empathy and understanding.</p>
+      <p><b>Concluding sentence:</b> Because of this, animated movies can broaden children's perspectives beyond their own experiences.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 7: Body Paragraph Pattern ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>The Body Paragraph Pattern</h2>
+    <div class="card-subtitle">Use this exact structure for every body paragraph</div>
+  </div>
+  <div class="card-body">
+    <p>You already write well — this pattern will help you write <b>consistently</b> across all three body paragraphs so none is weaker than the others.</p>
+    <div class="tip-box" style="background:#f8f8fc;border-left-color:#1a1a2e;">
+      <div class="label">THE PATTERN</div>
+      <p><b>TS</b> — Topic Sentence (introduces the point)</p>
+      <p><b>E1</b> — Evidence from the passage ("The passage explains that...")</p>
+      <p><b>X1</b> — Explanation ("This shows that...")</p>
+      <p><b>E2</b> — More evidence from the passage ("The passage also says...")</p>
+      <p><b>X2</b> — Explanation ("This means that..." / "This teaches children...")</p>
+      <p><b>CS</b> — Concluding Sentence (wraps up the point)</p>
+    </div>
+    <p><b>TS → E1 → X1 → E2 → X2 → CS</b></p>
+    <p>If you use this in all three body paragraphs, each one will be 5–6 sentences, fully developed, and passage-based. That's exactly what earns full marks on evidence <i>and</i> organization.</p>
+    <div class="tip-box">
+      <div class="label">YOUR SPECIFIC SITUATION</div>
+      Your Body Paragraph 1 (resilience) was the strongest — 3 sentences with some explanation. Your Body Paragraph 3 (perspectives) was the weakest — only 2 sentences. Using this pattern ensures <b>all three paragraphs are equally strong</b>. Think of it as a checklist: if any paragraph is missing an E or X, add one before you move on.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 8: Goals ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">You're at 87% — these will push you to 95%+</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Write a 3-sentence introduction with a thesis that previews your points.</b><br>
+        <span style="font-size:10.5pt;color:#555;">General statement → Specific statement → Thesis with preview. Your thesis should name the three topics your body paragraphs will cover. This gives your whole essay a roadmap.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>Cite specific evidence from the passage in every body paragraph.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Use "The passage explains that..." or "According to the passage..." followed by "This shows that..." You need this pair at least twice per body paragraph. Your ideas are already strong — anchoring them to the text is what earns full points.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Make sure every body paragraph is fully developed (5–6 sentences).</b><br>
+        <span style="font-size:10.5pt;color:#555;">Use the TS → E1 → X1 → E2 → X2 → CS pattern as a checklist. If a paragraph has fewer than 5 sentences, it probably needs more evidence or explanation.</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">THE BIG PICTURE</div>
+      Your writing already sounds mature — you use strong vocabulary, your conclusion is excellent, and you understand the concepts. The gap between 87% and 95%+ is not about thinking harder. It's about <b>structure</b>: a fuller introduction, specific passage evidence, and evenly developed body paragraphs. You're very close.
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+let current = 0;
+
+cards.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  bar.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done' : 'Next \u2192';
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) return;
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+goTo(0);
+</script>
+</body>
+</html>
