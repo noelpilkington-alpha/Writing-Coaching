@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ben's Writing Test Review — G3.5</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .progress-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ccc;
+    transition: background 0.3s;
+    cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container {
+    position: relative;
+    width: 640px;
+    min-height: 420px;
+  }
+
+  .card {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    background: #fff;
+    border: 2.5px solid #1a1a2e;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 {
+    font-size: 15pt;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .card-header .card-subtitle {
+    font-size: 9.5pt;
+    color: #aaa;
+    margin-top: 2px;
+  }
+
+  .card-body {
+    padding: 18px 22px 22px;
+    line-height: 1.55;
+  }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+  }
+  .score-box .big { font-size: 22pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3;
+    border-left: 3px solid #cc0000;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    font-size: 11pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9;
+    border-left: 3px solid #2d6a2d;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    font-size: 11pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5;
+    border-left: 3px solid #1a1a2e;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+  .strike { text-decoration: line-through; color: #cc0000; }
+  .fix { color: #2d6a2d; font-weight: 600; }
+
+  .pattern-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; font-size: 13pt; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; font-size: 13pt; }
+
+  .goal-num {
+    display: inline-block;
+    background: #1a1a2e;
+    color: #fff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    line-height: 24px;
+    font-size: 11pt;
+    font-weight: 700;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .goal-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    margin: 10px 0;
+  }
+
+  .nav {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .nav button {
+    padding: 8px 28px;
+    border: 2px solid #1a1a2e;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a2e;
+    font-family: inherit;
+    font-size: 11pt;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover {
+    background: #1a1a2e;
+    color: #fff;
+  }
+
+  @media (max-width: 680px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Progress dots -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Card container -->
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Your Score ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G3.5</div>
+  </div>
+  <div class="card-body">
+    <p>Hi Ben! Let's look at your writing test together so you can see what you did well and what to work on next time.</p>
+    <div class="score-grid">
+      <div class="score-box score-good">
+        <div class="big">~82%</div>
+        <div class="label">Overall Score</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">6 / 11</div>
+        <div class="label">Perfect Answers</div>
+      </div>
+    </div>
+    <p><b>What you did really well:</b></p>
+    <ul>
+      <li>You have <b>great ideas</b> and really understand what the stories are about</li>
+      <li>You <b>combined sentences</b> perfectly with "and" (Q3)</li>
+      <li>You correctly <b>identified the appositive</b> (Q5) — that's a tricky skill!</li>
+      <li>You used <b>"because"</b> really well to explain your thinking (Q9, Q10)</li>
+    </ul>
+    <p>The 5 points you lost are all <b>fixable</b>. The next cards will show you how!</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: Q8 — Never Leave a Question Blank ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q8: Never Leave a Question Blank</h2>
+    <div class="card-subtitle">Skill: Write a complete sentence with your opinion</div>
+  </div>
+  <div class="card-body">
+    <p><b>The question:</b> Would you rather listen to a book or read it yourself? Write a complete sentence to explain your choice.</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      <span style="color:#cc0000;font-weight:600;">(Left blank)</span>
+    </div>
+    <p>This question was <b>free points</b> — all you had to do was pick one option and say why. There is no wrong answer here!</p>
+    <p>Here is an easy pattern you can use:</p>
+    <div class="better">
+      <div class="label">PATTERN</div>
+      I would rather ___ because ___.
+    </div>
+    <div class="better">
+      <div class="label">EXAMPLE ANSWER</div>
+      I would rather read a book myself because I like imagining the story in my own way.
+    </div>
+    <div class="tip-box">
+      <div class="label">REMEMBER</div>
+      If you are stuck, just <b>pick one option and give any reason</b>. Something is <b>always</b> better than nothing. Even a simple answer earns points. A blank answer is always a zero.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: Q1 — Keep the Same Meaning ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q1: Keep the Same Meaning</h2>
+    <div class="card-subtitle">Skill: Rewrite a statement as a question</div>
+  </div>
+  <div class="card-body">
+    <p><b>The question:</b> Rewrite this sentence as a question: <i>"The books were sold in department stores."</i></p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Why did <span class="highlight">the</span> sell the books in department stores?
+    </div>
+    <p>Two things went wrong here:</p>
+    <ul>
+      <li>You changed it into a <b>"why" question</b>, which changes what the sentence is about. The original sentence is just saying <i>where</i> the books were sold — not <i>why</i>.</li>
+      <li>Small typo: <span class="strike">the</span> sell &rarr; <span class="fix">they</span> sell</li>
+    </ul>
+    <div class="better">
+      <div class="label">CORRECT VERSION</div>
+      Were the books sold in department stores?
+    </div>
+    <div class="tip-box">
+      <div class="label">TIP</div>
+      When you rewrite a sentence as a question, <b>keep the same idea</b> — just flip the word order. Don't add new words like "why" or "how." The question should have the same meaning as the original sentence.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Q4 — What Is an Appositive? ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q4: What Is an Appositive?</h2>
+    <div class="card-subtitle">Skill: Add an appositive phrase to a sentence</div>
+  </div>
+  <div class="card-body">
+    <p><b>The question:</b> Add an appositive to: <i>"The books are still popular."</i></p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      The books are still popular, the best selling book being The Poky Little Puppy, they are mainly known for the golden spines.
+    </div>
+    <p>Your sentence was <b>too long</b> and added extra information that wasn't asked for. An appositive is a <b>short extra detail</b> placed inside commas that tells more about a noun.</p>
+    <p><b>The pattern:</b> noun <b>,</b> extra detail <b>,</b> rest of sentence.</p>
+    <div class="better">
+      <div class="label">CORRECT VERSION</div>
+      The books, known for their golden spines, are still popular.
+    </div>
+    <div class="tip-box">
+      <div class="label">TIP</div>
+      Keep your appositive <b>short</b> — just a few words between the commas. It should give one extra detail about the noun right before it. Don't try to add too many ideas into one sentence.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: Q11 — Your Paragraph ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q11: Your Paragraph</h2>
+    <div class="card-subtitle">Topic: Why Jason put his statues under the sea</div>
+  </div>
+  <div class="card-body">
+    <div class="you-wrote">
+      <div class="label">YOUR PARAGRAPH</div>
+      I think There are 2 main reasons Jason put his statues under the sea. One of the main reason is that its different from all museums so it might bring more traction. The second reason is that he wanted to protect the coral reefs. each year many swimmers visit the reefs, and without meaning to they hurt the coral and animals. so he created a divertion, his statues bring a lot of people that might of gone to the reefs insted and hurt the animals.
+    </div>
+    <p><b>Score: 17/20</b> — Here is what you did well:</p>
+    <ul>
+      <li>You gave <b>two clear reasons</b> (unique museum + protect reefs)</li>
+      <li>You used <b>details from the passage</b> about swimmers hurting coral</li>
+    </ul>
+    <p><b>What to fix:</b></p>
+    <ul>
+      <li>Spelling: <span class="strike">divertion</span> &rarr; <span class="fix">diversion</span>, <span class="strike">insted</span> &rarr; <span class="fix">instead</span>, <span class="strike">might of</span> &rarr; <span class="fix">might have</span></li>
+      <li>Capitalize the start of sentences: <span class="strike">each year</span> &rarr; <span class="fix">Each year</span>, <span class="strike">so he</span> &rarr; <span class="fix">So he</span></li>
+      <li><span class="strike">its</span> &rarr; <span class="fix">it's</span> (it's = "it is")</li>
+      <li>Use more formal words: <span class="strike">bring more traction</span> &rarr; <span class="fix">attract more visitors</span></li>
+    </ul>
+    <div class="tip-box">
+      <div class="label">NEXT STEP</div>
+      Learn the <b>SPO</b> (Single Paragraph Outline): Topic Sentence &rarr; Supporting Detail 1 + why it matters &rarr; Supporting Detail 2 + why it matters &rarr; Closing Sentence. See Card 7 for a model paragraph!
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Spelling Spotlight ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Spelling Spotlight</h2>
+    <div class="card-subtitle">Words to practice before your next test</div>
+  </div>
+  <div class="card-body">
+    <p>Here are the spelling mistakes from your test. Most of these are <b>sound-it-out words</b> that don't follow the rules — you just need to memorize them:</p>
+    <div style="margin:12px 0;">
+      <div class="pattern-row">
+        <span class="pattern-wrong">brite</span>
+        <span class="pattern-arrow">&rarr;</span>
+        <span class="pattern-right">bright</span>
+        <span style="color:#888;font-size:9.5pt;margin-left:auto;">(Q6)</span>
+      </div>
+      <div class="pattern-row">
+        <span class="pattern-wrong">ment</span>
+        <span class="pattern-arrow">&rarr;</span>
+        <span class="pattern-right">meant</span>
+        <span style="color:#888;font-size:9.5pt;margin-left:auto;">(Q7)</span>
+      </div>
+      <div class="pattern-row">
+        <span class="pattern-wrong">divertion</span>
+        <span class="pattern-arrow">&rarr;</span>
+        <span class="pattern-right">diversion</span>
+        <span style="color:#888;font-size:9.5pt;margin-left:auto;">(Q11)</span>
+      </div>
+      <div class="pattern-row">
+        <span class="pattern-wrong">insted</span>
+        <span class="pattern-arrow">&rarr;</span>
+        <span class="pattern-right">instead</span>
+        <span style="color:#888;font-size:9.5pt;margin-left:auto;">(Q11)</span>
+      </div>
+      <div class="pattern-row">
+        <span class="pattern-wrong">might of</span>
+        <span class="pattern-arrow">&rarr;</span>
+        <span class="pattern-right">might have</span>
+        <span style="color:#888;font-size:9.5pt;margin-left:auto;">(Q11)</span>
+      </div>
+      <div class="pattern-row">
+        <span class="pattern-wrong">the sell</span>
+        <span class="pattern-arrow">&rarr;</span>
+        <span class="pattern-right">they sell</span>
+        <span style="color:#888;font-size:9.5pt;margin-left:auto;">(Q1)</span>
+      </div>
+    </div>
+    <div class="tip-box">
+      <div class="label">TIP</div>
+      Before you turn in your test, <b>read each sentence slowly</b>. Point to each word and ask yourself: "Does this look right?" Catching even one spelling mistake can earn you extra points.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 7: The Paragraph Plan (SPO) ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>The Paragraph Plan (SPO)</h2>
+    <div class="card-subtitle">Use this plan every time you write a paragraph on the test</div>
+  </div>
+  <div class="card-body">
+    <p>Here is a <b>model paragraph</b> for Q11 using the SPO plan. Notice how each part has a job:</p>
+    <div class="better" style="font-style:normal;font-size:11pt;line-height:1.6;">
+      <div class="label">MODEL PARAGRAPH</div>
+      <b style="color:#1a1a2e;">[Topic Sentence]</b> Jason chose to place his sculptures under the sea to protect coral reefs and create a new kind of museum experience.
+      <b style="color:#1a1a2e;">[SD1 + why it matters]</b> Each year, many swimmers visit the coral reefs and accidentally hurt the coral and animals. Jason's statues give people a different place to explore, which keeps the reefs safe.
+      <b style="color:#1a1a2e;">[SD2 + why it matters]</b> An underwater museum is also very unusual. People can snorkel, scuba dive, or ride a glass-bottom boat to see the art, which makes it an exciting experience that attracts many visitors.
+      <b style="color:#1a1a2e;">[Closing Sentence]</b> By placing his art underwater, Jason found a creative way to protect nature and share something amazing with the world.
+    </div>
+    <div class="tip-box">
+      <div class="label">THE SPO PATTERN</div>
+      <b>Topic Sentence:</b> Answer the question<br>
+      <b>Detail 1:</b> First reason + why it matters<br>
+      <b>Detail 2:</b> Second reason + why it matters<br>
+      <b>Closing Sentence:</b> Restate your main idea in new words<br><br>
+      This pattern works for <b>every</b> paragraph question on the test!
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 8: Your 3 Goals ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">You're at ~82% — these will push you much higher</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Never leave a question blank — always write something.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Even a simple sentence earns points. A blank answer is always a zero. Use the pattern: <i>"I would rather ___ because ___."</i></span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>When rewriting a sentence, keep the same meaning.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Only change the sentence type (statement &rarr; question). Don't add new words like "why" or "how" that change what the sentence is about.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Use the SPO plan for paragraph questions.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Topic Sentence &rarr; Detail 1 + why it matters &rarr; Detail 2 + why it matters &rarr; Closing Sentence. This takes one minute and makes your paragraph much stronger.</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">ALSO REMEMBER</div>
+      Slow down and <b>check your spelling</b> before you submit. Read each sentence one more time before moving on. You already have great ideas — fixing spelling and using the SPO plan will help your score jump up fast. You've got this, Ben!
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<!-- Navigation -->
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+let current = 0;
+
+// Build progress dots
+cards.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  bar.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done' : 'Next \u2192';
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) return;
+  goTo(current + dir);
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+// Initialize
+goTo(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ethan's Writing Test Review — G4.2</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .progress-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ccc;
+    transition: background 0.3s;
+    cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container {
+    position: relative;
+    width: 640px;
+    min-height: 420px;
+  }
+
+  .card {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    background: #fff;
+    border: 2.5px solid #1a1a2e;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 {
+    font-size: 15pt;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .card-header .card-subtitle {
+    font-size: 9.5pt;
+    color: #aaa;
+    margin-top: 2px;
+  }
+
+  .card-body {
+    padding: 18px 22px 22px;
+    line-height: 1.55;
+  }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+  }
+  .score-box .big { font-size: 22pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3;
+    border-left: 3px solid #cc0000;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    font-size: 11pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9;
+    border-left: 3px solid #2d6a2d;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    font-size: 11pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5;
+    border-left: 3px solid #1a1a2e;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+  .strike { text-decoration: line-through; color: #cc0000; }
+  .fix { color: #2d6a2d; font-weight: 600; }
+
+  .pattern-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; font-size: 13pt; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; font-size: 13pt; }
+
+  .goal-num {
+    display: inline-block;
+    background: #1a1a2e;
+    color: #fff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    line-height: 24px;
+    font-size: 11pt;
+    font-weight: 700;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .goal-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    margin: 10px 0;
+  }
+
+  .nav {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .nav button {
+    padding: 8px 28px;
+    border: 2px solid #1a1a2e;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a2e;
+    font-family: inherit;
+    font-size: 11pt;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover {
+    background: #1a1a2e;
+    color: #fff;
+  }
+
+  @media (max-width: 680px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Progress dots -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Card container -->
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Score Overview ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G4.2</div>
+  </div>
+  <div class="card-body">
+    <p>Hi Ethan! Let's go through your writing test together so you can see what you did well and what to work on next time.</p>
+    <div class="score-grid">
+      <div class="score-box score-good">
+        <div class="big">84%</div>
+        <div class="label">Overall Score</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">5 / 11</div>
+        <div class="label">Perfect Answers</div>
+      </div>
+    </div>
+    <p><b>What you did really well:</b></p>
+    <ul>
+      <li>Your paragraph (Q11) scored <b>18/20</b> — that's a strong piece of writing with a clear topic sentence and a real conclusion!</li>
+      <li>Your sentence-writing answers on <b>Q6, Q7, Q9, and Q10</b> were all <b>perfect</b></li>
+      <li>You <b>expanded a fragment</b> correctly (Q2)</li>
+    </ul>
+    <p><b>The pattern:</b> You lost points on Q1 through Q5 mostly because the answers didn't do the <i>exact skill</i> the question was asking for. The next cards will show you how to fix that.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: The "One Sentence" Rule (Q3, Q5, Q8) ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>The "One Sentence" Rule</h2>
+    <div class="card-subtitle">Q3, Q5, Q8 — Your biggest pattern</div>
+  </div>
+  <div class="card-body">
+    <p>On three different questions, you wrote <b>two sentences</b> when the test asked for <b>one</b>. Let's look at each one:</p>
+    <div class="you-wrote">
+      <div class="label">Q3 — YOU WROTE</div>
+      Since blue bonnets grow best in sunny places. <span class="highlight">Suprisingly, they can survive cold Texas spring weather...</span>
+    </div>
+    <p style="font-size:10.5pt;color:#555;">The first part is still a fragment. The second part is a brand-new sentence.</p>
+    <div class="you-wrote">
+      <div class="label">Q5 — YOU WROTE</div>
+      Bluebonnets don't need much water or fertilizer because they are strong, tough flowers. <span class="highlight">Able to survive the cold Texas spring weather.</span>
+    </div>
+    <p style="font-size:10.5pt;color:#555;">Good first sentence, but then a second piece that's a fragment.</p>
+    <div class="you-wrote">
+      <div class="label">Q8 — YOU WROTE</div>
+      One of the most unique plants I've seen is the golden poppy which is the California state flower. <span class="highlight">What makes this flower so unique is the color it creates, this color looks exactly like the sun.</span>
+    </div>
+    <p style="font-size:10.5pt;color:#555;">Two sentences, and the second one has a comma splice.</p>
+    <div class="tip-box">
+      <div class="label">THE RULE</div>
+      <b>If the question asks for one sentence, everything must fit in ONE sentence.</b> If you already have a complete sentence, don't start another one — put the extra idea <i>inside</i> the same sentence.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: Q1 — Combining Sentences ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q1: Combining Sentences</h2>
+    <div class="card-subtitle">Skill: Combine sentences into one shorter sentence</div>
+  </div>
+  <div class="card-body">
+    <p><b>The question:</b> Combine the sentences about roadsides, hills, and meadows taking on a new look.</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Roadsides and hills take on a whole new look and the meadows do too.
+    </div>
+    <p>You got the right idea — putting everything together. But your version is a little wordy. When you're combining, look for a way to make a <b>short, smooth list</b>.</p>
+    <div class="better">
+      <div class="label">STRONGER VERSION</div>
+      Roadsides, hills, and meadows all take on a whole new look.
+    </div>
+    <div class="tip-box">
+      <div class="label">ASK YOURSELF</div>
+      <b>"Can I make this shorter? Can I put the ideas into one smooth list?"</b><br><br>
+      When several things do the same action, list them with commas: <i>A, B, and C [do something].</i> That's almost always the most concise way to combine.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Q4 — What Is an Appositive? ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q4: What Is an Appositive?</h2>
+    <div class="card-subtitle">Skill: Add an appositive to a sentence</div>
+  </div>
+  <div class="card-body">
+    <p><b>The question asked you to add an appositive.</b> An appositive is extra information set off by commas that <b>renames</b> or <b>describes</b> a noun.</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      In small towns all over Texas, many people attend bluebonnet festivals with friends and family.
+    </div>
+    <p>You rearranged the sentence and added "with friends and family," but there's <b>no appositive</b> here. Nothing renames or gives extra detail about a noun between commas.</p>
+    <div class="better">
+      <div class="label">WITH AN APPOSITIVE</div>
+      Many people attend bluebonnet festivals, <span class="fix">cheerful spring celebrations</span>, in small towns all over Texas.
+    </div>
+    <p>See how <b>"cheerful spring celebrations"</b> is tucked between commas? It renames "bluebonnet festivals" — that's the appositive!</p>
+    <div class="tip-box">
+      <div class="label">THE PATTERN</div>
+      <b>Noun, <i>extra detail that renames it</i>, rest of sentence.</b><br><br>
+      Examples:<br>
+      &bull; My dog, <i>a golden retriever</i>, loves to swim.<br>
+      &bull; Texas, <i>the Lone Star State</i>, has beautiful wildflowers.<br><br>
+      Look for a noun you can say more about, then tuck the extra detail between two commas.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: Q3 & Q5 — Finish the Thought ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q3 &amp; Q5: Finish the Thought in One Sentence</h2>
+    <div class="card-subtitle">Skill: Complete a fragment or finish a sentence</div>
+  </div>
+  <div class="card-body">
+    <p>Both Q3 and Q5 give you a fragment or sentence starter to <b>finish</b>. The key is to complete the thought <i>inside the same sentence</i> — not to start a brand new one after it.</p>
+    <p><b>Q3:</b> <i>"Since bluebonnets grow best in sunny places"</i> is a fragment. It needs to be finished, not left hanging.</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Since blue bonnets grow best in sunny places. Suprisingly, they can survive cold Texas spring weather...
+    </div>
+    <div class="better">
+      <div class="label">FIXED</div>
+      Since bluebonnets grow best in sunny places, they are often found in open fields with lots of sunlight.
+    </div>
+    <p><b>Q5:</b> You need to put the ending right onto the same sentence.</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Bluebonnets don't need much water or fertilizer because they are strong, tough flowers. Able to survive the cold Texas spring weather.
+    </div>
+    <div class="better">
+      <div class="label">FIXED</div>
+      Bluebonnets don't need much water or fertilizer, because they are strong, tough flowers that can survive cold Texas spring weather.
+    </div>
+    <div class="tip-box">
+      <div class="label">THE PATTERNS</div>
+      <b>Since ___, ___.</b> (finish the thought after the comma)<br>
+      <b>___ because ___.</b> (attach the reason to the same sentence)<br><br>
+      If you see a period and then more words, ask: "Should this be part of the sentence before it?"
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Q11 — What Went Well ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q11: Your Paragraph — What Went Well</h2>
+    <div class="card-subtitle">Topic: How humans benefit from robots doing simple tasks</div>
+  </div>
+  <div class="card-body">
+    <div class="you-wrote">
+      <div class="label">YOUR PARAGRAPH</div>
+      Humans can benefit from letting robots complete small daily tasks because, robots have become advanced enough to fold clothes and even deliver things to guests. However, the bigger more complicated tasks like changing a light bulb can be more of a challenge for robots. That job would be better for humans to handle. In conclusion, allowing robots to handle day to day tasks like taking out the trash or folding laundry can help with every day efficiency.
+    </div>
+    <p>Score: <b>18/20</b> — that's a strong paragraph! Here's what you did well:</p>
+    <ul>
+      <li><b>Clear topic sentence</b> that directly answers the question</li>
+      <li>You used <b>"In conclusion"</b> to wrap up your paragraph — great structure!</li>
+      <li>You <b>stayed on topic</b> the whole time</li>
+      <li>You gave examples like folding clothes and delivering things</li>
+    </ul>
+    <p>You lost 2 points. The next card shows exactly what to fix.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 7: Q11 — Improvements ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q11: What to Improve</h2>
+    <div class="card-subtitle">Small fixes that would earn those last 2 points</div>
+  </div>
+  <div class="card-body">
+    <p><b>1. Remove the extra comma after "because":</b></p>
+    <div style="text-align:center;margin:10px 0;">
+      <span class="pattern-wrong">because<span class="highlight">,</span> robots have</span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">because robots have</span>
+    </div>
+    <p style="font-size:10.5pt;">No comma goes right after "because" — the reason just flows right into it.</p>
+
+    <p style="margin-top:12px;"><b>2. Use specific evidence from the article:</b></p>
+    <p>The question says to use evidence from the article. The article mentions lots of specific details you could use:</p>
+    <ul style="font-size:10.5pt;">
+      <li>Factory robot arms that make more parts per hour</li>
+      <li>Cobots at Carnegie Mellon that deliver papers</li>
+      <li>Cleo and Leo, the robots at Hotel EMC2</li>
+      <li>Exoskeletons that help workers lift heavy things</li>
+      <li>Small robots that clean floors</li>
+    </ul>
+    <p style="font-size:10.5pt;">Dropping in one or two of these details would make your paragraph much stronger.</p>
+
+    <p style="margin-top:12px;"><b>3. Focus on benefits, not on what robots can't do:</b></p>
+    <p style="font-size:10.5pt;">Your middle sentences talk about what robots struggle with. But the prompt asks about <i>benefits</i>, so spend your time there instead.</p>
+
+    <div class="tip-box">
+      <div class="label">TRY THIS PATTERN</div>
+      <b>"According to the article, [specific detail]. This shows that [why it matters]."</b><br><br>
+      Example: <i>"According to the article, robots named Cleo and Leo bring items to hotel guests. This shows that robots can save workers time by handling simple deliveries."</i>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 8: Your 3 Goals ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">You're already at 84% — these will push you even higher</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>One sentence means ONE sentence — check before you submit.</b><br>
+        <span style="font-size:10.5pt;color:#555;">After you write your answer, count the periods. If the question asks for one sentence and you have two periods, something needs to be combined. Put the extra idea <i>inside</i> the same sentence.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>Do the exact skill the question asks for.</b><br>
+        <span style="font-size:10.5pt;color:#555;">If it says "appositive," write an appositive (noun, <i>extra detail</i>, rest of sentence). If it says "finish the thought," finish it in the <i>same</i> sentence — don't start a new one. Read the directions carefully and ask: "What skill is this testing?"</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Use specific evidence from the article in Q11.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Don't just say what robots can do in general. Use names, places, and facts from the article. Try: <i>"According to the article, [detail]. This shows that [why it matters]."</i></span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">REMEMBER</div>
+      You already got <b>5 out of 11 questions perfect</b> and scored <b>18/20 on your paragraph</b>. You know how to write strong sentences, expand fragments, and build a paragraph with a real conclusion. These three goals are about turning your 84% into a 95%+. You've got this!
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<!-- Navigation -->
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+let current = 0;
+
+// Build progress dots
+cards.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  bar.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done' : 'Next \u2192';
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) return;
+  goTo(current + dir);
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+// Initialize
+goTo(0);
+</script>
+</body>
+</html>

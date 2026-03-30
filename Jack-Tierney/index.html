@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Jack's Writing Test Review — G3.3</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .progress-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ccc;
+    transition: background 0.3s;
+    cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container {
+    position: relative;
+    width: 640px;
+    min-height: 420px;
+  }
+
+  .card {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    background: #fff;
+    border: 2.5px solid #1a1a2e;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 {
+    font-size: 15pt;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .card-header .card-subtitle {
+    font-size: 9.5pt;
+    color: #aaa;
+    margin-top: 2px;
+  }
+
+  .card-body {
+    padding: 18px 22px 22px;
+    line-height: 1.55;
+  }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+  }
+  .score-box .big { font-size: 22pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3;
+    border-left: 3px solid #cc0000;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    font-size: 11pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9;
+    border-left: 3px solid #2d6a2d;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    font-size: 11pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5;
+    border-left: 3px solid #1a1a2e;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+  .strike { text-decoration: line-through; color: #cc0000; }
+  .fix { color: #2d6a2d; font-weight: 600; }
+
+  .pattern-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; font-size: 13pt; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; font-size: 13pt; }
+
+  .goal-num {
+    display: inline-block;
+    background: #1a1a2e;
+    color: #fff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    line-height: 24px;
+    font-size: 11pt;
+    font-weight: 700;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .goal-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    margin: 10px 0;
+  }
+
+  .nav {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .nav button {
+    padding: 8px 28px;
+    border: 2px solid #1a1a2e;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a2e;
+    font-family: inherit;
+    font-size: 11pt;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover {
+    background: #1a1a2e;
+    color: #fff;
+  }
+
+  @media (max-width: 680px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Progress dots -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Card container -->
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Your Score ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G3.3</div>
+  </div>
+  <div class="card-body">
+    <p>Hi Jack! Let's look at your writing test together. You did some really good things, and I want to show you how to do even better next time.</p>
+    <div class="score-grid">
+      <div class="score-box score-warn">
+        <div class="big">54%</div>
+        <div class="label">Overall Score</div>
+      </div>
+      <div class="score-box score-warn">
+        <div class="big">4 / 11</div>
+        <div class="label">Perfect Answers</div>
+      </div>
+    </div>
+    <p><b>Here's the good news:</b></p>
+    <ul>
+      <li>You got <b>Q1 perfect</b> — you turned a sentence into a question just right!</li>
+      <li>You got <b>Q3 perfect</b> — you used an appositive, which is a hard skill!</li>
+      <li>You got <b>Q6 and Q10 perfect</b> — you used "because" to give great reasons!</li>
+    </ul>
+    <p>You <b>can</b> write great sentences — you proved it four times! The next cards will show you a few tricks to use that same skill on every question.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: What You Did Well ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>What You Did Well</h2>
+    <div class="card-subtitle">Let's celebrate what worked!</div>
+  </div>
+  <div class="card-body">
+    <p>Jack, you showed some really strong skills on this test:</p>
+    <div class="better">
+      <div class="label">Q1 — PERFECT QUESTION</div>
+      "Did Anna name the seal Sally?" — You turned the sentence into a question perfectly.
+    </div>
+    <div class="better">
+      <div class="label">Q3 — PERFECT APPOSITIVE</div>
+      "Sally, a seal, swam to the other seals." — You added the extra detail inside commas. Great job!
+    </div>
+    <div class="better">
+      <div class="label">Q6 — COMPLETE ANSWER WITH "BECAUSE"</div>
+      "I would have helped in the same way, because what they did was the right way." — You explained your thinking clearly.
+    </div>
+    <div class="better">
+      <div class="label">Q10 — CLEAR AND COMPLETE</div>
+      "It teaches kindness, because they freed the seal." — Short, clear, and finished.
+    </div>
+    <div class="tip-box">
+      <div class="label">WHAT THIS TELLS US</div>
+      You understand the stories and you have good ideas. The fix is about making <b>every</b> answer as complete as Q6 and Q10 were. The next cards will show you how!
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: Complete Sentences, Not Fragments (Q7, Q8) ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Complete Sentences, Not Fragments</h2>
+    <div class="card-subtitle">Q7 and Q8 — Your biggest chance to earn more points</div>
+  </div>
+  <div class="card-body">
+    <p>Some of your answers <b>started</b> a thought but didn't <b>finish</b> it. That's called a <b>fragment</b>.</p>
+    <div class="you-wrote">
+      <div class="label">Q7 — YOU WROTE</div>
+      "When the seals thanked Anna."
+    </div>
+    <p>This starts with "When..." but never finishes. <b>When</b> the seals thanked Anna... <b>what happened?</b></p>
+    <div class="you-wrote">
+      <div class="label">Q8 — YOU WROTE</div>
+      "Only if they knew the gender of the seal."
+    </div>
+    <p>This starts with "Only if..." but never finishes. <b>Only if</b> they knew... <b>then what?</b></p>
+    <div class="tip-box">
+      <div class="label">HOW TO CHECK: DOES IT HAVE BOTH PARTS?</div>
+      A complete sentence needs:<br>
+      <b>1. WHO or WHAT</b> (the person or thing)<br>
+      <b>2. DID or IS</b> (what they did or what happened)<br><br>
+      For Q6&ndash;10, use this pattern every time:<br>
+      <b style="font-size:12pt;">[My answer] because [my reason].</b>
+    </div>
+    <div class="better">
+      <div class="label">Q7 FIXED</div>
+      "The most meaningful moment was when Anna and Jim saw the three seals because it showed Sally had found her family."
+    </div>
+    <div class="better">
+      <div class="label">Q8 FIXED</div>
+      "It was a good idea to name the seal Sally because giving her a name showed that Anna cared about her."
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Q2 — Use Details from the Story ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q2: Use Details from the Story</h2>
+    <div class="card-subtitle">Skill: Add a detail to a sentence</div>
+  </div>
+  <div class="card-body">
+    <p><b>The question asked:</b> Add a detail to the sentence about Dad freeing the seal pup.</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      "Dad freed the pup from <span class="highlight">a burning house</span>."
+    </div>
+    <p>You had the right idea — you added a detail! But the detail needs to come <b>from the story</b>. In the story, the seal was tangled in a fishnet on the beach, not in a burning house.</p>
+    <div class="better">
+      <div class="label">FIXED VERSION</div>
+      "Dad gently freed the pup from the fishnet on the beach."
+    </div>
+    <div class="tip-box">
+      <div class="label">REMEMBER</div>
+      When the question says "add a detail," look back at the story for what <b>really happened</b>. Use words and facts from the passage — not from your imagination. The story is your helper!
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: Q5 — Reason Words ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q5: Reason Words vs. Feeling Words</h2>
+    <div class="card-subtitle">Skill: Fill in the blank with the right connecting word</div>
+  </div>
+  <div class="card-body">
+    <p><b>The sentence:</b> "___ there was no sign of the seals, the family placed Sally in a fish box and motored into the bay."</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      "<span class="highlight">Sadly</span>"
+    </div>
+    <p>That's a <b>feeling word</b> — it tells how someone felt. But this sentence needs a <b>reason word</b> — it tells <b>why</b> something happened.</p>
+    <div class="better">
+      <div class="label">CORRECT ANSWER</div>
+      "<b>Because</b> there was no sign of the seals, the family placed Sally in a fish box and motored into the bay."
+    </div>
+    <div class="tip-box">
+      <div class="label">QUICK TEST</div>
+      Ask yourself: <b>Does the rest of the sentence tell a REASON?</b><br><br>
+      "There was no sign of the seals" &rarr; That's <b>why</b> they put Sally in the box.<br>
+      So the blank needs a <b>reason word</b>: <span class="fix">Because</span>.<br><br>
+      <b>"Because"</b> = tells WHY something happened.<br>
+      <b>"Sadly"</b> = tells how someone FELT.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Q11 — What a Paragraph Looks Like ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q11: What a Paragraph Looks Like</h2>
+    <div class="card-subtitle">Topic: How Satoshi Tajiri's childhood led to Pok&eacute;mon</div>
+  </div>
+  <div class="card-body">
+    <div class="you-wrote">
+      <div class="label">YOUR PARAGRAPH (7/20)</div>
+      "Satoshi Tajiri's love for collecting bugs became <span class="highlight">somthing</span> millions of people all over the globe enjoy."
+    </div>
+    <p>That's only <b>one sentence</b>. A paragraph needs <b>multiple sentences</b>! Also: <span class="strike">somthing</span> &rarr; <span class="fix">something</span>.</p>
+    <p>Here is the plan for a paragraph:</p>
+    <div class="tip-box">
+      <div class="label">PARAGRAPH PLAN (SPO)</div>
+      <b>First sentence:</b> Answer the question (Topic Sentence)<br>
+      <b>Middle sentences:</b> Give details from the article + explain why they matter<br>
+      <b>Last sentence:</b> Wrap it up (Closing Sentence)
+    </div>
+    <div class="better">
+      <div class="label">EXAMPLE PARAGRAPH</div>
+      Satoshi Tajiri's childhood love of collecting bugs inspired him to create Pok&eacute;mon. The article says that as a boy, Tajiri loved exploring nature and catching insects. This gave him the idea for a game where players could collect and trade creatures. The article also explains that Tajiri turned his hobby into a video game that became popular around the world. Because of his childhood love of bugs, millions of people now enjoy Pok&eacute;mon.
+    </div>
+    <p>See how that has <b>5 sentences</b>? Each one has a job. Your sentence was a great <i>start</i> — next time, keep going!</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 7: The "Because" Trick ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>The "Because" Trick</h2>
+    <div class="card-subtitle">One simple trick that works for Q6&ndash;Q10</div>
+  </div>
+  <div class="card-body">
+    <p>For questions 6 through 10, you need to give your answer <b>and</b> a reason. The easiest way? Use the word <b>"because"</b>!</p>
+    <div class="tip-box">
+      <div class="label">THE PATTERN</div>
+      <b style="font-size:13pt;">[My answer] because [my reason].</b>
+    </div>
+    <p>You already used this pattern on Q6 and Q10 — and got them both perfect! Look:</p>
+    <div class="better">
+      <div class="label">Q6 — YOU GOT THIS RIGHT!</div>
+      "I would have helped in the same way, <b>because</b> what they did was the right way."
+    </div>
+    <p>Now see how the same pattern fixes Q7 and Q8:</p>
+    <div style="margin:10px 0;">
+      <div class="pattern-row">
+        <span class="pattern-wrong" style="font-size:10pt;">"When the seals thanked Anna."</span>
+        <span class="pattern-arrow">&rarr;</span>
+        <span class="pattern-right" style="font-size:10pt;">"The best moment was when the seals thanked Anna <b>because</b> it showed Sally found her family."</span>
+      </div>
+      <div class="pattern-row">
+        <span class="pattern-wrong" style="font-size:10pt;">"Only if they knew the gender of the seal."</span>
+        <span class="pattern-arrow">&rarr;</span>
+        <span class="pattern-right" style="font-size:10pt;">"It was a good idea to name the seal Sally <b>because</b> giving her a name showed Anna cared."</span>
+      </div>
+    </div>
+    <div class="tip-box">
+      <div class="label">THIS ONE TRICK MATTERS A LOT</div>
+      Using "because" on Q7, Q8, and Q9 would have earned you <b>3&ndash;4 more points</b>. You already know how — you did it on Q6 and Q10. Just use it <b>every time</b>!
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 8: Your 3 Goals ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">Small changes, big results</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Always write a COMPLETE sentence — use "because" to add a reason.</b><br>
+        <span style="font-size:10.5pt;color:#555;">For Q6&ndash;10, always follow this pattern: [My answer] because [my reason]. No fragments! If your sentence starts with "When..." or "Only if..." it's not done yet — keep going.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>Use details from the STORY, not from your imagination.</b><br>
+        <span style="font-size:10.5pt;color:#555;">When a question asks you to add details, look back at the passage. Find the words and facts that are already there. The story is your helper!</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>For paragraph questions, write at least 4&ndash;5 sentences.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Use the plan: Topic Sentence &rarr; Detail + why it matters &rarr; Detail + why it matters &rarr; Closing Sentence. One sentence is a good start, but a paragraph needs more!</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">YOU'VE GOT THIS!</div>
+      You already know how to write great sentences — <b>Q1, Q3, Q6, and Q10 prove it</b>. Now use that same skill on every question. A few small changes and your score will jump way up. We believe in you, Jack!
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<!-- Navigation -->
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+let current = 0;
+
+// Build progress dots
+cards.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  bar.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done' : 'Next \u2192';
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) return;
+  goTo(current + dir);
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+// Initialize
+goTo(0);
+</script>
+</body>
+</html>
