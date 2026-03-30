@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ross's Writing Test Review — G6.4</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .progress-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ccc;
+    transition: background 0.3s;
+    cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container {
+    position: relative;
+    width: 680px;
+    min-height: 420px;
+  }
+
+  .card {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    background: #fff;
+    border: 2.5px solid #1a1a2e;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 {
+    font-size: 15pt;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .card-header .card-subtitle {
+    font-size: 9.5pt;
+    color: #aaa;
+    margin-top: 2px;
+  }
+
+  .card-body {
+    padding: 18px 22px 22px;
+    line-height: 1.55;
+  }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+  }
+  .score-box .big { font-size: 20pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3;
+    border-left: 3px solid #cc0000;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    font-size: 10.5pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9;
+    border-left: 3px solid #2d6a2d;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 10.5pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5;
+    border-left: 3px solid #1a1a2e;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+
+  .pattern-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; }
+
+  .goal-num {
+    display: inline-block;
+    background: #1a1a2e;
+    color: #fff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    line-height: 24px;
+    font-size: 11pt;
+    font-weight: 700;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .goal-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    margin: 10px 0;
+  }
+
+  .essay-excerpt {
+    background: #fafafa;
+    border: 1px solid #e0e0e8;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 10.5pt;
+    margin: 8px 0;
+    line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+
+  .error-mark {
+    background: #ffe0e0;
+    text-decoration: underline wavy #cc0000;
+    padding: 0 2px;
+    border-radius: 2px;
+  }
+
+  .comma-mark {
+    background: #fff3cd;
+    font-weight: 700;
+    font-size: 14pt;
+    color: #cc6600;
+    padding: 0 1px;
+  }
+
+  table.compare {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10.5pt;
+    margin: 8px 0;
+  }
+  table.compare th {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 6px 10px;
+    text-align: left;
+    font-size: 9.5pt;
+  }
+  table.compare td {
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    vertical-align: top;
+  }
+
+  .nav {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .nav button {
+    padding: 8px 28px;
+    border: 2px solid #1a1a2e;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a2e;
+    font-family: inherit;
+    font-size: 11pt;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover {
+    background: #1a1a2e;
+    color: #fff;
+  }
+
+  @media (max-width: 720px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Score Overview ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G6.4</div>
+  </div>
+  <div class="card-body">
+    <p>Ross, let's walk through your writing test so you can see exactly where you stand and what to focus on next.</p>
+    <div class="score-grid">
+      <div class="score-box score-good">
+        <div class="big">83%</div>
+        <div class="label">Overall Score (25/30)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">10/10</div>
+        <div class="label">Multiple Choice</div>
+      </div>
+      <div class="score-box score-warn">
+        <div class="big">15/20</div>
+        <div class="label">Essay</div>
+      </div>
+    </div>
+    <p>You got <b>every multiple choice question right</b> — that means you understand fragments, appositives, topic sentences, transitions, and sentence types. You clearly know the concepts.</p>
+    <p>The 5 points you lost were all on the essay. The next cards break down exactly what to fix so you can close that gap.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: What Your Essay Did Well ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>What Your Essay Did Well</h2>
+    <div class="card-subtitle">The foundation is solid</div>
+  </div>
+  <div class="card-body">
+    <p>Before we look at what to fix, here's what you did right:</p>
+    <ul>
+      <li><b>5 paragraphs</b> — intro, three body paragraphs, conclusion. Correct structure.</li>
+      <li><b>Clear topic sentences</b> — each body paragraph opens with the method it will discuss (immersion, pen pals, learning young).</li>
+      <li><b>Transitions</b> — "Firstly," "Secondly," and "One last way" guide the reader through your argument.</li>
+      <li><b>Stayed on topic</b> — every paragraph is about how children learn languages. No off-topic detours.</li>
+      <li><b>Used passage content</b> — you referenced immersion classes, pen pal programs, and early language learning, which all come from the article.</li>
+    </ul>
+    <p>You have the structure and the ideas. The points you lost are about <b>precision</b> — spelling, grammar, specific evidence, and a sharper thesis. Let's fix those.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: Spelling ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Spelling: Your Biggest Point Loss</h2>
+    <div class="card-subtitle">13 errors across your essay — this is the fastest fix</div>
+  </div>
+  <div class="card-body">
+    <p>Spelling is worth <b>up to 3 points</b> on the essay, and with this many errors, you likely lost most or all of those points. Here are the words that need fixing:</p>
+    <div style="margin:8px 0;columns:2;column-gap:20px;">
+      <div class="pattern-row"><span class="pattern-wrong">Especialy</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">Especially</span></div>
+      <div class="pattern-row"><span class="pattern-wrong">develope</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">develop</span></div>
+      <div class="pattern-row"><span class="pattern-wrong">knowlege</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">knowledge</span></div>
+      <div class="pattern-row"><span class="pattern-wrong">freinds</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">friends</span></div>
+      <div class="pattern-row"><span class="pattern-wrong">coversation</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">conversation</span></div>
+      <div class="pattern-row"><span class="pattern-wrong">messeges</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">messages</span></div>
+      <div class="pattern-row"><span class="pattern-wrong">eachother</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">each other</span></div>
+      <div class="pattern-row"><span class="pattern-wrong">freindships</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">friendships</span></div>
+      <div class="pattern-row"><span class="pattern-wrong">studys</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">studies</span></div>
+      <div class="pattern-row"><span class="pattern-wrong">lean</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">learn</span></div>
+      <div class="pattern-row"><span class="pattern-wrong">aslo</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">also</span></div>
+      <div class="pattern-row"><span class="pattern-wrong">eacother</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">each other</span></div>
+    </div>
+    <div class="tip-box">
+      <div class="label">PATTERNS TO WATCH</div>
+      <b>"ie" vs "ei":</b> freinds, freindships &rarr; remember <i>"i before e, except after c"</i> &rarr; fr<b>ie</b>nds<br>
+      <b>Two words, not one:</b> "each other" is always two words<br>
+      <b>Swapped letters:</b> aslo, lean, coversation &rarr; slow down and reread each word before moving on<br><br>
+      After you finish your essay, <b>read it backwards sentence by sentence</b>. This forces your brain to look at each word instead of skimming.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Grammar — Commas & Run-ons ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Grammar: Comma Errors and Run-ons</h2>
+    <div class="card-subtitle">Small fixes that make your writing sound more controlled</div>
+  </div>
+  <div class="card-body">
+    <p><b>Problem 1: Unnecessary commas.</b> You placed commas where they break the sentence flow:</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      one method many children can employ is<span class="comma-mark">,</span> simply learning through immersion
+    </div>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      apply this knowledge in ways like<span class="comma-mark">,</span> asking to go to the bathroom
+    </div>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      so many benefits including<span class="comma-mark">,</span> making friendships
+    </div>
+    <p>In each case, the comma separates the setup from the list. Remove it — the sentence flows naturally without it.</p>
+
+    <p style="margin-top:14px;"><b>Problem 2: Run-on sentence in paragraph 4.</b></p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      With the added benefit of while you are young you can lean things much easier this would aslo improve your brains intake of new sounds and make them more easily to learn.
+    </div>
+    <p>This is three ideas fused into one sentence with no punctuation between them. Break it up:</p>
+    <div class="better">
+      <div class="label">FIXED</div>
+      An added benefit is that young children can learn things much more easily. This also improves the brain's ability to take in new sounds.
+    </div>
+
+    <div class="tip-box">
+      <div class="label">QUICK GRAMMAR CHECKS</div>
+      <b>Subject-verb agreement:</b> "Children...benefit<del>s</del>" &rarr; <i>Children benefit</i><br>
+      <b>Possessives:</b> "your brains intake" &rarr; <i>your brain's intake</i><br>
+      <b>Adjective vs adverb:</b> "more easily to learn" &rarr; <i>easier to learn</i>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: Thesis ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Sharpen Your Thesis</h2>
+    <div class="card-subtitle">Your introduction needs a roadmap</div>
+  </div>
+  <div class="card-body">
+    <div class="essay-excerpt">
+      <div class="para-label">Your Introduction</div>
+      Every human being speaks some kind of language. Especialy in the United States, where communities are built of immigrants all speaking different languages. Learning a second language is a very hard thing to do, but children have to <span class="highlight">develope their own language skills in many ways</span>.
+    </div>
+    <p>Your thesis (highlighted) is too vague. It says "in many ways" but doesn't tell the reader <i>which</i> ways. A strong thesis <b>previews the three points</b> your body paragraphs will make.</p>
+    <p>Also, your second sentence is a <b>fragment</b> — it starts with "Especially" but has no main verb.</p>
+    <div class="better">
+      <div class="label">STRONGER VERSION</div>
+      Learning a second language is challenging, but children can develop their skills through <b>immersion classes</b>, <b>pen pal programs</b>, and <b>starting at a young age</b>.
+    </div>
+    <div class="tip-box">
+      <div class="label">THE THESIS FORMULA</div>
+      <b>[Main idea] + [Point 1], [Point 2], and [Point 3].</b><br><br>
+      This gives your reader a roadmap. They know exactly what's coming in each body paragraph. It also helps <i>you</i> stay organized while you write.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Evidence ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Use Specific Evidence from the Passage</h2>
+    <div class="card-subtitle">The difference between a good essay and a great one</div>
+  </div>
+  <div class="card-body">
+    <p>You referenced the right ideas from the passage (immersion, pen pals, learning young), but your evidence was <b>general</b> instead of <b>specific</b>. The rubric requires you to use facts from the passage and <b>explain what they show</b>.</p>
+    <table class="compare">
+      <tr>
+        <th>You wrote (general)</th>
+        <th>What the passage actually says (specific)</th>
+      </tr>
+      <tr>
+        <td>"just learning a language through your teacher talking in school"</td>
+        <td style="color:#2d6a2d;">"In immersion classes, students must use the new language all day" — during lessons, group work, and daily conversations</td>
+      </tr>
+      <tr>
+        <td>"one kid can send messeges to another kid across the world"</td>
+        <td style="color:#2d6a2d;">Pen pal programs let students <b>"practice reading and writing in the new language"</b> through real communication</td>
+      </tr>
+      <tr>
+        <td>"there are studys proving that learning a second language while you're young can strengthen your problem-solving skills"</td>
+        <td style="color:#2d6a2d;">Young children's <b>"brains are still developing"</b> which makes them better at picking up new sounds and patterns</td>
+      </tr>
+    </table>
+    <div class="tip-box">
+      <div class="label">THE EVIDENCE + EXPLANATION PATTERN</div>
+      <b>Evidence:</b> <i>The passage explains that [specific detail].</i><br>
+      <b>Explanation:</b> <i>This shows that [why it matters / how it connects to your point].</i><br><br>
+      Use this pair <b>twice per body paragraph</b>. That's the structure that earns full evidence points.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 7: Body Paragraph Pattern ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>The Body Paragraph Pattern</h2>
+    <div class="card-subtitle">Use this exact structure for every body paragraph</div>
+  </div>
+  <div class="card-body">
+    <p>Here's how your Body Paragraph 1 (immersion) could look using the full pattern:</p>
+    <div class="better" style="background:#f8f8fc;border-left-color:#1a1a2e;">
+      <div class="para-label" style="color:#1a1a2e;">STRONGER BODY PARAGRAPH 1</div>
+      <p><b>Topic sentence:</b> First, immersion classes are an effective way for children to learn a new language.</p>
+      <p><b>Evidence 1:</b> The passage explains that in immersion classes, students use the new language all day during lessons, group work, and conversations.</p>
+      <p><b>Explanation:</b> This shows that students learn not just in formal lessons, but by hearing and speaking the language constantly.</p>
+      <p><b>Evidence 2:</b> The passage also says that students learn new words because they hear the language in every part of class.</p>
+      <p><b>Explanation:</b> This means that constant practice helps children build vocabulary naturally, rather than just memorizing words.</p>
+      <p><b>Concluding sentence:</b> Because of this, immersion is one of the most effective methods for language learning.</p>
+    </div>
+    <div class="tip-box">
+      <div class="label">MEMORIZE THIS STRUCTURE</div>
+      <b>TS</b> &rarr; Topic Sentence<br>
+      <b>E1</b> &rarr; Evidence from the passage<br>
+      <b>X1</b> &rarr; Explanation (This shows that...)<br>
+      <b>E2</b> &rarr; Evidence from the passage<br>
+      <b>X2</b> &rarr; Explanation (This means that...)<br>
+      <b>CS</b> &rarr; Concluding Sentence<br><br>
+      <b>TS &rarr; E1 &rarr; X1 &rarr; E2 &rarr; X2 &rarr; CS</b> — use it for all three body paragraphs.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 8: Goals ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">You aced the concepts — now make the essay match</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Proofread for spelling — read your essay backwards.</b><br>
+        <span style="font-size:10.5pt;color:#555;">You had 13 spelling errors. Reading backwards, sentence by sentence, forces you to see each word on its own. This single habit could recover up to 3 points.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>Write a thesis that previews your three points.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Before you write, decide what your three body paragraphs will be about. Then put all three into your thesis: <i>"Children can learn a new language through [Point 1], [Point 2], and [Point 3]."</i> This keeps your whole essay organized.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Use the TS &rarr; E &rarr; X &rarr; E &rarr; X &rarr; CS pattern in every body paragraph.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Cite specific facts from the passage, not general ideas. After each piece of evidence, add: <i>"This shows that..."</i> or <i>"This means that..."</i> That's how you earn full evidence and explanation points.</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">THE BIG PICTURE</div>
+      You scored <b>10/10 on multiple choice</b> — you understand every writing concept the test asks about. Your essay shows strong ideas and correct structure. The gap between 75% on the essay and 90%+ is about <b>precision</b>: cleaner spelling, tighter grammar, and more specific evidence. You have everything you need — it's about applying it under test conditions.
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+let current = 0;
+
+cards.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  bar.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done' : 'Next \u2192';
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) return;
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+goTo(0);
+</script>
+</body>
+</html>
