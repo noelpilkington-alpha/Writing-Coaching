@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sam's Writing Test Review — G6.3</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar { display: flex; gap: 6px; margin-bottom: 16px; }
+  .progress-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: #ccc; transition: background 0.3s; cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container { position: relative; width: 680px; min-height: 420px; }
+
+  .card {
+    position: absolute; top: 0; left: 0; width: 100%;
+    background: #fff; border: 2.5px solid #1a1a2e; border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0; pointer-events: none; transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1; pointer-events: auto; transform: translateX(0); position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e; color: #fff; padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+  .card-header .card-subtitle { font-size: 9.5pt; color: #aaa; margin-top: 2px; }
+
+  .card-body { padding: 18px 22px 22px; line-height: 1.55; }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px; margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc; border: 1.5px solid #e0e0e8;
+    border-radius: 8px; padding: 10px 14px; text-align: center;
+  }
+  .score-box .big { font-size: 20pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3; border-left: 3px solid #cc0000;
+    padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+    font-style: italic; font-size: 10.5pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9; border-left: 3px solid #2d6a2d;
+    padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+    font-size: 10.5pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5; border-left: 3px solid #1a1a2e;
+    padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+  .error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+
+  .essay-excerpt {
+    background: #fafafa; border: 1px solid #e0e0e8;
+    border-radius: 6px; padding: 10px 14px; font-size: 10.5pt;
+    margin: 8px 0; line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700; font-size: 9pt; color: #888;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;
+  }
+
+  .pattern-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 6px 0; border-bottom: 1px solid #eee; font-size: 11pt;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; }
+
+  table.compare {
+    width: 100%; border-collapse: collapse; font-size: 10.5pt; margin: 8px 0;
+  }
+  table.compare th {
+    background: #1a1a2e; color: #fff; padding: 6px 10px;
+    text-align: left; font-size: 9.5pt;
+  }
+  table.compare td { padding: 6px 10px; border: 1px solid #ddd; vertical-align: top; }
+
+  .para-map {
+    display: flex; gap: 6px; margin: 10px 0; flex-wrap: wrap;
+  }
+  .para-tag {
+    padding: 6px 12px; border-radius: 6px; font-size: 10pt; font-weight: 600;
+    border: 1.5px solid;
+  }
+  .para-tag.good { background: #e8f5e9; border-color: #2d6a2d; color: #2d6a2d; }
+  .para-tag.warn { background: #fff3cd; border-color: #e6a800; color: #996600; }
+  .para-tag.bad { background: #fff3f3; border-color: #cc0000; color: #cc0000; }
+
+  .goal-num {
+    display: inline-block; background: #1a1a2e; color: #fff;
+    border-radius: 50%; width: 24px; height: 24px; text-align: center;
+    line-height: 24px; font-size: 11pt; font-weight: 700; margin-right: 8px; flex-shrink: 0;
+  }
+  .goal-row { display: flex; align-items: flex-start; gap: 4px; margin: 10px 0; }
+
+  .nav { display: flex; gap: 12px; margin-top: 16px; }
+  .nav button {
+    padding: 8px 28px; border: 2px solid #1a1a2e; border-radius: 8px;
+    background: #fff; color: #1a1a2e; font-family: inherit;
+    font-size: 11pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover { background: #1a1a2e; color: #fff; }
+
+  @media (max-width: 720px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Score Overview ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G6.3</div>
+  </div>
+  <div class="card-body">
+    <p>Sam, let's go through your writing test. You did well on the concepts — here's the full picture.</p>
+    <div class="score-grid">
+      <div class="score-box score-good">
+        <div class="big">83%</div>
+        <div class="label">Overall Score (25/30)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">10/10</div>
+        <div class="label">Multiple Choice</div>
+      </div>
+      <div class="score-box score-warn">
+        <div class="big">15/20</div>
+        <div class="label">Essay</div>
+      </div>
+    </div>
+    <p>You got <b>every multiple choice question right</b> — fragments, appositives, conjunctions, topic sentences, transitions, elaboration. You clearly know the concepts.</p>
+    <p>The 5 points you lost were all on the essay. The next cards show you exactly what happened and how to fix it.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: What Your Essay Did Well ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>What Your Essay Did Well</h2>
+    <div class="card-subtitle">There's a lot to build on here</div>
+  </div>
+  <div class="card-body">
+    <ul>
+      <li><b>5 paragraphs</b> — intro, three body paragraphs, conclusion. Correct structure.</li>
+      <li><b>Strong vocabulary</b> — "rejuvenate," "dwindle," "migrate," "population" — this is formal, expository language.</li>
+      <li><b>Good transitions</b> — "As a result," "Recently," "Another way," "In addition to this," "In conclusion" — these guide the reader smoothly.</li>
+      <li><b>Body Paragraph 4 (citizen scientists)</b> was your strongest — it has multiple specific details: tagging butterflies with stickers, counting caterpillars, recording sightings online.</li>
+      <li><b>Correct semicolon use</b> — "Recently, fewer butterflies have made this journey; as a result, scientists worry..." That's an advanced punctuation skill.</li>
+    </ul>
+    <p>The 5 points lost come down to three things: <b>paragraph 2 doesn't address the prompt</b>, <b>evidence needs explanation</b>, and <b>a few spelling errors</b>.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: Paragraph 2 Problem ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Body Paragraph 2: Stay on the Prompt</h2>
+    <div class="card-subtitle">This is the biggest structural issue in your essay</div>
+  </div>
+  <div class="card-body">
+    <p>The prompt asks: <b>"How are people helping monarch butterflies survive?"</b></p>
+    <p>Here's how your five paragraphs map to that question:</p>
+    <div class="para-map">
+      <span class="para-tag good">P1: Intro &#10003;</span>
+      <span class="para-tag bad">P2: Migration background &#10007;</span>
+      <span class="para-tag good">P3: Way stations &#10003;</span>
+      <span class="para-tag good">P4: Citizen scientists &#10003;</span>
+      <span class="para-tag good">P5: Conclusion &#10003;</span>
+    </div>
+    <div class="essay-excerpt">
+      <div class="para-label">Your Paragraph 2</div>
+      In the fall, monarch butterflies fly from Canada to Mexico. On this journey, butterflies stop along the way to rest and lay eggs. Recently, fewer butterflies have made this journey; as a result, scientists worry that the population is shrinking.
+    </div>
+    <p>This is well-written, but it's about the <b>migration itself</b> — not about how <i>people</i> are helping. Every body paragraph needs to answer the prompt question directly.</p>
+    <div class="better">
+      <div class="label">WHAT SHOULD GO HERE INSTEAD</div>
+      A third way people help: <b>planting milkweed</b>. The passage explains that Carter planted rows of milkweed — the monarch's favorite food — so butterflies have places to eat and lay eggs. This connects to your conclusion (which mentions milkweed) but currently has no body paragraph to support it.
+    </div>
+    <div class="tip-box">
+      <div class="label">THE RULE</div>
+      Before you write, check: <b>Does every body paragraph answer the prompt question?</b> If it provides background but doesn't address the question, it belongs in the introduction — not as a body paragraph.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Evidence Explanation ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Explain Your Evidence</h2>
+    <div class="card-subtitle">You cite facts — now tell the reader what they mean</div>
+  </div>
+  <div class="card-body">
+    <p>Your essay uses details from the passage, but most are stated without explanation. The rubric says: <i>"Support each point with facts and <b>explain what they show</b>."</i></p>
+    <table class="compare">
+      <tr>
+        <th>You wrote (evidence only)</th>
+        <th>With explanation added</th>
+      </tr>
+      <tr>
+        <td>"Way stations are small gardens where butterflies can lay eggs and rest as they migrate."</td>
+        <td style="color:#2d6a2d;">Way stations are small gardens where butterflies can lay eggs and rest. <b>This helps because</b> without safe places to stop, more monarchs would die during their long journey south.</td>
+      </tr>
+      <tr>
+        <td>"These people tag butterflies with stickers and they also count caterpillars."</td>
+        <td style="color:#2d6a2d;">These people tag butterflies with stickers and count caterpillars. <b>This is important because</b> tracking the population helps scientists know where monarchs need the most protection.</td>
+      </tr>
+      <tr>
+        <td>"They record monarch butterfly sightings online."</td>
+        <td style="color:#2d6a2d;">They record sightings online. <b>This means that</b> scientists across the country can use real data to understand migration patterns and act quickly if the population drops.</td>
+      </tr>
+    </table>
+    <div class="tip-box">
+      <div class="label">AFTER EVERY PIECE OF EVIDENCE, ADD ONE OF THESE</div>
+      <b>"This helps because..."</b><br>
+      <b>"This is important because..."</b><br>
+      <b>"This shows that..."</b><br>
+      <b>"This means that..."</b><br><br>
+      If you can't explain why the detail matters, it's not doing its job yet.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: Thesis ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Sharpen Your Thesis</h2>
+    <div class="card-subtitle">Preview your three points so the reader knows what's coming</div>
+  </div>
+  <div class="card-body">
+    <div class="essay-excerpt">
+      <div class="para-label">Your Thesis (last sentence of intro)</div>
+      Because they help track butterflies and build way stations, they help <span class="highlight">rejuvinate the population so it wont dwindle away</span>.
+    </div>
+    <p>This mentions tracking and way stations, but it doesn't preview <b>three</b> distinct body paragraph topics. A strong thesis acts as a <b>roadmap</b> for your essay.</p>
+    <div class="better">
+      <div class="label">STRONGER THESIS</div>
+      People are helping monarch butterflies survive by <b>planting milkweed way stations</b>, <b>becoming citizen scientists</b>, and <b>tracking the population to protect it</b>.
+    </div>
+    <p>Also note: your conclusion mentions "planting milkweed" — but no body paragraph discusses it. Your thesis and your body paragraphs should match. If it's in the thesis, it needs its own paragraph.</p>
+    <div class="tip-box">
+      <div class="label">THE THESIS FORMULA</div>
+      <b>[Main idea] + [Point 1], [Point 2], and [Point 3].</b><br><br>
+      Write your thesis <i>after</i> you plan your three body paragraphs — that way they'll always match.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Spelling ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Spelling & Conventions</h2>
+    <div class="card-subtitle">Three errors to fix</div>
+  </div>
+  <div class="card-body">
+    <p>You only had 3 errors, but conventions are worth up to 3 points — so even a few can cost you.</p>
+    <div style="margin:12px 0;">
+      <div class="pattern-row">
+        <span class="pattern-wrong">rejuvinate</span>
+        <span class="pattern-arrow">&rarr;</span>
+        <span class="pattern-right">rejuvenate</span>
+        <span style="color:#888;font-size:9.5pt;margin-left:auto;">(P1 — "juven" not "juvin")</span>
+      </div>
+      <div class="pattern-row">
+        <span class="pattern-wrong">catterpillars</span>
+        <span class="pattern-arrow">&rarr;</span>
+        <span class="pattern-right">caterpillars</span>
+        <span style="color:#888;font-size:9.5pt;margin-left:auto;">(P4 — one 't', not two)</span>
+      </div>
+      <div class="pattern-row">
+        <span class="pattern-wrong">wont</span>
+        <span class="pattern-arrow">&rarr;</span>
+        <span class="pattern-right">won't</span>
+        <span style="color:#888;font-size:9.5pt;margin-left:auto;">(P1 — missing apostrophe)</span>
+      </div>
+    </div>
+    <div class="tip-box">
+      <div class="label">TIP</div>
+      Your vocabulary is strong — words like "rejuvenate" and "dwindle" are impressive choices. But if you're not 100% sure how to spell a word, consider using a simpler synonym you <i>can</i> spell: "rejuvenate" → "rebuild" or "restore." On a timed test, a correctly spelled simple word beats a misspelled advanced one.<br><br>
+      Also, contractions always need apostrophes: <b>won't, can't, don't, it's</b>. Do a quick scan for these before you submit.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 7: Body Paragraph Pattern ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>The Body Paragraph Pattern</h2>
+    <div class="card-subtitle">Make every paragraph as strong as your Paragraph 4</div>
+  </div>
+  <div class="card-body">
+    <p>Your Paragraph 4 (citizen scientists) was your best — it had a topic sentence, multiple details, and stayed focused. Here's how to make all three body paragraphs that strong:</p>
+    <div class="tip-box" style="background:#f8f8fc;border-left-color:#1a1a2e;">
+      <div class="label">THE PATTERN</div>
+      <p><b>TS</b> — Topic Sentence (one way people help)</p>
+      <p><b>E1</b> — Evidence from the passage ("The passage explains that...")</p>
+      <p><b>X1</b> — Explanation ("This helps because..." / "This shows that...")</p>
+      <p><b>E2</b> — More evidence ("The passage also says...")</p>
+      <p><b>X2</b> — Explanation ("This means that...")</p>
+      <p><b>CS</b> — Concluding Sentence (why this way of helping matters)</p>
+    </div>
+    <p><b>TS &rarr; E1 &rarr; X1 &rarr; E2 &rarr; X2 &rarr; CS</b></p>
+    <p>Your Paragraph 3 (way stations) had the TS and E1 but was missing the X1, E2, X2, and CS — that's why it felt short. Your Paragraph 4 came closer to this pattern, which is why it was stronger.</p>
+    <div class="tip-box">
+      <div class="label">PLANNING TRICK</div>
+      Before writing, jot down:<br>
+      <b>Body 1:</b> [way of helping] — 2 details from the passage<br>
+      <b>Body 2:</b> [way of helping] — 2 details from the passage<br>
+      <b>Body 3:</b> [way of helping] — 2 details from the passage<br><br>
+      If you can't find 2 details for a paragraph, it might be background — not a body paragraph.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 8: Goals ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">You aced the concepts — now make the essay match</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Make sure every body paragraph answers the prompt — not just provides background.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Before writing each paragraph, ask: "Does this paragraph tell the reader about [the prompt topic]?" If it gives context but doesn't answer the question, move that information to the introduction.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>After every piece of evidence, explain why it matters.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Use "This helps because...", "This shows that...", or "This is important because..." after every detail from the passage. Your Paragraph 4 came closest to this — apply that same approach to every body paragraph.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Write a thesis that previews your three body paragraph topics.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Plan your three body paragraphs first, then write your thesis to match: "[Main idea] by [Point 1], [Point 2], and [Point 3]." Make sure everything in your conclusion was actually discussed in a body paragraph.</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">THE BIG PICTURE</div>
+      You scored <b>10/10 on multiple choice</b> and your essay shows strong vocabulary, good transitions, and real passage knowledge. The gap between 75% on the essay and 90%+ is about <b>structure and explanation</b>: making sure every paragraph addresses the prompt, and following each piece of evidence with a "why it matters" sentence. You're very close.
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+let current = 0;
+
+cards.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  bar.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done' : 'Next \u2192';
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) return;
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+goTo(0);
+</script>
+</body>
+</html>
