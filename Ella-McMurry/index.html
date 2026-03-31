@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ella's Writing Test Review — G6.4</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .progress-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ccc;
+    transition: background 0.3s;
+    cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container {
+    position: relative;
+    width: 680px;
+    min-height: 420px;
+  }
+
+  .card {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    background: #fff;
+    border: 2.5px solid #1a1a2e;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 {
+    font-size: 15pt;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .card-header .card-subtitle {
+    font-size: 9.5pt;
+    color: #aaa;
+    margin-top: 2px;
+  }
+
+  .card-body {
+    padding: 18px 22px 22px;
+    line-height: 1.55;
+  }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+  }
+  .score-box .big { font-size: 20pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3;
+    border-left: 3px solid #cc0000;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    font-size: 10.5pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9;
+    border-left: 3px solid #2d6a2d;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 10.5pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5;
+    border-left: 3px solid #1a1a2e;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+
+  .pattern-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; }
+
+  .goal-num {
+    display: inline-block;
+    background: #1a1a2e;
+    color: #fff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    line-height: 24px;
+    font-size: 11pt;
+    font-weight: 700;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .goal-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    margin: 10px 0;
+  }
+
+  .essay-excerpt {
+    background: #fafafa;
+    border: 1px solid #e0e0e8;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 10.5pt;
+    margin: 8px 0;
+    line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+
+  .error-mark {
+    background: #ffe0e0;
+    text-decoration: underline wavy #cc0000;
+    padding: 0 2px;
+    border-radius: 2px;
+  }
+
+  table.compare {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10.5pt;
+    margin: 8px 0;
+  }
+  table.compare th {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 6px 10px;
+    text-align: left;
+    font-size: 9.5pt;
+  }
+  table.compare td {
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    vertical-align: top;
+  }
+
+  .nav {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .nav button {
+    padding: 8px 28px;
+    border: 2px solid #1a1a2e;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a2e;
+    font-family: inherit;
+    font-size: 11pt;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover {
+    background: #1a1a2e;
+    color: #fff;
+  }
+
+  @media (max-width: 720px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Score Overview ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G6.4</div>
+  </div>
+  <div class="card-body">
+    <p>Ella, let's walk through your writing test so you can see exactly where you stand and what to work on next.</p>
+    <div class="score-grid">
+      <div class="score-box score-warn">
+        <div class="big">80%</div>
+        <div class="label">Overall Score (24/30)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">8/10</div>
+        <div class="label">Multiple Choice</div>
+      </div>
+      <div class="score-box score-warn">
+        <div class="big">16/20</div>
+        <div class="label">Essay</div>
+      </div>
+    </div>
+    <p>You got <b>8 out of 10 multiple choice questions right</b>, showing strong knowledge of sentence types, conjunctions, appositives, topic sentences, and paragraph focus.</p>
+    <p>Your essay has a <b>creative, engaging opening</b> and solid five-paragraph structure. The 4 points you lost on the essay came from spelling and conventions errors. The next cards show you exactly what to fix.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: What Your Essay Did Well ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>What Your Essay Did Well</h2>
+    <div class="card-subtitle">You have a strong foundation</div>
+  </div>
+  <div class="card-body">
+    <p>Before we look at what to fix, here's what you did right:</p>
+    <ul>
+      <li><b>Creative opening</b> — your caf&eacute; scene pulls the reader in immediately. This is a sophisticated way to start an expository essay.</li>
+      <li><b>5 clear paragraphs</b> — introduction, three body paragraphs (early start, immersion, pen pals), and a conclusion.</li>
+      <li><b>Topic sentences</b> — each body paragraph opens by introducing its specific method.</li>
+      <li><b>Evidence with explanation</b> — you used passage details and often explained what they mean, especially in paragraphs 2 and 4.</li>
+      <li><b>Strong conclusion</b> — you acknowledged different perspectives before wrapping up with a broader message about connecting with people.</li>
+      <li><b>On topic throughout</b> — every paragraph stays focused on how children learn languages.</li>
+    </ul>
+    <p>Your ideas and structure are solid. The points you lost are about <b>conventions</b> — spelling, capitalization, and grammar. These are the fastest fixes.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: Q8 & Q9 — MCQ Misses ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>The Two Questions You Missed</h2>
+    <div class="card-subtitle">Q8: Elaboration &bull; Q9: Transitions</div>
+  </div>
+  <div class="card-body">
+    <p><b>Q8 — Which sentence best adds elaboration?</b></p>
+    <div class="you-wrote">
+      <div class="label">YOU CHOSE</div>
+      Immersion learning is a method that helps people learn language in classrooms.
+    </div>
+    <p>This just <b>defines</b> immersion — it doesn't add new information. Elaboration means adding <b>specific detail</b> that develops the idea further.</p>
+    <div class="better">
+      <div class="label">CORRECT ANSWER</div>
+      In immersion classes, students must use the new language all day, which helps them learn vocabulary faster.
+    </div>
+    <p>See the difference? This tells us <i>what happens</i> in immersion classes and <i>what it leads to</i>. That's elaboration.</p>
+
+    <p style="margin-top:16px;"><b>Q9 — Which transition best connects contrasting sentences?</b></p>
+    <div class="you-wrote">
+      <div class="label">YOU CHOSE</div>
+      <b>Although</b> some experts think older students learn better...
+    </div>
+    <div class="better">
+      <div class="label">CORRECT ANSWER</div>
+      <b>While</b> some experts think older students learn better...
+    </div>
+    <div class="tip-box">
+      <div class="label">ALTHOUGH vs WHILE</div>
+      Both words can show contrast, but they work differently:<br>
+      <b>"While"</b> = two views exist side by side (balanced contrast)<br>
+      <b>"Although"</b> = one view is a concession that leads to a stronger point<br><br>
+      When presenting <b>two equal but opposing opinions</b> ("some experts say X, others say Y"), <b>"While"</b> is the better fit because it treats both sides equally.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Spelling ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Spelling: Your Biggest Point Loss</h2>
+    <div class="card-subtitle">These errors are the fastest way to recover points</div>
+  </div>
+  <div class="card-body">
+    <p>Spelling and editing are worth <b>up to 3 points</b> on the essay rubric. Here are the words that need fixing:</p>
+    <div style="margin:8px 0;columns:2;column-gap:20px;">
+      <div class="pattern-row"><span class="pattern-wrong">devolping</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">developing</span></div>
+      <div class="pattern-row"><span class="pattern-wrong">grammer</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">grammar</span></div>
+      <div class="pattern-row"><span class="pattern-wrong">pratice</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">practice</span></div>
+      <div class="pattern-row"><span class="pattern-wrong">bran</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">brain</span></div>
+      <div class="pattern-row"><span class="pattern-wrong">structered</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">structured</span></div>
+      <div class="pattern-row"><span class="pattern-wrong">belive</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">believe</span></div>
+      <div class="pattern-row"><span class="pattern-wrong">youger</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">younger</span></div>
+      <div class="pattern-row"><span class="pattern-wrong">natrually</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">naturally</span></div>
+    </div>
+    <p style="margin-top:10px;">You also have <b>doubled words</b> that a quick reread would catch:</p>
+    <div class="pattern-row"><span class="pattern-wrong">it can can strengthen</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">it can strengthen</span></div>
+    <div class="pattern-row"><span class="pattern-wrong">they use use the language</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">they use the language</span></div>
+
+    <div class="tip-box">
+      <div class="label">PROOFREADING TRICK</div>
+      After you finish writing, <b>read your essay backwards — last sentence first, then second-to-last, and so on</b>. This breaks your brain out of reading for meaning and forces you to see each word on its own. That's how you catch missing letters, doubled words, and typos.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: Capitalization & Homophones ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Capitalization &amp; Tricky Words</h2>
+    <div class="card-subtitle">Small errors that add up fast</div>
+  </div>
+  <div class="card-body">
+    <p><b>Capitalization — proper nouns always get a capital letter:</b></p>
+    <div class="pattern-row"><span class="pattern-wrong">spanish</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">Spanish</span></div>
+    <div class="pattern-row"><span class="pattern-wrong">french</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">French</span></div>
+    <div class="pattern-row"><span class="pattern-wrong">americans</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">Americans</span></div>
+    <p style="font-size:10.5pt;color:#555;">Languages and nationalities are always capitalized because they come from the names of countries.</p>
+
+    <p style="margin-top:14px;"><b>Homophones — words that sound the same but mean different things:</b></p>
+    <table class="compare">
+      <tr>
+        <th>You wrote</th>
+        <th>Should be</th>
+        <th>Why</th>
+      </tr>
+      <tr>
+        <td class="pattern-wrong">...pratice <b>there</b> language</td>
+        <td class="pattern-right"><b>their</b> language</td>
+        <td>"their" = belonging to them</td>
+      </tr>
+      <tr>
+        <td class="pattern-wrong">...speak <b>they</b> language they are learning</td>
+        <td class="pattern-right">...speak <b>the</b> language they are learning</td>
+        <td>"they" is a pronoun, not an article</td>
+      </tr>
+    </table>
+
+    <p style="margin-top:14px;"><b>Two more quick fixes:</b></p>
+    <div class="pattern-row"><span class="pattern-wrong">everyday</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">every day</span> <span style="font-size:9.5pt;color:#888;margin-left:8px;">(two words when it means "each day")</span></div>
+    <div class="pattern-row"><span class="pattern-wrong">childrens'</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">children's</span> <span style="font-size:9.5pt;color:#888;margin-left:8px;">("children" is already plural — add 's)</span></div>
+
+    <div class="tip-box">
+      <div class="label">QUICK CHECK</div>
+      Before you submit, scan for: <b>language names</b> (capitalize), <b>there/their/they're</b> (pick the right one), and <b>possessives</b> (children's, not childrens').
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Fix the Run-on + Thesis ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Sharpen Your Thesis</h2>
+    <div class="card-subtitle">Your intro has a great hook — now it needs a roadmap</div>
+  </div>
+  <div class="card-body">
+    <div class="essay-excerpt">
+      <div class="para-label">Your Introduction</div>
+      At a busy local caf&eacute;, people speak a variety of languages. At one table a family talk in spanish. At the coffee counter, a worker was singing along to a french song on the radio. Scenes like this happen everyday all over the United States, a country built by immigrants. <span class="highlight">English may be the most common school language, millions of americans grew up using two languages at home.</span>
+    </div>
+    <p>Your opening scene is <b>excellent</b> — it's vivid and draws the reader in. But the highlighted sentence has two problems:</p>
+    <ul>
+      <li><b>Comma splice</b> — two complete ideas joined by just a comma. You need a period, semicolon, or conjunction ("but" or "yet").</li>
+      <li><b>No thesis</b> — this sentence doesn't tell the reader what your essay will be about. A strong thesis <b>previews your three body paragraph topics</b>.</li>
+    </ul>
+    <div class="better">
+      <div class="label">STRONGER ENDING TO YOUR INTRO</div>
+      Although English is the most common school language, millions of Americans grow up using two at home. Children can develop strong language skills through <b>an early start</b>, <b>immersion classes</b>, and <b>real-life communication with native speakers</b>.
+    </div>
+    <div class="tip-box">
+      <div class="label">THE THESIS FORMULA</div>
+      <b>[Main idea] + [Point 1], [Point 2], and [Point 3].</b><br><br>
+      This gives the reader a roadmap. They know exactly what's coming in each body paragraph. It also keeps <i>you</i> organized while writing.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 7: Body Paragraph Pattern ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>The Body Paragraph Pattern</h2>
+    <div class="card-subtitle">You're close — here's the full structure</div>
+  </div>
+  <div class="card-body">
+    <p>Your body paragraphs already have topic sentences and evidence. To earn full points, make the <b>explanation</b> layer more explicit. Here's your Paragraph 3 rewritten with the full pattern:</p>
+    <div class="better" style="background:#f8f8fc;border-left-color:#1a1a2e;">
+      <div class="para-label" style="color:#1a1a2e;">STRONGER BODY PARAGRAPH (IMMERSION)</div>
+      <p><b>TS:</b> A good way to help children learn a new language is through immersion classes.</p>
+      <p><b>E1:</b> According to the passage, in immersion schools, teachers use the chosen language all day during lessons, conversations, and even simple requests like asking to go to the bathroom.</p>
+      <p><b>X1:</b> This shows that students aren't just learning the language in a textbook — they're hearing and using it constantly, which makes it feel natural.</p>
+      <p><b>E2:</b> The passage also explains that because students use the language daily, they pick up phrases and grammar quickly.</p>
+      <p><b>X2:</b> This means that immersion works because practice is built into every part of the school day, not just one class period.</p>
+      <p><b>CS:</b> Because of this constant exposure, immersion is one of the most effective ways to learn a new language.</p>
+    </div>
+    <div class="tip-box">
+      <div class="label">MEMORIZE THIS STRUCTURE</div>
+      <b>TS</b> &rarr; Topic Sentence<br>
+      <b>E1</b> &rarr; Evidence from the passage<br>
+      <b>X1</b> &rarr; Explanation (<i>This shows that...</i>)<br>
+      <b>E2</b> &rarr; More evidence from the passage<br>
+      <b>X2</b> &rarr; Explanation (<i>This means that...</i>)<br>
+      <b>CS</b> &rarr; Concluding Sentence<br><br>
+      <b>TS &rarr; E1 &rarr; X1 &rarr; E2 &rarr; X2 &rarr; CS</b> — use it for all three body paragraphs.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 8: Goals ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">Strong ideas, strong structure — now tighten the details</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Proofread for spelling, capitalization, and homophones.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Read your essay backwards sentence by sentence to catch typos and doubled words. Then do a quick scan for: language names capitalized? there/their correct? possessives right? This single habit could recover up to 3 points.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>Write a thesis that previews your three points.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Before you write, decide your three body paragraph topics. Then end your intro with: <i>"Children can develop language skills through [Point 1], [Point 2], and [Point 3]."</i> Your creative opening + a clear thesis = a powerful introduction.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Add explicit explanations after each piece of evidence.</b><br>
+        <span style="font-size:10.5pt;color:#555;">You already use evidence well — now follow every quote or fact with <i>"This shows that..."</i> or <i>"This means that..."</i> to make the connection clear. That's the difference between a good paragraph and a great one.</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">THE BIG PICTURE</div>
+      Your essay has a <b>creative opening</b>, <b>correct five-paragraph structure</b>, and <b>relevant evidence from the passage</b>. Those are the hardest parts of essay writing, and you already have them. The gap between 80% and 90%+ is about <b>clean conventions</b> — spelling, capitalization, grammar — and a <b>sharper thesis</b>. You have the skills; it's about slowing down to polish before you submit.
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+let current = 0;
+
+cards.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  bar.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done' : 'Next \u2192';
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) return;
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+goTo(0);
+</script>
+</body>
+</html>
