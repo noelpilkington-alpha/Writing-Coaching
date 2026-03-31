@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Finley's Writing Test Review — G3.3</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar { display: flex; gap: 6px; margin-bottom: 16px; }
+  .progress-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: #ccc; transition: background 0.3s; cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container { position: relative; width: 640px; min-height: 420px; }
+
+  .card {
+    position: absolute; top: 0; left: 0; width: 100%;
+    background: #fff; border: 2.5px solid #1a1a2e; border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0; pointer-events: none; transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1; pointer-events: auto; transform: translateX(0); position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e; color: #fff; padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+  .card-header .card-subtitle { font-size: 9.5pt; color: #aaa; margin-top: 2px; }
+
+  .card-body { padding: 18px 22px 22px; line-height: 1.55; }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc; border: 1.5px solid #e0e0e8;
+    border-radius: 8px; padding: 10px 14px; text-align: center;
+  }
+  .score-box .big { font-size: 22pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3; border-left: 3px solid #cc0000;
+    padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+    font-style: italic; font-size: 11pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9; border-left: 3px solid #2d6a2d;
+    padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+    font-size: 11pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5; border-left: 3px solid #1a1a2e;
+    padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+  .error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+
+  .pattern-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 6px 0; border-bottom: 1px solid #eee; font-size: 11pt;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; }
+
+  .essay-excerpt {
+    background: #fafafa; border: 1px solid #e0e0e8;
+    border-radius: 6px; padding: 10px 14px; font-size: 10.5pt;
+    margin: 8px 0; line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700; font-size: 9pt; color: #888;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;
+  }
+
+  .goal-num {
+    display: inline-block; background: #1a1a2e; color: #fff;
+    border-radius: 50%; width: 24px; height: 24px; text-align: center;
+    line-height: 24px; font-size: 11pt; font-weight: 700; margin-right: 8px; flex-shrink: 0;
+  }
+  .goal-row { display: flex; align-items: flex-start; gap: 4px; margin: 10px 0; }
+
+  .nav { display: flex; gap: 12px; margin-top: 16px; }
+  .nav button {
+    padding: 8px 28px; border: 2px solid #1a1a2e; border-radius: 8px;
+    background: #fff; color: #1a1a2e; font-family: inherit;
+    font-size: 11pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover { background: #1a1a2e; color: #fff; }
+
+  @media (max-width: 680px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Score Overview ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G3.3</div>
+  </div>
+  <div class="card-body">
+    <p>Finley, let's look at your writing test together. You have a lot of good things here!</p>
+    <div class="score-grid">
+      <div class="score-box score-good">
+        <div class="big">82%</div>
+        <div class="label">Overall Score</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">5 / 11</div>
+        <div class="label">Perfect Answers</div>
+      </div>
+    </div>
+    <p><b>What you did really well:</b></p>
+    <ul>
+      <li>You added <b>amazing details</b> from the story in Q2 — "in the morning at the Bolinas Lagoon by unraveling the net"</li>
+      <li>Your appositive in Q3 was <b>creative and perfect</b>: "a talented young pup"</li>
+      <li>You <b>combined sentences</b> smoothly in Q4</li>
+      <li>You picked the right conjunction in Q5</li>
+      <li>Your paragraph (Q11) had a <b>clear topic sentence</b> and a <b>concluding sentence</b></li>
+    </ul>
+    <p>The next cards will show you the small things to fix for a higher score next time.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: What You Did Well ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Look What You Can Do!</h2>
+    <div class="card-subtitle">These answers show strong writing skills</div>
+  </div>
+  <div class="card-body">
+    <div class="better">
+      <div class="label">Q2 — ADDING DETAILS (PERFECT!)</div>
+      Dad freed the pup <b>in the morning</b> at the <b>Bolinas Lagoon</b> by <b>unraveling the net</b>.
+    </div>
+    <p>This is excellent — you added <i>when</i> (in the morning), <i>where</i> (Bolinas Lagoon), and <i>how</i> (by unraveling the net). And all the details come from the story!</p>
+    <div class="better">
+      <div class="label">Q3 — APPOSITIVE (PERFECT!)</div>
+      Sally, <b>a talented young pup</b>, swam to the other seals.
+    </div>
+    <p>You knew exactly how to add extra information inside commas. That's a tricky skill and you nailed it.</p>
+    <div class="better">
+      <div class="label">Q4 — COMBINING SENTENCES (PERFECT!)</div>
+      Anna and Jim ran to the beach <b>and</b> found a baby seal in a fishnet.
+    </div>
+    <p>Clean, smooth, one sentence. Great job.</p>
+    <div class="tip-box">
+      <div class="label">WHAT THIS TELLS US</div>
+      You know <b>how to write well</b>. The points you lost on Q7–10 aren't about your ideas — they're about small grammar and spelling things that are easy to fix.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: Q1 — Keep the Same Meaning ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q1: Keep the Same Meaning</h2>
+    <div class="card-subtitle">Skill: Change a sentence into a question</div>
+  </div>
+  <div class="card-body">
+    <p><b>The question:</b> Change this sentence into a question: <i>"Anna named the seal Sally."</i></p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Why did Anna name the seal <span class="error-mark">sally</span>.
+    </div>
+    <p>Two things to fix:</p>
+    <p><b>1.</b> You turned it into a <b>"why" question</b> — but the original sentence just says Anna named the seal Sally. It doesn't ask <i>why</i>. When you change the type, keep the <b>same meaning</b>.</p>
+    <p><b>2.</b> "Sally" is a name, so it needs a <b>capital S</b>. And questions end with a <b>question mark (?)</b>, not a period.</p>
+    <div class="better">
+      <div class="label">CORRECT VERSION</div>
+      Did Anna name the seal Sally?
+    </div>
+    <div class="tip-box">
+      <div class="label">THE RULE</div>
+      When you change a sentence to a question, <b>don't change what it's about</b>. Just flip the words around:<br><br>
+      <b>Anna named</b> the seal Sally. &rarr; <b>Did Anna name</b> the seal Sally?<br><br>
+      Check: Does my question ask the <i>same thing</i> the sentence said? If yes, you're good!
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Capitalization & Apostrophes ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Capitalization &amp; Apostrophes</h2>
+    <div class="card-subtitle">Small fixes that cost you points on Q7, Q8, and Q11</div>
+  </div>
+  <div class="card-body">
+    <p>These are quick things to check before you finish each answer:</p>
+    <p style="margin-top:10px;"><b>Always capitalize names:</b></p>
+    <div style="margin:8px 0;">
+      <div class="pattern-row">
+        <span class="pattern-wrong">sally</span>
+        <span class="pattern-arrow">&rarr;</span>
+        <span class="pattern-right">Sally</span>
+        <span style="color:#888;font-size:9.5pt;margin-left:auto;">(Q1, Q8 — it's a name!)</span>
+      </div>
+      <div class="pattern-row">
+        <span class="pattern-wrong">pokemon</span>
+        <span class="pattern-arrow">&rarr;</span>
+        <span class="pattern-right">Pokémon</span>
+        <span style="color:#888;font-size:9.5pt;margin-left:auto;">(Q11 — it's a name!)</span>
+      </div>
+    </div>
+    <p style="margin-top:10px;"><b>Apostrophes show ownership or missing letters:</b></p>
+    <div style="margin:8px 0;">
+      <div class="pattern-row">
+        <span class="pattern-wrong">Tajiris childhood</span>
+        <span class="pattern-arrow">&rarr;</span>
+        <span class="pattern-right">Tajiri's childhood</span>
+        <span style="color:#888;font-size:9.5pt;margin-left:auto;">(Q11 — the childhood belongs to Tajiri)</span>
+      </div>
+      <div class="pattern-row">
+        <span class="pattern-wrong">didnt</span>
+        <span class="pattern-arrow">&rarr;</span>
+        <span class="pattern-right">didn't</span>
+        <span style="color:#888;font-size:9.5pt;margin-left:auto;">(Q6 — "did not" squished together)</span>
+      </div>
+    </div>
+    <div class="tip-box">
+      <div class="label">QUICK CHECK BEFORE YOU SUBMIT</div>
+      <b>Names</b> always start with a capital letter — people, places, and things like Pokémon.<br>
+      <b>Didn't, won't, couldn't, wouldn't</b> — these always need an apostrophe where the letters are missing.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: Sentence Clean-Up ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Clean Up Your Sentences</h2>
+    <div class="card-subtitle">Small grammar fixes for Q7, Q9, and Q10</div>
+  </div>
+  <div class="card-body">
+    <p>Your ideas on Q7–10 were <b>good</b>, but the grammar tripped you up. Here are the patterns:</p>
+
+    <div class="you-wrote">
+      <div class="label">Q7 — YOU WROTE</div>
+      he could've let the pup <span class="highlight">to die</span> but instead he saved the pup's life.
+    </div>
+    <div class="better">
+      <div class="label">FIX</div>
+      he could've let the pup <b>die</b> but instead he saved the pup's life.
+    </div>
+    <p style="font-size:10.5pt;color:#555;">After "let," you don't need "to." Just say "let the pup die."</p>
+
+    <div class="you-wrote" style="margin-top:12px;">
+      <div class="label">Q10 — YOU WROTE</div>
+      the lesson it teaches is to be kind, <span class="highlight">no matter the lifeform be kind</span>.
+    </div>
+    <div class="better">
+      <div class="label">FIX</div>
+      The lesson this story teaches is to be kind to all living things, no matter how small.
+    </div>
+    <p style="font-size:10.5pt;color:#555;">Your version repeats "be kind" twice. Say it once, then finish the thought.</p>
+
+    <div class="tip-box">
+      <div class="label">READ IT OUT LOUD</div>
+      Before you move on from a question, <b>read your sentence out loud</b>. If something sounds odd or repeated, fix it. Your ears catch things your eyes miss!
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Q11 — Your Paragraph ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q11: Your Paragraph</h2>
+    <div class="card-subtitle">Score: 17/20 — strong start, needs more details</div>
+  </div>
+  <div class="card-body">
+    <div class="essay-excerpt">
+      <div class="para-label">Your Paragraph</div>
+      I think that Tajiris childhood influenced the creation of pokemon by having the game be about catching things just like Tajiri did with bugs. One example is that he spent hours every day trying to catch bugs which is one of the things you do in pokemon. I think that pokemon was influenced heavily with Tajiris experiences as a kid.
+    </div>
+    <p><b>What you did well:</b></p>
+    <ul>
+      <li>Clear <b>topic sentence</b> — you answered the question right away</li>
+      <li>You used a <b>detail from the article</b> (catching bugs)</li>
+      <li>You wrote a <b>concluding sentence</b> that wraps up your idea</li>
+    </ul>
+    <p><b>What to improve:</b></p>
+    <ul>
+      <li>Only <b>3 sentences</b> — a strong paragraph needs <b>4–5</b></li>
+      <li>Only <b>one detail</b> from the article — you need at least two</li>
+      <li>Capitalize <b>Pokémon</b> and add apostrophes to <b>Tajiri's</b></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 7: Q11 — Add More Details ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q11: Add More Details from the Article</h2>
+    <div class="card-subtitle">Use the paragraph plan to make it longer and stronger</div>
+  </div>
+  <div class="card-body">
+    <p>You mentioned catching bugs — great! But the article has more details you could use. Here's a stronger version using the <b>paragraph plan</b>:</p>
+    <div class="better">
+      <div class="label">STRONGER PARAGRAPH</div>
+      <p><b>Topic Sentence:</b> Satoshi Tajiri's childhood love of collecting bugs inspired him to create Pokémon.</p>
+      <p><b>Detail 1:</b> The article says that as a boy, Tajiri loved exploring nature and spent hours catching insects near his home. This gave him the idea for a game where players could collect and trade creatures.</p>
+      <p><b>Detail 2:</b> The article also explains that Tajiri turned his childhood hobby into a video game, and it became popular around the world. This shows that his experiences as a kid directly shaped what Pokémon became.</p>
+      <p><b>Closing Sentence:</b> Because of his childhood love of bugs, millions of people now enjoy Pokémon.</p>
+    </div>
+    <div class="tip-box">
+      <div class="label">THE PARAGRAPH PLAN</div>
+      <b>Topic Sentence:</b> Answer the question<br>
+      <b>Detail 1:</b> One fact from the article + why it matters<br>
+      <b>Detail 2:</b> Another fact from the article + why it matters<br>
+      <b>Closing Sentence:</b> Wrap up your main idea<br><br>
+      That's <b>at least 5 sentences</b>. Use this plan every time!
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 8: Goals ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">You're at 82% — these will push you higher</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Check capitalization and apostrophes before you submit.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Names always get a capital letter (Sally, Pokémon, Tajiri's). Words like "didn't" and "couldn't" always need an apostrophe. Do a quick scan of every answer before moving on.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>When rewriting a sentence, keep the same meaning.</b><br>
+        <span style="font-size:10.5pt;color:#555;">If the question says "change to a question," don't add a "why" or "how" — just flip the words: "Anna named" &rarr; "Did Anna name?" Same idea, different sentence type.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Use the paragraph plan for Q11: TS &rarr; D1 &rarr; D2 &rarr; CS.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Write at least 5 sentences. Use two different details from the article, and after each one say why it matters. Your paragraph had 3 sentences — adding two more detail sentences would make a big difference.</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">REMEMBER</div>
+      Your Q2 answer was one of the best on the whole test — you added <b>when, where, and how</b> all from the story. That same skill of using details from the reading is exactly what Q11 needs. You already know how to do it — now do it in your paragraph too!
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+let current = 0;
+
+cards.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  bar.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done' : 'Next \u2192';
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) return;
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+goTo(0);
+</script>
+</body>
+</html>
