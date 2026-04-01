@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Daveyp's Writing Test Review — G3.7</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .progress-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ccc;
+    transition: background 0.3s;
+    cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container {
+    position: relative;
+    width: 640px;
+    min-height: 420px;
+  }
+
+  .card {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    background: #fff;
+    border: 2.5px solid #1a1a2e;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 {
+    font-size: 15pt;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .card-header .card-subtitle {
+    font-size: 9.5pt;
+    color: #aaa;
+    margin-top: 2px;
+  }
+
+  .card-body {
+    padding: 18px 22px 22px;
+    line-height: 1.55;
+  }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+  }
+  .score-box .big { font-size: 20pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3;
+    border-left: 3px solid #cc0000;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    font-size: 10.5pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9;
+    border-left: 3px solid #2d6a2d;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 10.5pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5;
+    border-left: 3px solid #1a1a2e;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+
+  .pattern-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; }
+
+  .goal-num {
+    display: inline-block;
+    background: #1a1a2e;
+    color: #fff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    line-height: 24px;
+    font-size: 11pt;
+    font-weight: 700;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .goal-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    margin: 10px 0;
+  }
+
+  .essay-excerpt {
+    background: #fafafa;
+    border: 1px solid #e0e0e8;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 10.5pt;
+    margin: 8px 0;
+    line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+
+  .outline-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 8px 0;
+    font-size: 10.5pt;
+  }
+  .outline-box .outline-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .outline-row {
+    display: flex;
+    gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px dashed #ddd;
+  }
+  .outline-row:last-child { border-bottom: none; }
+  .outline-tag {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #fff;
+    background: #1a1a2e;
+    border-radius: 4px;
+    padding: 2px 8px;
+    min-width: 36px;
+    text-align: center;
+    flex-shrink: 0;
+    line-height: 1.6;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-box {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #1a1a2e;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .nav {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .nav button {
+    padding: 8px 28px;
+    border: 2px solid #1a1a2e;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a2e;
+    font-family: inherit;
+    font-size: 11pt;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover {
+    background: #1a1a2e;
+    color: #fff;
+  }
+
+  @media (max-width: 720px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Score Overview ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G3.7</div>
+  </div>
+  <div class="card-body">
+    <p>Daveyp, let's look at your writing test together so you can see what you did well and what to work on next.</p>
+    <div class="score-grid">
+      <div class="score-box score-good">
+        <div class="big">89%</div>
+        <div class="label">Overall Score (40/45)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">7/11</div>
+        <div class="label">Perfect Answers</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">18/20</div>
+        <div class="label">Paragraph</div>
+      </div>
+    </div>
+    <p>You got <b>7 questions perfectly right</b>, and your paragraph scored <b>18 out of 20</b> — that's an excellent score. You clearly understand how to organize a paragraph and support your ideas.</p>
+    <p>The points you missed came from <b>expanding sentences with the right details</b> and <b>explaining WHY things happen</b>. The next cards show you exactly how to pick up those last few points.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: What You Did Well ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>What You Did Well</h2>
+    <div class="card-subtitle">These are real strengths</div>
+  </div>
+  <div class="card-body">
+    <p>Before we look at what to fix, here's what you got right:</p>
+    <ul>
+      <li><b>Q1 — Fragment fixed perfectly.</b> You turned a fragment into a complete sentence: "Pumpkins rest on the ground as they get heavier."</li>
+      <li><b>Q2 — Smooth combination with "so."</b> "Stores fill big boxes with bright orange pumpkins, so people can decorate their homes with them."</li>
+      <li><b>Q4 — Great appositive.</b> "Bees, a very tiny insect, buzz from flower to flower" — perfectly placed description between commas.</li>
+      <li><b>Q5 — Combined with "but" perfectly.</b> "Inside a pumpkin is stringy pulp and many seeds, but the seeds can be cleaned and baked for a snack."</li>
+      <li><b>Q6, Q7, Q10 — All correct.</b> You used "because" and "so" to explain reasons clearly on these sentence questions.</li>
+      <li><b>Paragraph — Excellent structure.</b> Topic sentence + 3 reasons + concluding sentence. Your concluding sentence ("stay smart, stay safe, and be creative") is especially strong.</li>
+    </ul>
+    <p>Your biggest strength is your <b>paragraph writing</b>. You used three clear reasons, transitions, and a great concluding sentence. Keep building on that.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: Expanding a Sentence — Stay on Topic ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q3: Stay on the Same Topic</h2>
+    <div class="card-subtitle">When expanding a sentence, add detail about the SAME thing</div>
+  </div>
+  <div class="card-body">
+    <p>The question asked you to <b>expand this sentence</b> by adding another detail:</p>
+    <div class="essay-excerpt">
+      <div class="para-label">Original</div>
+      A pumpkin seed is flat and white.
+    </div>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      A pumpkin seed is flat and white, as the pumpkin grows pumpkin vines grow bright yellow flowers.
+    </div>
+    <p>You added a detail, but it jumps to a <b>new topic</b> — vines and flowers. The sentence was about what a <b>seed looks like</b>, so the new detail should describe the seed too.</p>
+    <div class="better">
+      <div class="label">BETTER</div>
+      A pumpkin seed is flat and white, <b>with a hard outer shell that protects the tiny plant inside.</b>
+    </div>
+    <div class="tip-box">
+      <div class="label">STAY ON THE SAME TOPIC</div>
+      When expanding a sentence, the new detail should be about the <b>same thing</b>. Ask yourself: <i>"What else can I say about THIS?"</i><br><br>
+      In this case, the sentence was about a pumpkin seed, so the detail should describe the seed too — not switch to vines.
+    </div>
+    <p style="margin-top:10px;"><b>Pattern:</b></p>
+    <div class="pattern-row"><span class="pattern-right">"The pumpkin is round" &rarr; "The pumpkin is round and can grow as big as a basketball."</span></div>
+    <div class="pattern-row"><span class="pattern-wrong">"The pumpkin is round, and the farmer has a red tractor." &larr; switches topic!</span></div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Finish the Thought — Explain WHY ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Finish the Thought — Explain WHY</h2>
+    <div class="card-subtitle">Say WHAT happened + WHY it happened</div>
+  </div>
+  <div class="card-body">
+    <p>On two questions, you gave a good answer but didn't finish explaining <b>why</b>:</p>
+
+    <p style="margin-top:10px;"><b>Q8</b> — What changes as a pumpkin grows?</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Something that changes as a pumpkin grows is that a pumpkin gets leaves when it sprouts.
+    </div>
+    <p>You said <b>what</b> changes, but the question also asks <b>why</b> it changes.</p>
+    <div class="better">
+      <div class="label">BETTER</div>
+      As a pumpkin grows, it sprouts leaves <b>because the plant needs them to soak up sunlight and make food for the growing pumpkin.</b>
+    </div>
+
+    <p style="margin-top:14px;"><b>Q9</b> — What can you do after a pumpkin is picked?</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      After a pumpkin is picked and cleaned out, you can make pumpkin seeds.
+    </div>
+    <p>You gave one use, but the question asked for <b>uses</b> (plural) with an example.</p>
+    <div class="better">
+      <div class="label">BETTER</div>
+      After pumpkins are picked, people can <b>carve them into jack-o'-lanterns for Halloween</b> or <b>cook the insides to make pumpkin pie.</b>
+    </div>
+
+    <div class="tip-box">
+      <div class="label">THE "WHY" TRICK</div>
+      When a question says <b>"explain,"</b> it wants TWO things: <b>WHAT happened + WHY it happened.</b> Use "because" to add the reason.<br><br>
+      You already do this on many questions (Q6, Q7, Q10) — now do it <b>every time</b>.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: Plan Before You Write ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Plan Before You Write</h2>
+    <div class="card-subtitle">Use a paragraph plan to organize your ideas</div>
+  </div>
+  <div class="card-body">
+    <p>Here's what a paragraph plan for your cooking essay looks like — filled in with <b>your actual topics</b>:</p>
+    <div class="outline-box">
+      <div class="outline-label">Paragraph Plan — "Explain why learning to cook can help children"</div>
+      <div style="font-size:9.5pt;color:#888;margin-bottom:6px;"><b>TS</b> = Topic Sentence &nbsp;&bull;&nbsp; <b>D</b> = Detail &nbsp;&bull;&nbsp; <b>W</b> = Why it matters &nbsp;&bull;&nbsp; <b>CS</b> = Concluding Sentence</div>
+      <div class="outline-row">
+        <span class="outline-tag">TS</span>
+        <span>Learning to cook can help children in many important ways.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D1</span>
+        <span>Cooking helps in school — measuring helps with math, fixing mistakes helps with problem solving</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">W</span>
+        <span>This matters because kids practice real skills like math and thinking without even realizing it.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D2</span>
+        <span>Cooking teaches kids how to be safe — learning about knives and hot pans</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">W</span>
+        <span>This is important because safety skills in the kitchen carry over to other parts of life too.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D3</span>
+        <span>Cooking lets kids be creative with their dishes</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">W</span>
+        <span>This shows that cooking is not just about following recipes — it lets kids express themselves.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">CS</span>
+        <span>Cooking is a great way to stay smart, stay safe, and be creative.</span>
+      </div>
+    </div>
+    <p>Your paragraph already had all of these pieces! The plan just helps you remember to add the <b>"Why it matters"</b> sentence after each detail.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Your Paragraph — What to Fix ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Paragraph: What to Fix</h2>
+    <div class="card-subtitle">18/20 is excellent — here's how to get to 20</div>
+  </div>
+  <div class="card-body">
+    <p>Your paragraph scored <b>18/20</b>. Only 2 points lost. Here's what to tighten up:</p>
+
+    <p><b>1. Fix the run-on sentence.</b></p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      One reason kids should learn how to cook is cooking helps in school, measuring can help with math and fixing mistakes helps with problem solving.
+    </div>
+    <p>This is actually <b>three ideas crammed into one sentence</b>.</p>
+    <div class="better">
+      <div class="label">BETTER</div>
+      One reason kids should learn how to cook is that it helps in school. <b>For example,</b> measuring ingredients helps with math, <b>and</b> fixing mistakes helps with problem solving.
+    </div>
+    <div class="pattern-row"><span class="pattern-wrong">"idea, idea and idea"</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">"idea. For example, detail, and detail."</span></div>
+
+    <p style="margin-top:12px;"><b>2. After each reason, explain WHY it matters</b> (same skill as Q8):</p>
+    <p style="font-size:10.5pt;">After "cooking teaches kids how to be safe in the kitchen" &rarr; add <i>"This is important because these safety habits will help them whenever they use the kitchen as they get older."</i></p>
+    <p style="font-size:10pt;color:#555;">Use transitions: <b>"For example,"</b> <b>"This shows that,"</b> <b>"Because of this"</b></p>
+
+    <p style="margin-top:12px;"><b>3. Spelling:</b> <span class="pattern-wrong">"nutrience"</span> &rarr; <span class="pattern-right">"nutrients"</span> (Q6)</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 7: Proofreading Checklist ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Proofreading Checklist</h2>
+    <div class="card-subtitle">Check these before you hand in your test</div>
+  </div>
+  <div class="card-body">
+    <p>Here's your personal checklist based on the mistakes in <i>your</i> test:</p>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Read your paragraph out loud.</b><br><span style="font-size:10pt;color:#555;">If a sentence sounds like three ideas, split it up. Put a period and start a new sentence.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Does every "explain" answer have a "because" or "so" to say WHY?</b><br><span style="font-size:10pt;color:#555;">Go back to each sentence question and check: did I say WHY? If not, add "because + your reason."</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>After each detail in your paragraph, check: did I say why this matters?</b><br><span style="font-size:10pt;color:#555;">Each reason needs a follow-up sentence. Use "This shows that," "This matters because," or "Because of this."</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Check spelling — look for words that don't look right.</b><br><span style="font-size:10pt;color:#555;">You wrote "nutrience" — it should be <b>nutrients</b>. If a word looks off, try spelling it a different way.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Does your concluding sentence connect back to your topic sentence?</b><br><span style="font-size:10pt;color:#555;">Yours does! Great job. "Cooking is a great way to learn how to stay smart, stay safe, and be creative" wraps everything up perfectly.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 8: Goals ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">Going from great to perfect</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Stay on topic when expanding.</b><br>
+        <span style="font-size:10.5pt;color:#555;">When adding detail to a sentence, ask "What else can I say about THIS?" Don't switch to a new topic. The new detail should describe the same person, place, or thing as the original sentence.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>Use "because" on every explain answer.</b><br>
+        <span style="font-size:10.5pt;color:#555;">You already do this on most questions (Q6, Q7, Q10). Now do it every time — especially when the question says "explain" or asks WHY. <b>WHAT happened + because + WHY it happened.</b></span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Split long sentences and add "Why it matters" after each detail.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Your paragraph is already well organized. To go from 18/20 to 20/20, break up run-on sentences and add one sentence after each reason explaining why it's important. Use "For example," "This shows that," or "Because of this."</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">THE BIG PICTURE</div>
+      You scored <b>89%</b> — that's one of the highest scores. Your paragraph writing is a real strength: clear topic sentence, three reasons, transitions, and an excellent concluding sentence. The small tweaks on these cards are about going from great to perfect. Keep it up.
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+let current = 0;
+
+cards.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  bar.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done' : 'Next \u2192';
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) return;
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+goTo(0);
+</script>
+</body>
+</html>

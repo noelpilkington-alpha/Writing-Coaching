@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Eva's Writing Test Review — G8.3</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar { display: flex; gap: 6px; margin-bottom: 16px; }
+  .progress-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: #ccc; transition: background 0.3s; cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container { position: relative; width: 680px; min-height: 420px; }
+
+  .card {
+    position: absolute; top: 0; left: 0; width: 100%;
+    background: #fff; border: 2.5px solid #1a1a2e; border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0; pointer-events: none; transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1; pointer-events: auto; transform: translateX(0); position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e; color: #fff; padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+  .card-header .card-subtitle { font-size: 9.5pt; color: #aaa; margin-top: 2px; }
+
+  .card-body { padding: 18px 22px 22px; line-height: 1.55; }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px; margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc; border: 1.5px solid #e0e0e8;
+    border-radius: 8px; padding: 10px 14px; text-align: center;
+  }
+  .score-box .big { font-size: 20pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3; border-left: 3px solid #cc0000;
+    padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+    font-style: italic; font-size: 10.5pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9; border-left: 3px solid #2d6a2d;
+    padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+    font-size: 10.5pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5; border-left: 3px solid #1a1a2e;
+    padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+  .error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+
+  .essay-excerpt {
+    background: #fafafa; border: 1px solid #e0e0e8;
+    border-radius: 6px; padding: 10px 14px; font-size: 10.5pt;
+    margin: 8px 0; line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700; font-size: 9pt; color: #888;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;
+  }
+
+  .outline-box {
+    background: #f8f8fc; border: 1.5px solid #e0e0e8;
+    border-radius: 8px; padding: 12px 16px; margin: 8px 0; font-size: 10.5pt;
+  }
+  .outline-box .outline-label {
+    font-weight: 700; font-size: 9pt; color: #1a1a2e;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+  }
+  .outline-row {
+    display: flex; gap: 10px; padding: 5px 0;
+    border-bottom: 1px dashed #ddd;
+  }
+  .outline-row:last-child { border-bottom: none; }
+  .outline-tag {
+    font-weight: 700; font-size: 9pt; color: #fff; background: #1a1a2e;
+    border-radius: 4px; padding: 2px 8px; min-width: 50px;
+    text-align: center; flex-shrink: 0; line-height: 1.6;
+  }
+
+  .pattern-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 6px 0; border-bottom: 1px solid #eee; font-size: 11pt;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; }
+
+  table.compare {
+    width: 100%; border-collapse: collapse; font-size: 10.5pt; margin: 8px 0;
+  }
+  table.compare th {
+    background: #1a1a2e; color: #fff; padding: 6px 10px;
+    text-align: left; font-size: 9.5pt;
+  }
+  table.compare td { padding: 6px 10px; border: 1px solid #ddd; vertical-align: top; }
+
+  .para-map {
+    display: flex; gap: 6px; margin: 10px 0; flex-wrap: wrap;
+  }
+  .para-tag {
+    padding: 6px 12px; border-radius: 6px; font-size: 10pt; font-weight: 600;
+    border: 1.5px solid;
+  }
+  .para-tag.good { background: #e8f5e9; border-color: #2d6a2d; color: #2d6a2d; }
+  .para-tag.warn { background: #fff3cd; border-color: #e6a800; color: #996600; }
+  .para-tag.bad { background: #fff3f3; border-color: #cc0000; color: #cc0000; }
+
+  .check-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid #eee; font-size: 11pt;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-box {
+    width: 20px; height: 20px; border: 2px solid #1a1a2e;
+    border-radius: 4px; flex-shrink: 0; margin-top: 1px;
+  }
+
+  .goal-num {
+    display: inline-block; background: #1a1a2e; color: #fff;
+    border-radius: 50%; width: 24px; height: 24px; text-align: center;
+    line-height: 24px; font-size: 11pt; font-weight: 700; margin-right: 8px; flex-shrink: 0;
+  }
+  .goal-row { display: flex; align-items: flex-start; gap: 4px; margin: 10px 0; }
+
+  .nav { display: flex; gap: 12px; margin-top: 16px; }
+  .nav button {
+    padding: 8px 28px; border: 2px solid #1a1a2e; border-radius: 8px;
+    background: #fff; color: #1a1a2e; font-family: inherit;
+    font-size: 11pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover { background: #1a1a2e; color: #fff; }
+
+  @media (max-width: 720px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Score Overview ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G8.3</div>
+  </div>
+  <div class="card-body">
+    <p>Eva, let's walk through your writing test. You did well — here's the full breakdown.</p>
+    <div class="score-grid">
+      <div class="score-box score-warn">
+        <div class="big">83%</div>
+        <div class="label">Overall Score (25/30)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">10/10</div>
+        <div class="label">Multiple Choice (PERFECT)</div>
+      </div>
+      <div class="score-box score-warn">
+        <div class="big">15/20</div>
+        <div class="label">Essay</div>
+      </div>
+    </div>
+    <p>You scored a <b>perfect 10 out of 10 on multiple choice</b> — that means you've mastered sentence types, transitions, appositives, conjunctions, and elaboration. Your essay has excellent evidence in Paragraphs 2 and 3.</p>
+    <p>The 5 points you lost came from a <b>scattered thesis</b>, a <b>repetitive Paragraph 4</b>, and some <b>recurring spelling errors</b>. The next cards show you exactly how to fix each one.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: What Your Essay Did Well ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>What Your Essay Did Well</h2>
+    <div class="card-subtitle">There's a lot of genuine skill here</div>
+  </div>
+  <div class="card-body">
+    <ul>
+      <li><b>Perfect MCQ</b> — complete mastery of writing concepts: complete sentences, combining with "Although," transitions ("Therefore," "However"), appositives, subordinating conjunctions, topic sentences, irrelevant sentences, and elaboration.</li>
+      <li><b>P2 is excellent</b> — specific evidence from the passage: University of Birmingham research, the 4-to-6-month flavor window, and how trying a food 5 to 10 times helps toddlers accept it.</li>
+      <li><b>P3 is excellent</b> — organized three learning types with clear definitions and concrete examples: sugar cookie provides energy (flavor-nutrient), jelly on new bread (taste-flavor), watching friends and family (social learning).</li>
+      <li><b>Strong transitions throughout</b> — "To begin," "For example," "The first is," "Another way is," "Lastly," "Also," "Finally," "In conclusion."</li>
+      <li><b>Engaging intro hook</b> — starting with a relatable observation about taste preferences and asking "But how?" draws the reader in.</li>
+      <li><b>Uses "because" to explain evidence</b> — you don't just state facts; you connect them to reasons.</li>
+    </ul>
+    <div class="tip-box">
+      <div class="label">KEY TAKEAWAY</div>
+      Your P2 and P3 are genuinely strong — specific evidence, clear explanations, and logical organization. That's the standard you need to bring to <b>every</b> paragraph.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: The Circular Paragraph Problem (P4) ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>The Circular Paragraph Problem (P4)</h2>
+    <div class="card-subtitle">This is the main issue in your essay</div>
+  </div>
+  <div class="card-body">
+    <p>Read your Paragraph 4 and notice how it circles back to the same idea:</p>
+    <div class="essay-excerpt">
+      <div class="para-label">Your Paragraph 4</div>
+      <span class="highlight">Finally, our taste buds are always evolving.</span> There are many ways that children learn to like new foods <span class="highlight">proving that taste buds evolve.</span> Another example is what adults and children prefer. Adults prefer vegtables while children prefer sweets. <span class="highlight">This proves that our taste buds are always changing.</span>
+    </div>
+    <p><b>Three of four sentences say the same thing:</b> taste buds change. The adults-vs-children sentence just repeats your intro. No new evidence from the passage appears here.</p>
+    <table class="compare">
+      <tr>
+        <th>Sentence</th>
+        <th>What it actually says</th>
+      </tr>
+      <tr>
+        <td>"our taste buds are always evolving"</td>
+        <td style="color:#cc0000;">Taste buds change. (Claim)</td>
+      </tr>
+      <tr>
+        <td>"proving that taste buds evolve"</td>
+        <td style="color:#cc0000;">Taste buds change. (Same claim)</td>
+      </tr>
+      <tr>
+        <td>"Adults prefer vegtables while children prefer sweets"</td>
+        <td style="color:#cc0000;">Repeats the intro</td>
+      </tr>
+      <tr>
+        <td>"This proves that our taste buds are always changing"</td>
+        <td style="color:#cc0000;">Taste buds change. (Same claim again)</td>
+      </tr>
+    </table>
+    <div class="tip-box">
+      <div class="label">WHAT P4 SHOULD DO</div>
+      Add <b>new evidence</b> or a <b>new angle</b>. Options from the passage:<br>
+      &bull; Discuss what happens when people try foods repeatedly (the passage mentions 5-10 tries)<br>
+      &bull; Explain how taste preferences shift as people age, citing specific passage details<br>
+      &bull; Connect the three learning methods back to the broader point about taste changing over time<br><br>
+      Card 5 shows a full rewrite of P4 using the <b>TS-E1-X1-E2-X2-CS</b> pattern.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Plan Before You Write ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Plan Before You Write</h2>
+    <div class="card-subtitle">An outline prevents circular paragraphs</div>
+  </div>
+  <div class="card-body">
+    <p>Here's how a quick outline would have organized your essay's topics:</p>
+    <div class="outline-box">
+      <div class="outline-label">Essay Outline</div>
+      <div class="outline-row">
+        <span class="outline-tag">INTRO</span>
+        <span>Hook about food preferences &rarr; <b>Thesis:</b> People's food preferences develop through a flavor window in infancy, three types of learning, and gradual exposure over time.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">BP1</span>
+        <span>Flavor window &mdash; E1: University of Birmingham, 4-6 months &rarr; E2: trying food 5-10 times helps toddlers accept it</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">BP2</span>
+        <span>Three learning types &mdash; E1: flavor-nutrient (cookie &rarr; energy) + taste-flavor (jelly on bread) &rarr; E2: social learning (watching family/friends)</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">BP3</span>
+        <span>Gradual change over time &mdash; E1: children start with sweets, adults prefer vegetables &rarr; E2: persistence and repeated exposure rewires preferences</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">CONC</span>
+        <span>Restate 3 points &rarr; broader message about persistence and not giving up on new foods</span>
+      </div>
+    </div>
+    <p style="font-size:10pt;color:#888;margin-top:4px;">BP = Body Paragraph &bull; E = Evidence from the passage</p>
+    <p>Now compare your thesis to a focused one:</p>
+    <div class="you-wrote">
+      <div class="label">YOUR THESIS (VAGUE)</div>
+      "Taste buds are always evolving, learning to like new flavors, and open to trying new things."
+    </div>
+    <div class="better">
+      <div class="label">FOCUSED THESIS</div>
+      "People's food preferences develop through a critical flavor window in infancy, three distinct types of learning, and gradual change that continues throughout life."
+    </div>
+    <div class="tip-box">
+      <div class="label">WHY THIS MATTERS</div>
+      A focused thesis that names your three body paragraph topics acts as a <b>roadmap</b>. It forces you to plan what each paragraph will cover — so you never end up repeating yourself in P4.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: Strengthen Your Weakest Paragraph ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Strengthen Your Weakest Paragraph</h2>
+    <div class="card-subtitle">Rewriting P4 from repetition to development</div>
+  </div>
+  <div class="card-body">
+    <p>Here's what P4 looks like when it follows the <b>TS-E1-X1-E2-X2-CS</b> pattern with new evidence:</p>
+    <div class="better">
+      <div class="label">REWRITTEN PARAGRAPH 4</div>
+      <b>[TS]</b> Beyond specific learning methods, food preferences also change gradually as people grow older.
+      <b>[E1]</b> The passage notes that young children naturally prefer sweet flavors, while adults tend to enjoy vegetables and other complex tastes.
+      <b>[X1]</b> This shift doesn't happen overnight; it occurs because repeated exposure to new foods slowly rewires the brain's taste preferences over time.
+      <b>[E2]</b> According to the passage, even people who once disliked a food can learn to enjoy it through persistence — trying it multiple times rather than giving up after the first bite.
+      <b>[X2]</b> As a result, the key to developing a broader palate is patience and willingness to keep trying, which is why the passage emphasizes not giving up on foods like broccoli.
+      <b>[CS]</b> Because taste is always changing, there is always an opportunity to learn to enjoy new foods at any age.
+    </div>
+    <p>Notice what's different from your original:</p>
+    <ul>
+      <li>Every sentence adds <b>new information</b> — no sentence repeats another</li>
+      <li><b>E1 and E2</b> draw on specific passage details, not general claims</li>
+      <li><b>X1 and X2</b> explain <i>why</i> the evidence matters</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Sentence Strategies in P4 Rewrite ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Sentence Strategies in Action</h2>
+    <div class="card-subtitle">The techniques that make the rewrite work</div>
+  </div>
+  <div class="card-body">
+    <p>Your P2 and P3 already use strong sentence strategies. Here's what the P4 rewrite uses — so you can apply them consistently:</p>
+    <table class="compare">
+      <tr>
+        <th>Strategy</th>
+        <th>Example from the rewrite</th>
+        <th>Why it works</th>
+      </tr>
+      <tr>
+        <td><b>Semicolon</b></td>
+        <td style="color:#2d6a2d;">"This shift doesn't happen overnight<b>;</b> it occurs because repeated exposure..."</td>
+        <td>Joins two related ideas into one sophisticated sentence</td>
+      </tr>
+      <tr>
+        <td><b>"As a result"</b></td>
+        <td style="color:#2d6a2d;">"<b>As a result,</b> the key to developing a broader palate..."</td>
+        <td>Cause-and-effect transition showing <i>why</i> evidence matters</td>
+      </tr>
+      <tr>
+        <td><b>"Because" in CS</b></td>
+        <td style="color:#2d6a2d;">"<b>Because</b> taste is always changing, there is always an opportunity..."</td>
+        <td>Shows the connection between evidence and the concluding thought</td>
+      </tr>
+    </table>
+    <div class="tip-box">
+      <div class="label">TIP</div>
+      Your P2 and P3 already use these strategies well. The issue is that P4 dropped the standard. When you plan your essay, <b>allocate equal time to each body paragraph</b>. If you spend 8 minutes on P2 and P3 but only 2 minutes on P4, P4 will end up circular every time.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 7: Proofreading Checklist ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Proofreading Checklist</h2>
+    <div class="card-subtitle">Personalized to your recurring errors</div>
+  </div>
+  <div class="card-body">
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Repeated misspellings:</b> <span class="error-mark">vegtables</span> &rarr; <span class="pattern-right">vegetables</span> (appeared <b>twice</b>), <span class="error-mark">becuase</span> &rarr; <span class="pattern-right">because</span> (appeared <b>twice</b>), <span class="error-mark">addapting</span> &rarr; <span class="pattern-right">adapting</span>. If you misspell a word once, you'll misspell it every time — fix it the first time.</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Possessives:</b> <span class="error-mark">human's taste buds</span> &rarr; <span class="pattern-right">humans' taste buds</span> (plural possessive) or just <span class="pattern-right">human taste buds</span>.</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Subject-verb agreement:</b> "how <span class="error-mark">does</span> a child and an adult" &rarr; "how <span class="pattern-right">do</span> a child and an adult" — plural subject needs "do."</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Remove filler words:</b> "trying <span class="error-mark">to</span> new things" &rarr; "trying new things" and "these new ways to <span class="error-mark">do</span> get them" &rarr; "these new ways to get them."</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Thesis check:</b> Does my thesis preview 3 <i>specific</i> topics? (Not "evolving, learning, and open to trying" — those are vague.)</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>P4 check:</b> Does my last body paragraph add <i>new</i> information? If it repeats P1, rewrite it.</div>
+    </div>
+    <div class="tip-box">
+      <div class="label">3-MINUTE RULE</div>
+      Save the last 3 minutes of your test for proofreading. Read backward (last sentence first) to catch spelling — when you read forward, your brain auto-corrects. Scan specifically for words you used more than once: if it's wrong, it'll be wrong everywhere.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 8: Your 3 Goals ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">Perfect MCQ + excellent P2 and P3 — now make it consistent</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Write a focused thesis that previews your 3 body paragraphs.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Instead of vague phrases, name your actual topics: "through a flavor window in infancy, three types of food learning, and gradual change over time." This prevents P4 from becoming circular — if the thesis requires three distinct topics, each paragraph has to deliver something different.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>Make every paragraph as strong as P2 and P3.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Your P2 (flavor window) and P3 (three learning types) are excellent — specific evidence, clear explanations, good transitions. P4 dropped to repetition. Plan all 3 body paragraphs equally before writing and give each one specific evidence to develop using the TS-E1-X1-E2-X2-CS pattern.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Proofread for repeated spelling errors.</b><br>
+        <span style="font-size:10.5pt;color:#555;">"Vegetables" and "because" were each misspelled twice. When you proofread, scan specifically for words you used more than once — if it's wrong, it'll be wrong everywhere. Read backward (last sentence first) to catch these before you submit.</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">THE BIG PICTURE</div>
+      Perfect MCQ + excellent P2 and P3 means you have <b>genuine writing skill</b>. The 5 points you lost are about <b>consistency</b> — bringing P4 up to the level of P2/P3, focusing your thesis, and catching spelling errors. Those are fixable. You're very close to a top score.
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+let current = 0;
+
+cards.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  bar.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done' : 'Next \u2192';
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) return;
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+goTo(0);
+</script>
+</body>
+</html>

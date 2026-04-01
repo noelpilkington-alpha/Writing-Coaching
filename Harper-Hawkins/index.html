@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Harper's Writing Test Review — G3.6</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .progress-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ccc;
+    transition: background 0.3s;
+    cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container {
+    position: relative;
+    width: 640px;
+    min-height: 420px;
+  }
+
+  .card {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    background: #fff;
+    border: 2.5px solid #1a1a2e;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 {
+    font-size: 15pt;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .card-header .card-subtitle {
+    font-size: 9.5pt;
+    color: #aaa;
+    margin-top: 2px;
+  }
+
+  .card-body {
+    padding: 18px 22px 22px;
+    line-height: 1.55;
+  }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+  }
+  .score-box .big { font-size: 20pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3;
+    border-left: 3px solid #cc0000;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    font-size: 10.5pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9;
+    border-left: 3px solid #2d6a2d;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 10.5pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5;
+    border-left: 3px solid #1a1a2e;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+
+  .pattern-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; }
+
+  .goal-num {
+    display: inline-block;
+    background: #1a1a2e;
+    color: #fff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    line-height: 24px;
+    font-size: 11pt;
+    font-weight: 700;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .goal-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    margin: 10px 0;
+  }
+
+  .essay-excerpt {
+    background: #fafafa;
+    border: 1px solid #e0e0e8;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 10.5pt;
+    margin: 8px 0;
+    line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+
+  .outline-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 8px 0;
+    font-size: 10.5pt;
+  }
+  .outline-box .outline-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .outline-row {
+    display: flex;
+    gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px dashed #ddd;
+  }
+  .outline-row:last-child { border-bottom: none; }
+  .outline-tag {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #fff;
+    background: #1a1a2e;
+    border-radius: 4px;
+    padding: 2px 8px;
+    min-width: 36px;
+    text-align: center;
+    flex-shrink: 0;
+    line-height: 1.6;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-box {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #1a1a2e;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .nav {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .nav button {
+    padding: 8px 28px;
+    border: 2px solid #1a1a2e;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a2e;
+    font-family: inherit;
+    font-size: 11pt;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover {
+    background: #1a1a2e;
+    color: #fff;
+  }
+
+  @media (max-width: 720px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- Card 1: Score Overview -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G3.6 &mdash; The Life of a Porcupine</div>
+  </div>
+  <div class="card-body">
+    <p>Harper, let's look at your writing test together so you can see what you did well and what to work on next.</p>
+    <div class="score-grid">
+      <div class="score-box score-good">
+        <div class="big">84%</div>
+        <div class="label">Overall Score (38/45)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">7/11</div>
+        <div class="label">Perfect Answers</div>
+      </div>
+      <div class="score-box score-warn">
+        <div class="big">16/20</div>
+        <div class="label">Paragraph</div>
+      </div>
+    </div>
+    <p>You got <b>every sentence question perfect</b> &mdash; that's 5 out of 5! You really know how to use "because" to explain your ideas. Your paragraph scored <b>16 out of 20</b> and uses great details from the passage.</p>
+    <p><b>Focus:</b> The points you lost came from the <b>edit questions</b> (Q1&ndash;Q3) and some spelling in your paragraph.</p>
+  </div>
+</div>
+
+<!-- Card 2: What You Did Well -->
+<div class="card">
+  <div class="card-header">
+    <h2>What You Did Well</h2>
+    <div class="card-subtitle">These are real strengths</div>
+  </div>
+  <div class="card-body">
+    <p>Before we look at what to fix, here's what you got right:</p>
+    <ul>
+      <li><b>Q4 &mdash; Great question!</b> You turned a statement into a perfect question: "Do their sharp quills protect them from danger?"</li>
+      <li><b>Q5 &mdash; Perfect unscramble.</b> "The porcupine swishes its tail from side to side." Every word in the right spot.</li>
+      <li><b>Q6&ndash;Q10 &mdash; ALL 5 sentence questions perfect!</b> You used "because" every time to explain your thinking. That's the hardest part and you nailed it.</li>
+      <li><b>Your paragraph</b> has a good topic sentence with "because," you used "Also" as a transition, and you included details about <b>quills</b>, <b>warning noises</b>, AND <b>paw pads</b>.</li>
+    </ul>
+    <p>Your biggest strength is <b>explaining WHY</b>. Every sentence question had a clear reason. That's the hardest part of writing and you do it naturally.</p>
+  </div>
+</div>
+
+<!-- Card 3: Follow the Instructions — Edit Questions -->
+<div class="card">
+  <div class="card-header">
+    <h2>Follow the Instructions &mdash; Edit Questions</h2>
+    <div class="card-subtitle">Q1, Q2, Q3 &mdash; all partial credit because instructions weren't followed exactly</div>
+  </div>
+  <div class="card-body">
+    <p>This is the main skill to work on. Three edit questions, three partial credits &mdash; all because the instructions weren't followed exactly.</p>
+
+    <p style="margin-top:10px;"><b>Q1 &mdash; "Rewrite as a complete sentence: Climbing trees at night."</b></p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Climbing trees at night is difficult and frustrating.
+    </div>
+    <p>The problem: "difficult and frustrating" is <b>made up</b> &mdash; it's not from the passage. Use what the passage tells you.</p>
+    <div class="better">
+      <div class="label">BETTER</div>
+      <b>Porcupines climb trees at night to find food.</b> (from the passage)
+    </div>
+    <div class="tip-box">
+      <div class="label">TIP</div>
+      When the question says to rewrite, use information <b>FROM THE PASSAGE</b>, not from your imagination.
+    </div>
+
+    <p style="margin-top:14px;"><b>Q2 &mdash; "Combine using because"</b></p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      They have strong claws and rough paw pads that can hold on to tree branches tightly.
+    </div>
+    <p>The problem: You used "that" instead of "because." The instructions said to use <b>"because."</b></p>
+    <div class="better">
+      <div class="label">BETTER</div>
+      <b>They can hold on to tree branches tightly because they have strong claws and rough paw pads.</b>
+    </div>
+    <div class="tip-box">
+      <div class="label">TIP</div>
+      When the question tells you which word to use, <b>USE THAT WORD</b>.
+    </div>
+
+    <p style="margin-top:14px;"><b>Q3 &mdash; "Combine using an appositive"</b></p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Porcupines are rodents and slow movers of the forest.
+    </div>
+    <p>The problem: You used "and" to combine. An appositive goes <b>inside</b> the sentence with commas.</p>
+    <div class="better">
+      <div class="label">BETTER</div>
+      <b>Porcupines, <span class="highlight">the slow movers of the forest</span>, are rodents.</b>
+    </div>
+    <p style="font-size:10pt;color:#555;">The appositive pattern: <b>Name, [description], rest of sentence.</b></p>
+  </div>
+</div>
+
+<!-- Card 4: What's an Appositive? -->
+<div class="card">
+  <div class="card-header">
+    <h2>What's an Appositive?</h2>
+    <div class="card-subtitle">Deep dive on Q3 &mdash; the comma-description-comma pattern</div>
+  </div>
+  <div class="card-body">
+    <p>An appositive is a <b>short description</b> tucked inside a sentence, set off by commas. Here's the pattern:</p>
+
+    <div class="tip-box">
+      <div class="label">THE APPOSITIVE PATTERN</div>
+      <b>Name, [short description], rest of sentence.</b>
+    </div>
+
+    <p>Think of it like a whisper: <i>"Porcupines &mdash; oh, by the way, they're the slow movers of the forest &mdash; are rodents."</i></p>
+
+    <p style="margin-top:10px;"><b>Your Q3 example:</b></p>
+    <div class="essay-excerpt">
+      <div class="para-label">Original sentences</div>
+      Porcupines are rodents. They are the slow movers of the forest.
+    </div>
+    <div class="better">
+      <div class="label">WITH AN APPOSITIVE</div>
+      <b>Porcupines, <span class="highlight">the slow movers of the forest</span>, are rodents.</b>
+    </div>
+
+    <p style="margin-top:10px;"><b>More examples from the passage:</b></p>
+    <ul>
+      <li>Quills, <b>sharp spines covering the porcupine's body</b>, protect it from predators.</li>
+      <li>The porcupine, <b>a shy rodent</b>, lives mostly in trees.</li>
+    </ul>
+
+    <div class="tip-box">
+      <div class="label">HOW TO SPOT IT</div>
+      Look for the <b>comma, description, comma</b> pattern. That's always the appositive. When you see a question that says "add an appositive," just tuck a short description between two commas right after the noun.
+    </div>
+  </div>
+</div>
+
+<!-- Card 5: Plan Before You Write -->
+<div class="card">
+  <div class="card-header">
+    <h2>Plan Before You Write</h2>
+    <div class="card-subtitle">Use a paragraph plan to organize your ideas</div>
+  </div>
+  <div class="card-body">
+    <p>Here's what a plan for your porcupine paragraph could look like, using the details you already had:</p>
+    <div class="outline-box">
+      <div class="outline-label">Paragraph Plan &mdash; "How the porcupine's body helps it stay safe"</div>
+      <div style="font-size:9.5pt;color:#888;margin-bottom:6px;"><b>TS</b> = Topic Sentence &nbsp;&bull;&nbsp; <b>D</b> = Detail &nbsp;&bull;&nbsp; <b>W</b> = Why it matters &nbsp;&bull;&nbsp; <b>CS</b> = Concluding Sentence</div>
+      <div class="outline-row">
+        <span class="outline-tag">TS</span>
+        <span>The porcupine's body helps it stay safe in the wild in many ways.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D1</span>
+        <span>Quills &mdash; lifts them up when scared to look bigger and more dangerous</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">W</span>
+        <span>This helps because predators see the sharp quills and stay away.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D2</span>
+        <span>Warning noises &mdash; makes sounds to tell predators to back off</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">W</span>
+        <span>This is like a built-in alarm system that gives the porcupine time to escape.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D3</span>
+        <span>Rough paw pads &mdash; can climb trees to find food away from danger</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">W</span>
+        <span>This matters because being high up in trees keeps them safe from animals on the ground.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">CS</span>
+        <span>Because of its quills, warning noises, and climbing ability, the porcupine is well-protected in the wild.</span>
+      </div>
+    </div>
+    <p>You already had all three details in your paragraph! The plan helps you add the "Why it matters" sentences and organize them clearly.</p>
+  </div>
+</div>
+
+<!-- Card 6: Your Paragraph — What to Fix -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Paragraph: What to Fix</h2>
+    <div class="card-subtitle">16/20 is a good score &mdash; here's how to get closer to 20</div>
+  </div>
+  <div class="card-body">
+    <p><b>1. Fix "more of a predator."</b> Porcupines aren't predators &mdash; they EAT plants. The quills make them look more <b>dangerous</b> or <b>threatening</b>.</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      it makes the porcupine more of a predator
+    </div>
+    <div class="better">
+      <div class="label">BETTER</div>
+      <b>it makes the porcupine look dangerous, so predators stay away</b>
+    </div>
+
+    <p style="margin-top:12px;"><b>2. After each detail, explain WHY it helps the porcupine stay safe:</b></p>
+    <ul>
+      <li>After the quills/warning noises detail: <i>"Because of this, most predators will leave the porcupine alone."</i></li>
+      <li>After the climbing detail: <i>"This means the porcupine can stay safe from animals that cannot climb."</i></li>
+    </ul>
+
+    <p style="margin-top:12px;"><b>3. Spelling fixes:</b></p>
+    <div class="pattern-row"><span class="pattern-wrong">porcupines body</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">porcupine's body</span></div>
+    <div class="pattern-row"><span class="pattern-wrong">they wild</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">the wild</span></div>
+    <div class="pattern-row"><span class="pattern-wrong">They quills</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">Their quills</span></div>
+    <div class="pattern-row"><span class="pattern-wrong">likey</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">likely</span></div>
+    <div class="pattern-row"><span class="pattern-wrong">were (Q7)</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">where</span></div>
+    <div class="pattern-row"><span class="pattern-wrong">pocupines (Q8)</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">porcupine's</span></div>
+    <div class="pattern-row"><span class="pattern-wrong">wuills (Q10)</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">quills</span></div>
+  </div>
+</div>
+
+<!-- Card 7: Proofreading Checklist -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Proofreading Checklist</h2>
+    <div class="card-subtitle">Check these before you hand in your test</div>
+  </div>
+  <div class="card-body">
+    <p>Here's your personal checklist based on the mistakes in <i>your</i> test:</p>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Read out loud.</b><br><span style="font-size:10pt;color:#555;">If something sounds wrong, it probably is. Especially check "they/the/their" &mdash; you mixed these up.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Check apostrophes.</b><br><span style="font-size:10pt;color:#555;">If something BELONGS to the porcupine, write "porcupine's" (with an apostrophe before the s). You wrote "porcupines body" &mdash; it should be "porcupine's body."</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Check spelling of key words.</b><br><span style="font-size:10pt;color:#555;">Look at "porcupine" and "quills" &mdash; these words appear many times, so make sure they're spelled right every time.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Did I use the exact word the question asked for?</b><br><span style="font-size:10pt;color:#555;">If it says "because," use "because." If it says "appositive," use the comma-description-comma pattern. Read the instructions twice.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Does my paragraph start with a topic sentence that answers the prompt?</b><br><span style="font-size:10pt;color:#555;">Read your first sentence. Does it answer the question? If yes, great. If it jumps into a detail, add a topic sentence first.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 8: Your 3 Goals -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">You're close to 90% &mdash; these will get you there</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Follow edit instructions exactly.</b><br>
+        <span style="font-size:10.5pt;color:#555;">If the question says "use because," use the word "because." If it says "add an appositive," use the comma-description-comma pattern. Read the instructions twice before you start writing.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>After each detail, explain WHY it matters.</b><br>
+        <span style="font-size:10.5pt;color:#555;">You already use "because" perfectly on sentence questions. Now do the same in your paragraph &mdash; after each detail, add "This helps because..." or "Because of this..." You know how to do it; just do it in the paragraph too.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Proofread your spelling.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Check "they/the/their" every time. Check apostrophes (porcupine's, not porcupines). Check tricky words like "quills" and "porcupine." Read your answer one more time before you turn it in.</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">THE BIG PICTURE</div>
+      You got <b>5 out of 5 sentence questions right</b> and your paragraph uses great details. You know how to explain your ideas with "because." The points you lost came from not following edit instructions exactly and some spelling mix-ups. Fix those and you'll be <b>well above 90%</b>.
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+let current = 0;
+
+cards.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  bar.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done' : 'Next \u2192';
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) return;
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+goTo(0);
+</script>
+</body>
+</html>

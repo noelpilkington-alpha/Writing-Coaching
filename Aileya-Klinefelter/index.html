@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Aileya's Writing Test Review — G6.4</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .progress-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ccc;
+    transition: background 0.3s;
+    cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container {
+    position: relative;
+    width: 680px;
+    min-height: 420px;
+  }
+
+  .card {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    background: #fff;
+    border: 2.5px solid #1a1a2e;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 {
+    font-size: 15pt;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .card-header .card-subtitle {
+    font-size: 9.5pt;
+    color: #aaa;
+    margin-top: 2px;
+  }
+
+  .card-body {
+    padding: 18px 22px 22px;
+    line-height: 1.55;
+  }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+  }
+  .score-box .big { font-size: 20pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3;
+    border-left: 3px solid #cc0000;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    font-size: 10.5pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9;
+    border-left: 3px solid #2d6a2d;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 10.5pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5;
+    border-left: 3px solid #1a1a2e;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+
+  .pattern-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; }
+
+  .goal-num {
+    display: inline-block;
+    background: #1a1a2e;
+    color: #fff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    line-height: 24px;
+    font-size: 11pt;
+    font-weight: 700;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .goal-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    margin: 10px 0;
+  }
+
+  .essay-excerpt {
+    background: #fafafa;
+    border: 1px solid #e0e0e8;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 10.5pt;
+    margin: 8px 0;
+    line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+
+  table.compare {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10.5pt;
+    margin: 8px 0;
+  }
+  table.compare th {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 6px 10px;
+    text-align: left;
+    font-size: 9.5pt;
+  }
+  table.compare td {
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    vertical-align: top;
+  }
+
+  .outline-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 8px 0;
+    font-size: 10.5pt;
+  }
+  .outline-box .outline-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .outline-row {
+    display: flex;
+    gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px dashed #ddd;
+  }
+  .outline-row:last-child { border-bottom: none; }
+  .outline-tag {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #fff;
+    background: #1a1a2e;
+    border-radius: 4px;
+    padding: 2px 8px;
+    min-width: 50px;
+    text-align: center;
+    flex-shrink: 0;
+    line-height: 1.6;
+  }
+
+  .para-map {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 10px 0;
+  }
+  .para-map-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 10.5pt;
+  }
+  .para-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 5px;
+    font-weight: 700;
+    font-size: 9pt;
+    min-width: 32px;
+    text-align: center;
+    color: #fff;
+  }
+  .tag-ok { background: #2d6a2d; }
+  .tag-weak { background: #cc6600; }
+  .tag-thin { background: #cc0000; }
+  .sent-count {
+    font-size: 9pt;
+    color: #888;
+    margin-left: auto;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-box {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #1a1a2e;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .nav {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .nav button {
+    padding: 8px 28px;
+    border: 2px solid #1a1a2e;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a2e;
+    font-family: inherit;
+    font-size: 11pt;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover {
+    background: #1a1a2e;
+    color: #fff;
+  }
+
+  @media (max-width: 720px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- Card 1: Score Overview -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G6.4</div>
+  </div>
+  <div class="card-body">
+    <p>Aileya, let's walk through your writing test so you can see exactly where you stand and what to work on next.</p>
+    <div class="score-grid">
+      <div class="score-box score-warn">
+        <div class="big">80%</div>
+        <div class="label">Overall Score (24/30)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">9/10</div>
+        <div class="label">Multiple Choice</div>
+      </div>
+      <div class="score-box score-warn">
+        <div class="big">15/20</div>
+        <div class="label">Essay</div>
+      </div>
+    </div>
+    <p>You got <b>9 out of 10 multiple choice right</b>, which shows you understand sentence types, conjunctions, appositives, topic sentences, and elaboration.</p>
+    <p>Your essay has <b>good structure and real evidence from the passage</b>. The 5 points you lost on the essay came from <b>spelling</b>, a <b>weak thesis</b>, and needing to <b>explain your evidence more fully</b>.</p>
+  </div>
+</div>
+
+<!-- Card 2: What Your Essay Did Well -->
+<div class="card">
+  <div class="card-header">
+    <h2>What Your Essay Did Well</h2>
+    <div class="card-subtitle">Strong ideas and mature thinking</div>
+  </div>
+  <div class="card-body">
+    <p>Before we look at what to fix, here's what you did right:</p>
+    <ul>
+      <li><b>5 clear paragraphs</b> — intro, three body paragraphs, and a conclusion. Correct structure.</li>
+      <li><b>Real evidence from the passage</b> — you cited studies about memory, scientists about younger brains, and immersion class details.</li>
+      <li><b>Good transitions</b> — "First," "Also," "Because of being exposed," "But," "Though," "No matter" guide the reader through your essay.</li>
+      <li><b>Counterargument</b> — You addressed that some people think older students learn better (P4). Not many students think to do this!</li>
+      <li><b>Uses "because" to explain</b> — "because their brains are in the developing stage," "because they copy sounds and accents easier." This shows reasoning.</li>
+    </ul>
+    <p>You have strong ideas, real evidence, and you even addressed a counterargument. That shows <b>mature thinking</b>. The improvements are about tightening your thesis, cleaning up spelling, and pushing your evidence explanations further.</p>
+  </div>
+</div>
+
+<!-- Card 3: Q9 — "Although" vs "While" -->
+<div class="card">
+  <div class="card-header">
+    <h2>The Question You Missed: Transitions</h2>
+    <div class="card-subtitle">Q9 — "Although" vs. "While"</div>
+  </div>
+  <div class="card-body">
+    <p><b>Q9 — Which transition best connects:</b> "Some experts think older students learn better in structured lessons. _____ others argue that younger children pick up new sounds more easily."</p>
+    <div class="you-wrote">
+      <div class="label">YOU CHOSE</div>
+      "Although" — This suggests one idea is being contradicted or dismissed.
+    </div>
+    <p>"<i>Although</i> older students may learn better..." = suggests older students <b>don't</b> actually learn better. It challenges the first idea.</p>
+    <div class="better">
+      <div class="label">CORRECT ANSWER</div>
+      "While" — This shows two views being compared side by side, without saying one is wrong.
+    </div>
+    <p>"<i>While</i> some experts think older students learn better, others argue..." = both views are <b>presented equally</b>. Neither is dismissed.</p>
+    <div class="tip-box">
+      <div class="label">THE RULE</div>
+      Use <b>"Although"</b> when one idea is being challenged. Use <b>"While"</b> when two ideas are being compared fairly.<br><br>
+      In your essay P4, you actually handled this well! <i>"Though it may be true... it is better for them to learn while they are at a young age."</i> There, you <b>were</b> challenging one side — so "Though" was the right choice.
+    </div>
+    <div class="tip-box">
+      <div class="label">WHY THIS MATTERS</div>
+      This is the same skill you used in P4 of your essay — comparing two viewpoints. Getting this distinction right will help both your MCQ and your essay writing.
+    </div>
+  </div>
+</div>
+
+<!-- Card 4: Plan Before You Write -->
+<div class="card">
+  <div class="card-header">
+    <h2>Plan Before You Write</h2>
+    <div class="card-subtitle">An outline gives your thesis direction and your paragraphs depth</div>
+  </div>
+  <div class="card-body">
+    <p>Spend 2-3 minutes planning before you start writing. Here's what your plan could have looked like:</p>
+    <div class="outline-box">
+      <div class="outline-label">Essay Plan — "The Age of Language"</div>
+      <div style="font-size:9.5pt;color:#888;margin-bottom:6px;"><b>BP</b> = Body Paragraph &nbsp;&bull;&nbsp; <b>E</b> = Evidence from the passage</div>
+      <div class="outline-row">
+        <span class="outline-tag">INTRO</span>
+        <span>Hook about multilingual world &rarr; <b>Thesis:</b> Learning a second language is beneficial because it builds important skills, can be learned effectively through immersion, and is easiest when started at a young age.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">BP 1</span>
+        <span><b>Brain benefits</b> — E1: studies show it strengthens memory and problem-solving &rarr; E2: scientists say younger children learn new sounds because brains are developing</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">BP 2</span>
+        <span><b>Immersion</b> — E1: instructor speaks new language all day &rarr; E2: students hear during lessons, group work, even small requests like asking to go to the bathroom</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">BP 3</span>
+        <span><b>Starting young vs. older</b> — E1: younger children copy sounds and accents naturally &rarr; E2: though older students can learn in structured lessons, starting young is more effective</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">CONC</span>
+        <span>Restate 3 benefits &rarr; broader message: language opens doors to communication and new perspectives</span>
+      </div>
+    </div>
+    <p>Now compare your intro with what a planned intro looks like:</p>
+    <div class="you-wrote">
+      <div class="label">YOUR INTRO</div>
+      "Learning a second language is benefical. It helps students, especially younger children, learn a language they couldn't speak before. Now, lets go to why learning a second language is crucial."
+    </div>
+    <div class="better">
+      <div class="label">WITH A PLAN, YOUR INTRO BECOMES</div>
+      In a world where millions of people speak more than one language, learning a second language is more important than ever. Research shows that it <b>builds brain skills</b>, <b>immersion classes make it effective</b>, and <b>starting at a young age makes it easiest</b>. Students who learn a second language gain skills that will benefit them for life.
+    </div>
+  </div>
+</div>
+
+<!-- Card 5: Strengthen Your Evidence Explanations -->
+<div class="card">
+  <div class="card-header">
+    <h2>Strengthen Your Evidence Explanations</h2>
+    <div class="card-subtitle">You have good evidence — now explain WHY it matters</div>
+  </div>
+  <div class="card-body">
+    <p>Your essay has good evidence but sometimes stops before explaining <b>why</b> it matters. Look at what happens when you add one more sentence:</p>
+    <table class="compare">
+      <tr>
+        <th>What you wrote</th>
+        <th>What to add after it</th>
+      </tr>
+      <tr>
+        <td>"Various studies show that it can help strengthen memory and improve solving skills."</td>
+        <td style="color:#2d6a2d;">"This means that learning a language doesn't just help with communication — it actually makes students <b>better thinkers</b> in all their classes."</td>
+      </tr>
+      <tr>
+        <td>"In immersion classes, the instructor speaks the new language every day."</td>
+        <td style="color:#2d6a2d;">"Because students hear the language constantly, they learn vocabulary <b>naturally</b> instead of memorizing word lists."</td>
+      </tr>
+    </table>
+    <div class="tip-box">
+      <div class="label">THE PATTERN</div>
+      Evidence &rarr; <b>"This shows that..."</b> or <b>"Because of this..."</b> or <b>"This means that..."</b><br><br>
+      Your P3 actually does this well in places! <i>"Because of being exposed to the language, young students pick up the new words easier."</i> That's explanation. Now do it after <b>every</b> piece of evidence.
+    </div>
+  </div>
+</div>
+
+<!-- Card 6: Build a Full Body Paragraph -->
+<div class="card">
+  <div class="card-header">
+    <h2>Build a Full Body Paragraph</h2>
+    <div class="card-subtitle">Your P2 rewritten with TS-E1-X1-E2-X2-CS structure</div>
+  </div>
+  <div class="card-body">
+    <div class="essay-excerpt">
+      <div class="para-label">YOUR VERSION (P2)</div>
+      First, learning a second language has its benefits. Various studies show that it can help strengthen memory and improve solving skills. Also, scientists say that younger children learn new sounds easier because their brains are in the developing stage. This concludes that learning a second language at a young age can help build these skills.
+    </div>
+    <div class="better" style="background:#f8f8fc;border-left-color:#1a1a2e;">
+      <div class="para-label" style="color:#1a1a2e;">DEVELOPED VERSION (6 sentences)</div>
+      <p><b>TS:</b> First, learning a second language offers important benefits for the brain.</p>
+      <p><b>E1:</b> According to the passage, various studies show that learning a new language can strengthen memory and improve problem-solving skills.</p>
+      <p><b>X1:</b> This means that language learning is not just about communication<span class="highlight">;</span> it actually helps students become stronger thinkers across all their subjects.</p>
+      <p><b>E2:</b> <span class="highlight">Additionally,</span> scientists have found that younger children learn new sounds more easily because their brains are still in the developing stage.</p>
+      <p><b>X2:</b> <span class="highlight">As a result,</span> starting language learning early allows children to build these cognitive skills at the time when their brains are most ready to absorb them.</p>
+      <p><b>CS:</b> <span class="highlight">Because of these brain benefits,</span> learning a second language at a young age gives students a lasting advantage.</p>
+    </div>
+    <div class="tip-box">
+      <div class="label">WHAT CHANGED (HIGHLIGHTED)</div>
+      <b>Semicolon:</b> X1 uses a semicolon to join two related ideas into one compound sentence, making it more sophisticated.<br><br>
+      <b>Cause-and-effect transitions:</b> "As a result" and "Because of these brain benefits" show <i>why</i> the evidence matters. These are stronger than "Also" because they explain the connection between ideas.<br><br>
+      <b>"Additionally" instead of "Also":</b> A more precise transition that signals you're adding a second piece of evidence.
+    </div>
+  </div>
+</div>
+
+<!-- Card 7: Proofreading Checklist -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Proofreading Checklist</h2>
+    <div class="card-subtitle">Personalized to the errors in YOUR essay</div>
+  </div>
+  <div class="card-body">
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Check spelling of repeated words.</b><br><span style="font-size:10pt;color:#555;">You wrote "benefical" AND "benifical" — the correct spelling is <b>beneficial</b>. If you use a word more than once, make sure it's right the first time.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>"let's" vs. "lets"</b><br><span style="font-size:10pt;color:#555;">"Let's" means "let us" (let's go). "Lets" means "allows" (she lets him go). In your intro, you meant "let's."</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>"learns" &rarr; "lessons" (P3)</b><br><span style="font-size:10pt;color:#555;">Read each sentence and make sure the word matches what you mean. "During learns" doesn't make sense — you meant "during lessons."</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Does my intro have a thesis?</b><br><span style="font-size:10pt;color:#555;">Your last intro sentence should preview 3 points. If it doesn't, add one: "Learning a second language is beneficial because [1], [2], and [3]."</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Does each body paragraph have at least 5 sentences?</b><br><span style="font-size:10pt;color:#555;">Count them. If a paragraph has only 2-3 sentences, it's underdeveloped. Add another piece of evidence and an explanation.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Did I explain every piece of evidence?</b><br><span style="font-size:10pt;color:#555;">After each fact from the passage, look for "This shows that..." or "As a result..." If it's missing, add it.</span></div>
+    </div>
+    <div class="tip-box">
+      <div class="label">THE 3-MINUTE RULE</div>
+      On a timed test, stop writing with 3 minutes left and run through this checklist. For you, those 3 minutes are best spent catching spelling errors and adding a missing explanation sentence.
+    </div>
+  </div>
+</div>
+
+<!-- Card 8: Your 3 Goals -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">Strong ideas + polished delivery = a top score</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Write a thesis that previews 3 points.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Before you start your essay, decide on your 3 body paragraph topics and write a thesis that names all three. <i>"Learning a second language is beneficial because [1], [2], and [3]."</i> No more "Now, let's go to why..." — jump straight into your argument.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>Explain every piece of evidence.</b><br>
+        <span style="font-size:10.5pt;color:#555;">After each fact from the passage, add <b>"This shows that..."</b> or <b>"As a result..."</b> Your P3 already does this with "Because of being exposed..." — now do it in every paragraph.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Proofread for spelling, especially repeated words.</b><br>
+        <span style="font-size:10.5pt;color:#555;">"Beneficial" was misspelled twice in different ways. Read your essay backward (last sentence first) to catch spelling errors. Focus on words you use more than once.</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">THE BIG PICTURE</div>
+      You scored <b>9/10 on MCQ</b> and your essay has <b>real structure, evidence, and even a counterargument</b> — that's advanced thinking. The gap between 75% on the essay and 90%+ is about a <b>strong thesis</b>, <b>fuller evidence explanations</b>, and <b>catching spelling errors</b>. You already have the ideas and the evidence. Now polish the delivery.
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+let current = 0;
+
+cards.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  bar.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done' : 'Next \u2192';
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) return;
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+goTo(0);
+</script>
+</body>
+</html>

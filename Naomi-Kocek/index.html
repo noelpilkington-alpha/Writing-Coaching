@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Naomi's Writing Test Review — G8.1</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .progress-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ccc;
+    transition: background 0.3s;
+    cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container {
+    position: relative;
+    width: 680px;
+    min-height: 420px;
+  }
+
+  .card {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    background: #fff;
+    border: 2.5px solid #1a1a2e;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 {
+    font-size: 15pt;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .card-header .card-subtitle {
+    font-size: 9.5pt;
+    color: #aaa;
+    margin-top: 2px;
+  }
+
+  .card-body {
+    padding: 18px 22px 22px;
+    line-height: 1.55;
+  }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+  }
+  .score-box .big { font-size: 20pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3;
+    border-left: 3px solid #cc0000;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    font-size: 10.5pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9;
+    border-left: 3px solid #2d6a2d;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 10.5pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5;
+    border-left: 3px solid #1a1a2e;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+
+  .pattern-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; }
+
+  .goal-num {
+    display: inline-block;
+    background: #1a1a2e;
+    color: #fff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    line-height: 24px;
+    font-size: 11pt;
+    font-weight: 700;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .goal-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    margin: 10px 0;
+  }
+
+  .essay-excerpt {
+    background: #fafafa;
+    border: 1px solid #e0e0e8;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 10.5pt;
+    margin: 8px 0;
+    line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+
+  table.compare {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10.5pt;
+    margin: 8px 0;
+  }
+  table.compare th {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 6px 10px;
+    text-align: left;
+    font-size: 9.5pt;
+  }
+  table.compare td {
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    vertical-align: top;
+  }
+
+  .outline-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 8px 0;
+    font-size: 10.5pt;
+  }
+  .outline-box .outline-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .outline-row {
+    display: flex;
+    gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px dashed #ddd;
+  }
+  .outline-row:last-child { border-bottom: none; }
+  .outline-tag {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #fff;
+    background: #1a1a2e;
+    border-radius: 4px;
+    padding: 2px 8px;
+    min-width: 50px;
+    text-align: center;
+    flex-shrink: 0;
+    line-height: 1.6;
+  }
+
+  .para-map {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 10px 0;
+  }
+  .para-map-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 10.5pt;
+  }
+  .para-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 5px;
+    font-weight: 700;
+    font-size: 9pt;
+    min-width: 32px;
+    text-align: center;
+    color: #fff;
+  }
+  .tag-ok { background: #2d6a2d; }
+  .tag-weak { background: #cc6600; }
+  .tag-thin { background: #cc0000; }
+  .sent-count {
+    font-size: 9pt;
+    color: #888;
+    margin-left: auto;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-box {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #1a1a2e;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .nav {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .nav button {
+    padding: 8px 28px;
+    border: 2px solid #1a1a2e;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a2e;
+    font-family: inherit;
+    font-size: 11pt;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover {
+    background: #1a1a2e;
+    color: #fff;
+  }
+
+  @media (max-width: 720px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Score Overview ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G8.1 — "The Library on the Lake"</div>
+  </div>
+  <div class="card-body">
+    <p>Naomi, let's walk through your writing test together. You did really well — here's the breakdown:</p>
+    <div class="score-grid">
+      <div class="score-box score-good">
+        <div class="big">87%</div>
+        <div class="label">Overall Score (26/30)</div>
+      </div>
+      <div class="score-box score-warn">
+        <div class="big">8/10</div>
+        <div class="label">Multiple Choice</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">18/20</div>
+        <div class="label">Essay</div>
+      </div>
+    </div>
+    <p>Your essay scored <b>18 out of 20</b> — that's an excellent score. Your writing is sophisticated, well-organized, and uses evidence effectively. You lost 2 points on multiple choice, and the essay had a couple of minor areas to tighten up. Let's look at what you can refine.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: What Your Essay Did Well ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>What Your Essay Did Well</h2>
+    <div class="card-subtitle">This is genuinely strong writing</div>
+  </div>
+  <div class="card-body">
+    <p>Your essay demonstrates real skill across multiple areas. Here's what stood out:</p>
+    <ul>
+      <li><b>Strong thesis</b> — "culture, local economies, and learning opportunities" previews all three body paragraphs clearly.</li>
+      <li><b>Sophisticated voice</b> — phrases like "profound impacts," "significant improvement in productivity," and "a lively location" show mature, confident writing.</li>
+      <li><b>Excellent transitions</b> — "However," "Additionally," "Like all new changes," "In addition to," and "While" guide the reader smoothly through your argument.</li>
+      <li><b>Varied sentence types</b> — compound sentences, complex sentences with "while," and em-dashes for emphasis. This is above-grade-level sentence craft.</li>
+      <li><b>Addressed counterpoints</b> — Paragraph 4 discusses community doubts about cost and parking before showing how those concerns were resolved. This is a sophisticated essay structure that most students don't attempt.</li>
+      <li><b>Strong conclusion</b> — "more than just a place to read books" captures the transformation, and "While it did come with its struggles" adds nuance rather than just restating your thesis.</li>
+      <li><b>Specific evidence throughout</b> — bicycles/foot/kayak, storytelling sessions, musicians in the atrium, weekend markets, handmade crafts. You pulled real details from the passage.</li>
+    </ul>
+    <p>This is genuinely strong writing. The next cards focus on the 2 MCQ questions you missed and small refinements to take your essay from 90% to 95%+.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: Q3 — "Because" vs "And" ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q3 — "Because" vs. "And"</h2>
+    <div class="card-subtitle">Cause-and-effect vs. parallel actions</div>
+  </div>
+  <div class="card-body">
+    <p><b>The question:</b> Combine these two sentences: "The library kept the timber beams." + "It added shelves of books and reading corners."</p>
+    <div class="you-wrote">
+      <div class="label">YOU CHOSE</div>
+      "Because the library kept the timber beams, it added shelves of books and reading corners."
+    </div>
+    <p>This implies that keeping the beams <b>caused</b> them to add shelves. But there's no cause-and-effect here — keeping beams didn't make them add bookshelves. These are two separate things that happened as part of the same renovation.</p>
+    <div class="better">
+      <div class="label">CORRECT ANSWER</div>
+      "The library kept the timber beams, <b>and</b> it added shelves of books and reading corners."
+    </div>
+    <p>These are <b>parallel actions</b> — two things that happened together — connected with "and."</p>
+    <div class="tip-box">
+      <div class="label">TIP: THE "BECAUSE" TEST</div>
+      Before using "because," ask yourself: <i>"Did the first thing actually cause the second thing?"</i> Keeping beams didn't cause adding shelves — they're both part of the renovation.<br><br>
+      <b>"Because"</b> = one thing caused another: <i>"The library opened, and people came <u>because</u> they wanted to see the new space."</i><br>
+      <b>"And"</b> = two things happened together: <i>"The library kept the beams, <u>and</u> it added new shelves."</i><br><br>
+      In your essay, you actually use "because" well! This was just a tricky MCQ where the cause-and-effect framing sounded plausible but didn't hold up logically.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Q9 — Irrelevant Sentence ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q9 — Which Sentence Doesn't Belong?</h2>
+    <div class="card-subtitle">Programs vs. commerce — precise categorization</div>
+  </div>
+  <div class="card-body">
+    <p><b>Paragraph topic:</b> "programs at the library"</p>
+    <div class="you-wrote">
+      <div class="label">YOU CHOSE (as the irrelevant sentence)</div>
+      "Monthly talks drew people from all over the city."
+    </div>
+    <p>This actually <b>is</b> about a library program — talks are organized activities, which makes them programs. This sentence belongs in the paragraph.</p>
+    <div class="better">
+      <div class="label">CORRECT ANSWER (the sentence that doesn't belong)</div>
+      "Weekend markets sold fresh bread, fruit, and crafts."
+    </div>
+    <p>Markets are <b>commerce</b>, not library programs. Selling bread and fruit is a commercial activity — not an organized educational or cultural program.</p>
+    <div class="tip-box">
+      <div class="label">TIP: DEFINE THE CATEGORY PRECISELY</div>
+      "Programs" means organized activities: talks, classes, storytelling, workshops. A market where people buy food is a commercial activity, not a program. When answering these questions, define the paragraph topic precisely and check each sentence against that definition.<br><br>
+      <b>Interestingly,</b> you actually discussed markets in Paragraph 4 of your essay — and correctly placed them in the paragraph about economic impact, not programs. So you understand this distinction in your own writing. The MCQ just required sharper categorization under time pressure.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: Fine-Tuning Evidence ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Fine-Tuning Your Evidence</h2>
+    <div class="card-subtitle">Stick to the passage — a small refinement</div>
+  </div>
+  <div class="card-body">
+    <p>This is a refinement, not a major fix. Your Paragraph 2 includes this sentence:</p>
+    <div class="essay-excerpt">
+      <div class="para-label">YOUR SENTENCE (P2)</div>
+      "People who worked there noticed a significant improvement in productivity and a sense of calm due to the peaceful environment."
+    </div>
+    <p>This is a smart inference, but it reads like <b>your analysis</b> rather than evidence from the passage. In an expository essay, the rubric awards points for evidence <b>from the passage</b>.</p>
+    <table class="compare">
+      <tr>
+        <th>What you wrote (inference)</th>
+        <th>What the passage says (evidence)</th>
+      </tr>
+      <tr>
+        <td>"People noticed a significant improvement in productivity"</td>
+        <td style="color:#2d6a2d;">The library "served as a quiet workplace" where students and adults could study</td>
+      </tr>
+    </table>
+    <p>Both are fine writing, but the passage-based version is <b>safer for the rubric</b>. When you make an inference, signal it: <i>"This suggests that..."</i> or <i>"This would likely mean..."</i></p>
+    <div class="tip-box">
+      <div class="label">PERSPECTIVE</div>
+      Your other evidence is excellent — bicycles/foot/kayak, storytelling sessions, musicians in the atrium, weekend markets, handmade crafts. This is a small tightening, not a major issue. Most of your evidence is already passage-based.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Align Body Paragraphs with Thesis ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Align Body Paragraphs with Your Thesis</h2>
+    <div class="card-subtitle">Deliver exactly what your thesis promises</div>
+  </div>
+  <div class="card-body">
+    <p><b>Your thesis:</b> "culture, local economies, and learning opportunities"</p>
+    <p>Here's how your body paragraphs currently map to those three topics:</p>
+    <div class="para-map">
+      <div class="para-map-row">
+        <span class="para-tag tag-ok">P2</span>
+        <span><b>Learning</b> — quiet workspace, studying, visitors</span>
+        <span class="sent-count">Maps to "learning opportunities"</span>
+      </div>
+      <div class="para-map-row">
+        <span class="para-tag tag-weak">P3</span>
+        <span><b>Culture + Programs</b> — storytelling, classes, musicians, painters</span>
+        <span class="sent-count">Mixes two sub-topics</span>
+      </div>
+      <div class="para-map-row">
+        <span class="para-tag tag-weak">P4</span>
+        <span><b>Concerns &rarr; Economic impact</b> — doubts, cost, parking, then markets/cafes</span>
+        <span class="sent-count">Economy feels secondary</span>
+      </div>
+    </div>
+    <p>The alignment is slightly off: P3 mixes programs and arts into one paragraph, and P4 leads with concerns before getting to economic impact, which makes the "local economies" evidence feel like an afterthought.</p>
+    <div class="better">
+      <div class="label">A TIGHTER STRUCTURE WOULD BE</div>
+      <b>P2: Learning</b> — quiet workspace, storytelling sessions, classes<br>
+      <b>P3: Culture</b> — musicians in the atrium, painters on the walls, arts community<br>
+      <b>P4: Local economies</b> — cafes, weekend markets, small businesses (address concerns within this paragraph as a counterpoint)
+    </div>
+    <div class="tip-box">
+      <div class="label">TIP</div>
+      After writing your thesis, check that each body paragraph matches one thesis point directly. This makes the essay feel like it delivers exactly what it promises. Your thesis was excellent — the body paragraphs just need to track it more precisely.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 7: Proofreading Checklist ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Proofreading Checklist</h2>
+    <div class="card-subtitle">Higher-order concerns — your conventions are already strong</div>
+  </div>
+  <div class="card-body">
+    <p>Your spelling, grammar, and punctuation are clean. This checklist focuses on the structural and analytical elements that separate a strong essay from an exceptional one:</p>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Does each body paragraph map directly to one thesis point?</b><br><span style="font-size:10pt;color:#555;">Read your thesis, then check each body paragraph's topic. If a paragraph drifts into two topics, split or reorganize.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Is every piece of evidence from the passage?</b><br><span style="font-size:10pt;color:#555;">If you wrote your own analysis or inference, add "This suggests..." or "This likely means..." to signal it. Keep the foundation passage-based.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Check "because" usage: did A actually cause B?</b><br><span style="font-size:10pt;color:#555;">Before using "because," ask: "Did the first thing cause the second thing?" If not, use "and" (parallel), "so" (result), or "which" (additional detail).</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Which sentence doesn't belong? Define the topic precisely.</b><br><span style="font-size:10pt;color:#555;">When answering these MCQ questions, define the paragraph topic in one word (e.g., "programs"), then check each sentence against that specific definition.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Does your conclusion reference all 3 thesis points?</b><br><span style="font-size:10pt;color:#555;">Yours does! "have fun, learn, and grow closer to their community" maps to culture, learning, and community. This is a strong habit — keep it.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 8: Goals ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">Fine-tuning, not rebuilding</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Check cause-and-effect before using "because."</b><br>
+        <span style="font-size:10.5pt;color:#555;">Ask yourself: "Did A cause B?" If the answer is no, use "and" (parallel), "so" (result), or "which" (additional detail). You already use "because" well in your essay — just apply the same logic to MCQ questions where the cause-and-effect framing can be deceptive.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>Align each body paragraph directly with one thesis point.</b><br>
+        <span style="font-size:10.5pt;color:#555;">After writing your thesis with 3 topics, make sure BP1 = topic 1, BP2 = topic 2, BP3 = topic 3. If a paragraph drifts into two topics, split or reorganize. Your thesis was strong — let the structure track it precisely.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Stick to passage evidence; signal your inferences.</b><br>
+        <span style="font-size:10.5pt;color:#555;">When you make an inference, flag it with "This suggests..." or "This likely means..." to distinguish it from direct evidence. This is a small refinement — most of your evidence is already passage-based and specific.</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">THE BIG PICTURE</div>
+      87% with an 18/20 essay is an excellent score. Your writing is mature, well-organized, and uses evidence thoughtfully. The two MCQ misses were about precise categorization — cause vs. parallel, program vs. commerce — and your essay refinements are about tightening alignment and evidence sourcing. These are fine-tuning adjustments, not fundamental changes. Keep writing at this level.
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+let current = 0;
+
+cards.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  bar.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done' : 'Next \u2192';
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) return;
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+goTo(0);
+</script>
+</body>
+</html>

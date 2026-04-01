@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kai's Writing Test Review — G6.5</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .progress-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ccc;
+    transition: background 0.3s;
+    cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container {
+    position: relative;
+    width: 680px;
+    min-height: 420px;
+  }
+
+  .card {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    background: #fff;
+    border: 2.5px solid #1a1a2e;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 {
+    font-size: 15pt;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .card-header .card-subtitle {
+    font-size: 9.5pt;
+    color: #aaa;
+    margin-top: 2px;
+  }
+
+  .card-body {
+    padding: 18px 22px 22px;
+    line-height: 1.55;
+  }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+  }
+  .score-box .big { font-size: 20pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3;
+    border-left: 3px solid #cc0000;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    font-size: 10.5pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9;
+    border-left: 3px solid #2d6a2d;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 10.5pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5;
+    border-left: 3px solid #1a1a2e;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+
+  .pattern-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; }
+
+  .goal-num {
+    display: inline-block;
+    background: #1a1a2e;
+    color: #fff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    line-height: 24px;
+    font-size: 11pt;
+    font-weight: 700;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .goal-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    margin: 10px 0;
+  }
+
+  .essay-excerpt {
+    background: #fafafa;
+    border: 1px solid #e0e0e8;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 10.5pt;
+    margin: 8px 0;
+    line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+
+  table.compare {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10.5pt;
+    margin: 8px 0;
+  }
+  table.compare th {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 6px 10px;
+    text-align: left;
+    font-size: 9.5pt;
+  }
+  table.compare td {
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    vertical-align: top;
+  }
+
+  .outline-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 8px 0;
+    font-size: 10.5pt;
+  }
+  .outline-box .outline-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .outline-row {
+    display: flex;
+    gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px dashed #ddd;
+  }
+  .outline-row:last-child { border-bottom: none; }
+  .outline-tag {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #fff;
+    background: #1a1a2e;
+    border-radius: 4px;
+    padding: 2px 8px;
+    min-width: 50px;
+    text-align: center;
+    flex-shrink: 0;
+    line-height: 1.6;
+  }
+
+  .para-map {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 10px 0;
+  }
+  .para-map-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 10.5pt;
+  }
+  .para-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 5px;
+    font-weight: 700;
+    font-size: 9pt;
+    min-width: 32px;
+    text-align: center;
+    color: #fff;
+  }
+  .tag-ok { background: #2d6a2d; }
+  .tag-weak { background: #cc6600; }
+  .tag-thin { background: #cc0000; }
+  .sent-count {
+    font-size: 9pt;
+    color: #888;
+    margin-left: auto;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-box {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #1a1a2e;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .nav {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .nav button {
+    padding: 8px 28px;
+    border: 2px solid #1a1a2e;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a2e;
+    font-family: inherit;
+    font-size: 11pt;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover {
+    background: #1a1a2e;
+    color: #fff;
+  }
+
+  .trend-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10.5pt;
+    margin: 10px 0;
+  }
+  .trend-table th {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 6px 10px;
+    text-align: center;
+    font-size: 9.5pt;
+  }
+  .trend-table td {
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    text-align: center;
+    vertical-align: middle;
+  }
+  .trend-up { color: #2d6a2d; font-weight: 700; }
+  .trend-down { color: #cc0000; font-weight: 700; }
+
+  @media (max-width: 720px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Score Overview ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G6.5</div>
+  </div>
+  <div class="card-body">
+    <p>Kai, let's go through your second writing test together. This is your G6.5 results.</p>
+    <div class="score-grid">
+      <div class="score-box score-warn">
+        <div class="big">77%</div>
+        <div class="label">Overall Score (23/30)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">10/10</div>
+        <div class="label">Multiple Choice</div>
+      </div>
+      <div class="score-box score-warn">
+        <div class="big">13/20</div>
+        <div class="label">Essay</div>
+      </div>
+    </div>
+    <p>You got a <b>perfect score on multiple choice — 10 out of 10</b>. That proves you understand sentence structure, transitions, appositives, and paragraph organization.</p>
+    <p>But your essay scored <b>13/20</b> — that's where all 7 lost points came from. This is the <b>same pattern from your G6.4 test</b>: you know the rules but your paragraphs are too short. Let's fix this.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: What Your Essay Did Well ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>What Your Essay Did Well</h2>
+    <div class="card-subtitle">You have real strengths to build on</div>
+  </div>
+  <div class="card-body">
+    <p>Before we look at what to fix, here's what you did right:</p>
+    <ul>
+      <li><b>Perfect MCQ</b> — 10/10 proves you have mastered writing skills: complete sentences, declarative vs. interrogative, conjunctions, appositives, kernel expansion, topic sentences, irrelevant sentences, transitions, concluding sentences, and elaboration.</li>
+      <li><b>Five paragraphs</b> — intro, body sections, and a conclusion. Correct essay structure.</li>
+      <li><b>Good transitions</b> — "At first," "so," "Soon," and "All in all" guide the reader through your essay smoothly.</li>
+      <li><b>Stayed on topic</b> — every paragraph is about the Mithi River cleanup. No off-topic detours.</li>
+      <li><b>Good opening context in P2</b> — "the river was black from all of the sewage" paints a clear picture of the problem.</li>
+      <li><b>P3 covers multiple cleanup actions</b> — mapping, testing water, cleanup events, planting. Logical order.</li>
+    </ul>
+    <p>You understand the skills and your ideas are on topic. The problem is entirely about <b>DEPTH</b> — every paragraph needs to be longer, with specific evidence and explanation.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: The Same Issue from G6.4 ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>The Same Issue from G6.4 — Still Too Short</h2>
+    <div class="card-subtitle">The feedback from last time hasn't been applied yet</div>
+  </div>
+  <div class="card-body">
+    <p>Let's compare your last two tests side by side:</p>
+    <table class="trend-table">
+      <tr>
+        <th>Test</th>
+        <th>MCQ</th>
+        <th>Essay</th>
+        <th>Overall</th>
+      </tr>
+      <tr>
+        <td>G6.4</td>
+        <td class="trend-up">9/10</td>
+        <td>16/20</td>
+        <td>83%</td>
+      </tr>
+      <tr>
+        <td>G6.5</td>
+        <td class="trend-up">10/10</td>
+        <td class="trend-down">13/20</td>
+        <td class="trend-down">77%</td>
+      </tr>
+      <tr>
+        <td><b>Change</b></td>
+        <td class="trend-up">+1</td>
+        <td class="trend-down">-3</td>
+        <td class="trend-down">-6%</td>
+      </tr>
+    </table>
+    <p>Your MCQ went <b>up</b> (9 &rarr; 10). Your essay went <b>down</b> (16 &rarr; 13). The gap is widening.</p>
+    <p>The feedback from your last test said to <b>develop paragraphs to 5-6 sentences</b>. On this test, your longest paragraph is still only 3 sentences. This is the <b>#1 thing holding your score back</b>.</p>
+    <div class="para-map">
+      <div class="para-map-row">
+        <span class="para-tag tag-thin">P1</span>
+        <span>Introduction — 1 sentence, no hook, no thesis</span>
+        <span class="sent-count">1 sentence <b>&rarr; aim for 3-4</b></span>
+      </div>
+      <div class="para-map-row">
+        <span class="para-tag tag-weak">P2</span>
+        <span>Context — sets up the problem, not a body paragraph</span>
+        <span class="sent-count">3 sentences <b>&rarr; aim for 5-6</b></span>
+      </div>
+      <div class="para-map-row">
+        <span class="para-tag tag-weak">P3</span>
+        <span>Cleanup actions — lists actions but no explanation</span>
+        <span class="sent-count">3 sentences <b>&rarr; aim for 5-6</b></span>
+      </div>
+      <div class="para-map-row">
+        <span class="para-tag tag-thin">P4</span>
+        <span>Lessons — comma splice, too many ideas crammed in</span>
+        <span class="sent-count">2 sentences <b>&rarr; aim for 5-6</b></span>
+      </div>
+      <div class="para-map-row">
+        <span class="para-tag tag-thin">P5</span>
+        <span>Conclusion — one vague sentence</span>
+        <span class="sent-count">1 sentence <b>&rarr; aim for 2-3</b></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Plan Before You Write ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Plan Before You Write</h2>
+    <div class="card-subtitle">An outline prevents short, underdeveloped paragraphs</div>
+  </div>
+  <div class="card-body">
+    <p>Last time, your feedback said to outline 3 body paragraphs with 2 pieces of evidence each, then write a thesis that previews all three. Here's what your plan should have looked like for this essay:</p>
+    <div class="outline-box">
+      <div class="outline-label">Essay Plan — "Mithi River Cleanup and Teamwork"</div>
+      <div style="font-size:9.5pt;color:#888;margin-bottom:6px;"><b>BP</b> = Body Paragraph &nbsp;&bull;&nbsp; <b>E</b> = Evidence from the passage</div>
+      <div class="outline-row">
+        <span class="outline-tag">INTRO</span>
+        <span>Hook about pollution &rarr; <b>Thesis:</b> The Mithi River cleanup showed that community teamwork can solve environmental problems through <b>organized action</b>, <b>environmental restoration</b>, and <b>shared learning</b>.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">BP 1</span>
+        <span><b>Organized action</b> — E1: mapped dirtiest areas and tested water &rarr; E2: held cleanup events, volunteers removed fourteen tonnes of trash</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">BP 2</span>
+        <span><b>Environmental restoration</b> — E1: planted grasses to filter water and stop soil erosion &rarr; E2: water became twenty percent cleaner</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">BP 3</span>
+        <span><b>Lessons learned</b> — E1: people learned not to wait for someone else &rarr; E2: small actions add up over time</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">CONC</span>
+        <span>Restate 3 points &rarr; broader message about community and environment</span>
+      </div>
+    </div>
+    <p>Now look at the difference an outline makes for your introduction:</p>
+    <div class="you-wrote">
+      <div class="label">YOUR ENTIRE INTRO (1 sentence)</div>
+      Teamwork helped people restore the Mithi River and the community learned many lessons from the cleanup.
+    </div>
+    <div class="better">
+      <div class="label">WITH A PLAN, YOUR INTRO BECOMES (3 sentences)</div>
+      Rivers around the world are being destroyed by pollution, but sometimes all it takes is a group of people who refuse to give up. The Mithi River in Mumbai was once so polluted that it turned black with sewage — until a community organization called Earth5R stepped in. The Mithi River cleanup showed that teamwork can solve environmental problems through <b>organized action</b>, <b>environmental restoration</b>, and <b>shared learning</b>.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: Develop Your Body Paragraphs ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Paragraphs Need More Development</h2>
+    <div class="card-subtitle">Use specific evidence, not general summaries</div>
+  </div>
+  <div class="card-body">
+    <p>Here's the paragraph map again with sentence counts and targets:</p>
+    <div class="para-map">
+      <div class="para-map-row">
+        <span class="para-tag tag-thin">P1</span>
+        <span>Introduction</span>
+        <span class="sent-count">1 sentence <b>&rarr; aim for 3-4</b></span>
+      </div>
+      <div class="para-map-row">
+        <span class="para-tag tag-weak">P2</span>
+        <span>Context / Problem</span>
+        <span class="sent-count">3 sentences <b>&rarr; aim for 5-6</b></span>
+      </div>
+      <div class="para-map-row">
+        <span class="para-tag tag-weak">P3</span>
+        <span>Cleanup Actions</span>
+        <span class="sent-count">3 sentences <b>&rarr; aim for 5-6</b></span>
+      </div>
+      <div class="para-map-row">
+        <span class="para-tag tag-thin">P4</span>
+        <span>Lessons</span>
+        <span class="sent-count">2 sentences <b>&rarr; aim for 5-6</b></span>
+      </div>
+      <div class="para-map-row">
+        <span class="para-tag tag-thin">P5</span>
+        <span>Conclusion</span>
+        <span class="sent-count">1 sentence <b>&rarr; aim for 2-3</b></span>
+      </div>
+    </div>
+    <p>Your paragraphs state what happened but don't use <b>specific details from the passage</b>. Compare what you wrote to what you could have written:</p>
+    <table class="compare">
+      <tr>
+        <th>What you wrote (general)</th>
+        <th>What the passage says (specific)</th>
+      </tr>
+      <tr>
+        <td>"map out the dirtiest parts"</td>
+        <td style="color:#2d6a2d;">"mapped the river and tested the water" — could add: <b>"to understand exactly how polluted each section was"</b></td>
+      </tr>
+      <tr>
+        <td>"planted plants to help clean the water"</td>
+        <td style="color:#2d6a2d;">Planted <b>fresh grasses</b> to <b>filter dirty water</b> and <b>stop soil from washing away</b></td>
+      </tr>
+      <tr>
+        <td>"river started looking better"</td>
+        <td style="color:#2d6a2d;">Water was <b>twenty percent cleaner</b> — a specific, measurable result</td>
+      </tr>
+      <tr>
+        <td>"people started coming back"</td>
+        <td style="color:#2d6a2d;">People <b>started to visit the riverbanks again</b> — shows community impact</td>
+      </tr>
+    </table>
+    <p>Use <b>specific evidence</b> from the passage — numbers, facts, exact details — instead of general summaries. Numbers like "fourteen tonnes" and "twenty percent" make your writing concrete and earn more points.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Build a Full Body Paragraph ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Build a Full Body Paragraph</h2>
+    <div class="card-subtitle">From 3 sentences to 6 with evidence, explanation, and transitions</div>
+  </div>
+  <div class="card-body">
+    <p>Here's your Paragraph 3 rewritten from 3 sentences to 6, using the <b>TS-E1-X1-E2-X2-CS</b> pattern:</p>
+    <div class="essay-excerpt">
+      <div class="para-label">YOUR VERSION (3 sentences)</div>
+      People worked together to map out the dirtiest parts of the river and test the water. They held cleanup events and worked with scientists. They planted plants to help clean the water and prevent soil from washing away.
+    </div>
+    <div class="better" style="background:#f8f8fc;border-left-color:#1a1a2e;">
+      <div class="para-label" style="color:#1a1a2e;">DEVELOPED VERSION (6 sentences)</div>
+      <p><b>TS:</b> Earth5R also took steps to restore the river's natural environment.</p>
+      <p><b>E1:</b> According to the passage, the group <span class="highlight">planted fresh grasses along the riverbanks to filter dirty water and prevent soil from washing away.</span></p>
+      <p><b>X1:</b> This was an important step because it addressed the root cause of the pollution; <span class="highlight">instead of just removing trash, they created a natural system to keep the water clean.</span></p>
+      <p><b>E2:</b> The passage also states that <span class="highlight">the water eventually became twenty percent cleaner than before.</span></p>
+      <p><b>X2:</b> <span class="highlight">As a result,</span> people began visiting the riverbanks again, which showed that the environmental work was making a real difference.</p>
+      <p><b>CS:</b> <span class="highlight">Because of</span> these restoration efforts, the Mithi River went from a polluted waterway to a place the community could enjoy again.</p>
+    </div>
+    <div class="tip-box">
+      <div class="label">WHAT CHANGED (HIGHLIGHTED)</div>
+      <b>Specific evidence:</b> "planted fresh grasses" and "twenty percent cleaner" replace vague summaries with concrete details from the passage.<br><br>
+      <b>Sentence strategies:</b> X1 uses a <b>semicolon</b> to join two related ideas into one compound sentence, making it more sophisticated.<br><br>
+      <b>Cause-and-effect transitions:</b> <b>"As a result"</b> and <b>"Because of"</b> show <i>why</i> the evidence matters. These are stronger than just listing facts because they explain the connection between ideas.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 7: Proofreading Checklist ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Proofreading Checklist</h2>
+    <div class="card-subtitle">Development-focused — your conventions are already clean</div>
+  </div>
+  <div class="card-body">
+    <p>Your spelling and grammar are solid — so your checklist focuses entirely on <b>development</b>, which is where all your lost points come from:</p>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Does my introduction have a thesis that names 3 points?</b><br><span style="font-size:10pt;color:#555;">Read your last sentence. Can you hear three clear topics? If not, add them: "The cleanup showed the power of [1], [2], and [3]."</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Does each body paragraph have at least 5 sentences?</b><br><span style="font-size:10pt;color:#555;">Count them. If a paragraph has only 2-3 sentences, it's too short. Add another piece of evidence and an explanation.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Did I use specific numbers or facts from the passage?</b><br><span style="font-size:10pt;color:#555;">Not "the river got cleaner" but "twenty percent cleaner." Not "they removed trash" but "fourteen tonnes of trash." Specific details earn more points.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Did I explain every piece of evidence?</b><br><span style="font-size:10pt;color:#555;">After each fact from the passage, look for "This shows that..." or "As a result..." If it's missing, add it. Evidence without explanation doesn't earn full points.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Is my conclusion more than one sentence?</b><br><span style="font-size:10pt;color:#555;">Restate your 3 main points in different words, then end with a broader statement. Aim for 2-3 sentences minimum.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Fix comma splices: if you have 3 ideas joined by commas, split them.</b><br><span style="font-size:10pt;color:#555;">Your P4 has: "teamwork can help, you shouldn't wait, and small efforts add up" — three clauses joined with commas. Split into separate sentences or use semicolons.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 8: Goals ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">Same knowledge, more depth — that's the formula</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Plan first: outline 3 body paragraphs with 2 pieces of evidence each, then write a thesis that previews all three.</b><br>
+        <span style="font-size:10.5pt;color:#555;">This is the <b>same goal from G6.4</b> — you need to do it. Spend 2-3 minutes before writing. For each body paragraph, jot down two specific details from the passage. Then write a thesis: <i>"The cleanup showed the power of [1], [2], and [3]."</i> This prevents short paragraphs and gives your essay direction from the start.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>Develop every paragraph to 5-6 sentences: TS, E1, X1, E2, X2, CS.</b><br>
+        <span style="font-size:10.5pt;color:#555;">After your topic sentence, cite a <b>specific detail</b> from the passage, then explain what it shows. Do this twice, then close. After each piece of evidence, explain what it shows using <b>"As a result"</b> or <b>"Because of this."</b> Use specific numbers and facts from the passage — "fourteen tonnes," "twenty percent cleaner" — not general summaries.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Write a real conclusion: restate your 3 main points in different words, then end with a broader statement.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Currently your conclusion is 1 vague sentence: "working together and helping others can help communities." Aim for 2-3 sentences. Restate each of your 3 body paragraph topics, then end with a broader message about why this matters beyond the Mithi River.</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">THE BIG PICTURE</div>
+      You scored <b>10/10 on multiple choice</b> — that means you know everything about writing skills. The <b>ONLY</b> thing holding you back is paragraph development. You have the knowledge. Now you need to write <b>MORE</b> in each paragraph. <b>Plan &rarr; develop &rarr; explain.</b> That's the formula.
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+let current = 0;
+
+cards.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  bar.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done' : 'Next \u2192';
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) return;
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+goTo(0);
+</script>
+</body>
+</html>
