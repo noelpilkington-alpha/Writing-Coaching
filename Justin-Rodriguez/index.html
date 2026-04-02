@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Justin's Writing Test Review — G8.4</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar { display: flex; gap: 6px; margin-bottom: 16px; }
+  .progress-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: #ccc; transition: background 0.3s; cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container { position: relative; width: 680px; min-height: 420px; }
+
+  .card {
+    position: absolute; top: 0; left: 0; width: 100%;
+    background: #fff; border: 2.5px solid #1a1a2e; border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0; pointer-events: none; transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1; pointer-events: auto; transform: translateX(0); position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e; color: #fff; padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+  .card-header .card-subtitle { font-size: 9.5pt; color: #aaa; margin-top: 2px; }
+
+  .card-body { padding: 18px 22px 22px; line-height: 1.55; }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px; margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc; border: 1.5px solid #e0e0e8;
+    border-radius: 8px; padding: 10px 14px; text-align: center;
+  }
+  .score-box .big { font-size: 20pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3; border-left: 3px solid #cc0000;
+    padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+    font-style: italic; font-size: 10.5pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9; border-left: 3px solid #2d6a2d;
+    padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+    font-size: 10.5pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5; border-left: 3px solid #1a1a2e;
+    padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+  .error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+
+  .essay-excerpt {
+    background: #fafafa; border: 1px solid #e0e0e8;
+    border-radius: 6px; padding: 10px 14px; font-size: 10.5pt;
+    margin: 8px 0; line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700; font-size: 9pt; color: #888;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;
+  }
+
+  .outline-box {
+    background: #f8f8fc; border: 1.5px solid #e0e0e8;
+    border-radius: 8px; padding: 12px 16px; margin: 8px 0; font-size: 10.5pt;
+  }
+  .outline-box .outline-label {
+    font-weight: 700; font-size: 9pt; color: #1a1a2e;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+  }
+  .outline-row {
+    display: flex; gap: 10px; padding: 5px 0;
+    border-bottom: 1px dashed #ddd;
+  }
+  .outline-row:last-child { border-bottom: none; }
+  .outline-tag {
+    font-weight: 700; font-size: 9pt; color: #fff; background: #1a1a2e;
+    border-radius: 4px; padding: 2px 8px; min-width: 50px;
+    text-align: center; flex-shrink: 0; line-height: 1.6;
+  }
+
+  .pattern-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 6px 0; border-bottom: 1px solid #eee; font-size: 11pt;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; }
+
+  table.compare {
+    width: 100%; border-collapse: collapse; font-size: 10.5pt; margin: 8px 0;
+  }
+  table.compare th {
+    background: #1a1a2e; color: #fff; padding: 6px 10px;
+    text-align: left; font-size: 9.5pt;
+  }
+  table.compare td { padding: 6px 10px; border: 1px solid #ddd; vertical-align: top; }
+
+  .para-map {
+    display: flex; gap: 6px; margin: 10px 0; flex-wrap: wrap;
+  }
+  .para-tag {
+    padding: 6px 12px; border-radius: 6px; font-size: 10pt; font-weight: 600;
+    border: 1.5px solid;
+  }
+  .para-tag.good { background: #e8f5e9; border-color: #2d6a2d; color: #2d6a2d; }
+  .para-tag.warn { background: #fff3cd; border-color: #e6a800; color: #996600; }
+  .para-tag.bad { background: #fff3f3; border-color: #cc0000; color: #cc0000; }
+
+  .check-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid #eee; font-size: 11pt;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-box {
+    width: 20px; height: 20px; border: 2px solid #1a1a2e;
+    border-radius: 4px; flex-shrink: 0; margin-top: 1px;
+  }
+
+  .goal-num {
+    display: inline-block; background: #1a1a2e; color: #fff;
+    border-radius: 50%; width: 24px; height: 24px; text-align: center;
+    line-height: 24px; font-size: 11pt; font-weight: 700; margin-right: 8px; flex-shrink: 0;
+  }
+  .goal-row { display: flex; align-items: flex-start; gap: 4px; margin: 10px 0; }
+
+  .nav { display: flex; gap: 12px; margin-top: 16px; }
+  .nav button {
+    padding: 8px 28px; border: 2px solid #1a1a2e; border-radius: 8px;
+    background: #fff; color: #1a1a2e; font-family: inherit;
+    font-size: 11pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover { background: #1a1a2e; color: #fff; }
+
+    .print-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 12px; padding: 8px 20px;
+    border: 2px solid #1a1a2e; border-radius: 8px;
+    background: #fff; color: #1a1a2e; font-family: inherit;
+    font-size: 10.5pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .print-btn:hover { background: #1a1a2e; color: #fff; }
+  .print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+  @media print {
+    body { background: #fff; padding: 0; min-height: auto; }
+    .progress-bar, .nav, .print-btn { display: none !important; }
+    .card-container { width: 100%; min-height: auto; }
+    .card { display: none !important; }
+    .card.print-target {
+      display: block !important; opacity: 1 !important;
+      pointer-events: auto !important; position: relative !important;
+      transform: none !important; box-shadow: none;
+      border: 2px solid #1a1a2e; page-break-inside: avoid;
+    }
+    .check-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .card-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .error-mark { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+@media (max-width: 720px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Score Overview ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G8.4</div>
+  </div>
+  <div class="card-body">
+    <p>Justin, let's walk through your writing test. You did well — here's the full breakdown.</p>
+    <div class="score-grid">
+      <div class="score-box score-warn">
+        <div class="big">83%</div>
+        <div class="label">Overall Score (25/30)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">10/10</div>
+        <div class="label">Multiple Choice (PERFECT)</div>
+      </div>
+      <div class="score-box score-warn">
+        <div class="big">15/20</div>
+        <div class="label">Essay</div>
+      </div>
+    </div>
+    <p>You scored a <b>perfect 10 out of 10 on multiple choice</b> — that means you've mastered sentence types, transitions, appositives, conjunctions, and elaboration. Your essay shows solid structure across all five paragraphs, with strong evidence in P2 and P4.</p>
+    <p>The 5 points you lost came from a <b>thesis that doesn't preview your 3 topics</b>, a <b>run-on sentence and off-topic evidence</b> in the middle paragraphs, and several <b>spelling errors</b>. The next cards show you exactly how to fix each one.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: What Your Essay Did Well ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>What Your Essay Did Well</h2>
+    <div class="card-subtitle">There's a lot of genuine skill here</div>
+  </div>
+  <div class="card-body">
+    <ul>
+      <li><b>Perfect MCQ</b> — complete mastery of writing concepts: complete sentences, combining with conjunctions, transitions, appositives, subordinating conjunctions, topic sentences, irrelevant sentences, and elaboration.</li>
+      <li><b>P2 (Hygiene) is strong</b> — specific evidence from the passage: water pouches instead of showers, no-rinse soap, and swallowing toothpaste. Clear topic sentence and explanation.</li>
+      <li><b>P4 (Exercise) has excellent detail</b> — two hours a day of exercise, muscles and bones weaken in microgravity. This shows you know how to pull specific evidence and explain why it matters.</li>
+      <li><b>5-paragraph structure present</b> — intro with a thesis, three body paragraphs, and a conclusion. You understand the G8 essay plan.</li>
+      <li><b>Conclusion ties back to body paragraphs</b> — "By changing how they shower, eat, and exercise" references all three topics.</li>
+    </ul>
+    <div class="tip-box">
+      <div class="label">KEY TAKEAWAY</div>
+      Your P2 and P4 show you know how to find evidence in a passage and explain it. That's the hardest part. The fixes ahead are about <b>consistency</b> — bringing every paragraph up to that level and cleaning up mechanics.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: Thesis That Previews Your Essay ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Thesis That Previews Your Essay</h2>
+    <div class="card-subtitle">Your thesis needs to name your 3 body paragraph topics</div>
+  </div>
+  <div class="card-body">
+    <p>Your thesis tells the reader <i>what</i> the essay is about, but not <i>what specifically</i> the three body paragraphs will cover:</p>
+    <div class="you-wrote">
+      <div class="label">YOUR THESIS</div>
+      "Astronauts adjust their routines to survive and work effectively in space."
+    </div>
+    <p>This is a reasonable claim, but it doesn't preview the three specific topics — hygiene, eating, and exercise — that your body paragraphs actually discuss. A reader finishing your intro doesn't know what's coming next.</p>
+    <div class="better">
+      <div class="label">FOCUSED THESIS</div>
+      "Astronauts aboard the International Space Station must completely adapt their hygiene habits, eating routines, and exercise schedules to survive and work effectively in microgravity."
+    </div>
+    <p>Notice the difference:</p>
+    <table class="compare">
+      <tr>
+        <th>Your Thesis</th>
+        <th>Focused Thesis</th>
+      </tr>
+      <tr>
+        <td>"adjust their routines" &mdash; <span style="color:#cc0000;">vague, doesn't tell the reader which routines</span></td>
+        <td>"hygiene habits, eating routines, and exercise schedules" &mdash; <span style="color:#2d6a2d;">names all 3 body paragraph topics</span></td>
+      </tr>
+    </table>
+    <div class="tip-box">
+      <div class="label">THE RULE</div>
+      A G8 thesis should contain a <b>list of 3 items</b> that match your 3 body paragraphs. Write your thesis <i>after</i> you outline your body paragraphs — then you know exactly what to preview.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Run-On in P3 + Staying On Topic in P4 ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Run-On in P3 + Staying On Topic in P4</h2>
+    <div class="card-subtitle">Two paragraph-level issues to fix</div>
+  </div>
+  <div class="card-body">
+    <p><b>Issue 1: Run-on sentence in Paragraph 3 (Eating)</b></p>
+    <div class="essay-excerpt">
+      <div class="para-label">Your Paragraph 3</div>
+      <span class="highlight">Eating in space is also different most food is dehydrated</span> and astronauts use velcro to keep things from floating away. Crumbs can float into equipment...
+    </div>
+    <p>Two complete thoughts are fused together with no punctuation between them:</p>
+    <div class="you-wrote">
+      <div class="label">RUN-ON</div>
+      "Eating in space is also different most food is dehydrated"
+    </div>
+    <div class="better">
+      <div class="label">FIXED (TWO OPTIONS)</div>
+      <b>Period:</b> "Eating in space is also different<b>.</b> Most food is dehydrated..."<br>
+      <b>Semicolon:</b> "Eating in space is also different<b>;</b> most food is dehydrated..."
+    </div>
+
+    <p style="margin-top:14px;"><b>Issue 2: Off-topic evidence in Paragraph 4 (Exercise)</b></p>
+    <div class="essay-excerpt">
+      <div class="para-label">From Your Paragraph 4</div>
+      Astronauts exercise for two hours a day because muscles and bones weaken... <span class="highlight">doing experiments and making sure everything is secured</span>
+    </div>
+    <p>This paragraph is about <b>exercise</b>, but "doing experiments and making sure everything is secured" is about <b>general work duties</b> — it doesn't belong here. Every sentence in a body paragraph must connect to the topic sentence.</p>
+    <div class="tip-box">
+      <div class="label">STAYING ON TOPIC</div>
+      Before you write each sentence, ask: <b>"Does this connect to my topic sentence?"</b> If your topic sentence is about exercise, then experiments and securing equipment don't fit. Replace off-topic evidence with more detail about exercise — like what types of exercise astronauts do or what happens if they skip it.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: Strengthen Your Conclusion ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Strengthen Your Conclusion</h2>
+    <div class="card-subtitle">Your conclusion works — but it could do more</div>
+  </div>
+  <div class="card-body">
+    <p>Your conclusion is functional — it references all three body paragraph topics:</p>
+    <div class="you-wrote">
+      <div class="label">YOUR CONCLUSION</div>
+      "By changing how they shower, eat, and exercise, astronauts adjust their routines to survive in space."
+    </div>
+    <p>This restates the thesis, which is good. But a strong conclusion does <b>two things</b>: restates the main points <i>and</i> leaves the reader with a broader takeaway.</p>
+    <div class="better">
+      <div class="label">STRONGER CONCLUSION</div>
+      "By changing how they shower, eat, and exercise, astronauts show that surviving in microgravity requires adapting every part of daily life. These adjustments are not just about comfort — they are essential for keeping astronauts healthy enough to carry out their missions. As space exploration expands to longer voyages, the ability to adapt routines will become even more important."
+    </div>
+    <p>Notice what the stronger version adds:</p>
+    <ul>
+      <li><b>Restates the 3 topics</b> — shower, eat, exercise (same as yours)</li>
+      <li><b>Connects back to the thesis</b> — "adapting every part of daily life"</li>
+      <li><b>Adds a broader takeaway</b> — why this matters beyond the passage (longer voyages in the future)</li>
+    </ul>
+    <div class="tip-box">
+      <div class="label">CONCLUSION FORMULA</div>
+      <b>Sentence 1:</b> Restate your 3 main points.<br>
+      <b>Sentence 2:</b> Explain why these points matter together.<br>
+      <b>Sentence 3:</b> End with a bigger-picture thought — a "so what?" that gives the reader something to think about.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Proofreading Checklist ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Proofreading Checklist</h2>
+    <div class="card-subtitle">Personalized to your recurring errors</div>
+  </div>
+  <div class="card-body">
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Spelling — "their":</b> <span class="error-mark">thier</span> &rarr; <span class="pattern-right">their</span>. Remember: "I before E except after C" — th<b>ei</b>r.</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Spelling — "effectively":</b> <span class="error-mark">efffectively</span> &rarr; <span class="pattern-right">effectively</span>. Only two F's, not three.</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Spelling — "dehydrated":</b> <span class="error-mark">deyhydrated</span> &rarr; <span class="pattern-right">dehydrated</span>. D-E-H-Y, not D-E-Y-H.</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Spelling — "things":</b> <span class="error-mark">thinngs</span> &rarr; <span class="pattern-right">things</span>. Only one N.</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Punctuation spacing:</b> <span class="error-mark">eat ,</span> &rarr; <span class="pattern-right">eat,</span>. No space before a comma — the comma goes right after the word.</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Run-on check:</b> Read each sentence aloud. If you hear <b>two complete thoughts</b> with no period, semicolon, or conjunction between them, add punctuation.</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>On-topic check:</b> Re-read each body paragraph's topic sentence, then check every other sentence — does it connect directly to that topic?</div>
+    </div>
+    <div class="tip-box">
+      <div class="label">3-MINUTE RULE</div>
+      Save the last 3 minutes of your test for proofreading. Read backward (last sentence first) to catch spelling — when you read forward, your brain auto-corrects. Focus especially on long words like "dehydrated" and "effectively" where extra letters sneak in.
+    </div>
+      <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg> Print this checklist</button>
+</div>
+</div>
+
+<!-- ═══════════ CARD 7: Your 3 Goals ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">Perfect MCQ + solid structure — now sharpen the details</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Write a thesis that previews your 3 body paragraph topics.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Instead of "adjust their routines," name the specific routines: "hygiene habits, eating routines, and exercise schedules." This gives your reader a roadmap and forces you to plan three distinct paragraphs before you start writing.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>Keep every sentence on topic within its paragraph.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Your P4 drifted from exercise into experiments and securing equipment. Before writing each sentence, ask: "Does this connect to my topic sentence?" If it doesn't, cut it and replace it with evidence that does. Your P2 (hygiene) shows you can do this — every sentence there stays focused.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Proofread for spelling errors and run-on sentences.</b><br>
+        <span style="font-size:10.5pt;color:#555;">You had 4 misspelled words (thier, efffectively, deyhydrated, thinngs) and a run-on in P3. Read backward to catch spelling, and read aloud to catch run-ons. Pay extra attention to long words where letters get doubled or swapped.</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">THE BIG PICTURE</div>
+      Perfect MCQ + a complete 5-paragraph essay with real evidence means you have <b>genuine writing skill</b>. The 5 points you lost are about <b>precision</b> — a sharper thesis, staying on topic in every paragraph, and catching mechanical errors. Those are all fixable. You're close to a top score.
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+let current = 0;
+
+cards.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  bar.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done' : 'Next \u2192';
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) return;
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+function printChecklist(btn) {
+  var card = btn.closest('.card');
+  card.classList.add('print-target');
+  window.print();
+  card.classList.remove('print-target');
+}
+
+goTo(0);
+</script>
+</body>
+</html>

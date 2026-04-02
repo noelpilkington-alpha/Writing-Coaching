@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>David's Writing Test Review — G3.4</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .progress-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ccc;
+    transition: background 0.3s;
+    cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container {
+    position: relative;
+    width: 640px;
+    min-height: 420px;
+  }
+
+  .card {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    background: #fff;
+    border: 2.5px solid #1a1a2e;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 {
+    font-size: 15pt;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .card-header .card-subtitle {
+    font-size: 9.5pt;
+    color: #aaa;
+    margin-top: 2px;
+  }
+
+  .card-body {
+    padding: 18px 22px 22px;
+    line-height: 1.55;
+  }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+  }
+  .score-box .big { font-size: 20pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3;
+    border-left: 3px solid #cc0000;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    font-size: 10.5pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9;
+    border-left: 3px solid #2d6a2d;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 10.5pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5;
+    border-left: 3px solid #1a1a2e;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+
+  .pattern-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; }
+
+  .goal-num {
+    display: inline-block;
+    background: #1a1a2e;
+    color: #fff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    line-height: 24px;
+    font-size: 11pt;
+    font-weight: 700;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .goal-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    margin: 10px 0;
+  }
+
+  .essay-excerpt {
+    background: #fafafa;
+    border: 1px solid #e0e0e8;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 10.5pt;
+    margin: 8px 0;
+    line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+
+  .outline-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 8px 0;
+    font-size: 10.5pt;
+  }
+  .outline-box .outline-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .outline-row {
+    display: flex;
+    gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px dashed #ddd;
+  }
+  .outline-row:last-child { border-bottom: none; }
+  .outline-tag {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #fff;
+    background: #1a1a2e;
+    border-radius: 4px;
+    padding: 2px 8px;
+    min-width: 36px;
+    text-align: center;
+    flex-shrink: 0;
+    line-height: 1.6;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-box {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #1a1a2e;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .nav {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .nav button {
+    padding: 8px 28px;
+    border: 2px solid #1a1a2e;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a2e;
+    font-family: inherit;
+    font-size: 11pt;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover {
+    background: #1a1a2e;
+    color: #fff;
+  }
+
+    .print-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 12px; padding: 8px 20px;
+    border: 2px solid #1a1a2e; border-radius: 8px;
+    background: #fff; color: #1a1a2e; font-family: inherit;
+    font-size: 10.5pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .print-btn:hover { background: #1a1a2e; color: #fff; }
+  .print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+  @media print {
+    body { background: #fff; padding: 0; min-height: auto; }
+    .progress-bar, .nav, .print-btn { display: none !important; }
+    .card-container { width: 100%; min-height: auto; }
+    .card { display: none !important; }
+    .card.print-target {
+      display: block !important; opacity: 1 !important;
+      pointer-events: auto !important; position: relative !important;
+      transform: none !important; box-shadow: none;
+      border: 2px solid #1a1a2e; page-break-inside: avoid;
+    }
+    .check-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .card-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .error-mark { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+@media (max-width: 720px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Score Overview ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G3.4 — 2nd Test</div>
+  </div>
+  <div class="card-body">
+    <p>David, this is your <b>second writing test</b>. Your first test (G3.3) scored 87%. Let's look at how you did this time and what to focus on next.</p>
+    <div class="score-grid">
+      <div class="score-box score-good">
+        <div class="big">84%</div>
+        <div class="label">Overall Score (38/45)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">8/10</div>
+        <div class="label">Editing (Q1–Q5)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">17/20</div>
+        <div class="label">Paragraph (Q11)</div>
+      </div>
+    </div>
+    <p>Your <b>editing section</b> is strong — you got all 5 questions correct (though watch for spelling like "ferfect"). Your <b>sentence section</b> (Q6–Q10) dropped compared to last time because several answers were missing the <b>why</b>.</p>
+    <p>Your paragraph has great details and 9 sentences, but it has run-ons, capitalization errors, and some spelling issues. The next cards show you exactly how to fix these.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: What You Did Well ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>What You Did Well</h2>
+    <div class="card-subtitle">These are real strengths</div>
+  </div>
+  <div class="card-body">
+    <p>Before we look at what to fix, here's what you should feel good about:</p>
+    <ul>
+      <li><b>Q1 — Great verb upgrade!</b> You changed the sentence to "Layla was admiring the flower." Using "admiring" instead of a basic verb makes the sentence more vivid.</li>
+      <li><b>Q2 — Perfect subordinating conjunction!</b> "Since Layla saw a butterfly, she took out her camera." You used "Since" exactly right — that's a skill many students struggle with.</li>
+      <li><b>Q4 — Smooth combination.</b> You joined two sentences with "but" correctly. Nice work.</li>
+      <li><b>Q5 — Strong sentence with details.</b> "Yesterday I saw a broken rock with sparkling crystals inside." Clear, descriptive, and correct.</li>
+      <li><b>Q6 — Good explanation.</b> You gave a solid explanation of Layla's character with reasons to support your answer.</li>
+      <li><b>Your paragraph</b> has <b>9 sentences</b> with a topic sentence and lots of specific details about sports history. You clearly read the passage carefully and had plenty to write about.</li>
+    </ul>
+    <p>Your editing skills are a real strength — 5 out of 5 correct on Q1–Q5. The points you lost are about <b>explaining why</b> in your sentence answers and <b>cleaning up</b> your paragraph. Let's fix those.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: Finish the Thought with WHY ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Finish the Thought with WHY</h2>
+    <div class="card-subtitle">Your answers need to explain the reason</div>
+  </div>
+  <div class="card-body">
+    <p>On several questions, you gave a good answer but stopped before explaining <b>why</b>. Look at the pattern:</p>
+
+    <p style="margin-top:10px;"><b>Q8</b> — What was the most important moment?</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      The most important moment was when the breeze and birds began to guide her.
+    </div>
+    <p>This tells us <i>what</i> the moment was, but not <i>why</i> it was important.</p>
+    <div class="better">
+      <div class="label">FINISHED</div>
+      The most important moment was when the breeze and birds began to guide her <b>because it showed that nature was helping Layla find her way</b>.
+    </div>
+
+    <p style="margin-top:14px;"><b>Q10</b> — What lesson does this passage teach?</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      They should never take something that belongs to nature.
+    </div>
+    <p>Good idea, but it needs a reason to be complete.</p>
+    <div class="better">
+      <div class="label">WITH THE REASON</div>
+      They should never take something that belongs to nature <b>because natural treasures like the geode are meant to stay where everyone can enjoy them</b>.
+    </div>
+
+    <div class="tip-box">
+      <div class="label">THE "BECAUSE" TRICK</div>
+      Whenever a question asks you to <b>explain</b>, use this formula:<br><br>
+      <b>[Your answer] + because + [your reason].</b><br><br>
+      You already know how to explain well — you did it on Q6! Now use "because" on every explain question to finish the thought.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Grammar — "Would Have" ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Grammar: "Would Have"</h2>
+    <div class="card-subtitle">Q7 — Fixing a common verb mistake</div>
+  </div>
+  <div class="card-body">
+    <p>On Q7, you had a great idea but a grammar error tripped you up:</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      I would <span class="highlight">shown</span> the geode to a guide so no one steals and it satys in a safe place.
+    </div>
+    <p>The problem is <b>"would shown"</b> — that's not how the verb works. You need either:</p>
+    <div class="pattern-row"><span class="pattern-wrong">would shown</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">would <b>show</b></span></div>
+    <div class="pattern-row"><span class="pattern-wrong">would shown</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">would <b>have shown</b></span></div>
+    <div class="better">
+      <div class="label">FIXED</div>
+      I <b>would have shown</b> the geode to a guide so no one steals it and it <b>stays</b> in a safe place.
+    </div>
+    <div class="tip-box">
+      <div class="label">THE RULE</div>
+      After <b>"would"</b>, you use either:<br><br>
+      &bull; <b>would + base verb</b> &rarr; "I would <b>show</b>"<br>
+      &bull; <b>would have + past participle</b> &rarr; "I would <b>have shown</b>"<br><br>
+      Never put "would" directly before a past participle like "shown," "done," or "gone" without "have" in between.
+    </div>
+    <p style="margin-top:8px;font-size:10pt;color:#555;">Also notice: you wrote <b>"satys"</b> — that should be <b>"stays."</b> Always re-read your answer to catch spelling errors like this.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: Run-On Sentences ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Run-On Sentences</h2>
+    <div class="card-subtitle">Splitting two ideas that got smashed together</div>
+  </div>
+  <div class="card-body">
+    <p>Your paragraph has a <b>run-on sentence</b> — two complete ideas stuck together without proper punctuation:</p>
+    <div class="you-wrote">
+      <div class="label">YOUR RUN-ON</div>
+      Rules were the first big change <span class="highlight">when rules were set nobody could cheat</span>
+    </div>
+    <p>This is actually <b>two ideas</b>:</p>
+    <p>&bull; Idea 1: Rules were the first big change.</p>
+    <p>&bull; Idea 2: When rules were set, nobody could cheat.</p>
+    <div class="better">
+      <div class="label">FIXED (TWO SENTENCES)</div>
+      Rules were the first big change. <b>When rules were set, nobody could cheat.</b>
+    </div>
+    <p style="margin-top:10px;">You also started a sentence with <b>"And"</b>:</p>
+    <div class="you-wrote">
+      <div class="label">FRAGMENT</div>
+      And sports slowly gained much popularity thoughout the world.
+    </div>
+    <div class="better">
+      <div class="label">FIXED</div>
+      <b>Over time,</b> sports slowly gained much popularity throughout the world.
+    </div>
+    <div class="tip-box">
+      <div class="label">HOW TO CATCH RUN-ONS</div>
+      <b>Read your paragraph out loud.</b> If you run out of breath or hear two ideas smashed together, you probably need a period. Also, avoid starting sentences with "And" in formal writing — use transitions like "Over time," "As a result," or "Because of this" instead.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Capitalization Rules ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Capitalization Rules</h2>
+    <div class="card-subtitle">Proper nouns and sentence starts need capital letters</div>
+  </div>
+  <div class="card-body">
+    <p>Your paragraph had several capitalization mistakes. Here are the rules you need to remember:</p>
+
+    <p style="margin-top:10px;"><b>1. Always capitalize proper nouns</b> (names of specific places, people, events):</p>
+    <div class="pattern-row"><span class="pattern-wrong">britain</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">Britain</span></div>
+    <p style="font-size:10pt;color:#555;">Countries, cities, and specific places are <b>always</b> capitalized.</p>
+
+    <p style="margin-top:10px;"><b>2. Be consistent with historical terms:</b></p>
+    <div class="pattern-row"><span class="pattern-wrong">industrial Revolution (inconsistent)</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">Industrial Revolution</span></div>
+    <p style="font-size:10pt;color:#555;">If it's the name of a specific historical event, <b>both</b> words get capitalized.</p>
+
+    <p style="margin-top:10px;"><b>3. Always capitalize the first word of a sentence:</b></p>
+    <div class="pattern-row"><span class="pattern-wrong">then sports became...</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">Then sports became...</span></div>
+    <p style="font-size:10pt;color:#555;">Every sentence must start with a capital letter — no exceptions.</p>
+
+    <div class="tip-box">
+      <div class="label">CAPITALIZATION CHECKLIST</div>
+      Before you hand in your writing, scan for these three things:<br><br>
+      &bull; <b>Names of places</b> — countries, cities, continents (Britain, Greece, America)<br>
+      &bull; <b>Historical events</b> — capitalize all important words (Industrial Revolution, World War II)<br>
+      &bull; <b>Sentence starts</b> — every sentence begins with a capital letter
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 7: Proofreading Checklist ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Proofreading Checklist</h2>
+    <div class="card-subtitle">Check these before you hand in your test</div>
+  </div>
+  <div class="card-body">
+    <p>In AlphaWrite, the <b>Polish</b> stage is where you fix errors before your writing is graded. On a test, you need to be your own editor. Here's your personal checklist based on the mistakes in <i>your</i> test:</p>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Check your spelling — read each word carefully.</b><br><span style="font-size:10pt;color:#555;">You wrote "ferfect" (should be <b>perfect</b>), "satys" (should be <b>stays</b>), "feilds" (should be <b>fields</b>), "workors" (should be <b>workers</b>), and "thoughout" (should be <b>throughout</b>). Slow down and look at tricky words twice.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Check capitalization — proper nouns and sentence starts.</b><br><span style="font-size:10pt;color:#555;">Scan for country names (Britain, not "britain"), historical events (Industrial Revolution), and make sure every sentence starts with a capital letter.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Read your paragraph out loud to catch run-ons.</b><br><span style="font-size:10pt;color:#555;">If you hear two ideas smashed together without a period, split them into two sentences. If you run out of breath, the sentence is too long.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Does every "explain" answer have a "because"?</b><br><span style="font-size:10pt;color:#555;">Go back to each sentence question and check: did I say WHY? If not, add "because + your reason."</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Check grammar — "would show" or "would have shown," never "would shown."</b><br><span style="font-size:10pt;color:#555;">After "would," use either the base verb (show) or "have" + past participle (have shown).</span></div>
+    </div>
+      <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg> Print this checklist</button>
+</div>
+</div>
+
+<!-- ═══════════ CARD 8: Goals ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">Strong editing skills — now level up your sentences and paragraph</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Always explain WHY — use "because" to finish every explain answer.</b><br>
+        <span style="font-size:10.5pt;color:#555;">You lost points on Q8, Q9, and Q10 because your answers told <i>what</i> but not <i>why</i>. Use the formula: <b>[Your answer] + because + [your reason]</b>. This one habit could pick up several points on your sentence section.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>Fix run-ons and fragments — read your paragraph out loud before submitting.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Your paragraph has great content, but the run-on sentence and the "And" fragment cost you points. If you hear two ideas without a pause, add a period. Replace "And" at the start of a sentence with a real transition like "Over time" or "As a result."</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Proofread for spelling and capitalization.</b><br>
+        <span style="font-size:10.5pt;color:#555;">You had five spelling errors and several capitalization mistakes. After you finish writing, go back and scan every sentence: Is every country name capitalized? Does every sentence start with a capital? Do any words look wrong? Fixing these small errors could bring your score back up.</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">THE BIG PICTURE</div>
+      Your biggest strength is your <b>editing skills</b> — you got 5 out of 5 on Q1–Q5, which shows you understand sentence structure, verb upgrades, and subordinating conjunctions. Your paragraph is also packed with details, which shows you read carefully. The next step is <b>finishing your thoughts</b> with "because" on sentence questions and <b>proofreading</b> your paragraph for run-ons, spelling, and capitalization. You scored 87% on your first test, and with these fixes, you can get back up there and beyond. Keep going, David.
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+let current = 0;
+
+cards.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  bar.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done' : 'Next \u2192';
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) return;
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+function printChecklist(btn) {
+  var card = btn.closest('.card');
+  card.classList.add('print-target');
+  window.print();
+  card.classList.remove('print-target');
+}
+
+goTo(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bella's Writing Test Review — G5.3</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .progress-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ccc;
+    transition: background 0.3s;
+    cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container {
+    position: relative;
+    width: 640px;
+    min-height: 420px;
+  }
+
+  .card {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    background: #fff;
+    border: 2.5px solid #1a1a2e;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 {
+    font-size: 15pt;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .card-header .card-subtitle {
+    font-size: 9.5pt;
+    color: #aaa;
+    margin-top: 2px;
+  }
+
+  .card-body {
+    padding: 18px 22px 22px;
+    line-height: 1.55;
+  }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+  }
+  .score-box .big { font-size: 20pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3;
+    border-left: 3px solid #cc0000;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    font-size: 10.5pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9;
+    border-left: 3px solid #2d6a2d;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 10.5pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5;
+    border-left: 3px solid #1a1a2e;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+
+  .pattern-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; }
+
+  .goal-num {
+    display: inline-block;
+    background: #1a1a2e;
+    color: #fff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    line-height: 24px;
+    font-size: 11pt;
+    font-weight: 700;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .goal-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    margin: 10px 0;
+  }
+
+  .essay-excerpt {
+    background: #fafafa;
+    border: 1px solid #e0e0e8;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 10.5pt;
+    margin: 8px 0;
+    line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+
+  .outline-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 8px 0;
+    font-size: 10.5pt;
+  }
+  .outline-box .outline-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .outline-row {
+    display: flex;
+    gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px dashed #ddd;
+  }
+  .outline-row:last-child { border-bottom: none; }
+  .outline-tag {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #fff;
+    background: #1a1a2e;
+    border-radius: 4px;
+    padding: 2px 8px;
+    min-width: 36px;
+    text-align: center;
+    flex-shrink: 0;
+    line-height: 1.6;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-box {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #1a1a2e;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .nav {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .nav button {
+    padding: 8px 28px;
+    border: 2px solid #1a1a2e;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a2e;
+    font-family: inherit;
+    font-size: 11pt;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover {
+    background: #1a1a2e;
+    color: #fff;
+  }
+
+    .print-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 12px; padding: 8px 20px;
+    border: 2px solid #1a1a2e; border-radius: 8px;
+    background: #fff; color: #1a1a2e; font-family: inherit;
+    font-size: 10.5pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .print-btn:hover { background: #1a1a2e; color: #fff; }
+  .print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+  @media print {
+    body { background: #fff; padding: 0; min-height: auto; }
+    .progress-bar, .nav, .print-btn { display: none !important; }
+    .card-container { width: 100%; min-height: auto; }
+    .card { display: none !important; }
+    .card.print-target {
+      display: block !important; opacity: 1 !important;
+      pointer-events: auto !important; position: relative !important;
+      transform: none !important; box-shadow: none;
+      border: 2px solid #1a1a2e; page-break-inside: avoid;
+    }
+    .check-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .card-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .error-mark { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+@media (max-width: 720px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Score Overview ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G5.3</div>
+  </div>
+  <div class="card-body">
+    <p>Bella, let's look at your writing test together so you can see what you did well and what to work on next.</p>
+    <div class="score-grid">
+      <div class="score-box score-good">
+        <div class="big">81%</div>
+        <div class="label">Overall Score (36.5/45)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">5/11</div>
+        <div class="label">Perfect Answers</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">17/20</div>
+        <div class="label">Paragraph</div>
+      </div>
+    </div>
+    <p>You got <b>5 questions exactly right</b> and earned partial credit on the rest. You attempted every single question, and your paragraph scored a strong <b>17 out of 20</b>.</p>
+    <p>Your scores by section: <b>Edit: 7.5/10</b> &bull; <b>Sentence: 12/15</b> &bull; <b>Paragraph: 17/20</b>. The next cards show you what went well and how to pick up the points you missed.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: What You Did Well ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>What You Did Well</h2>
+    <div class="card-subtitle">These are real strengths</div>
+  </div>
+  <div class="card-body">
+    <p>Before we look at what to fix, here's what stood out:</p>
+    <ul>
+      <li><b>Q1 — Perfect appositive!</b> You wrote "Every summer the Thompsons camped at Willow State Park, <span class="highlight">a beautiful camping ground</span>." That comma + description is exactly how an appositive works. Many students struggle with this, and you nailed it.</li>
+      <li><b>Q3 — Sophisticated semicolon attempt.</b> You tried using a semicolon to combine sentences: "Kim unfolded the tent; first, she sorted the poles by size." That shows you're reaching for advanced punctuation. (We'll talk about when semicolons work best later.)</li>
+      <li><b>Q11 — You addressed the other side!</b> In your VR Field Trips paragraph, you brought up the concern about extra screen time and responded with the 10&ndash;15 minute lesson point. That's exactly what strong expository writing looks like: you considered the opposing view and explained why it's not a problem.</li>
+      <li><b>Good paragraph structure.</b> Your paragraph had a topic sentence, evidence (the Louvre example, no permission slips or buses needed), and a concluding sentence. That's the framework of a solid expository paragraph.</li>
+    </ul>
+    <p>You have strong instincts — you try advanced moves like semicolons and addressing opposing views. The points you lost are about <b>execution details</b>: comma placement, spelling, and being specific. Let's fix those.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: Comma + Conjunction Rule ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q2: Comma + Conjunction Rule</h2>
+    <div class="card-subtitle">Where the comma goes when you join two sentences</div>
+  </div>
+  <div class="card-body">
+    <p>The question asked you to <b>combine two sentences using a conjunction</b> (and, but, or, so). Here's what you wrote:</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Jaylen trudged inside, shoulders drooping but, Kim stayed behind, eyeing the car.
+    </div>
+    <p>You had the right idea — use "but" to join the two parts. But the comma is in the wrong spot. Look at where it should go:</p>
+    <div class="better">
+      <div class="label">CORRECT</div>
+      Jaylen trudged inside, shoulders drooping<b>, but</b> Kim stayed behind, eyeing the car.
+    </div>
+    <p>The comma goes <b>before</b> the conjunction, not after it.</p>
+    <div class="tip-box">
+      <div class="label">THE COMMA + CONJUNCTION RULE</div>
+      When you join two complete sentences with a conjunction:<br><br>
+      <b>[Sentence 1] <span class="highlight">, but</span> [Sentence 2].</b><br><br>
+      The comma always comes <b>right before</b> the joining word:<br>
+      &bull; Kim had a plan<b>, so</b> she grabbed the tent.<br>
+      &bull; Jaylen was upset<b>, but</b> Kim cheered him up.<br>
+      &bull; They couldn't go to the park<b>, and</b> it started to rain.<br><br>
+      <b>Never put a comma after the conjunction:</b> "but, Kim" is wrong. "but Kim" (with comma before "but") is right.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Be Specific, Not Vague ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Be Specific, Not Vague</h2>
+    <div class="card-subtitle">Replace general words with details from the passage</div>
+  </div>
+  <div class="card-body">
+    <p>On Q8 and Q10, you had the right idea but your answers were too general. Look at the pattern:</p>
+
+    <p style="margin-top:10px;"><b>Q8</b> — How can Kim's idea inspire you?</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Kim's creative idea can inspire me to come up with a great idea if something doesn't work out.
+    </div>
+    <p>This is vague — what was Kim's idea? What "great idea" would you come up with? The reader needs specifics.</p>
+    <div class="better">
+      <div class="label">SPECIFIC</div>
+      Kim's idea to camp in the backyard instead of giving up inspires me <b>because it shows that when a plan falls apart, you can change it instead of quitting</b>. For example, if a game got rained out, I could find a way to play indoors.
+    </div>
+
+    <p style="margin-top:14px;"><b>Q10</b> — What helped Jaylen feel better?</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Jaylen felt better when Kim had the idea to still do the camping trip, just in the backyard.
+    </div>
+    <p>This describes <i>what happened</i>, but doesn't explain <i>what specifically helped</i> — was it the creativity? The togetherness? The fact that the trip wasn't cancelled?</p>
+    <div class="better">
+      <div class="label">WITH THE "WHY"</div>
+      Jaylen felt better because Kim's backyard camping idea showed him <b>that the trip wasn't ruined — his family could still be together and have fun, even if the location changed</b>.
+    </div>
+
+    <div class="tip-box">
+      <div class="label">THE SPECIFICITY TEST</div>
+      After you write an answer, ask yourself: <b>"Could someone who never read the passage understand exactly what I mean?"</b><br><br>
+      If your answer uses words like "a great idea," "something," or "it" without explaining what those refer to, replace them with the actual details from the story.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: Run-On Sentences ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Run-On Sentences</h2>
+    <div class="card-subtitle">Two sentences smashed together need a fix</div>
+  </div>
+  <div class="card-body">
+    <p>In your VR Field Trips paragraph, you wrote a <b>run-on sentence</b> — two complete thoughts joined with just a comma:</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      VR headsets are changing learning, they are being used in classrooms.
+    </div>
+    <p>This is called a <b>comma splice</b>. Each part is a complete sentence, so a comma alone can't hold them together. You have three ways to fix it:</p>
+
+    <div class="better">
+      <div class="label">FIX 1 — PERIOD (simplest)</div>
+      VR headsets are changing learning<b>.</b> They are being used in classrooms.
+    </div>
+    <div class="better">
+      <div class="label">FIX 2 — COMMA + CONJUNCTION</div>
+      VR headsets are changing learning<b>, and</b> they are being used in classrooms.
+    </div>
+    <div class="better">
+      <div class="label">FIX 3 — SEMICOLON (advanced)</div>
+      VR headsets are changing learning<b>;</b> they are being used in classrooms.
+    </div>
+
+    <p style="margin-top:10px;">You already tried a semicolon on Q3 — that's the right instinct! A semicolon works when two sentences are closely related. Just remember: a comma by itself is <b>never</b> enough to join two complete sentences.</p>
+
+    <div class="tip-box">
+      <div class="label">THE "TWO SENTENCES" TEST</div>
+      Read each part on its own. If both parts could stand alone as complete sentences, you need one of the three fixes above — <b>not</b> just a comma.<br><br>
+      &bull; "VR headsets are changing learning" &larr; complete sentence<br>
+      &bull; "They are being used in classrooms" &larr; complete sentence<br>
+      &bull; Comma alone? Not enough. Add a period, conjunction, or semicolon.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Spelling Spotlight ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Spelling Spotlight</h2>
+    <div class="card-subtitle">Words to practice before next time</div>
+  </div>
+  <div class="card-body">
+    <p>You had several spelling errors across your test. The good news: these are all common words that you can memorize with practice.</p>
+
+    <div class="pattern-row">
+      <span class="pattern-wrong">exited</span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">excited</span>
+    </div>
+    <div class="pattern-row">
+      <span class="pattern-wrong">reding</span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">reading</span>
+    </div>
+    <div class="pattern-row">
+      <span class="pattern-wrong">dissapointed</span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">disappointed</span>
+    </div>
+    <div class="pattern-row">
+      <span class="pattern-wrong">succed</span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">succeed</span>
+    </div>
+    <div class="pattern-row">
+      <span class="pattern-wrong">activites</span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">activities</span>
+    </div>
+
+    <div class="tip-box">
+      <div class="label">SPELLING TRICKS</div>
+      <b>excited</b> — Think "I'm excited to EXIT" — both have "exit" in them, but exci<b>t</b>ed adds a <b>c</b> before the t.<br><br>
+      <b>disappointed</b> — One <b>s</b>, two <b>p</b>'s: di<b>s</b>-a<b>pp</b>-ointed. Think: "I was <b>dis</b>appointed that I got one <b>s</b> but my <b>pp</b> was double."<br><br>
+      <b>succeed</b> — Double <b>c</b>, double <b>e</b>: su<b>cc</b>-<b>ee</b>d.<br><br>
+      <b>activities</b> — It comes from "active" + "ities": activ<b>ities</b>, not activ<b>ites</b>.<br><br>
+      Try writing each word correctly three times before your next test.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 7: Proofreading Checklist ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Proofreading Checklist</h2>
+    <div class="card-subtitle">Check these before you hand in your test</div>
+  </div>
+  <div class="card-body">
+    <p>In AlphaWrite, the <b>Polish</b> stage is where you fix errors before your writing is graded. On a test, you need to be your own editor. Here's your personal checklist based on the mistakes in <i>your</i> test:</p>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Read each sentence out loud.</b><br><span style="font-size:10pt;color:#555;">If it sounds like two ideas smashed together with just a comma, you have a run-on. Add a period, conjunction, or semicolon.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Check comma + conjunction placement.</b><br><span style="font-size:10pt;color:#555;">When joining two sentences with "but," "and," "so," or "or," the comma goes <b>before</b> the conjunction, never after it.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Check spelling of tricky words.</b><br><span style="font-size:10pt;color:#555;">Watch for: excited (not exited), reading (not reding), disappointed (not dissapointed), succeed (not succed), activities (not activites).</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Is every answer specific?</b><br><span style="font-size:10pt;color:#555;">Replace vague words like "a great idea" or "something" with actual details from the passage. Name the character, describe the action, explain the reason.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Does every "explain" answer say WHY?</b><br><span style="font-size:10pt;color:#555;">If a question asks you to explain, make sure your answer includes "because" + your reason, not just what happened.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Does your "because" actually match?</b><br><span style="font-size:10pt;color:#555;">On Q4, you wrote Jaylen was "exited" (excited) — but "shoulders drooping" shows sadness, not excitement. Reread to make sure your reason makes sense with the rest of the sentence.</span></div>
+    </div>
+      <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg> Print this checklist</button>
+</div>
+</div>
+
+<!-- ═══════════ CARD 8: Goals ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">You have great instincts — now sharpen the execution</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Be specific: replace vague words with real details.</b><br>
+        <span style="font-size:10.5pt;color:#555;">When you write "a great idea" or "something," stop and ask: <i>What idea? What something?</i> Name the character, describe the action, and explain <i>why</i> it matters. Your Q1 appositive ("a beautiful camping ground") shows you can do this — apply that same detail to every answer.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>Master comma placement with conjunctions and fix run-ons.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Remember: comma <b>before</b> the conjunction, never after. And when two complete sentences are joined by just a comma, that's a run-on — add a conjunction, use a period, or try a semicolon (you already know how!). Practice the "two sentences test" on everything you write.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Proofread for spelling — especially excited, reading, disappointed, succeed, activities.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Write each word correctly three times to build muscle memory. On the test, slow down and check any word that looks "off." Spelling errors are the easiest points to get back because you already know what you want to say — you just need to double-check how it's written.</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">THE BIG PICTURE</div>
+      Your biggest strength is your <b>instincts</b>. You try semicolons when other students don't even know what they are. You address the opposing side in your paragraph. You use appositives correctly. That tells me you're already thinking like a strong writer. The next step is <b>polishing the details</b> — commas in the right place, specific words instead of vague ones, and catching spelling mistakes. Those are fixable things, and fixing them will push your 81% much higher. Keep reaching for those advanced moves.
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+let current = 0;
+
+cards.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  bar.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done' : 'Next \u2192';
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) return;
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+function printChecklist(btn) {
+  var card = btn.closest('.card');
+  card.classList.add('print-target');
+  window.print();
+  card.classList.remove('print-target');
+}
+
+goTo(0);
+</script>
+</body>
+</html>

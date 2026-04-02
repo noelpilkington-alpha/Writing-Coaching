@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Chloe's Writing Test Review — G4.4</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .progress-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ccc;
+    transition: background 0.3s;
+    cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container {
+    position: relative;
+    width: 640px;
+    min-height: 420px;
+  }
+
+  .card {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    background: #fff;
+    border: 2.5px solid #1a1a2e;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 {
+    font-size: 15pt;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .card-header .card-subtitle {
+    font-size: 9.5pt;
+    color: #aaa;
+    margin-top: 2px;
+  }
+
+  .card-body {
+    padding: 18px 22px 22px;
+    line-height: 1.55;
+  }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+  }
+  .score-box .big { font-size: 20pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3;
+    border-left: 3px solid #cc0000;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    font-size: 10.5pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9;
+    border-left: 3px solid #2d6a2d;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 10.5pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5;
+    border-left: 3px solid #1a1a2e;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+
+  .pattern-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; }
+
+  .goal-num {
+    display: inline-block;
+    background: #1a1a2e;
+    color: #fff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    line-height: 24px;
+    font-size: 11pt;
+    font-weight: 700;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .goal-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    margin: 10px 0;
+  }
+
+  .essay-excerpt {
+    background: #fafafa;
+    border: 1px solid #e0e0e8;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 10.5pt;
+    margin: 8px 0;
+    line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+
+  .outline-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 8px 0;
+    font-size: 10.5pt;
+  }
+  .outline-box .outline-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .outline-row {
+    display: flex;
+    gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px dashed #ddd;
+  }
+  .outline-row:last-child { border-bottom: none; }
+  .outline-tag {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #fff;
+    background: #1a1a2e;
+    border-radius: 4px;
+    padding: 2px 8px;
+    min-width: 36px;
+    text-align: center;
+    flex-shrink: 0;
+    line-height: 1.6;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-box {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #1a1a2e;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .nav {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .nav button {
+    padding: 8px 28px;
+    border: 2px solid #1a1a2e;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a2e;
+    font-family: inherit;
+    font-size: 11pt;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover {
+    background: #1a1a2e;
+    color: #fff;
+  }
+
+    .print-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 12px; padding: 8px 20px;
+    border: 2px solid #1a1a2e; border-radius: 8px;
+    background: #fff; color: #1a1a2e; font-family: inherit;
+    font-size: 10.5pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .print-btn:hover { background: #1a1a2e; color: #fff; }
+  .print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+  @media print {
+    body { background: #fff; padding: 0; min-height: auto; }
+    .progress-bar, .nav, .print-btn { display: none !important; }
+    .card-container { width: 100%; min-height: auto; }
+    .card { display: none !important; }
+    .card.print-target {
+      display: block !important; opacity: 1 !important;
+      pointer-events: auto !important; position: relative !important;
+      transform: none !important; box-shadow: none;
+      border: 2px solid #1a1a2e; page-break-inside: avoid;
+    }
+    .check-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .card-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .error-mark { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+@media (max-width: 720px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Score Overview ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G4.4</div>
+  </div>
+  <div class="card-body">
+    <p>Chloe, let's look at your writing test together so you can see what you did well and what to polish next.</p>
+    <div class="score-grid">
+      <div class="score-box score-good">
+        <div class="big">89%</div>
+        <div class="label">Overall Score (40/45)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">8/11</div>
+        <div class="label">Perfect Answers</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">17/20</div>
+        <div class="label">Paragraph</div>
+      </div>
+    </div>
+    <p>You got <b>8 questions exactly right</b> out of 11. That's an excellent result. You have strong sentence skills and clearly understood both passages.</p>
+    <p>Your paragraph scored <b>17 out of 20</b> — you used a quote from the passage and had a clear main point. The next cards show you how to pick up the last few points.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: What You Did Well ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>What You Did Well</h2>
+    <div class="card-subtitle">These are real strengths</div>
+  </div>
+  <div class="card-body">
+    <p>Before we look at what to refine, here's what you nailed:</p>
+    <ul>
+      <li><b>Q1 — Sentence combining.</b> You smoothly joined two sentences into one. That's a key editing skill and you got full credit.</li>
+      <li><b>Q2 — Fragment fix.</b> You turned a fragment into a complete sentence: "Looking at a study in college, students who had trouble sleeping would listen to music." Full marks.</li>
+      <li><b>Q4 — Combining with "because."</b> You connected a reason to a result perfectly.</li>
+      <li><b>Q5 — Great expansion.</b> "You can listen to it while you shower, while your cooking, and while your playing games" — you added three specific examples using a list pattern. Excellent detail.</li>
+      <li><b>Q7, Q8, Q9, Q10</b> — All correct. You showed strong reading comprehension across the board.</li>
+      <li><b>Your paragraph</b> includes a <b>quote from the passage</b> as evidence — that's a strong move for a 4th grader.</li>
+    </ul>
+    <p>You're a strong writer. The points you lost come down to a few specific skills: <b>appositives</b>, <b>paragraph length</b>, and some <b>small proofreading catches</b>. Let's sharpen those.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: What's an Appositive? ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q3: What's an Appositive?</h2>
+    <div class="card-subtitle">A short description tucked inside the sentence</div>
+  </div>
+  <div class="card-body">
+    <p>The question asked you to <b>rewrite the sentence and add an appositive</b>:</p>
+    <div class="essay-excerpt">
+      <div class="para-label">Original</div>
+      Music can help you learn too.
+    </div>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Educational music can help you learn too.
+    </div>
+    <p>You added the adjective "educational," which is a good instinct — but that's just a describing word, not an appositive. An appositive is a <b>short description</b> placed right after a noun, set off by commas. It tells the reader <i>who</i> or <i>what</i> something is.</p>
+    <div class="better">
+      <div class="label">WITH AN APPOSITIVE</div>
+      <b>Music, <span class="highlight">a powerful learning tool</span>, can help you learn too.</b>
+    </div>
+    <div class="tip-box">
+      <div class="label">THE APPOSITIVE PATTERN</div>
+      <b>Noun, [short description], rest of sentence.</b><br><br>
+      Think of it like a whisper to the reader: <i>"Music — oh, by the way, it's a powerful learning tool — can help you learn too."</i><br><br>
+      More examples:<br>
+      &bull; Classical music, <b>a calming genre</b>, can help you fall asleep.<br>
+      &bull; My teacher, <b>a huge jazz fan</b>, plays music during reading time.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Develop Your Paragraph ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Develop Your Paragraph</h2>
+    <div class="card-subtitle">Add more evidence and explanations</div>
+  </div>
+  <div class="card-body">
+    <p>Your paragraph scored <b>17/20</b>. You had a good topic sentence and used a quote from the passage — that's strong. But at only <b>4 sentences</b>, it's too short. A full G4 paragraph needs more development.</p>
+
+    <p style="margin-top:10px;"><b>What you did well:</b></p>
+    <div class="essay-excerpt">
+      <div class="para-label">Your Topic Sentence</div>
+      The lesson readers should learn from Ferdinand Cheval's story is to use your imagination everywhere you go.
+    </div>
+    <p>Great — this directly answers the prompt. Now you need to <b>support it with more evidence and explanations</b>.</p>
+
+    <p style="margin-top:10px;">Here's the G4 paragraph plan you should follow:</p>
+    <div class="outline-box">
+      <div class="outline-label">Paragraph Plan — "A Legacy of Stone"</div>
+      <div style="font-size:9.5pt;color:#888;margin-bottom:6px;"><b>TS</b> = Topic Sentence &nbsp;&bull;&nbsp; <b>D</b> = Detail from the article &nbsp;&bull;&nbsp; <b>W</b> = Why it matters &nbsp;&bull;&nbsp; <b>CS</b> = Concluding Sentence</div>
+      <div class="outline-row">
+        <span class="outline-tag">TS</span>
+        <span>The lesson readers should learn from Ferdinand Cheval's story is to use your imagination everywhere you go.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D1</span>
+        <span>Cheval was just a mailman who tripped over an unusual stone on his route.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">W</span>
+        <span>Instead of ignoring it, he let his imagination run wild and began collecting more stones.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D2</span>
+        <span>He spent 33 years building an entire palace out of the stones he found.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">W</span>
+        <span>This shows that imagination isn't just about ideas — it takes dedication to turn a vision into something real.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D3</span>
+        <span>Today, the Ideal Palace is a famous landmark that thousands of people visit.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">W</span>
+        <span>This shows that when you use your imagination, you can create something that inspires others for years to come.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">CS</span>
+        <span>Ferdinand Cheval's story shows that imagination can turn even an ordinary stone into something extraordinary.</span>
+      </div>
+    </div>
+    <div class="tip-box">
+      <div class="label">THE KEY</div>
+      You already know how to find evidence (you quoted the passage!). The next step is to <b>add more details</b> and after each one, write a sentence that <b>explains why it matters</b>. Aim for <b>8+ sentences</b> using the TS &rarr; D1 &rarr; W &rarr; D2 &rarr; W &rarr; D3 &rarr; W &rarr; CS pattern.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: Your vs. You're ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your vs. You're</h2>
+    <div class="card-subtitle">Two words that sound the same but mean different things</div>
+  </div>
+  <div class="card-body">
+    <p>In Q5, you wrote a great expanded sentence — but look at these two spots:</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      you can listen to it while you shower, while <span class="highlight">your</span> cooking, and while <span class="highlight">your</span> playing games
+    </div>
+    <p>Both highlighted words should be <b>you're</b> (short for "you are"), not <b>your</b> (which shows ownership).</p>
+    <div class="better">
+      <div class="label">CORRECTED</div>
+      you can listen to it while you shower, while <b>you're</b> cooking, and while <b>you're</b> playing games
+    </div>
+
+    <div class="tip-box">
+      <div class="label">THE QUICK TEST</div>
+      Whenever you write "your," try replacing it with <b>"you are"</b> in your head:<br><br>
+      &bull; "while <b>you are</b> cooking" — Makes sense? Use <b>you're</b>.<br>
+      &bull; "grab <b>you are</b> backpack" — Doesn't make sense? Use <b>your</b>.<br><br>
+      <b>your</b> = belongs to you (your book, your idea)<br>
+      <b>you're</b> = you are (you're running, you're funny)
+    </div>
+
+    <p style="margin-top:10px;">More practice:</p>
+    <div class="pattern-row"><span class="pattern-wrong">Your going to love this song.</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">You're going to love this song.</span></div>
+    <div class="pattern-row"><span class="pattern-wrong">When your done, turn it off.</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">When you're done, turn it off.</span></div>
+    <div class="pattern-row"><span class="pattern-right">Don't forget your headphones.</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">Correct! (your = belongs to you)</span></div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Proofreading Checklist ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Proofreading Checklist</h2>
+    <div class="card-subtitle">Check these before you hand in your test</div>
+  </div>
+  <div class="card-body">
+    <p>You're a strong writer, so your checklist is about catching the <b>small things</b> that cost you points. Use this every time you finish writing:</p>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Check every "your" — should it be "you're"?</b><br><span style="font-size:10pt;color:#555;">Try replacing it with "you are." If that makes sense, change it to "you're."</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Are all names capitalized?</b><br><span style="font-size:10pt;color:#555;">You wrote "cheval" instead of "Cheval" in your conclusion. Names of people and places always get a capital letter.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Is your paragraph long enough?</b><br><span style="font-size:10pt;color:#555;">Count your sentences. If you have fewer than 8, add another detail from the passage and explain why it matters.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Does every detail have an explanation?</b><br><span style="font-size:10pt;color:#555;">After each detail from the passage, check: did I explain what it shows or why it matters? If not, add a sentence.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Does your paragraph end with a concluding sentence?</b><br><span style="font-size:10pt;color:#555;">Your last sentence should connect back to your main point — not just repeat a detail.</span></div>
+    </div>
+      <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg> Print this checklist</button>
+</div>
+</div>
+
+<!-- ═══════════ CARD 7: 3 Goals ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">You're close to a top score — here's how to get there</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Learn the appositive pattern: Noun, [short description], rest of sentence.</b><br>
+        <span style="font-size:10.5pt;color:#555;">You added an adjective on Q3, which shows good instincts — but an appositive is a <i>phrase</i> set off by commas, not just one word. Practice writing 3 sentences with appositives this week. Example: "My dog, <b>a lazy beagle</b>, sleeps all day."</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>Develop your paragraph with the TS &rarr; D &rarr; W &rarr; D &rarr; W &rarr; D &rarr; W &rarr; CS pattern.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Your paragraph had a solid topic sentence and real evidence, but at 4 sentences it was too short. Aim for 8+ sentences by adding more details from the passage and explaining what each one shows. You already know how to find evidence — now give yourself time to develop it fully.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Proofread for your/you're and capitalization.</b><br>
+        <span style="font-size:10.5pt;color:#555;">These are small errors that are easy to fix once you know to look for them. Before you submit, scan every "your" (try "you are" in your head) and check that all names are capitalized. These quick checks can turn your 89% into a 95%+.</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">THE BIG PICTURE</div>
+      Chloe, you scored <b>89%</b> — that's an excellent result. You have strong sentence skills, you use evidence from passages, and you clearly understand what you read. The points you missed are all things you can fix quickly: learn appositives, write longer paragraphs with more explanations, and catch small proofreading errors. You're very close to a top score. Keep going.
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+let current = 0;
+
+cards.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  bar.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done' : 'Next \u2192';
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) return;
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+function printChecklist(btn) {
+  var card = btn.closest('.card');
+  card.classList.add('print-target');
+  window.print();
+  card.classList.remove('print-target');
+}
+
+goTo(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Armin's Writing Test Review — G3.9</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .progress-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ccc;
+    transition: background 0.3s;
+    cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container {
+    position: relative;
+    width: 640px;
+    min-height: 420px;
+  }
+
+  .card {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    background: #fff;
+    border: 2.5px solid #1a1a2e;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 {
+    font-size: 15pt;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .card-header .card-subtitle {
+    font-size: 9.5pt;
+    color: #aaa;
+    margin-top: 2px;
+  }
+
+  .card-body {
+    padding: 18px 22px 22px;
+    line-height: 1.55;
+  }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+  }
+  .score-box .big { font-size: 20pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+  .score-bad .big { color: #cc0000; }
+
+  .you-wrote {
+    background: #fff3f3;
+    border-left: 3px solid #cc0000;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    font-size: 10.5pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9;
+    border-left: 3px solid #2d6a2d;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 10.5pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5;
+    border-left: 3px solid #1a1a2e;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+
+  .pattern-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; }
+
+  .goal-num {
+    display: inline-block;
+    background: #1a1a2e;
+    color: #fff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    line-height: 24px;
+    font-size: 11pt;
+    font-weight: 700;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .goal-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    margin: 10px 0;
+  }
+
+  .essay-excerpt {
+    background: #fafafa;
+    border: 1px solid #e0e0e8;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 10.5pt;
+    margin: 8px 0;
+    line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+
+  .outline-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 8px 0;
+    font-size: 10.5pt;
+  }
+  .outline-box .outline-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .outline-row {
+    display: flex;
+    gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px dashed #ddd;
+  }
+  .outline-row:last-child { border-bottom: none; }
+  .outline-tag {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #fff;
+    background: #1a1a2e;
+    border-radius: 4px;
+    padding: 2px 8px;
+    min-width: 36px;
+    text-align: center;
+    flex-shrink: 0;
+    line-height: 1.6;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-box {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #1a1a2e;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .nav {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .nav button {
+    padding: 8px 28px;
+    border: 2px solid #1a1a2e;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a2e;
+    font-family: inherit;
+    font-size: 11pt;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover {
+    background: #1a1a2e;
+    color: #fff;
+  }
+
+    .print-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 12px; padding: 8px 20px;
+    border: 2px solid #1a1a2e; border-radius: 8px;
+    background: #fff; color: #1a1a2e; font-family: inherit;
+    font-size: 10.5pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .print-btn:hover { background: #1a1a2e; color: #fff; }
+  .print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+  @media print {
+    body { background: #fff; padding: 0; min-height: auto; }
+    .progress-bar, .nav, .print-btn { display: none !important; }
+    .card-container { width: 100%; min-height: auto; }
+    .card { display: none !important; }
+    .card.print-target {
+      display: block !important; opacity: 1 !important;
+      pointer-events: auto !important; position: relative !important;
+      transform: none !important; box-shadow: none;
+      border: 2px solid #1a1a2e; page-break-inside: avoid;
+    }
+    .check-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .card-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .error-mark { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+@media (max-width: 720px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Score Overview ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G3.9 — Second Test</div>
+  </div>
+  <div class="card-body">
+    <p>Armin, let's look at your second writing test together. This score looks low, but when we break it down, you'll see that most of the problem comes from <b>one question</b> — and that's something you can fix right away.</p>
+    <div class="score-grid">
+      <div class="score-box score-bad">
+        <div class="big">38%</div>
+        <div class="label">Overall Score (17/45)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">8/10</div>
+        <div class="label">Editing (Q1–Q5)</div>
+      </div>
+      <div class="score-box score-bad">
+        <div class="big">0/20</div>
+        <div class="label">Paragraph (Q11)</div>
+      </div>
+    </div>
+    <p>Here's the key: <b>Q11 (the paragraph) was worth 20 points, and you didn't attempt it.</b> That means you lost 20 out of 45 points on that one question alone.</p>
+    <p>If we look at just the editing and sentence questions (Q1–Q10), you earned <b>17 out of 25 points</b> — that's <b>68%</b>, which is a much better picture of what you actually know. The biggest thing you can do next time is <b>always write the paragraph</b>, even if you're unsure.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: What You Did Well ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>What You Did Well</h2>
+    <div class="card-subtitle">These are real strengths — don't overlook them</div>
+  </div>
+  <div class="card-body">
+    <p>Even though the overall score is low, you showed some solid skills on this test:</p>
+    <ul>
+      <li><b>Q1 — Perfect declarative sentence.</b> You correctly turned the sentence into "Layla was admiring the flower." Clean and correct.</li>
+      <li><b>Q2 — Correct subordinating conjunction.</b> "Since Layla saw a butterfly, she took out her camera." You used "since" perfectly to combine the sentences. That's a strong grammar skill.</li>
+      <li><b>Q4 — Great compound sentence.</b> "Layla wanted to keep the geode, but she remembered the guide's rule." You used "but" with a comma exactly where it belongs.</li>
+      <li><b>Q5 — Perfect descriptive sentence.</b> "Layla held a broken rock with sparkling crystals inside." Clear and detailed.</li>
+      <li><b>Q6 — Strong character analysis.</b> You gave a good answer with an explanation — exactly what the question asked for.</li>
+    </ul>
+    <p>You have <b>good editing instincts</b> and you understand how to combine sentences. The points you lost came from missing explanations, a few spelling errors, and — most of all — not writing the paragraph. Let's fix those.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: Always Write the Paragraph ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Always Write the Paragraph</h2>
+    <div class="card-subtitle">This is the #1 way to raise your score</div>
+  </div>
+  <div class="card-body">
+    <p>Armin, the paragraph question (Q11) is worth <b>20 out of 45 points</b> — that's almost half the entire test. On this test, you left it blank, which means you lost all 20 points automatically.</p>
+
+    <div class="tip-box">
+      <div class="label">THE MOST IMPORTANT RULE</div>
+      <b>Always write something.</b> Even 2–3 sentences can earn you <b>10 or more points</b> in partial credit. A blank answer always gets 0.
+    </div>
+
+    <p>Here's what even a short attempt could look like. The prompt for Q11 was about "Sports and Society":</p>
+
+    <div class="better">
+      <div class="label">EVEN THIS WOULD EARN POINTS</div>
+      Sports have a big effect on society. One main point is that sports bring people together because fans cheer for the same team. Another main point is that sports teach kids about teamwork.
+    </div>
+    <p style="font-size:10pt;color:#555;">That's only 3 sentences, and it would earn significant partial credit because it has a topic sentence and two details.</p>
+
+    <p style="margin-top:12px;">Here's the G3 paragraph plan you should follow:</p>
+    <div class="outline-box">
+      <div class="outline-label">G3 Expository Paragraph Plan</div>
+      <div style="font-size:9.5pt;color:#888;margin-bottom:6px;"><b>TS</b> = Topic Sentence &bull; <b>D</b> = Detail from the article &bull; <b>W</b> = Why it matters &bull; <b>CS</b> = Concluding Sentence</div>
+      <div class="outline-row">
+        <span class="outline-tag">TS</span>
+        <span>State your main point — turn the prompt into a sentence.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D1</span>
+        <span>First detail or example from the passage.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">W</span>
+        <span>Explain why this detail matters or what it shows.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D2</span>
+        <span>Second detail or example from the passage.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">W</span>
+        <span>Explain why this detail matters or what it shows.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D3</span>
+        <span>Third detail or example from the passage.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">W</span>
+        <span>Explain why this detail matters or what it shows.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">CS</span>
+        <span>Wrap up — restate your main point in different words.</span>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <div class="label">IF YOU'RE RUNNING OUT OF TIME</div>
+      Write <b>at least</b> a topic sentence and one detail with an explanation. That alone can earn you 8–10 points. <b>Never leave Q11 blank.</b>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Finish the Thought with WHY ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Finish the Thought with WHY</h2>
+    <div class="card-subtitle">Use "because" to complete your explanations</div>
+  </div>
+  <div class="card-body">
+    <p>On several questions, you gave a good start but didn't explain <b>why</b>. That's where you lost partial credit. Look at the pattern:</p>
+
+    <p style="margin-top:10px;"><b>Q8</b> — What was the most important moment?</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      The most important moment was when the breeze and birds began to guide her.
+    </div>
+    <p>Good — you picked a moment. But the question asks you to <b>explain why</b> it was important, and you stopped too soon.</p>
+    <div class="better">
+      <div class="label">WITH THE WHY</div>
+      The most important moment was when the breeze and birds began to guide her <b>because without them, Layla might have gotten lost on the trail</b>.
+    </div>
+
+    <p style="margin-top:14px;"><b>Q10</b> — What lesson does this story teach?</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      They should never take something that belongs to nature.
+    </div>
+    <p>That's a good lesson — but you need to explain <b>why</b> or connect it to the story.</p>
+    <div class="better">
+      <div class="label">WITH THE WHY</div>
+      This story teaches that you should never take something that belongs to nature <b>because Layla learned that the geode should stay where it was so others could enjoy it too</b>.
+    </div>
+
+    <div class="tip-box">
+      <div class="label">THE "BECAUSE" TRICK</div>
+      Whenever a question asks you to <b>"explain"</b> or says <b>"why,"</b> use this formula:<br><br>
+      <b>[Your answer] + because + [your reason].</b><br><br>
+      This one habit can pick up several extra points on every test.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: Grammar & Spelling Fixes ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Grammar &amp; Spelling Fixes</h2>
+    <div class="card-subtitle">Small errors that cost you points</div>
+  </div>
+  <div class="card-body">
+    <p>You had a few grammar and spelling mistakes that are easy to fix once you know the pattern:</p>
+
+    <p style="margin-top:10px;"><b>Q3 — Spelling: "goof" instead of "good"</b></p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Did this geode feel like a goof souvenir?
+    </div>
+    <p>You formed the question correctly — great job on the interrogative sentence! But "goof" should be <b>"good."</b> A quick re-read would catch this.</p>
+
+    <p style="margin-top:14px;"><b>Q7 — Grammar: "would shown" instead of "would show"</b></p>
+    <div class="pattern-row"><span class="pattern-wrong">I would shown the geode</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">I would show the geode</span></div>
+    <p style="font-size:10pt;color:#555;">After "would," always use the base form of the verb: would <b>show</b>, would <b>keep</b>, would <b>tell</b> — never "would shown" or "would kept."</p>
+
+    <p style="margin-top:14px;"><b>Q7 — Spelling: "satys" instead of "stays"</b></p>
+    <div class="pattern-row"><span class="pattern-wrong">it satys in a safe place</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">it stays in a safe place</span></div>
+
+    <p style="margin-top:14px;"><b>Q9 — Unclear sentence and fragment</b></p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Because if the Cooper would've taken the geode home it wouldn't be safe.
+    </div>
+    <p>This is confusing — who is "the Cooper"? Also, starting with "Because" makes this a fragment, not a complete sentence.</p>
+    <div class="better">
+      <div class="label">CLEARER VERSION</div>
+      If Layla had taken the geode home, it would not have been safe <b>because it belongs in nature where it can be protected</b>.
+    </div>
+
+    <div class="tip-box">
+      <div class="label">QUICK FIX RULES</div>
+      &bull; After "would," use the base verb: would <b>show</b>, would <b>take</b>, would <b>keep</b><br>
+      &bull; Re-read for swapped letters: "satys" &rarr; <b>stays</b>, "goof" &rarr; <b>good</b><br>
+      &bull; Use character names from the passage — don't make up names<br>
+      &bull; Don't start a sentence with "Because" by itself — make it a full sentence
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Proofreading Checklist ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Proofreading Checklist</h2>
+    <div class="card-subtitle">Check these before you hand in your test</div>
+  </div>
+  <div class="card-body">
+    <p>Use this checklist every time you finish a writing test. These are based on the mistakes in <i>your</i> test:</p>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Did I write the paragraph (Q11)?</b><br><span style="font-size:10pt;color:#555;">This is worth 20 points. Even 2–3 sentences will earn partial credit. Never leave it blank.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Does every "explain" answer have a "because"?</b><br><span style="font-size:10pt;color:#555;">Go back to each sentence question and check: did I say WHY? If not, add "because + your reason."</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Check for swapped or wrong letters.</b><br><span style="font-size:10pt;color:#555;">You wrote "goof" instead of "good" and "satys" instead of "stays." Read each word carefully — does it look right?</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>After "would," did I use the base verb?</b><br><span style="font-size:10pt;color:#555;">Would <b>show</b>, not "would shown." Would <b>keep</b>, not "would kept." Say it out loud — if it sounds wrong, fix it.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Did I use the correct character names?</b><br><span style="font-size:10pt;color:#555;">Use the names from the passage. If you're not sure, look back at the text.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Is every sentence complete — no fragments?</b><br><span style="font-size:10pt;color:#555;">Read each sentence on its own. If it starts with "Because" and doesn't have a main part, it's a fragment. Add the main idea.</span></div>
+    </div>
+      <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg> Print this checklist</button>
+</div>
+</div>
+
+<!-- ═══════════ CARD 7: Goals ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">You have the skills — now use them on every question</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Always attempt the paragraph — never leave Q11 blank.</b><br>
+        <span style="font-size:10.5pt;color:#555;">This is the single biggest thing you can do to raise your score. The paragraph is worth 20 points. Even writing a topic sentence and 1–2 details with explanations can earn you 10+ points. Use the plan: <b>TS &rarr; D1 &rarr; W &rarr; D2 &rarr; W &rarr; D3 &rarr; W &rarr; CS</b>. A short paragraph is always better than no paragraph.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>Use "because" to finish every explain answer.</b><br>
+        <span style="font-size:10.5pt;color:#555;">On Q8 and Q10, you gave good starts but didn't explain why. Use the formula: <b>[your answer] + because + [your reason]</b>. This one habit can pick up several points on every test.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Proofread for grammar and spelling before you submit.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Read each answer out loud. Check for swapped letters ("satys" &rarr; stays, "goof" &rarr; good). After "would," always use the base verb (would <b>show</b>, not "would shown"). Use character names from the passage.</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">THE BIG PICTURE</div>
+      Armin, your editing skills are strong — you earned <b>8 out of 10</b> on the editing section. You know how to form questions, combine sentences, and use conjunctions like "since" and "but." The reason your score dropped this time is that you didn't write the paragraph, and that one question is worth almost half the test. <b>If you write the paragraph next time and add "because" to your explain answers, your score will jump significantly.</b> You have the skills — now make sure you use them on every question.
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+let current = 0;
+
+cards.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  bar.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done' : 'Next \u2192';
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) return;
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+function printChecklist(btn) {
+  var card = btn.closest('.card');
+  card.classList.add('print-target');
+  window.print();
+  card.classList.remove('print-target');
+}
+
+goTo(0);
+</script>
+</body>
+</html>

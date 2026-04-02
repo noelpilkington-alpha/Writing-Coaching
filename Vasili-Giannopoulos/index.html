@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Vasili's Writing Test Review — G3.3</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .progress-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ccc;
+    transition: background 0.3s;
+    cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container {
+    position: relative;
+    width: 640px;
+    min-height: 420px;
+  }
+
+  .card {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    background: #fff;
+    border: 2.5px solid #1a1a2e;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 {
+    font-size: 15pt;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .card-header .card-subtitle {
+    font-size: 9.5pt;
+    color: #aaa;
+    margin-top: 2px;
+  }
+
+  .card-body {
+    padding: 18px 22px 22px;
+    line-height: 1.55;
+  }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+  }
+  .score-box .big { font-size: 20pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3;
+    border-left: 3px solid #cc0000;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    font-size: 10.5pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9;
+    border-left: 3px solid #2d6a2d;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 10.5pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5;
+    border-left: 3px solid #1a1a2e;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+
+  .pattern-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; }
+
+  .goal-num {
+    display: inline-block;
+    background: #1a1a2e;
+    color: #fff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    line-height: 24px;
+    font-size: 11pt;
+    font-weight: 700;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .goal-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    margin: 10px 0;
+  }
+
+  .essay-excerpt {
+    background: #fafafa;
+    border: 1px solid #e0e0e8;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 10.5pt;
+    margin: 8px 0;
+    line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+
+  .outline-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 8px 0;
+    font-size: 10.5pt;
+  }
+  .outline-box .outline-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .outline-row {
+    display: flex;
+    gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px dashed #ddd;
+  }
+  .outline-row:last-child { border-bottom: none; }
+  .outline-tag {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #fff;
+    background: #1a1a2e;
+    border-radius: 4px;
+    padding: 2px 8px;
+    min-width: 36px;
+    text-align: center;
+    flex-shrink: 0;
+    line-height: 1.6;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-box {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #1a1a2e;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .nav {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .nav button {
+    padding: 8px 28px;
+    border: 2px solid #1a1a2e;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a2e;
+    font-family: inherit;
+    font-size: 11pt;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover {
+    background: #1a1a2e;
+    color: #fff;
+  }
+
+    .print-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 12px; padding: 8px 20px;
+    border: 2px solid #1a1a2e; border-radius: 8px;
+    background: #fff; color: #1a1a2e; font-family: inherit;
+    font-size: 10.5pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .print-btn:hover { background: #1a1a2e; color: #fff; }
+  .print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+  @media print {
+    body { background: #fff; padding: 0; min-height: auto; }
+    .progress-bar, .nav, .print-btn { display: none !important; }
+    .card-container { width: 100%; min-height: auto; }
+    .card { display: none !important; }
+    .card.print-target {
+      display: block !important; opacity: 1 !important;
+      pointer-events: auto !important; position: relative !important;
+      transform: none !important; box-shadow: none;
+      border: 2px solid #1a1a2e; page-break-inside: avoid;
+    }
+    .check-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .card-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .error-mark { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+@media (max-width: 720px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Score Overview ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G3.3</div>
+  </div>
+  <div class="card-body">
+    <p>Vasili, let's look at your writing test together so you can see what you did well and what to work on next.</p>
+    <div class="score-grid">
+      <div class="score-box score-warn">
+        <div class="big">73%</div>
+        <div class="label">Overall Score (33/45)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">3/11</div>
+        <div class="label">Perfect Answers</div>
+      </div>
+      <div class="score-box score-warn">
+        <div class="big">16/20</div>
+        <div class="label">Paragraph</div>
+      </div>
+    </div>
+    <p>You got <b>3 questions exactly right</b> (Q1, Q2, Q5) and earned partial credit on the rest — that means you had ideas for every question. You never left anything blank.</p>
+    <p>Your paragraph scored <b>16 out of 20</b>. You clearly read the Pok&eacute;mon article carefully because you included tons of details. The next cards show you how to pick up the points you missed.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: What You Did Well ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>What You Did Well</h2>
+    <div class="card-subtitle">These are real strengths</div>
+  </div>
+  <div class="card-body">
+    <p>Before we look at what to fix, here's what you got right:</p>
+    <ul>
+      <li><b>Q1 — Great question!</b> You turned a statement into "Why did Anna name the seal Sally?" — that's a correct, thoughtful question.</li>
+      <li><b>Q2 — Nice expanded sentence.</b> "Under the rocks Dad freed the pup at noon" — you added details to make the sentence longer. Good work.</li>
+      <li><b>Q5 — You know your conjunctions.</b> You correctly used "But" to start the sentence. (Tip: "Since" or "Because" would be even stronger subordinating conjunctions.)</li>
+      <li><b>Your paragraph</b> is packed with <b>specific details</b> from the article: Satoshi Tajiri, catching bugs, "Dr. Bug," over 150 Pok&eacute;mon, food, board games, TV shows, apps, and movies. You clearly read the passage carefully and remembered a lot.</li>
+    </ul>
+    <p>You have strong ideas and you clearly read passages carefully. The points you lost are about <b>finishing your thoughts</b>, <b>writing complete sentences</b>, and <b>organizing your paragraph</b>. Let's fix those.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: What's an Appositive? ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q3: What's an Appositive?</h2>
+    <div class="card-subtitle">A short description tucked inside the sentence</div>
+  </div>
+  <div class="card-body">
+    <p>The question asked you to <b>rewrite the sentence and add an appositive</b>:</p>
+    <div class="essay-excerpt">
+      <div class="para-label">Original</div>
+      Sally swam to the other seals.
+    </div>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Sally curiously swam to the other seals.
+    </div>
+    <p>You added an <b>adverb</b> ("curiously"), which is a good instinct — but that's not an appositive. An appositive is a <b>short description</b> placed right after a noun, set off by commas. It tells the reader <i>who</i> or <i>what</i> something is.</p>
+    <div class="better">
+      <div class="label">WITH AN APPOSITIVE</div>
+      <b>Sally, <span class="highlight">the baby seal</span>, swam to the other seals.</b>
+    </div>
+    <div class="tip-box">
+      <div class="label">THE APPOSITIVE PATTERN</div>
+      <b>Name, [short description], rest of sentence.</b><br><br>
+      Think of it like a whisper to the reader: <i>"Sally — oh, by the way, she's the baby seal — swam to the other seals."</i><br><br>
+      More examples:<br>
+      &bull; Anna, <b>the oldest child</b>, spotted the seal first.<br>
+      &bull; The fishnet, <b>a tangled mess</b>, was wrapped around the pup.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Finish Your Thoughts ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Finish Your Thoughts</h2>
+    <div class="card-subtitle">Say "because" — then keep going</div>
+  </div>
+  <div class="card-body">
+    <p>On several questions, you started with "because" but didn't finish explaining <b>why</b>. Look at the pattern:</p>
+
+    <p style="margin-top:10px;"><b>Q6</b> — Would you want to be part of this story?</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Yes, because I like animals.
+    </div>
+    <p>You said "because" — great start! But "I like animals" is too short. <i>Which</i> animals? <i>What</i> would you do?</p>
+    <div class="better">
+      <div class="label">FINISHED</div>
+      Yes, because I like animals and I would want to help free the baby seal <b>so it could swim back to its family</b>.
+    </div>
+
+    <p style="margin-top:14px;"><b>Q8</b> — Is "Saving Sally" a good title?</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Yes, because she's a girl.
+    </div>
+    <p>This doesn't explain why the title fits the story. The title is about <i>saving</i> someone, not about being a girl.</p>
+    <div class="better">
+      <div class="label">FINISHED</div>
+      Yes, "Saving Sally" is a good title because the whole story is about the family <b>rescuing the baby seal they named Sally</b>.
+    </div>
+
+    <p style="margin-top:14px;"><b>Q10</b> — What lesson does this story teach?</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Saving others is very kind to do.
+    </div>
+    <p>This is a nice idea, but it's generic — it could be about any story. Connect it back to <i>this</i> story.</p>
+    <div class="better">
+      <div class="label">CONNECTED TO THE STORY</div>
+      This story teaches that saving others is kind <b>because Anna's family worked together to free Sally, and she got to return to her seal family</b>.
+    </div>
+
+    <div class="tip-box">
+      <div class="label">THE "BECAUSE + KEEP GOING" TRICK</div>
+      Whenever a question asks you to <b>explain</b>, use this formula:<br><br>
+      <b>[Your answer] + because + [your reason from the story].</b><br><br>
+      After you write "because," ask yourself: <i>Can I add one more detail?</i> If yes, keep going!
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: Complete Sentences, Not Fragments ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Complete Sentences, Not Fragments</h2>
+    <div class="card-subtitle">Every answer needs a subject and a verb</div>
+  </div>
+  <div class="card-body">
+    <p>Some of your answers are <b>fragments</b> — pieces of sentences that don't stand on their own. Here's the pattern:</p>
+
+    <p style="margin-top:10px;"><b>Q7</b> — What was the main problem?</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Saving Sally, because that's the main problem.
+    </div>
+    <p>This is a fragment — it doesn't have a subject doing something. Also, saying "that's the main problem" just repeats the question.</p>
+    <div class="better">
+      <div class="label">COMPLETE SENTENCE</div>
+      <b>The main problem was</b> that Anna's family needed to save Sally the baby seal before it was too late.
+    </div>
+
+    <p style="margin-top:14px;"><b>Q9</b> — What would you do after reading this story?</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Search for lots different animals.
+    </div>
+    <p>This is a fragment (no subject — <i>who</i> would search?) and it's also missing the word "of." It doesn't explain what you'd do or why.</p>
+    <div class="better">
+      <div class="label">COMPLETE SENTENCE</div>
+      After reading this story, <b>I would</b> search for lots <b>of</b> different animals <b>because the story made me want to help animals like Anna did</b>.
+    </div>
+
+    <p style="margin-top:14px;"><b>Q4</b> — Combine two sentences.</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Anna andJim ran to the beach
+    </div>
+    <p>Good start, but you only wrote the first half! The second sentence is missing entirely, and there's a typo ("andJim" needs a space). Always go back and check that your answer is <b>complete</b>.</p>
+
+    <div class="tip-box">
+      <div class="label">THE COMPLETE SENTENCE CHECK</div>
+      Before you move to the next question, ask yourself:<br><br>
+      <b>1.</b> Does my answer have a <b>subject</b> (who or what)?<br>
+      <b>2.</b> Does my answer have a <b>verb</b> (what are they doing)?<br>
+      <b>3.</b> Does it make sense <b>on its own</b>?<br><br>
+      If any answer is "no," rewrite it as a full sentence.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Organize Your Paragraph ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Organize Your Paragraph</h2>
+    <div class="card-subtitle">Turn your list of facts into a real paragraph</div>
+  </div>
+  <div class="card-body">
+    <p>Your paragraph scored <b>16/20</b>. You included tons of details from the Pok&eacute;mon article — that's great! But right now it reads like a <b>list of facts</b> rather than an organized paragraph. Here's how to fix that:</p>
+
+    <p style="margin-top:10px;"><b>1. Start with a topic sentence that answers the prompt.</b></p>
+    <div class="you-wrote">
+      <div class="label">YOU STARTED WITH</div>
+      For a long time, lots of people have played Pokemon. A person named Satoshi Tajiri. He wanted to make a game...
+    </div>
+    <p>"A person named Satoshi Tajiri" is a fragment, and neither sentence answers the prompt. Turn the prompt into your first sentence:</p>
+    <div class="better">
+      <div class="label">TOPIC SENTENCE</div>
+      <b>Satoshi Tajiri's childhood love of catching bugs led him to create Pok&eacute;mon.</b>
+    </div>
+
+    <p style="margin-top:12px;"><b>2. Use the TS &rarr; D &rarr; W &rarr; CS plan.</b></p>
+    <div class="outline-box">
+      <div class="outline-label">Paragraph Plan — "How Tajiri's childhood influenced Pok&eacute;mon"</div>
+      <div style="font-size:9.5pt;color:#888;margin-bottom:6px;"><b>TS</b> = Topic Sentence &nbsp;&bull;&nbsp; <b>D</b> = Detail from the article &nbsp;&bull;&nbsp; <b>W</b> = Why it matters &nbsp;&bull;&nbsp; <b>CS</b> = Concluding Sentence</div>
+      <div class="outline-row">
+        <span class="outline-tag">TS</span>
+        <span>Satoshi Tajiri's love of catching bugs as a kid led him to create Pok&eacute;mon.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D1</span>
+        <span>As a child, Tajiri spent hours catching bugs — friends called him "Dr. Bug."</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">W</span>
+        <span>This shows how much he loved collecting creatures, which became the main idea behind Pok&eacute;mon.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D2</span>
+        <span>When he grew up, he remembered his bug-catching joy and used it as the idea for a game.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">W</span>
+        <span>This matters because without that childhood memory, the game might never have been created.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D3</span>
+        <span>Pok&eacute;mon became huge — 150+ characters, TV shows, movies, apps.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">W</span>
+        <span>This shows that one kid's hobby turned into something millions of people enjoy.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">CS</span>
+        <span>Tajiri's childhood hobby turned into one of the most popular games in the world.</span>
+      </div>
+    </div>
+    <p>You already had all these details in your paragraph — you just need to <b>organize</b> them and add the <b>"why it matters"</b> sentences after each detail.</p>
+
+    <div class="tip-box">
+      <div class="label">THE TOPIC SENTENCE TRICK</div>
+      Read the prompt, then turn it into your first sentence:<br><br>
+      <b>Prompt:</b> <i>"Explain how Satoshi Tajiri's childhood influenced the creation of Pok&eacute;mon."</i><br>
+      <b>Topic sentence:</b> <i>"Satoshi Tajiri's childhood love of catching bugs influenced him to create Pok&eacute;mon."</i><br><br>
+      See? You just flip the prompt into a statement. Then your details and explanations come after.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 7: Proofreading Checklist ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Proofreading Checklist</h2>
+    <div class="card-subtitle">Check these before you hand in your test</div>
+  </div>
+  <div class="card-body">
+    <p>In AlphaWrite, the <b>Polish</b> stage is where you fix errors before your writing is graded. On a test, you need to be your own editor. Here's your personal checklist based on the mistakes in <i>your</i> test:</p>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Is every answer a complete sentence?</b><br><span style="font-size:10pt;color:#555;">Read each answer out loud. Does it have a subject and a verb? Does it make sense on its own? If not, rewrite it. (You had fragments on Q7 and Q9.)</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Did you finish every answer?</b><br><span style="font-size:10pt;color:#555;">Go back and check: did you write both parts of Q4? Did you write enough for Q6 and Q8? If an answer is only a few words, it's probably not finished.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Does every "explain" answer have a "because" + a reason?</b><br><span style="font-size:10pt;color:#555;">After "because," you need at least one detail from the story. "Because I like animals" is too short. "Because the family worked together to save Sally" is better.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Check for missing words and typos.</b><br><span style="font-size:10pt;color:#555;">You wrote "andJim" (needs a space) and "lots different" (needs "of"). Read slowly and check that every word is there.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Does your paragraph start with a topic sentence?</b><br><span style="font-size:10pt;color:#555;">Read your first sentence. Does it answer the prompt? If it jumps straight into details, add a topic sentence at the beginning.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Does your paragraph end with a concluding sentence?</b><br><span style="font-size:10pt;color:#555;">Your last sentence should wrap up your main point — not introduce a new detail.</span></div>
+    </div>
+      <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg> Print this checklist</button>
+</div>
+</div>
+
+<!-- ═══════════ CARD 8: Goals ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">You have great details — now organize and finish your thoughts</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Write complete sentences and finish every answer.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Before you move to the next question, check: Is this a full sentence? Did I write both parts? Fragments like "Saving Sally, because that's the main problem" and "Search for lots different animals" lose points. Always include a subject, a verb, and a complete thought.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>Use "because" and then keep going — explain with details from the story.</b><br>
+        <span style="font-size:10.5pt;color:#555;">You already know to say "because" — that's great! But after "because," you need to give a real reason from the passage. Instead of "because I like animals," say "because the family worked together to free Sally and she got to swim back to her family." Always connect your answer back to what you read.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Plan your paragraph: topic sentence first, details with explanations, concluding sentence last.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Before you start writing, jot down: What is my main point? What are my 2-3 details? Then turn the prompt into your first sentence. After each detail, add one sentence that explains <i>why it matters</i>. End with a concluding sentence that wraps up your main point.</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">THE BIG PICTURE</div>
+      Your biggest strength is your <b>knowledge of the passages</b>. You clearly read carefully, and your Pok&eacute;mon paragraph is full of specific details. That's the hardest part of writing, and you already have it. The next step is <b>organizing</b> those details (topic sentence first, "why it matters" after each detail, concluding sentence last) and <b>finishing your thoughts</b> on the short-answer questions (always explain <i>why</i> with details from the story). Keep going — you're on the right track.
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+let current = 0;
+
+cards.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  bar.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done' : 'Next \u2192';
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) return;
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+function printChecklist(btn) {
+  var card = btn.closest('.card');
+  card.classList.add('print-target');
+  window.print();
+  card.classList.remove('print-target');
+}
+
+goTo(0);
+</script>
+</body>
+</html>

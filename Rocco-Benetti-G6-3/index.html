@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Rocco's Writing Test Review — G6.3</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar { display: flex; gap: 6px; margin-bottom: 16px; }
+  .progress-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: #ccc; transition: background 0.3s; cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container { position: relative; width: 680px; min-height: 420px; }
+
+  .card {
+    position: absolute; top: 0; left: 0; width: 100%;
+    background: #fff; border: 2.5px solid #1a1a2e; border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0; pointer-events: none; transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1; pointer-events: auto; transform: translateX(0); position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e; color: #fff; padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+  .card-header .card-subtitle { font-size: 9.5pt; color: #aaa; margin-top: 2px; }
+
+  .card-body { padding: 18px 22px 22px; line-height: 1.55; }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px; margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc; border: 1.5px solid #e0e0e8;
+    border-radius: 8px; padding: 10px 14px; text-align: center;
+  }
+  .score-box .big { font-size: 20pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3; border-left: 3px solid #cc0000;
+    padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+    font-style: italic; font-size: 10.5pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9; border-left: 3px solid #2d6a2d;
+    padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+    font-size: 10.5pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5; border-left: 3px solid #1a1a2e;
+    padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+  .error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+
+  .essay-excerpt {
+    background: #fafafa; border: 1px solid #e0e0e8;
+    border-radius: 6px; padding: 10px 14px; font-size: 10.5pt;
+    margin: 8px 0; line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700; font-size: 9pt; color: #888;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;
+  }
+
+  .outline-box {
+    background: #f8f8fc; border: 1.5px solid #e0e0e8;
+    border-radius: 8px; padding: 12px 16px; margin: 8px 0; font-size: 10.5pt;
+  }
+  .outline-box .outline-label {
+    font-weight: 700; font-size: 9pt; color: #1a1a2e;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+  }
+  .outline-row {
+    display: flex; gap: 10px; padding: 5px 0;
+    border-bottom: 1px dashed #ddd;
+  }
+  .outline-row:last-child { border-bottom: none; }
+  .outline-tag {
+    font-weight: 700; font-size: 9pt; color: #fff; background: #1a1a2e;
+    border-radius: 4px; padding: 2px 8px; min-width: 50px;
+    text-align: center; flex-shrink: 0; line-height: 1.6;
+  }
+
+  .pattern-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 6px 0; border-bottom: 1px solid #eee; font-size: 11pt;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; }
+
+  table.compare {
+    width: 100%; border-collapse: collapse; font-size: 10.5pt; margin: 8px 0;
+  }
+  table.compare th {
+    background: #1a1a2e; color: #fff; padding: 6px 10px;
+    text-align: left; font-size: 9.5pt;
+  }
+  table.compare td { padding: 6px 10px; border: 1px solid #ddd; vertical-align: top; }
+
+  .para-map {
+    display: flex; gap: 6px; margin: 10px 0; flex-wrap: wrap;
+  }
+  .para-tag {
+    padding: 6px 12px; border-radius: 6px; font-size: 10pt; font-weight: 600;
+    border: 1.5px solid;
+  }
+  .para-tag.good { background: #e8f5e9; border-color: #2d6a2d; color: #2d6a2d; }
+  .para-tag.warn { background: #fff3cd; border-color: #e6a800; color: #996600; }
+  .para-tag.bad { background: #fff3f3; border-color: #cc0000; color: #cc0000; }
+
+  .check-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid #eee; font-size: 11pt;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-box {
+    width: 20px; height: 20px; border: 2px solid #1a1a2e;
+    border-radius: 4px; flex-shrink: 0; margin-top: 1px;
+  }
+
+  .goal-num {
+    display: inline-block; background: #1a1a2e; color: #fff;
+    border-radius: 50%; width: 24px; height: 24px; text-align: center;
+    line-height: 24px; font-size: 11pt; font-weight: 700; margin-right: 8px; flex-shrink: 0;
+  }
+  .goal-row { display: flex; align-items: flex-start; gap: 4px; margin: 10px 0; }
+
+  .nav { display: flex; gap: 12px; margin-top: 16px; }
+  .nav button {
+    padding: 8px 28px; border: 2px solid #1a1a2e; border-radius: 8px;
+    background: #fff; color: #1a1a2e; font-family: inherit;
+    font-size: 11pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover { background: #1a1a2e; color: #fff; }
+
+    .print-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 12px; padding: 8px 20px;
+    border: 2px solid #1a1a2e; border-radius: 8px;
+    background: #fff; color: #1a1a2e; font-family: inherit;
+    font-size: 10.5pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .print-btn:hover { background: #1a1a2e; color: #fff; }
+  .print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+  @media print {
+    body { background: #fff; padding: 0; min-height: auto; }
+    .progress-bar, .nav, .print-btn { display: none !important; }
+    .card-container { width: 100%; min-height: auto; }
+    .card { display: none !important; }
+    .card.print-target {
+      display: block !important; opacity: 1 !important;
+      pointer-events: auto !important; position: relative !important;
+      transform: none !important; box-shadow: none;
+      border: 2px solid #1a1a2e; page-break-inside: avoid;
+    }
+    .check-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .card-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .error-mark { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+@media (max-width: 720px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Score Overview ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G6.3 — 2nd Test</div>
+  </div>
+  <div class="card-body">
+    <p>Rocco, this is your second writing test. Let's look at how you did and what to work on next.</p>
+    <div class="score-grid">
+      <div class="score-box score-warn">
+        <div class="big">77%</div>
+        <div class="label">Overall Score (23/30)</div>
+      </div>
+      <div class="score-box score-warn">
+        <div class="big">8/10</div>
+        <div class="label">Multiple Choice</div>
+      </div>
+      <div class="score-box score-warn">
+        <div class="big">15/20</div>
+        <div class="label">Essay</div>
+      </div>
+    </div>
+    <p>Your first test (G6.2) was <b>80%</b>. This time you scored <b>77%</b> — a slight drop. Your MCQ went from 10/10 to 8/10 (missed Q4 and Q9), and your essay stayed at 15/20 with similar issues.</p>
+    <p>The passage was <b>"Monarchs on the Move"</b> about monarch butterfly conservation. You clearly understood it — your details about migration, threats, and citizen scientists are solid. The points you lost came from <b>no introduction or thesis</b>, <b>backwards essay structure</b>, <b>spelling errors</b>, and two MCQ mistakes on appositives and transitions. The next cards break each one down.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: What Your Essay Did Well ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>What Your Essay Did Well</h2>
+    <div class="card-subtitle">You know this passage — the issue is organization, not knowledge</div>
+  </div>
+  <div class="card-body">
+    <ul>
+      <li><b>Strong details about migration</b> — P2 includes specifics about monarchs traveling from Canada to Mexico and resting in trees. You pulled real information from the passage.</li>
+      <li><b>Good understanding of threats</b> — P3 covers farms and cities destroying milkweed and storms destroying forests. These are specific, accurate details from the passage.</li>
+      <li><b>Citizen scientist evidence</b> — P4 mentions tagging butterflies, counting caterpillars, and posting sightings. These are concrete examples of how people help.</li>
+      <li><b>Effective closing</b> — P5 uses a direct quote and wraps up with the idea that small actions matter. That's a strong way to end an essay.</li>
+      <li><b>Carter's story is compelling</b> — the detail about his birthday, building a way station, and planting milkweed shows you can develop a specific example with evidence.</li>
+    </ul>
+    <div class="tip-box">
+      <div class="label">KEY TAKEAWAY</div>
+      You have plenty of evidence and good details from the passage. The issue isn't <i>what</i> you know — it's <i>how you organized it</i>. The next cards focus on structure, not content.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: Q4 — Appositives ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q4: Appositives Don't Need Extra Pronouns</h2>
+    <div class="card-subtitle">MCQ — Combining sentences with appositives</div>
+  </div>
+  <div class="card-body">
+    <p>You chose this version:</p>
+    <div class="you-wrote">
+      <div class="label">YOUR ANSWER</div>
+      "Carter, a boy who helped butterflies, <span class="error-mark">he</span> created a way station."
+    </div>
+    <p>The problem is the extra <b>"he"</b> after the appositive. An appositive is a phrase set off by commas that renames the noun. When you close the commas, the original subject is still doing the job:</p>
+    <div class="better">
+      <div class="label">CORRECT VERSION</div>
+      "Carter, a boy who helped butterflies, created a way station."
+    </div>
+    <p>Here's the pattern:</p>
+    <table class="compare">
+      <tr>
+        <th>Structure</th>
+        <th>Example</th>
+      </tr>
+      <tr>
+        <td><b>Subject + appositive + verb</b></td>
+        <td style="color:#2d6a2d;">Carter<b>,</b> a boy who helped butterflies<b>,</b> created a way station.</td>
+      </tr>
+      <tr>
+        <td style="color:#cc0000;"><b>Subject + appositive + pronoun + verb</b></td>
+        <td style="color:#cc0000;">Carter, a boy who helped butterflies, <b>he</b> created a way station.</td>
+      </tr>
+    </table>
+    <div class="tip-box">
+      <div class="label">QUICK TEST</div>
+      Remove the appositive (the part between commas). Does the sentence still work?<br>
+      &bull; "Carter created a way station." &rarr; Yes.<br>
+      &bull; "Carter he created a way station." &rarr; No — the "he" is a leftover. Remove it.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Q9 — Transition Words ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q9: Transition Words — However vs. Unless</h2>
+    <div class="card-subtitle">MCQ — Connecting contrasting ideas</div>
+  </div>
+  <div class="card-body">
+    <p>The two ideas being connected:</p>
+    <div class="essay-excerpt">
+      <div class="para-label">Sentence 1</div>
+      Fewer butterflies are surviving their trips.
+    </div>
+    <div class="essay-excerpt">
+      <div class="para-label">Sentence 2</div>
+      People are taking action to protect them.
+    </div>
+    <p>You chose <b>"Unless"</b> — but these aren't conditional. The second sentence doesn't depend on the first. Both things are happening at the same time. The correct word is <b>"However"</b> — it shows contrast between a bad situation and a positive response.</p>
+    <table class="compare">
+      <tr>
+        <th>Transition</th>
+        <th>What it means</th>
+        <th>Fits here?</th>
+      </tr>
+      <tr>
+        <td><b>However</b></td>
+        <td>Shows contrast: "This is true, <i>but on the other hand</i>..."</td>
+        <td style="color:#2d6a2d;"><b>Yes</b> — bad news contrasted with good news</td>
+      </tr>
+      <tr>
+        <td><b>Unless</b></td>
+        <td>Shows a condition: "This will happen <i>if not</i>..."</td>
+        <td style="color:#cc0000;"><b>No</b> — no condition is being set</td>
+      </tr>
+      <tr>
+        <td><b>Therefore</b></td>
+        <td>Shows cause-and-effect: "Because of this..."</td>
+        <td style="color:#cc0000;"><b>No</b> — the action isn't caused by fewer surviving</td>
+      </tr>
+    </table>
+    <div class="tip-box">
+      <div class="label">TIP</div>
+      When two sentences show <b>opposite situations</b> (bad news then good news, or a problem then a solution), the connecting word is almost always <b>"However"</b> or <b>"But."</b> "Unless" sets up a condition — it means "if not," which changes the meaning entirely.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: Write an Introduction First ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Write an Introduction First</h2>
+    <div class="card-subtitle">Your essay jumped straight into Carter's story</div>
+  </div>
+  <div class="card-body">
+    <p>Your essay's first paragraph was about Carter — his birthday, his way station, planting milkweed. That's a <b>body paragraph</b>, not an introduction. An introduction needs two things:</p>
+    <ul>
+      <li><b>A hook</b> — something interesting to pull the reader in</li>
+      <li><b>A thesis</b> — one sentence that previews your main points</li>
+    </ul>
+    <p>Here's what your essay looks like now vs. what it should look like:</p>
+    <div class="you-wrote">
+      <div class="label">YOUR P1 (NO INTRO)</div>
+      Starts immediately with Carter's birthday, way station, milkweed planting. No hook, no thesis, no preview of what the essay will explain.
+    </div>
+    <div class="better">
+      <div class="label">WHAT AN INTRO SHOULD LOOK LIKE</div>
+      <b>[Hook]</b> Every year, millions of monarch butterflies make an incredible journey from Canada to Mexico — but that journey is becoming more dangerous.<br>
+      <b>[Thesis]</b> People are helping monarch butterflies survive by creating way stations, studying their migration as citizen scientists, and spreading awareness about the threats they face.
+    </div>
+    <p>Notice how the thesis <b>previews three topics</b> — one for each body paragraph. This gives your essay a roadmap so the reader (and you) know exactly where it's going.</p>
+    <div class="tip-box">
+      <div class="label">G6 ESSAY PLAN</div>
+      <b>INTRO</b> (hook + thesis) &rarr; <b>BP1</b> (TS + E1 + X1 + E2 + X2 + CS) &rarr; <b>BP2</b> &rarr; <b>BP3</b> &rarr; <b>CONC</b><br><br>
+      Always start with the introduction. Don't jump into your first example — set up the essay first.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Reorganize Your Essay ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Reorganize Your Essay</h2>
+    <div class="card-subtitle">Your structure is backwards — solutions before problems</div>
+  </div>
+  <div class="card-body">
+    <p>Here's the order your essay actually follows:</p>
+    <div class="para-map">
+      <span class="para-tag bad">P1: Carter (solution)</span>
+      <span class="para-tag warn">P2: Migration (background)</span>
+      <span class="para-tag warn">P3: Threats (problems)</span>
+      <span class="para-tag good">P4: Citizen scientists (solution)</span>
+      <span class="para-tag good">P5: Carter again (conclusion)</span>
+    </div>
+    <p>The prompt asks <b>"How people are helping monarch butterflies survive."</b> P2 (migration background) and P3 (threats) don't directly answer that question — they explain the <i>problem</i>, not the <i>solution</i>. And you start with a solution (Carter) before explaining why monarchs need help.</p>
+    <p>Here's a better structure using the same information you already had:</p>
+    <div class="outline-box">
+      <div class="outline-label">Reorganized Essay Plan</div>
+      <div class="outline-row">
+        <span class="outline-tag">INTRO</span>
+        <span>Hook about monarchs' journey &rarr; <b>Thesis:</b> People help monarchs by creating way stations, volunteering as citizen scientists, and protecting milkweed habitat.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">BP1</span>
+        <span>Way stations &mdash; E1: Carter's way station with milkweed &rarr; X1: explains why milkweed matters (monarchs need it to rest/breed) &rarr; E2: other people planting milkweed &rarr; X2: how this creates a network of rest stops</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">BP2</span>
+        <span>Citizen scientists &mdash; E1: tagging butterflies to track migration &rarr; X1: explains how data helps researchers &rarr; E2: counting caterpillars, posting sightings &rarr; X2: shows how ordinary people contribute</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">BP3</span>
+        <span>Raising awareness of threats &mdash; E1: farms/cities destroy milkweed &rarr; X1: explains why this is the biggest danger &rarr; E2: storms destroying forests in Mexico &rarr; X2: people spreading the word leads to conservation efforts</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">CONC</span>
+        <span>Restate 3 points &rarr; Carter's quote about small actions &rarr; broader message</span>
+      </div>
+    </div>
+    <div class="tip-box">
+      <div class="label">KEY DIFFERENCE</div>
+      Every body paragraph now answers the prompt: <b>"How are people helping?"</b> Background and threats get woven into body paragraphs as context — they don't get their own standalone paragraphs. This keeps every paragraph focused on the question.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 7: Proofreading Checklist ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Proofreading Checklist</h2>
+    <div class="card-subtitle">Personalized to your recurring errors</div>
+  </div>
+  <div class="card-body">
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Spelling — "backyard":</b> You wrote <span class="error-mark">bakyard</span> &rarr; <span class="pattern-right">backyard</span>. Remember the "ck" — back + yard.</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Spelling — "milkweed":</b> You wrote <span class="error-mark">milyweed</span> &rarr; <span class="pattern-right">milkweed</span>. It's milk + weed — two simple words joined together.</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Spelling — "caterpillars":</b> You wrote <span class="error-mark">caterpillers</span> &rarr; <span class="pattern-right">caterpillars</span>. The ending is <b>-ars</b>, not <b>-ers</b>.</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Introduction check:</b> Does my essay start with a hook and a thesis? Or does it jump straight into a body paragraph topic?</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Prompt check:</b> Does every body paragraph answer the question being asked? Re-read the prompt, then re-read each topic sentence.</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Appositive check:</b> If I used commas around a renaming phrase, did I accidentally add an extra pronoun (he, she, they) after the closing comma?</div>
+    </div>
+    <div class="tip-box">
+      <div class="label">3-MINUTE RULE</div>
+      Save the last 3 minutes of your test for proofreading. Read your essay backward (last sentence first) to catch spelling — your brain auto-corrects when you read forward. Then re-read just your first paragraph: does it have a thesis? If not, add one.
+    </div>
+    <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg> Print this checklist</button>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 8: Your 3 Goals ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">G6.2: 80% &rarr; G6.3: 77% — let's reverse that trend</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Always start with an introduction that has a thesis.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Your essay jumped straight into Carter's story without any setup. Before you write anything else, write one sentence that hooks the reader and one sentence that previews your three main points. This is the foundation — everything else builds on it.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>Make sure every body paragraph answers the prompt.</b><br>
+        <span style="font-size:10.5pt;color:#555;">The prompt asked how people are <i>helping</i>, but P2 (migration) and P3 (threats) were about the problem, not the solution. Before you write a body paragraph, re-read the prompt and ask: "Does my topic sentence directly answer this question?" If it doesn't, rethink the paragraph. Weave background information into paragraphs that DO answer the question.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Slow down on spelling and grammar.</b><br>
+        <span style="font-size:10.5pt;color:#555;">"Bakyard," "milyweed," and "caterpillers" are words you probably know how to spell — you just rushed. The appositive error (extra "he") is the same kind of rushing. Save 3 minutes at the end to proofread. These are free points you're leaving on the table.</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">THE BIG PICTURE</div>
+      Rocco, your score dipped from 80% to 77%, but that doesn't mean you got worse — it means the same issues from G6.2 showed up again. You have strong evidence skills and you understand the passages well. The fix is <b>structural</b>: write an intro with a thesis, keep every paragraph on-prompt, and proofread for spelling. Those three changes alone could push you well above 80% next time.
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+let current = 0;
+
+cards.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  bar.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done' : 'Next \u2192';
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) return;
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+function printChecklist(btn) {
+  var card = btn.closest('.card');
+  card.classList.add('print-target');
+  window.print();
+  card.classList.remove('print-target');
+}
+
+goTo(0);
+</script>
+</body>
+</html>
