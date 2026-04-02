@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Rocco's Writing Test Review — G6.2</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar { display: flex; gap: 6px; margin-bottom: 16px; }
+  .progress-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: #ccc; transition: background 0.3s; cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container { position: relative; width: 680px; min-height: 420px; }
+
+  .card {
+    position: absolute; top: 0; left: 0; width: 100%;
+    background: #fff; border: 2.5px solid #1a1a2e; border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0; pointer-events: none; transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1; pointer-events: auto; transform: translateX(0); position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e; color: #fff; padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+  .card-header .card-subtitle { font-size: 9.5pt; color: #aaa; margin-top: 2px; }
+
+  .card-body { padding: 18px 22px 22px; line-height: 1.55; }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px; margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc; border: 1.5px solid #e0e0e8;
+    border-radius: 8px; padding: 10px 14px; text-align: center;
+  }
+  .score-box .big { font-size: 20pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3; border-left: 3px solid #cc0000;
+    padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+    font-style: italic; font-size: 10.5pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9; border-left: 3px solid #2d6a2d;
+    padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+    font-size: 10.5pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5; border-left: 3px solid #1a1a2e;
+    padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+  .error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+
+  .essay-excerpt {
+    background: #fafafa; border: 1px solid #e0e0e8;
+    border-radius: 6px; padding: 10px 14px; font-size: 10.5pt;
+    margin: 8px 0; line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700; font-size: 9pt; color: #888;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;
+  }
+
+  .outline-box {
+    background: #f8f8fc; border: 1.5px solid #e0e0e8;
+    border-radius: 8px; padding: 12px 16px; margin: 8px 0; font-size: 10.5pt;
+  }
+  .outline-box .outline-label {
+    font-weight: 700; font-size: 9pt; color: #1a1a2e;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+  }
+  .outline-row {
+    display: flex; gap: 10px; padding: 5px 0;
+    border-bottom: 1px dashed #ddd;
+  }
+  .outline-row:last-child { border-bottom: none; }
+  .outline-tag {
+    font-weight: 700; font-size: 9pt; color: #fff; background: #1a1a2e;
+    border-radius: 4px; padding: 2px 8px; min-width: 50px;
+    text-align: center; flex-shrink: 0; line-height: 1.6;
+  }
+
+  .pattern-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 6px 0; border-bottom: 1px solid #eee; font-size: 11pt;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; }
+
+  table.compare {
+    width: 100%; border-collapse: collapse; font-size: 10.5pt; margin: 8px 0;
+  }
+  table.compare th {
+    background: #1a1a2e; color: #fff; padding: 6px 10px;
+    text-align: left; font-size: 9.5pt;
+  }
+  table.compare td { padding: 6px 10px; border: 1px solid #ddd; vertical-align: top; }
+
+  .para-map {
+    display: flex; gap: 6px; margin: 10px 0; flex-wrap: wrap;
+  }
+  .para-tag {
+    padding: 6px 12px; border-radius: 6px; font-size: 10pt; font-weight: 600;
+    border: 1.5px solid;
+  }
+  .para-tag.good { background: #e8f5e9; border-color: #2d6a2d; color: #2d6a2d; }
+  .para-tag.warn { background: #fff3cd; border-color: #e6a800; color: #996600; }
+  .para-tag.bad { background: #fff3f3; border-color: #cc0000; color: #cc0000; }
+
+  .check-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid #eee; font-size: 11pt;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-box {
+    width: 20px; height: 20px; border: 2px solid #1a1a2e;
+    border-radius: 4px; flex-shrink: 0; margin-top: 1px;
+  }
+
+  .goal-num {
+    display: inline-block; background: #1a1a2e; color: #fff;
+    border-radius: 50%; width: 24px; height: 24px; text-align: center;
+    line-height: 24px; font-size: 11pt; font-weight: 700; margin-right: 8px; flex-shrink: 0;
+  }
+  .goal-row { display: flex; align-items: flex-start; gap: 4px; margin: 10px 0; }
+
+  .nav { display: flex; gap: 12px; margin-top: 16px; }
+  .nav button {
+    padding: 8px 28px; border: 2px solid #1a1a2e; border-radius: 8px;
+    background: #fff; color: #1a1a2e; font-family: inherit;
+    font-size: 11pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover { background: #1a1a2e; color: #fff; }
+
+  @media (max-width: 720px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Score Overview ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G6.2</div>
+  </div>
+  <div class="card-body">
+    <p>Rocco, let's walk through your writing test together. You did solid work — here's the full breakdown.</p>
+    <div class="score-grid">
+      <div class="score-box score-warn">
+        <div class="big">80%</div>
+        <div class="label">Overall Score (24/30)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">9/10</div>
+        <div class="label">Multiple Choice</div>
+      </div>
+      <div class="score-box score-warn">
+        <div class="big">15/20</div>
+        <div class="label">Essay</div>
+      </div>
+    </div>
+    <p>You got <b>9 out of 10 multiple choice questions right</b> — just one away from perfect! That shows you really understand grammar concepts like sentence types, appositives, conjunctions, transitions, and elaboration.</p>
+    <p>The points you lost came mainly from your essay: <b>no specific evidence from the passage</b>, a <b>vague body paragraph (P5)</b>, and some <b>spelling and grammar errors</b>. The next cards show you exactly how to fix each one.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: What You Did Well ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>What You Did Well</h2>
+    <div class="card-subtitle">There's a lot of genuine skill here</div>
+  </div>
+  <div class="card-body">
+    <ul>
+      <li><b>9/10 MCQ — near-perfect grammar knowledge</b> — you correctly identified complete sentences, interrogative sentences, appositives, subordinating conjunctions ("although"), topic sentences, irrelevant sentences, transitions ("As a result"), supporting details, and elaboration.</li>
+      <li><b>Good essay structure</b> — you wrote an intro with a thesis, multiple body paragraphs with clear topic sentences, and a conclusion. That's the right framework.</li>
+      <li><b>Strong conclusion</b> — "While movies can't replace real-life lessons from teachers or parents, they can still help kids." This adds a new perspective and wraps up the essay thoughtfully. Many students just repeat the intro — you didn't.</li>
+      <li><b>Good transitions throughout</b> — "Furthermore," "In addition," "While" — these connect your ideas and show logical flow.</li>
+      <li><b>Decent thesis</b> — "These movies teach kids important lessons about life, feelings, and how to treat other people" tells the reader what the essay will cover.</li>
+    </ul>
+    <div class="tip-box">
+      <div class="label">KEY TAKEAWAY</div>
+      Your grammar knowledge is excellent (9/10 MCQ) and your essay structure is solid. The gap is between what you <b>know</b> and what you <b>do</b> — you understand evidence and supporting details (you got Q9 and Q10 right), but your essay doesn't use specific evidence from the passage. That's the main thing to fix.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: Q3 — "But" vs "Because" ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q3: "But" vs "Because" — Logical Conjunctions</h2>
+    <div class="card-subtitle">Your only MCQ miss — understanding the relationship between ideas</div>
+  </div>
+  <div class="card-body">
+    <p>The original sentences were:</p>
+    <div class="essay-excerpt">
+      <div class="para-label">Original Sentences</div>
+      "Animated movies are fun. They <span class="highlight">also</span> include valuable lessons."
+    </div>
+    <p>These are two <b>separate qualities</b> — the movies are fun AND they have lessons. The word "also" signals that the second idea <b>adds</b> to the first.</p>
+    <div class="you-wrote">
+      <div class="label">YOU CHOSE ("BECAUSE")</div>
+      "Animated movies are fun <b>because</b> they include valuable lessons."
+    </div>
+    <p>"Because" means the movies are fun <b>for the reason</b> that they have lessons. That changes the logical relationship — it makes the lessons the <i>cause</i> of the fun, which isn't what the original sentences say.</p>
+    <div class="better">
+      <div class="label">CORRECT ANSWER ("BUT")</div>
+      "Animated movies are fun <b>but</b> they include valuable lessons."
+    </div>
+    <p>"But" keeps both ideas as connected but distinct qualities: fun BUT ALSO educational.</p>
+    <table class="compare">
+      <tr>
+        <th>Conjunction</th>
+        <th>What it means</th>
+        <th>Example</th>
+      </tr>
+      <tr>
+        <td><b>because</b></td>
+        <td>Cause and effect (A happens because of B)</td>
+        <td>"I stayed home <b>because</b> it rained."</td>
+      </tr>
+      <tr>
+        <td><b>but</b></td>
+        <td>Contrast or addition of a different quality</td>
+        <td>"It rained, <b>but</b> we still had fun."</td>
+      </tr>
+    </table>
+    <div class="tip-box">
+      <div class="label">TIP</div>
+      Look for signal words in the original. "Also" tells you the second idea is being <b>added</b>, not used as a reason. When you see "also," the combined sentence needs a conjunction that connects two separate ideas — like "but," "and," or "yet" — not "because."
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Use Evidence from the Passage ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Use Evidence from the Passage</h2>
+    <div class="card-subtitle">This is the biggest thing holding your essay back</div>
+  </div>
+  <div class="card-body">
+    <p>Every body paragraph in your essay makes <b>general claims</b> with no specific examples from the passage. The passage mentions specific characters and movies — Elsa, Merida from <i>Brave</i> — but you used none of them.</p>
+    <table class="compare">
+      <tr>
+        <th>What you wrote (general)</th>
+        <th>What it should look like (with evidence)</th>
+      </tr>
+      <tr>
+        <td style="color:#cc0000;">"Characters go through tough times. They often have to be brave."</td>
+        <td style="color:#2d6a2d;">"In the movie <i>Brave</i>, Merida shows courage when she stands up for what she believes in. This teaches children that being brave means doing the right thing even when it's hard."</td>
+      </tr>
+      <tr>
+        <td style="color:#cc0000;">"A character might help a friend and tell the truth even when it hurts."</td>
+        <td style="color:#2d6a2d;">"According to the passage, Elsa is a queen with magical powers who must learn to manage her emotions. This shows children that even powerful people need to understand their feelings."</td>
+      </tr>
+    </table>
+    <p>Notice the pattern: <b>E</b> (cite the specific evidence from the passage) &rarr; <b>X</b> (explain what it shows or teaches).</p>
+    <div class="tip-box">
+      <div class="label">HERE'S THE IRONY</div>
+      You got <b>Q9 right</b> — you correctly picked the sentence about Merida from <i>Brave</i> as the best supporting detail. That means you <b>already know</b> what good evidence looks like. You just need to use that same skill when writing your own paragraphs. When the prompt says "Use information from the passage," it means: name the characters, name the movies, cite the specific details.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: Your Weakest Paragraph (P5) ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Weakest Paragraph (P5)</h2>
+    <div class="card-subtitle">Too vague to earn points</div>
+  </div>
+  <div class="card-body">
+    <p>Read your Paragraph 5 carefully:</p>
+    <div class="essay-excerpt">
+      <div class="para-label">Your Paragraph 5</div>
+      "In addition, these movies have <span class="highlight">people, places, and things</span>. This helps children learn about the world and become more open to new thoughts. Furthermore, this helps children be more caring towards others."
+    </div>
+    <p><b>"These movies have people, places, and things"</b> is meaningless — <i>everything</i> has people, places, and things. This sentence says nothing specific about animated movies or the passage. The rest of the paragraph is equally vague.</p>
+    <p>You also wrote <b>6 paragraphs instead of 5</b>. The prompt asks for 5 (intro + 3 body paragraphs + conclusion). You wrote 4 body paragraphs. P5 is the weakest, so it should be cut or combined with P4.</p>
+    <div class="better">
+      <div class="label">OPTION 1: CUT P5 ENTIRELY</div>
+      The prompt asks for 3 body paragraphs. You already have 3 solid topics (bravery/mistakes, kindness/honesty, teamwork). Removing P5 gives you the right structure and eliminates the weakest part of your essay.
+    </div>
+    <div class="better">
+      <div class="label">OPTION 2: REPLACE WITH A REAL POINT</div>
+      If you keep it, replace the vague content with something specific:<br>
+      "Animated movies also help children understand different perspectives. For example, the passage explains that Elsa must learn to manage her emotions, which shows children that everyone — even a queen — struggles with feelings. This helps kids become more understanding of others."
+    </div>
+    <div class="tip-box">
+      <div class="label">THE RULE</div>
+      If you can't support a paragraph with <b>specific evidence from the passage</b>, don't include it. Quality over quantity — three strong body paragraphs beat four weak ones every time.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Proofreading Checklist ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Proofreading Checklist</h2>
+    <div class="card-subtitle">Personalized to your recurring errors</div>
+  </div>
+  <div class="card-body">
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Spelling:</b> <span class="error-mark">poeple</span> &rarr; <span class="pattern-right">people</span>, <span class="error-mark">mististakes</span> &rarr; <span class="pattern-right">mistakes</span>, <span class="error-mark">teammowork</span> &rarr; <span class="pattern-right">teamwork</span>. Read slowly and check any word that looks long or unfamiliar.</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Grammar — "its" vs "it's":</b> <span class="error-mark">its ok</span> &rarr; <span class="pattern-right">it's ok</span>. "It's" means "it is." "Its" means "belonging to it." If you can replace it with "it is," use the apostrophe.</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Fragment:</b> <span class="error-mark">"One reason, these movies are more than entertaining."</span> This isn't a complete sentence — it has no main verb. Fix: <span class="pattern-right">"One reason is that these movies are more than entertaining."</span> or <span class="pattern-right">"For one thing, these movies are more than entertaining."</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Repetition:</b> "attempt many times to fix these <span class="error-mark">mististakes many times</span>" — "many times" appears twice in the same sentence. Remove one: <span class="pattern-right">"attempt many times to fix these mistakes."</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Paragraph count:</b> The prompt asked for <b>5 paragraphs</b> (intro + 3 body + conclusion). You wrote 6. Always count your paragraphs before submitting to make sure you match the prompt.</div>
+    </div>
+    <div class="tip-box">
+      <div class="label">3-MINUTE RULE</div>
+      Save the last 3 minutes of your test for proofreading. Read backward (last sentence first) to catch spelling errors — when you read forward, your brain auto-corrects. Also count your paragraphs and make sure the number matches what the prompt asks for.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 7: Your 3 Goals ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">Strong grammar skills — now bring your essay up to match</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Use specific evidence from the passage — character names, movie titles, specific details.</b><br>
+        <span style="font-size:10.5pt;color:#555;">After each piece of evidence, explain what it shows. Follow the E &rarr; X pattern: cite the evidence, then explain its meaning. You already know how to identify good evidence (you got Q9 right) — now use that skill in your own writing. Every body paragraph needs at least two specific examples from the passage.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>Cut vague paragraphs — if you can't support it with evidence, replace it or remove it.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Quality over quantity. Three strong body paragraphs with specific evidence will always score higher than four weak ones with general claims. Before writing a paragraph, ask: "Do I have at least two specific examples from the passage for this point?" If not, pick a different topic.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Proofread: check spelling, fix fragments, and count your paragraphs.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Catch "poeple," "mististakes," "teammowork" before you submit. Fix fragments like "One reason, these movies..." by adding a verb. And count your paragraphs — if the prompt says 5, write exactly 5. Use the last 3 minutes of your test for this.</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">THE BIG PICTURE</div>
+      9/10 on multiple choice means you have <b>excellent grammar knowledge</b>. Your essay has good structure, good transitions, and a strong conclusion. The main gap is <b>evidence</b> — your body paragraphs need specific examples from the passage instead of general claims. Once you start citing characters, movies, and details from the text, your essay score will jump significantly. You're closer to a top score than you might think.
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+let current = 0;
+
+cards.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  bar.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done' : 'Next \u2192';
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) return;
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+goTo(0);
+</script>
+</body>
+</html>
