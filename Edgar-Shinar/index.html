@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Edgar's Writing Test Review — G5.4</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .progress-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ccc;
+    transition: background 0.3s;
+    cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container {
+    position: relative;
+    width: 640px;
+    min-height: 420px;
+  }
+
+  .card {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    background: #fff;
+    border: 2.5px solid #1a1a2e;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 {
+    font-size: 15pt;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .card-header .card-subtitle {
+    font-size: 9.5pt;
+    color: #aaa;
+    margin-top: 2px;
+  }
+
+  .card-body {
+    padding: 18px 22px 22px;
+    line-height: 1.55;
+  }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+  }
+  .score-box .big { font-size: 20pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3;
+    border-left: 3px solid #cc0000;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    font-size: 10.5pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9;
+    border-left: 3px solid #2d6a2d;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 10.5pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5;
+    border-left: 3px solid #1a1a2e;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+
+  .pattern-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; }
+
+  .goal-num {
+    display: inline-block;
+    background: #1a1a2e;
+    color: #fff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    line-height: 24px;
+    font-size: 11pt;
+    font-weight: 700;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .goal-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    margin: 10px 0;
+  }
+
+  .essay-excerpt {
+    background: #fafafa;
+    border: 1px solid #e0e0e8;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 10.5pt;
+    margin: 8px 0;
+    line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+
+  .outline-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 8px 0;
+    font-size: 10.5pt;
+  }
+  .outline-box .outline-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .outline-row {
+    display: flex;
+    gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px dashed #ddd;
+  }
+  .outline-row:last-child { border-bottom: none; }
+  .outline-tag {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #fff;
+    background: #1a1a2e;
+    border-radius: 4px;
+    padding: 2px 8px;
+    min-width: 36px;
+    text-align: center;
+    flex-shrink: 0;
+    line-height: 1.6;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-box {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #1a1a2e;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .nav {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .nav button {
+    padding: 8px 28px;
+    border: 2px solid #1a1a2e;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a2e;
+    font-family: inherit;
+    font-size: 11pt;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover {
+    background: #1a1a2e;
+    color: #fff;
+  }
+
+  @media (max-width: 720px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Score Overview ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G5.4</div>
+  </div>
+  <div class="card-body">
+    <p>Edgar, let's look at your writing test together so you can see what you did well and what to work on next.</p>
+    <div class="score-grid">
+      <div class="score-box score-good">
+        <div class="big">80%</div>
+        <div class="label">Overall Score (36/45)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">8/11</div>
+        <div class="label">Perfect Answers</div>
+      </div>
+      <div class="score-box score-warn">
+        <div class="big">13/20</div>
+        <div class="label">Paragraph</div>
+      </div>
+    </div>
+    <p>You got <b>8 questions exactly right</b> out of 11 — that's excellent work on the short-answer sections. Your editing score was <b>9/10</b> and your sentence skills were <b>14/15</b>.</p>
+    <p>Your paragraph scored <b>13 out of 20</b>, which is the area with the most room to grow. The next cards will show you exactly how to pick up those points.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: What You Did Well ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>What You Did Well</h2>
+    <div class="card-subtitle">These are real strengths</div>
+  </div>
+  <div class="card-body">
+    <p>Before we look at what to fix, here's what you should be proud of:</p>
+    <ul>
+      <li><b>8 perfect answers</b> — You nailed Q1, Q2, Q3, Q5, Q6, Q7, Q8, and Q10. That means your reading comprehension and sentence-level skills are strong.</li>
+      <li><b>Editing: 9 out of 10.</b> You found almost every error in the Claudette Colvin passage. That shows you know grammar rules — you just need to apply them to your own writing too.</li>
+      <li><b>Sentence skills: 14 out of 15.</b> You handled combining, rewriting, and correcting sentences with very few mistakes.</li>
+      <li><b>No blanks.</b> You answered every question, including the paragraph. You always give it a try, and that matters.</li>
+    </ul>
+    <p>Your short-answer skills are a real strength. The points you lost are about <b>adding specific details</b>, <b>small grammar fixes</b>, and <b>building a stronger paragraph</b>. Let's work on those.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: Add Specific Details (Q4) ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q4: Add Specific Details</h2>
+    <div class="card-subtitle">Expand your kernel sentence with clear, precise words</div>
+  </div>
+  <div class="card-body">
+    <p>This question asked you to <b>expand a kernel sentence</b> — take a short sentence and add details that make it more interesting and informative.</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      She had a constitutional right to stay seatened.
+    </div>
+    <p>You had the right idea — Claudette Colvin believed the Constitution protected her. But two things cost you points:</p>
+    <ul>
+      <li><b>"Seatened" should be "seated."</b> This is a spelling error that changes how the sentence reads.</li>
+      <li><b>"Stay seated" is vague.</b> The expansion doesn't add enough detail. <i>Where</i> was she seated? <i>Why</i> did she stay? A strong expansion paints a clearer picture.</li>
+    </ul>
+    <div class="better">
+      <div class="label">EXPANDED WITH DETAILS</div>
+      <b>Claudette Colvin believed she had a constitutional right to stay seated in her bus seat, so she refused to give it up.</b>
+    </div>
+    <div class="tip-box">
+      <div class="label">THE EXPANSION TRICK</div>
+      When you expand a kernel sentence, ask yourself three questions:<br><br>
+      <b>Who?</b> (Name the person.)<br>
+      <b>Where / What?</b> (Add a specific place or thing.)<br>
+      <b>Why?</b> (Give the reason.)<br><br>
+      The more of these you answer, the stronger your expansion will be.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Adverbs + Run-ons (Q9) ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q9: Adverbs + Run-on Sentences</h2>
+    <div class="card-subtitle">Two small fixes that make a big difference</div>
+  </div>
+  <div class="card-body">
+    <p>Your answer on Q9 had two issues. Let's look at each one:</p>
+
+    <p style="margin-top:10px;"><b>1. "Unfair" should be "unfairly."</b></p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      People treated her unfair...
+    </div>
+    <div class="better">
+      <div class="label">CORRECTED</div>
+      People treated her <b>unfairly</b>...
+    </div>
+    <p>"Treated" is a verb, so you need an <b>adverb</b> (unfairly) to describe <i>how</i> she was treated — not an adjective (unfair). Adverbs usually end in <b>-ly</b>.</p>
+    <div class="pattern-row"><span class="pattern-wrong">treated her unfair</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">treated her unfairly</span></div>
+    <div class="pattern-row"><span class="pattern-wrong">she spoke quiet</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">she spoke quietly</span></div>
+    <div class="pattern-row"><span class="pattern-wrong">he ran quick</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">he ran quickly</span></div>
+
+    <p style="margin-top:14px;"><b>2. Run-on sentence.</b></p>
+    <p>Your answer also had two complete thoughts joined without proper punctuation. When two ideas are jammed together, that's a <b>run-on</b>. Fix it by splitting them into two sentences or by adding a comma and a connecting word.</p>
+    <div class="tip-box">
+      <div class="label">ADVERB QUICK CHECK</div>
+      If a word describes <i>how someone does something</i>, it's an adverb. Most adverbs end in <b>-ly</b>.<br><br>
+      Ask yourself: <b>How?</b> Treated how? &rarr; unfair<b>ly</b>. Spoke how? &rarr; quiet<b>ly</b>.<br><br>
+      For run-ons: read the sentence out loud. If you hear two separate ideas, you need a period or a comma + connecting word between them.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: Paragraph — Use Evidence ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Paragraph: Use Evidence from the Article</h2>
+    <div class="card-subtitle">This is your biggest opportunity to improve — 13/20</div>
+  </div>
+  <div class="card-body">
+    <p>Your paragraph answered the prompt about "The Need for High-Speed Trains?" but it was <b>very short</b> (only 4 sentences) and didn't include any <b>specific evidence</b> from the article. Let's look at what you wrote:</p>
+
+    <div class="essay-excerpt">
+      <div class="para-label">Your Full Paragraph</div>
+      High speed trains are benificial and neccessary. They are neccessary because they make travel time quicker. High speed trains take less resources to power. This is why they are better than cars and are extremely neccessary.
+    </div>
+
+    <p>You made a clear claim — high-speed trains are beneficial — but every sentence is a <b>general statement</b>. There are no facts, numbers, or details from the article. On a writing test, the paragraph section is asking you to <b>show what you learned from the passage</b>.</p>
+
+    <p style="margin-top:10px;"><b>What was missing:</b></p>
+    <ul>
+      <li><b>No evidence from the article.</b> How much quicker? How many fewer resources? The article had these details — the paragraph needs them.</li>
+      <li><b>Only 4 sentences.</b> A strong expository paragraph needs 7&ndash;9 sentences: a topic sentence, 3 details with explanations, and a concluding sentence.</li>
+      <li><b>No explanation of why each detail matters.</b> After each fact, tell the reader <i>what it shows</i>.</li>
+    </ul>
+
+    <p style="margin-top:10px;">Here's what a <b>paragraph plan</b> for this prompt could look like:</p>
+
+    <div class="outline-box">
+      <div class="outline-label">Paragraph Plan — "The Need for High-Speed Trains?"</div>
+      <div style="font-size:9.5pt;color:#888;margin-bottom:6px;"><b>TS</b> = Topic Sentence &nbsp;&bull;&nbsp; <b>D</b> = Detail from the article &nbsp;&bull;&nbsp; <b>W</b> = Why it matters &nbsp;&bull;&nbsp; <b>CS</b> = Concluding Sentence</div>
+      <div class="outline-row">
+        <span class="outline-tag">TS</span>
+        <span>High-speed trains are beneficial and necessary because they save time, use fewer resources, and help the environment.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D1</span>
+        <span>[Detail from the article about travel time — use a specific fact or number]</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">W</span>
+        <span>This shows that high-speed trains can make long trips much shorter, which saves people hours of travel.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D2</span>
+        <span>[Detail from the article about resources or energy — use a specific fact]</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">W</span>
+        <span>This matters because using fewer resources means the trains are cheaper and better for the planet.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D3</span>
+        <span>[Detail from the article comparing trains to cars or planes — use a specific fact]</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">W</span>
+        <span>This shows that high-speed trains are a smarter choice than driving or flying for many trips.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">CS</span>
+        <span>For all of these reasons, high-speed trains are an important part of the future of transportation.</span>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <div class="label">THE EVIDENCE RULE</div>
+      Every detail sentence should include something <b>specific</b> from the article — a fact, a number, a name, or an example. If you can't point to where it came from in the passage, it's a general claim, not evidence.<br><br>
+      <b>General:</b> "They make travel time quicker."<br>
+      <b>With evidence:</b> "According to the article, a high-speed train can travel from City A to City B in just two hours, while driving takes over five."<br><br>
+      The second version shows the reader you actually read and understood the article.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Proofreading / Spelling ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Proofreading Checklist</h2>
+    <div class="card-subtitle">Catch spelling errors before you submit</div>
+  </div>
+  <div class="card-body">
+    <p>You scored <b>9/10 on editing</b> someone else's work, so you clearly know how to spot mistakes. Now you need to apply that same skill to <b>your own writing</b>. Here are the spelling errors from your paragraph:</p>
+
+    <div class="pattern-row"><span class="pattern-wrong">benificial</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">beneficial</span></div>
+    <div class="pattern-row"><span class="pattern-wrong">neccessary</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">necessary</span></div>
+    <p style="font-size:10pt;color:#555;margin-top:4px;">You spelled "neccessary" three times in your paragraph — once you learn the correct spelling, you'll fix it everywhere at once.</p>
+
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Read your paragraph out loud before submitting.</b><br><span style="font-size:10pt;color:#555;">If a word looks or sounds odd, it might be misspelled. Slow down and check.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Watch for words you use more than once.</b><br><span style="font-size:10pt;color:#555;">You used "necessary" three times. If you misspell a word once and repeat it, that's three errors from one mistake. Get it right the first time and the rest follow.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Use the "adjective or adverb?" check.</b><br><span style="font-size:10pt;color:#555;">If the word describes <i>how</i> something is done, it needs <b>-ly</b>. "Treated unfairly," not "treated unfair."</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Check for run-on sentences.</b><br><span style="font-size:10pt;color:#555;">Read each sentence. If it has two complete ideas, split it into two sentences or add a comma + connecting word.</span></div>
+    </div>
+
+    <div class="tip-box">
+      <div class="label">SPELLING MNEMONICS</div>
+      <b>Beneficial:</b> Think "bene-" (good) + "-ficial" — like "official" but with "bene" at the start.<br>
+      <b>Necessary:</b> A shirt has <b>one</b> collar and <b>two</b> sleeves — <b>one C, two S's</b>: ne<b>c</b>e<b>ss</b>ary.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 7: 3 Goals ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">Strong short answers — now build a stronger paragraph</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Use evidence from the article in every paragraph detail.</b><br>
+        <span style="font-size:10.5pt;color:#555;">After you write a detail sentence, ask: "Can I point to where this came from in the passage?" If the answer is no, go back and add a specific fact, number, or example from the article. This is the single biggest way to raise your paragraph score.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>Write 7&ndash;9 sentences using the TS &rarr; D1 &rarr; W &rarr; D2 &rarr; W &rarr; D3 &rarr; W &rarr; CS plan.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Your paragraph had only 4 sentences. Before you start writing, jot a quick plan: topic sentence, three details with explanations, and a concluding sentence. This structure will double the length and the quality of your paragraph.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Proofread for spelling and adverbs.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Read your writing out loud before you submit. Watch for "beneficial" and "necessary" — two words you'll use often in expository writing. And remember: if a word describes <i>how</i> something is done, it needs <b>-ly</b>.</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">THE BIG PICTURE</div>
+      Your biggest strength is your <b>short-answer skills</b>. Getting 8 out of 11 perfect and scoring 9/10 on editing is impressive — it means you understand what you read and you know your grammar. The next step is bringing that same skill into your <b>paragraph writing</b>: use specific facts from the article, explain why each detail matters, and give yourself enough sentences to fully develop your ideas. You have the knowledge — now put it on the page. Keep going, Edgar.
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+let current = 0;
+
+cards.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  bar.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done' : 'Next \u2192';
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) return;
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+goTo(0);
+</script>
+</body>
+</html>

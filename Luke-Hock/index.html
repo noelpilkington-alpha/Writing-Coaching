@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Luke's Writing Test Review — G4.3</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .progress-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ccc;
+    transition: background 0.3s;
+    cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container {
+    position: relative;
+    width: 640px;
+    min-height: 420px;
+  }
+
+  .card {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    background: #fff;
+    border: 2.5px solid #1a1a2e;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 {
+    font-size: 15pt;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .card-header .card-subtitle {
+    font-size: 9.5pt;
+    color: #aaa;
+    margin-top: 2px;
+  }
+
+  .card-body {
+    padding: 18px 22px 22px;
+    line-height: 1.55;
+  }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+  }
+  .score-box .big { font-size: 20pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3;
+    border-left: 3px solid #cc0000;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    font-size: 10.5pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9;
+    border-left: 3px solid #2d6a2d;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 10.5pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5;
+    border-left: 3px solid #1a1a2e;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+
+  .pattern-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; }
+
+  .goal-num {
+    display: inline-block;
+    background: #1a1a2e;
+    color: #fff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    line-height: 24px;
+    font-size: 11pt;
+    font-weight: 700;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .goal-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    margin: 10px 0;
+  }
+
+  .essay-excerpt {
+    background: #fafafa;
+    border: 1px solid #e0e0e8;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 10.5pt;
+    margin: 8px 0;
+    line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+
+  .outline-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 8px 0;
+    font-size: 10.5pt;
+  }
+  .outline-box .outline-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .outline-row {
+    display: flex;
+    gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px dashed #ddd;
+  }
+  .outline-row:last-child { border-bottom: none; }
+  .outline-tag {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #fff;
+    background: #1a1a2e;
+    border-radius: 4px;
+    padding: 2px 8px;
+    min-width: 36px;
+    text-align: center;
+    flex-shrink: 0;
+    line-height: 1.6;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-box {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #1a1a2e;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .nav {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .nav button {
+    padding: 8px 28px;
+    border: 2px solid #1a1a2e;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a2e;
+    font-family: inherit;
+    font-size: 11pt;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover {
+    background: #1a1a2e;
+    color: #fff;
+  }
+
+  @media (max-width: 720px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Score Overview ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G4.3</div>
+  </div>
+  <div class="card-body">
+    <p>Luke, let's look at your writing test together so you can see what you did well and where to sharpen your skills even more.</p>
+    <div class="score-grid">
+      <div class="score-box score-good">
+        <div class="big">89%</div>
+        <div class="label">Overall Score (40/45)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">8/11</div>
+        <div class="label">Perfect Answers</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">17/20</div>
+        <div class="label">Paragraph</div>
+      </div>
+    </div>
+    <p>You got <b>8 out of 11 questions exactly right</b> — that's a strong performance. You clearly understand how sentences work and how to read a passage carefully.</p>
+    <p>Your paragraph scored <b>17 out of 20</b> and has good structure with a clear beginning and end. The next cards show you how to pick up the last few points you missed.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: What You Did Well ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>What You Did Well</h2>
+    <div class="card-subtitle">These are real strengths</div>
+  </div>
+  <div class="card-body">
+    <p>Before we look at what to refine, here's what you nailed:</p>
+    <ul>
+      <li><b>8 perfect scores</b> on Q1, Q2, Q3, Q4, Q7, Q8, Q9, and Q10. That's the majority of the test — you clearly know how to edit sentences, form questions, combine ideas, and answer reading questions.</li>
+      <li><b>Editing (9/10)</b> — You caught almost every grammar and punctuation error. That's sharp proofreading.</li>
+      <li><b>Sentence Skills (14/15)</b> — You lost only one point across all the sentence questions. Your sentence-level writing is strong.</li>
+      <li><b>Your paragraph</b> has a clear topic sentence, supporting details, and a concluding sentence. You understand expository structure.</li>
+    </ul>
+    <p>You're already a strong writer. The points you missed are small, specific things you can fix quickly. Let's look at them.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: Fragments — Make It Its Own Sentence ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q5: Fragments Need Their Own Sentence</h2>
+    <div class="card-subtitle">Don't attach a fragment to an unrelated sentence</div>
+  </div>
+  <div class="card-body">
+    <p>The question gave you a <b>fragment</b> — a piece of a sentence that can't stand on its own:</p>
+    <div class="essay-excerpt">
+      <div class="para-label">Fragment</div>
+      Nearby, a caterpillar.
+    </div>
+    <p>To fix a fragment, you need to <b>turn it into a complete sentence</b> by adding a verb — something the subject <i>does</i>.</p>
+    <div class="you-wrote">
+      <div class="label">WHAT WENT WRONG</div>
+      You tacked the fragment onto an unrelated sentence instead of giving it its own complete thought.
+    </div>
+    <p>The caterpillar has nothing to do with the other sentence, so attaching it there doesn't work. Instead, give the caterpillar its own action:</p>
+    <div class="better">
+      <div class="label">BETTER</div>
+      <b>Nearby, a caterpillar crawled across a leaf.</b>
+    </div>
+    <div class="tip-box">
+      <div class="label">THE FRAGMENT FIX</div>
+      When you see a fragment, ask: <b>What is this thing doing?</b><br><br>
+      &bull; "Nearby, a caterpillar." &rarr; What is it doing? &rarr; <b>crawled across a leaf</b><br>
+      &bull; "The old wooden bridge." &rarr; What is it doing? &rarr; <b>creaked in the wind</b><br><br>
+      Add a verb that makes sense, and the fragment becomes a real sentence. Don't attach it to a sentence about something else — give it its own.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Add Specific Details ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q6: Add Specific Details from the Passage</h2>
+    <div class="card-subtitle">Connect your answer back to what you read</div>
+  </div>
+  <div class="card-body">
+    <p>The passage was about <b>Noah finding tadpoles</b>. When the question asked about taking care of a small animal, you wrote:</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      One way to take care of a small animal is by feeding it.
+    </div>
+    <p>This is true, but it's <b>too vague</b>. It could be about any animal — it doesn't connect to the passage at all. The question wanted you to use <b>specific details from what you read</b>.</p>
+    <div class="better">
+      <div class="label">WITH PASSAGE DETAILS</div>
+      One way to take care of a small animal is by <b>keeping its habitat clean, like how Noah changed the water in the tadpoles' tank every day</b>.
+    </div>
+    <div class="tip-box">
+      <div class="label">THE SPECIFICITY RULE</div>
+      When a question connects to a passage, your answer should too. Ask yourself:<br><br>
+      <b>"Could someone tell which passage I read from my answer?"</b><br><br>
+      If the answer is no, you need to add a specific detail. Mention a character's name, an action from the story, or a detail only found in that passage. General statements like "by feeding it" don't show the grader you understood the reading.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: Paragraph — Fix Run-ons + Add Evidence ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Paragraph: Fix Run-ons &amp; Strengthen Evidence</h2>
+    <div class="card-subtitle">Good structure — now clean up the details</div>
+  </div>
+  <div class="card-body">
+    <p>Your paragraph scored <b>17/20</b>. You have a topic sentence, supporting details, and a concluding sentence — that's solid structure. Here's what to fix:</p>
+
+    <p><b>1. Fix the run-on sentence.</b></p>
+    <div class="you-wrote">
+      <div class="label">RUN-ON</div>
+      he did not give up, even though very little people believed in him he still pushed through
+    </div>
+    <p>This is two complete thoughts smashed together without proper punctuation. Split them:</p>
+    <div class="better">
+      <div class="label">FIXED</div>
+      He did not give up, even though very few people believed in him. <b>Despite that, he still pushed through.</b>
+    </div>
+
+    <p style="margin-top:12px;"><b>2. Add specific evidence from the passage.</b></p>
+    <p>Your details are on the right track, but they stay general. Instead of just saying "he did not give up," tell the reader <i>what</i> he actually did:</p>
+    <div class="you-wrote">
+      <div class="label">TOO GENERAL</div>
+      Another way was he had faith, only he thought it was possible to grow plant in dry land and that helped him finish his goal.
+    </div>
+    <div class="better">
+      <div class="label">WITH SPECIFIC EVIDENCE</div>
+      Another way was his faith in his idea. Yacouba studied traditional planting methods and dug deep holes to capture rainwater, <b>even when others told him it wouldn't work</b>.
+    </div>
+
+    <p style="margin-top:12px;"><b>3. Use transitions to connect your ideas.</b></p>
+    <p>You used "One way" and "Another way," which is a good start. To make it even stronger, add a sentence after each detail that explains <i>why it matters</i>:</p>
+    <div class="tip-box">
+      <div class="label">THE DETAIL + EXPLANATION PATTERN</div>
+      <b>Detail:</b> He did not give up, even though very few people believed in him.<br>
+      <b>Explanation:</b> <i>This determination was important because without it, he never would have kept experimenting with ways to grow plants in the dry land.</i><br><br>
+      Each detail should answer: <b>"Why does this matter to the main idea?"</b>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Proofreading ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Proofreading Checklist</h2>
+    <div class="card-subtitle">Small fixes that make a big difference</div>
+  </div>
+  <div class="card-body">
+    <p>You scored <b>9/10 on editing</b>, so you already have a good eye. Here are the specific things to watch for in your own writing:</p>
+
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Read your paragraph out loud for run-ons.</b><br><span style="font-size:10pt;color:#555;">If you run out of breath or hear two ideas crashing together, put a period and start a new sentence. Your run-on ("very little people believed in him he still pushed through") would sound off when read aloud.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Check: "very little" vs. "very few"</b><br><span style="font-size:10pt;color:#555;">Use <b>"few"</b> for things you can count (people, animals, books). Use <b>"little"</b> for things you can't count (water, time, hope). You wrote "very little people" — it should be <b>"very few people."</b></span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Check singular vs. plural nouns.</b><br><span style="font-size:10pt;color:#555;">You wrote "grow plant in dry land" — since Yacouba grew more than one, it should be <b>"grow plants."</b> After writing, scan for nouns and ask: am I talking about one or more than one?</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Does every answer connect back to the passage?</b><br><span style="font-size:10pt;color:#555;">Before you move on from a question, ask: "Did I mention something specific from the reading?" If your answer could apply to any passage, add a detail.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 7: 3 Goals ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">You're close to a top score — these will get you there</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Fix fragments by giving them their own complete sentence.</b><br>
+        <span style="font-size:10.5pt;color:#555;">When you see a fragment, ask "What is this thing doing?" and add a verb. Don't attach a fragment to an unrelated sentence — give it its own thought. This is a quick fix worth easy points.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>Always connect your answers to the passage with specific details.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Before you finish any answer, ask: "Could the grader tell which passage I read?" Mention a character's name, a specific action, or a detail from the text. General answers like "by feeding it" leave points on the table.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Proofread your paragraph for run-ons, "few" vs. "little," and plural nouns.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Read your paragraph out loud before you submit. Split any sentence that has two complete thoughts. Check that countable nouns use "few" (not "little") and that plurals match what you mean. These small fixes could push your 17/20 to a 19 or 20.</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">THE BIG PICTURE</div>
+      Luke, you're already a strong writer. You got 8 out of 11 questions perfect, your editing skills are sharp, and your paragraph has clear structure. The points you missed are about <b>precision</b> — using specific passage details instead of general statements, and catching small grammar issues like run-ons and plural nouns. These are easy fixes for someone at your level. Tighten up those details and you'll be at the top.
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+let current = 0;
+
+cards.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  bar.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done' : 'Next \u2192';
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) return;
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+goTo(0);
+</script>
+</body>
+</html>

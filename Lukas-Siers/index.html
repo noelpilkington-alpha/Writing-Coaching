@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Lukas's Writing Test Review — G3.5</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .progress-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ccc;
+    transition: background 0.3s;
+    cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container {
+    position: relative;
+    width: 640px;
+    min-height: 420px;
+  }
+
+  .card {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    background: #fff;
+    border: 2.5px solid #1a1a2e;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 {
+    font-size: 15pt;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .card-header .card-subtitle {
+    font-size: 9.5pt;
+    color: #aaa;
+    margin-top: 2px;
+  }
+
+  .card-body {
+    padding: 18px 22px 22px;
+    line-height: 1.55;
+  }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+  }
+  .score-box .big { font-size: 20pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3;
+    border-left: 3px solid #cc0000;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    font-size: 10.5pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9;
+    border-left: 3px solid #2d6a2d;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 10.5pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5;
+    border-left: 3px solid #1a1a2e;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+
+  .pattern-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; }
+
+  .goal-num {
+    display: inline-block;
+    background: #1a1a2e;
+    color: #fff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    line-height: 24px;
+    font-size: 11pt;
+    font-weight: 700;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .goal-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    margin: 10px 0;
+  }
+
+  .essay-excerpt {
+    background: #fafafa;
+    border: 1px solid #e0e0e8;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 10.5pt;
+    margin: 8px 0;
+    line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+
+  .outline-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 8px 0;
+    font-size: 10.5pt;
+  }
+  .outline-box .outline-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .outline-row {
+    display: flex;
+    gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px dashed #ddd;
+  }
+  .outline-row:last-child { border-bottom: none; }
+  .outline-tag {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #fff;
+    background: #1a1a2e;
+    border-radius: 4px;
+    padding: 2px 8px;
+    min-width: 36px;
+    text-align: center;
+    flex-shrink: 0;
+    line-height: 1.6;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-box {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #1a1a2e;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .nav {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .nav button {
+    padding: 8px 28px;
+    border: 2px solid #1a1a2e;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a2e;
+    font-family: inherit;
+    font-size: 11pt;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover {
+    background: #1a1a2e;
+    color: #fff;
+  }
+
+  @media (max-width: 720px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Score Overview ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G3.5</div>
+  </div>
+  <div class="card-body">
+    <p>Lukas, let's look at your writing test together so you can see what you did well and what to work on next.</p>
+    <div class="score-grid">
+      <div class="score-box score-good">
+        <div class="big">80%</div>
+        <div class="label">Overall Score (36/45)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">5/11</div>
+        <div class="label">Perfect Answers</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">16/20</div>
+        <div class="label">Paragraph</div>
+      </div>
+    </div>
+    <p>You got <b>5 questions exactly right</b> and earned partial credit on the rest — that means you had an answer for every single question. You never left anything blank.</p>
+    <p>Your paragraph scored <b>16 out of 20</b> and is full of specific details from the article. The next cards show you how to pick up the points you missed.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: What You Did Well ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>What You Did Well</h2>
+    <div class="card-subtitle">These are real strengths</div>
+  </div>
+  <div class="card-body">
+    <p>Before we look at what to fix, here's what you got right:</p>
+    <ul>
+      <li><b>Q3 — Perfect combination.</b> You joined two sentences with a conjunction exactly right. That shows you understand how conjunctions work.</li>
+      <li><b>Q5 — Identified the appositive.</b> You found the appositive in the sentence perfectly. That's a tricky skill and you nailed it.</li>
+      <li><b>Q6, Q8, Q9 — Strong sentence answers.</b> All three earned full marks. You gave clear answers with solid reasons to back them up. That's exactly what "explain" questions are looking for.</li>
+      <li><b>Your paragraph</b> is packed with <b>specific details</b> from the article: 500 life-sized statues, the Caribbean Sea, Grenada, the Circle of Children. You clearly read the passage carefully and remembered what mattered.</li>
+    </ul>
+    <p>You have strong ideas and you read carefully. The points you lost are about <b>small errors</b>, <b>sentence structure</b>, and <b>paragraph organization</b>. Let's fix those.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: Read Instructions Carefully ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Read Instructions Carefully</h2>
+    <div class="card-subtitle">Q1 &amp; Q2 — Small details cost points</div>
+  </div>
+  <div class="card-body">
+    <p><b>Q1</b> — Rewrite as a question: "The books were sold in department stores."</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Why were the book sold in department stores.
+    </div>
+    <p>Two small issues: the original says <b>"books"</b> (plural), but you wrote <span class="highlight">"book"</span> (singular). Always copy the noun exactly. Also, questions need a <b>question mark</b>, not a period.</p>
+    <div class="better">
+      <div class="label">FIXED</div>
+      Why were the <b>books</b> sold in department stores<b>?</b>
+    </div>
+
+    <p style="margin-top:14px;"><b>Q2</b> — Unscramble: puppy / little / poky / the / popular / very / was</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Poky was the very popular little puppy.
+    </div>
+    <p>The words are all there, but the order changes the meaning. <b>"The Poky Little Puppy"</b> is the title of the book — those four words stay together as a name.</p>
+    <div class="better">
+      <div class="label">CORRECT ORDER</div>
+      <b>The Poky Little Puppy</b> was very popular.
+    </div>
+
+    <div class="tip-box">
+      <div class="label">TIP FOR UNSCRAMBLE QUESTIONS</div>
+      After you unscramble the words, read the sentence out loud. Does it sound natural? Does it match what the passage was about? "The Poky Little Puppy" is a name — it should sound like a title, not a description.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: How Appositives Work ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>How Appositives Work</h2>
+    <div class="card-subtitle">Q4 — You can spot them; now learn to write them</div>
+  </div>
+  <div class="card-body">
+    <p>You identified an appositive perfectly on Q5 — great job! But on Q4, you struggled to <b>write</b> one. Let's look at why:</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE (Q4)</div>
+      The book are still popular, so fun to read, are known for their golden spines.
+    </div>
+    <p>Two issues here: <span class="highlight">"book"</span> should be <b>"books"</b>, and <b>"so fun to read"</b> is an opinion — it doesn't describe <i>what the books are</i>. An appositive renames or describes the noun.</p>
+    <div class="better">
+      <div class="label">WITH A PROPER APPOSITIVE</div>
+      The <b>books</b>, <span class="highlight">known for their golden spines</span>, are still popular.
+    </div>
+    <p>"Known for their golden spines" tells the reader something factual about the books — that's what an appositive does.</p>
+
+    <div class="tip-box">
+      <div class="label">THE APPOSITIVE PATTERN</div>
+      <b>Noun, [what it is or what it's known for], rest of sentence.</b><br><br>
+      Think of it like a whisper to the reader: <i>"The books — oh, by the way, they're known for their golden spines — are still popular."</i><br><br>
+      The appositive should <b>describe what the noun IS</b>, not your opinion about it:<br>
+      &bull; <span class="pattern-wrong">"so fun to read"</span> = opinion (not an appositive)<br>
+      &bull; <span class="pattern-right">"known for their golden spines"</span> = description (appositive)
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: Fix Awkward Sentences ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Fix Awkward Sentences</h2>
+    <div class="card-subtitle">Q7 &amp; Q10 — Start with the answer</div>
+  </div>
+  <div class="card-body">
+    <p>On Q7 and Q10, your answers have a clunky pattern: they start with filler words that make the sentence hard to follow. The fix is simple — <b>start with the answer</b>.</p>
+
+    <p style="margin-top:10px;"><b>Q7</b> — How would a child feel writing their name in a Little Golden Book?</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      How I think a child would feel writing their name inside a Little Golden Book is they would feel happy because it is very special it write your name in a book.
+    </div>
+    <p>This is a run-on with an awkward start. Also, <span class="highlight">"it write"</span> should be <b>"to write."</b> Let's simplify:</p>
+    <div class="better">
+      <div class="label">SIMPLER VERSION</div>
+      A child writing their name in a Little Golden Book would feel special <b>because it means the book truly belongs to them</b>.
+    </div>
+
+    <p style="margin-top:14px;"><b>Q10</b> — Would people enjoy reading Little Golden Books?</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      I think people woukd enjoy reading the Little Golden Books is because you can read about a lot of different thing like jobs and safety.
+    </div>
+    <p><span class="highlight">"woukd"</span> &rarr; <b>"would"</b>, <span class="highlight">"thing"</span> &rarr; <b>"things"</b>, and remove the <b>"is"</b> between "enjoy" and "because."</p>
+    <div class="better">
+      <div class="label">CLEANED UP</div>
+      I think people would enjoy reading the Little Golden Books <b>because you can read about many different things like jobs and safety</b>.
+    </div>
+
+    <div class="tip-box">
+      <div class="label">THE "START WITH THE ANSWER" TRICK</div>
+      If your sentence starts with "How I think..." or "What I think... is..." — stop and restart. Just say the answer directly, then add "because" and your reason. Shorter is clearer.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Your Paragraph ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Paragraph: Start with a Topic Sentence</h2>
+    <div class="card-subtitle">Great details — now organize and develop them</div>
+  </div>
+  <div class="card-body">
+    <p>Your paragraph scored <b>16/20</b>. You included lots of specific details, which is great. Here's what to work on:</p>
+
+    <div class="essay-excerpt">
+      <div class="para-label">Your Paragraph</div>
+      Do you know why we put statues under the sea? A person named Jason deCaires Taylor made more they 500 life sized statues. Jason has built statues all over the world like in the Caribbean Sea. But why does Jason put statues under the sea? Jason wants to protect the coral reefs. Sam Clarke went to a park in Grenada. Sam saw a lot of statues and his favorite one was the Circle of Children. In all, this is why they put statues under the sea.
+    </div>
+
+    <p><b>1. Start with a topic sentence, not a question.</b></p>
+    <p>"Do you know why we put statues under the sea?" is a hook — it grabs attention, but it doesn't answer the prompt. Your topic sentence should directly answer what the passage is about:</p>
+    <div class="better">
+      <div class="label">TOPIC SENTENCE</div>
+      <b>Jason deCaires Taylor placed his sculptures under the sea to protect coral reefs.</b>
+    </div>
+
+    <p style="margin-top:12px;"><b>2. Develop the key idea — WHY underwater?</b></p>
+    <p>You mention "Jason wants to protect the coral reefs" in passing, but that's the most important idea! It deserves more detail. Each detail should connect back to that main point.</p>
+
+    <p style="margin-top:12px;"><b>3. Fix: <span class="highlight">"they"</span> &rarr; "than"</b> (more <b>than</b> 500). End with a real concluding sentence — not "this is why they put statues under the sea" (circular).</p>
+
+    <div class="outline-box">
+      <div class="outline-label">Paragraph Plan — "Why Jason put sculptures underwater"</div>
+      <div style="font-size:9.5pt;color:#888;margin-bottom:6px;"><b>TS</b> = Topic Sentence &nbsp;&bull;&nbsp; <b>D</b> = Detail &nbsp;&bull;&nbsp; <b>W</b> = Why it matters &nbsp;&bull;&nbsp; <b>CS</b> = Concluding Sentence</div>
+      <div class="outline-row">
+        <span class="outline-tag">TS</span>
+        <span>Jason deCaires Taylor placed his sculptures under the sea to protect coral reefs.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D1</span>
+        <span>He created more than 500 life-sized statues and placed them on the ocean floor.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">W</span>
+        <span>The statues give coral a place to grow, which helps protect the reefs.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D2</span>
+        <span>He has built statues all over the world, including in the Caribbean Sea.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">W</span>
+        <span>This shows he is working to help coral reefs in many different places, not just one.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D3</span>
+        <span>Sam Clarke visited a sculpture park in Grenada and saw the Circle of Children.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">W</span>
+        <span>This shows that people can visit the sculptures and learn about protecting the ocean.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">CS</span>
+        <span>Jason deCaires Taylor found a creative way to use art to help the ocean.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 7: Proofreading Checklist ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Proofreading Checklist</h2>
+    <div class="card-subtitle">Check these before you hand in your test</div>
+  </div>
+  <div class="card-body">
+    <p>In AlphaWrite, the <b>Polish</b> stage is where you fix errors before your writing is graded. On a test, you need to be your own editor. Here's your personal checklist based on the mistakes in <i>your</i> test:</p>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Check plurals: "book" &rarr; "books," "thing" &rarr; "things."</b><br><span style="font-size:10pt;color:#555;">You wrote "book" instead of "books" twice (Q1 and Q4) and "thing" instead of "things" (Q10). Before you submit, scan for nouns — if you're talking about more than one, add the "s."</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Check spelling: "woukd" &rarr; "would," "they" &rarr; "than."</b><br><span style="font-size:10pt;color:#555;">These are small typos that cost points. After writing, read each word slowly and look for letters that are swapped or missing.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Questions need question marks, not periods.</b><br><span style="font-size:10pt;color:#555;">On Q1, you wrote a question but ended it with a period. If the sentence asks something, it must end with a "?"</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Check for "it" vs. "to" — "it write" &rarr; "to write."</b><br><span style="font-size:10pt;color:#555;">On Q7, you wrote "it is very special it write your name." The second "it" should be "to" — "it is very special <b>to</b> write your name." Read the sentence out loud to catch this.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Does your paragraph start with a topic sentence?</b><br><span style="font-size:10pt;color:#555;">Read your first sentence. Does it answer the prompt? If it's a question or a hook, add a topic sentence before it or replace it.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 8: Goals ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">You have great ideas — now polish and organize them</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Start your paragraph with a topic sentence that directly answers the prompt — not a question.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Read the prompt, then flip it into a statement: "Jason deCaires Taylor placed his sculptures under the sea to protect coral reefs." That becomes your first sentence. Then your details explain and support it. Use the plan: TS, D1, W, D2, W, D3, W, CS.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>When writing appositives, describe WHAT the noun IS — not your opinion about it.</b><br>
+        <span style="font-size:10.5pt;color:#555;">You already know how to spot appositives (you got Q5 right!). Now practice writing them. Use the pattern: Noun, [what it is or what it's known for], rest of sentence. "The books, <b>known for their golden spines</b>, are still popular" — not "so fun to read."</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Proofread: check plurals (books not book, things not thing) and question marks.</b><br>
+        <span style="font-size:10.5pt;color:#555;">These are small fixes that add up. Before you hand in your test, scan for: Do plural nouns end in "s"? Do questions end with "?" Did I spell common words correctly (would, than, to)? Reading out loud helps you catch these.</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">THE BIG PICTURE</div>
+      Your biggest strength is your <b>knowledge of the passage</b>. You read carefully, you remember specific details, and you always have something to say. That's the hardest part of writing, and you already have it. The next step is <b>organizing</b> your paragraph (topic sentence first, develop each detail) and <b>cleaning up</b> small errors (plurals, spelling, punctuation). You scored 80% — with these fixes, you can go even higher. Keep going!
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+let current = 0;
+
+cards.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  bar.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done' : 'Next \u2192';
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) return;
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+goTo(0);
+</script>
+</body>
+</html>

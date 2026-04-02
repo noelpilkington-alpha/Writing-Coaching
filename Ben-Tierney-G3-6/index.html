@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ben's Writing Test Review — G3.6</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .progress-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ccc;
+    transition: background 0.3s;
+    cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container {
+    position: relative;
+    width: 640px;
+    min-height: 420px;
+  }
+
+  .card {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    background: #fff;
+    border: 2.5px solid #1a1a2e;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 {
+    font-size: 15pt;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .card-header .card-subtitle {
+    font-size: 9.5pt;
+    color: #aaa;
+    margin-top: 2px;
+  }
+
+  .card-body {
+    padding: 18px 22px 22px;
+    line-height: 1.55;
+  }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+  }
+  .score-box .big { font-size: 20pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3;
+    border-left: 3px solid #cc0000;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    font-size: 10.5pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9;
+    border-left: 3px solid #2d6a2d;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 10.5pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5;
+    border-left: 3px solid #1a1a2e;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+
+  .pattern-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; }
+
+  .goal-num {
+    display: inline-block;
+    background: #1a1a2e;
+    color: #fff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    line-height: 24px;
+    font-size: 11pt;
+    font-weight: 700;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .goal-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    margin: 10px 0;
+  }
+
+  .essay-excerpt {
+    background: #fafafa;
+    border: 1px solid #e0e0e8;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 10.5pt;
+    margin: 8px 0;
+    line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+
+  .outline-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 8px 0;
+    font-size: 10.5pt;
+  }
+  .outline-box .outline-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .outline-row {
+    display: flex;
+    gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px dashed #ddd;
+  }
+  .outline-row:last-child { border-bottom: none; }
+  .outline-tag {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #fff;
+    background: #1a1a2e;
+    border-radius: 4px;
+    padding: 2px 8px;
+    min-width: 36px;
+    text-align: center;
+    flex-shrink: 0;
+    line-height: 1.6;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-box {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #1a1a2e;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .nav {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .nav button {
+    padding: 8px 28px;
+    border: 2px solid #1a1a2e;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a2e;
+    font-family: inherit;
+    font-size: 11pt;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover {
+    background: #1a1a2e;
+    color: #fff;
+  }
+
+  @media (max-width: 720px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Score Overview ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G3.6 — Second Test</div>
+  </div>
+  <div class="card-body">
+    <p>Ben, let's look at your second writing test together. You scored a <b>G3.5</b> last time, and now you're at a <b>G3.6</b> — you're getting stronger.</p>
+    <div class="score-grid">
+      <div class="score-box score-good">
+        <div class="big">80%</div>
+        <div class="label">Overall Score (36/45)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">8/11</div>
+        <div class="label">Perfect Answers</div>
+      </div>
+      <div class="score-box score-warn">
+        <div class="big">13/20</div>
+        <div class="label">Paragraph</div>
+      </div>
+    </div>
+    <p>You got <b>8 questions exactly right</b> — that's most of the test. Your sentence editing was strong at <b>9/10</b>, and your sentence-writing section was excellent at <b>14/15</b>.</p>
+    <p>Your paragraph scored <b>13 out of 20</b>, which is where the biggest opportunity is. The next cards show you exactly how to pick up those points.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: What You Did Well ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>What You Did Well</h2>
+    <div class="card-subtitle">8 out of 11 — these are real strengths</div>
+  </div>
+  <div class="card-body">
+    <p>Before we look at what to fix, here's what you nailed:</p>
+    <ul>
+      <li><b>Q1 &amp; Q2 — Perfect editing.</b> You caught errors and fixed them correctly. Your editing eye is sharp.</li>
+      <li><b>Q4 &amp; Q5 — Strong sentence combining.</b> You smoothly joined ideas into single, clear sentences.</li>
+      <li><b>Q7, Q8, Q9, Q10 — Four perfect answers in a row.</b> You understood the passage well and answered each question completely.</li>
+      <li><b>Editing section: 9/10.</b> You only missed half a point on Q3 — almost a perfect editing score.</li>
+      <li><b>Sentence section: 14/15.</b> You clearly know how to write complete, correct sentences.</li>
+    </ul>
+    <p>You have strong reading comprehension and you know how to write clear sentences. The points you lost are about <b>using specific information from the passage</b> and <b>developing your paragraph more fully</b>. Let's fix those.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: Use Given Info for Appositives ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q3: Use the Passage for Your Appositive</h2>
+    <div class="card-subtitle">The information you need is in the article</div>
+  </div>
+  <div class="card-body">
+    <p>The question asked you to <b>rewrite the sentence and add an appositive</b> using information from the passage:</p>
+    <div class="essay-excerpt">
+      <div class="para-label">Original Sentence</div>
+      Porcupines are rodents.
+    </div>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Porcupines, like a rat, are rodents.
+    </div>
+    <p>You understood the appositive structure — commas on both sides, tucked inside the sentence. That's good! But "like a rat" isn't an appositive, and it doesn't come from the passage. <b>Sentence 18</b> in the article calls porcupines <b>"the slow movers of the forest."</b> That's the detail you needed.</p>
+    <div class="better">
+      <div class="label">BETTER VERSION</div>
+      <b>Porcupines, <span class="highlight">the slow movers of the forest</span>, are rodents.</b>
+    </div>
+    <div class="tip-box">
+      <div class="label">THE APPOSITIVE TRICK</div>
+      An appositive is a <b>short description</b> placed right after a noun, set off by commas. On the test, the passage always gives you the description to use — you just have to find it.<br><br>
+      <b>Pattern: Noun, [description from the passage], rest of sentence.</b><br><br>
+      More examples:<br>
+      &bull; The porcupine, <b>a prickly rodent</b>, wandered through the woods.<br>
+      &bull; Quills, <b>sharp needle-like hairs</b>, protect the porcupine from danger.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Answer the Specific Question ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q6: Answer the Specific Question</h2>
+    <div class="card-subtitle">Read carefully — what exactly is the question asking?</div>
+  </div>
+  <div class="card-body">
+    <p>This question asked you to explain <b>why</b> porcupines lift their quills. Let's look at what happened:</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      A porcupine swishes there tail from side to side and it makes the quills come off the tail and gets stuck in the predators skin.
+    </div>
+    <p>There are a few things to fix here:</p>
+    <ul>
+      <li><b>Doesn't answer WHY.</b> The question asks why porcupines lift their quills. You described <i>what the tail does</i>, but not <i>why they lift the quills in the first place</i>.</li>
+      <li><b>Run-on sentence.</b> This is two ideas joined without proper punctuation. Split it up.</li>
+      <li><b>"there" should be "their"</b> — "their tail," not "there tail."</li>
+    </ul>
+    <div class="better">
+      <div class="label">BETTER VERSION</div>
+      Porcupines lift <b>their</b> quills <b>to warn predators to stay away</b>. If a predator gets too close, the porcupine swishes its tail from side to side, and the quills can get stuck in the predator's skin.
+    </div>
+    <div class="tip-box">
+      <div class="label">READ THE QUESTION TWICE</div>
+      Before you write, underline the key word in the question. If it says <b>"why,"</b> your answer needs a reason. If it says <b>"how,"</b> your answer needs steps. Describing what happens is not the same as explaining why it happens.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: Paragraph — Cover Full Prompt ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Paragraph: Cover the Full Prompt</h2>
+    <div class="card-subtitle">More body parts, more details, more development</div>
+  </div>
+  <div class="card-body">
+    <p>Your paragraph scored <b>13/20</b>. Here's what you wrote:</p>
+    <div class="essay-excerpt">
+      <div class="para-label">Your Paragraph</div>
+      There is one main part of the body that helps a porcupine stay safe in the wild and it is the tail. now a lot of people think that porcupines can shoot out quils, but they really just swish there tail from side to side, and if you tuch it, it will get stuck in you. If you get a quil stuck in you its really hard to get out.
+    </div>
+    <p>You clearly understood the passage, and you included an interesting detail about how people think porcupines can shoot quills. But a few things held you back:</p>
+
+    <p style="margin-top:10px;"><b>1. The prompt asks about body parts (plural) — you only covered the tail.</b></p>
+    <p>The passage describes several body parts that help porcupines survive: the tail, the quills themselves, and their thick body. A strong response covers at least <b>two or three</b> body parts, not just one.</p>
+
+    <p style="margin-top:10px;"><b>2. Only 3 sentences — you need more development.</b></p>
+    <p>A solid expository paragraph at this level should have <b>5 to 8 sentences</b>: a topic sentence, at least two details with explanations, and a concluding sentence.</p>
+
+    <p style="margin-top:10px;"><b>3. Start with a strong topic sentence.</b></p>
+    <div class="you-wrote">
+      <div class="label">YOU STARTED WITH</div>
+      There is one main part of the body that helps a porcupine stay safe in the wild and it is the tail.
+    </div>
+    <p>This limits you to one body part right away. Try a topic sentence that opens up the whole paragraph:</p>
+    <div class="better">
+      <div class="label">STRONGER TOPIC SENTENCE</div>
+      <b>Porcupines have several body parts that help them stay safe in the wild.</b>
+    </div>
+
+    <div class="outline-box">
+      <div class="outline-label">What a fuller paragraph could look like</div>
+      <div style="font-size:9.5pt;color:#888;margin-bottom:6px;"><b>TS</b> = Topic Sentence &nbsp;&bull;&nbsp; <b>D</b> = Detail &nbsp;&bull;&nbsp; <b>E</b> = Explain &nbsp;&bull;&nbsp; <b>CS</b> = Concluding Sentence</div>
+      <div class="outline-row">
+        <span class="outline-tag">TS</span>
+        <span>Porcupines have several body parts that help them stay safe in the wild.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D1</span>
+        <span>Their quills are sharp, needle-like hairs that cover their body.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">E</span>
+        <span>The quills protect them because they stick into any predator that gets too close.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D2</span>
+        <span>Their tail can swish from side to side to push quills into an attacker.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">E</span>
+        <span>This helps because the porcupine doesn't even have to face the predator to defend itself.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D3</span>
+        <span>Porcupines are also slow movers, so they rely on their quills instead of speed.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">E</span>
+        <span>Without their quills and tail, a slow-moving porcupine would have no way to escape danger.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">CS</span>
+        <span>These body parts work together to keep porcupines safe, even though they cannot run fast.</span>
+      </div>
+    </div>
+    <p style="font-size:10pt;color:#555;">See how this covers multiple body parts and explains <i>why</i> each one matters? That's what picks up the extra points.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Spelling — there/their, quill ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Spelling: Words to Watch</h2>
+    <div class="card-subtitle">Two patterns to fix before next time</div>
+  </div>
+  <div class="card-body">
+    <p>You made some spelling mistakes that showed up more than once. Fixing these will make your writing cleaner and pick up easy points.</p>
+
+    <p style="margin-top:10px;"><b>1. "there" vs. "their"</b></p>
+    <p>You wrote <b>"there tail"</b> — but you meant <b>"their tail"</b>. This came up in both Q6 and your paragraph.</p>
+    <div class="pattern-row"><span class="pattern-wrong">there tail</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">their tail</span></div>
+    <div class="tip-box">
+      <div class="label">HOW TO REMEMBER</div>
+      <b>Their</b> = belongs to them (their tail, their quills).<br>
+      <b>There</b> = a place (over there, there is a porcupine).<br><br>
+      Quick test: Can you replace the word with "belonging to them"? If yes, it's <b>their</b>.
+    </div>
+
+    <p style="margin-top:14px;"><b>2. "quill" — not "quil"</b></p>
+    <p>You wrote "quils" and "quil" — the correct spelling is <b>quill</b> (double L) and <b>quills</b>.</p>
+    <div class="pattern-row"><span class="pattern-wrong">quil / quils</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">quill / quills</span></div>
+
+    <p style="margin-top:14px;"><b>3. "touch" — not "tuch"</b></p>
+    <div class="pattern-row"><span class="pattern-wrong">tuch</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">touch</span></div>
+
+    <div class="tip-box" style="margin-top:10px;">
+      <div class="label">PROOFREADING TIP</div>
+      After you finish writing, read your paragraph one extra time looking <b>only</b> at spelling. Don't think about ideas — just look at the words. Circle any word that looks funny and try to fix it. Words from the passage (like "quills") are already spelled out for you in the article — use them!
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 7: 3 Goals ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">Getting stronger — here's what to focus on</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Cover the full prompt in your paragraph.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Read the prompt carefully and make sure you address <b>all</b> parts of it. If it says "body parts" (plural), write about more than one. Start with a topic sentence that opens the door to the whole response, not just one detail. Aim for <b>5 to 8 sentences</b> with at least two details and explanations.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>Answer the exact question — especially "why" questions.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Before writing, underline the key word in the question. If it asks "why," your answer needs a reason — not just a description of what happens. Use the formula: <b>[what happens] + because + [why it happens]</b>. You already do this well on most questions — just make sure you do it on every one.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Proofread for "their" vs. "there" and spelling from the passage.</b><br>
+        <span style="font-size:10.5pt;color:#555;">After you finish writing, read it one more time looking only at spelling. Remember: <b>their</b> = belongs to them, <b>there</b> = a place. For words like "quills," look back at the passage — the correct spelling is right there for you to copy.</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">THE BIG PICTURE</div>
+      Ben, you're getting stronger. You went from G3.5 to G3.6, and you got <b>8 out of 11 questions perfect</b> — that's a student who understands the passages and knows how to write clear sentences. Your biggest opportunity is in the paragraph: cover the full prompt, develop your ideas with more sentences, and proofread at the end. You have the skills — now it's about putting them all together. Keep going.
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+let current = 0;
+
+cards.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  bar.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done' : 'Next \u2192';
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) return;
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+goTo(0);
+</script>
+</body>
+</html>

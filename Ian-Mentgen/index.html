@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ian's Writing Test Review — G4.6</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .progress-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ccc;
+    transition: background 0.3s;
+    cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container {
+    position: relative;
+    width: 640px;
+    min-height: 420px;
+  }
+
+  .card {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    background: #fff;
+    border: 2.5px solid #1a1a2e;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 {
+    font-size: 15pt;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .card-header .card-subtitle {
+    font-size: 9.5pt;
+    color: #aaa;
+    margin-top: 2px;
+  }
+
+  .card-body {
+    padding: 18px 22px 22px;
+    line-height: 1.55;
+  }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+  }
+  .score-box .big { font-size: 20pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3;
+    border-left: 3px solid #cc0000;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    font-size: 10.5pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9;
+    border-left: 3px solid #2d6a2d;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 10.5pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5;
+    border-left: 3px solid #1a1a2e;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+
+  .pattern-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; }
+
+  .goal-num {
+    display: inline-block;
+    background: #1a1a2e;
+    color: #fff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    line-height: 24px;
+    font-size: 11pt;
+    font-weight: 700;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .goal-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    margin: 10px 0;
+  }
+
+  .essay-excerpt {
+    background: #fafafa;
+    border: 1px solid #e0e0e8;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 10.5pt;
+    margin: 8px 0;
+    line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+
+  .outline-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 8px 0;
+    font-size: 10.5pt;
+  }
+  .outline-box .outline-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .outline-row {
+    display: flex;
+    gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px dashed #ddd;
+  }
+  .outline-row:last-child { border-bottom: none; }
+  .outline-tag {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #fff;
+    background: #1a1a2e;
+    border-radius: 4px;
+    padding: 2px 8px;
+    min-width: 36px;
+    text-align: center;
+    flex-shrink: 0;
+    line-height: 1.6;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-box {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #1a1a2e;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .nav {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .nav button {
+    padding: 8px 28px;
+    border: 2px solid #1a1a2e;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a2e;
+    font-family: inherit;
+    font-size: 11pt;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover {
+    background: #1a1a2e;
+    color: #fff;
+  }
+
+  @media (max-width: 720px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Score Overview ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Garrett Morgan Makes Streets Safer — G4.6</div>
+  </div>
+  <div class="card-body">
+    <p>Ian, let's look at your writing test together so you can see what you did well and what to work on next.</p>
+    <div class="score-grid">
+      <div class="score-box score-warn">
+        <div class="big">79%</div>
+        <div class="label">Overall Score (35.5/45)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">5/11</div>
+        <div class="label">Perfect Answers</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">16/20</div>
+        <div class="label">Paragraph</div>
+      </div>
+    </div>
+    <p>You got <b>5 questions exactly right</b> (Q2, Q4, Q5, Q7, Q9) and earned partial credit on the rest. You never left anything blank — you always had something to say, and that matters.</p>
+    <p>Your paragraph scored <b>16 out of 20</b> and has solid structure with clear transitions. The next cards show you how to pick up the points you missed.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: What You Did Well ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>What You Did Well</h2>
+    <div class="card-subtitle">These are real strengths</div>
+  </div>
+  <div class="card-body">
+    <p>Before we look at what to fix, here's what you got right:</p>
+    <ul>
+      <li><b>Q2 — Fragment fix!</b> You correctly rewrote a fragment as a complete sentence. That shows you understand what a sentence needs.</li>
+      <li><b>Q4 — Smooth combination.</b> You used "so" to combine two sentences perfectly. Nice work connecting cause and effect.</li>
+      <li><b>Q5 — Great question form.</b> You changed the sentence into a question correctly.</li>
+      <li><b>Q7 and Q9 — Strong sentence answers.</b> You wrote clear, well-explained responses on both of these.</li>
+      <li><b>Your paragraph</b> has <b>great structure</b> — you used transitions ("One," "Second," "In conclusion") to organize your ideas. That's a skill many students are still learning, and you already have it.</li>
+    </ul>
+    <p>You know how to organize your writing and you have good ideas. The points you lost are about <b>adding specific details</b>, <b>keeping appositives short</b>, and <b>proofreading</b>. Let's fix those.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: Keep Appositives Short ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q3: Keep Appositives Short</h2>
+    <div class="card-subtitle">3-6 words between the commas</div>
+  </div>
+  <div class="card-body">
+    <p>The question asked you to <b>rewrite the sentence and add an appositive</b>. You added one, but it was way too long:</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Garrett Morgan, <span class="highlight">a human that had an idea that saved lives and reduced crashes</span>, decided to built an early traffic signal.
+    </div>
+    <p>That appositive is <b>13 words</b> — it swallows the whole sentence! An appositive should be a <b>quick description</b>, just 3-6 words. It also has a grammar error: "decided to <b>built</b>" should be "decided to <b>build</b>."</p>
+    <div class="better">
+      <div class="label">WITH A SHORT APPOSITIVE</div>
+      <b>Garrett Morgan, <span class="highlight">an inventor from Ohio</span>, built an early traffic signal that helped save lives.</b>
+    </div>
+    <div class="tip-box">
+      <div class="label">THE APPOSITIVE PATTERN</div>
+      <b>Name, [short description], rest of sentence.</b><br><br>
+      Keep it to 3-6 words between the commas. Think of it like a whisper to the reader: <i>"Garrett Morgan — oh, by the way, he was an inventor from Ohio — built an early traffic signal."</i><br><br>
+      More examples:<br>
+      &bull; Garrett Morgan, <b>a clever inventor</b>, noticed how dangerous traffic was.<br>
+      &bull; The traffic signal, <b>his greatest invention</b>, saved many lives.
+    </div>
+    <p style="margin-top:8px;">Also remember: after "decided to," use the base form of the verb — "decided to <b>build</b>," not "decided to built."</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Use Specific Details ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Use Specific Details from the Passage</h2>
+    <div class="card-subtitle">Q6, Q8, Q10 — Show what you mean</div>
+  </div>
+  <div class="card-body">
+    <p>On three questions, your answers were too vague. You had the right idea but didn't include <b>specific details</b> from the passage. Look at the pattern:</p>
+
+    <p style="margin-top:10px;"><b>Q6</b> — What lesson does the passage teach?</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      The lesson is, you should always think of problems so you can try to fix them.
+    </div>
+    <p>This is vague — it could be about anything. Add a detail from the passage:</p>
+    <div class="better">
+      <div class="label">WITH SPECIFIC DETAILS</div>
+      The lesson is that paying attention to problems around you, like Garrett Morgan did with dangerous traffic, can lead to ideas that help many people.
+    </div>
+
+    <p style="margin-top:14px;"><b>Q8</b> — How did Morgan's traffic signals make streets safer?</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Garrett Morgan's traffic signals maked streets safer by not having all cars going at once.
+    </div>
+    <p>"Not having all cars going at once" is vague. Be specific about <i>how</i> the signal worked:</p>
+    <div class="better">
+      <div class="label">WITH SPECIFIC DETAILS</div>
+      Morgan's traffic signal told drivers when to stop and go, so cars and people didn't crash into each other.
+    </div>
+
+    <p style="margin-top:14px;"><b>Q10</b> — A problem in your community that could be solved with an idea or invention.</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      A problem in my community that could be solved with an idea or invention is pollution.
+    </div>
+    <p>You identified the problem but gave <b>no explanation</b> of how it could be solved. You need both parts:</p>
+    <div class="better">
+      <div class="label">WITH THE SOLUTION</div>
+      A problem in my community is pollution. Someone could invent better recycling bins that sort trash automatically, so less waste ends up in the environment.
+    </div>
+
+    <div class="tip-box">
+      <div class="label">THE SPECIFICS TRICK</div>
+      After you write an answer, ask yourself: <b>"Could someone who didn't read the passage understand exactly what I mean?"</b> If your answer is too general, add a detail from the article — a name, an event, or an example of <i>how</i> something works.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: Irregular Past Tense ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Grammar: Irregular Past Tense</h2>
+    <div class="card-subtitle">Q1 and Q8 — Small fixes, easy points</div>
+  </div>
+  <div class="card-body">
+    <p>You made two grammar mistakes that are quick to fix once you know the pattern:</p>
+
+    <p style="margin-top:10px;"><b>Q8:</b> "maked" is not a word. "Make" is an <b>irregular verb</b> — it doesn't follow the normal "-ed" rule.</p>
+    <div class="pattern-row"><span class="pattern-wrong">maked</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">made</span></div>
+    <p>Here are other common irregular past tenses to remember:</p>
+    <div class="pattern-row"><span class="pattern-wrong">builded</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">built</span></div>
+    <div class="pattern-row"><span class="pattern-wrong">thinked</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">thought</span></div>
+    <div class="pattern-row"><span class="pattern-wrong">goed</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">went</span></div>
+    <div class="pattern-row"><span class="pattern-wrong">seed</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">saw</span></div>
+
+    <p style="margin-top:14px;"><b>Q1:</b> "these signal allow" — when the subject is plural ("signals"), the noun needs an <b>-s</b>:</p>
+    <div class="pattern-row"><span class="pattern-wrong">these signal allow</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right">these signals allow</span></div>
+
+    <div class="tip-box">
+      <div class="label">QUICK CHECK</div>
+      If a past-tense word sounds funny when you say it out loud (like "maked"), it's probably irregular. Try saying "I maked it" versus "I made it" — your ear will catch it! When in doubt, think about how you'd say it in conversation.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Your Paragraph — Add Evidence ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Paragraph: Add Evidence</h2>
+    <div class="card-subtitle">Good structure — now fill it with details from the article</div>
+  </div>
+  <div class="card-body">
+    <p>Your paragraph scored <b>16/20</b>. You have great organization with transitions ("One," "Second," "In conclusion"). Here's what to improve:</p>
+
+    <div class="essay-excerpt">
+      <div class="para-label">Your Paragraph</div>
+      Inventors and problem-solvers are very important to communties. One, without inventors or problem-solvers, many people would be getting hurt. Inventors and problem-solvers help by making new ideas so less people would get hurt. Second, inventors and problem-solvers can make thigns work better. Inventors and problem-solvers help by making inventions to make thinks quicker, useful, and very helpful. In conclusion, inventors and problem-solvers are very important to our community.
+    </div>
+
+    <p style="margin-top:10px;"><b>1. Add evidence from the article.</b> Right now, you don't mention Garrett Morgan or his traffic signal once. After each claim, add a specific detail:</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Inventors and problem-solvers help by making new ideas so less people would get hurt.
+    </div>
+    <div class="better">
+      <div class="label">WITH EVIDENCE</div>
+      Inventors and problem-solvers help by making new ideas so fewer people get hurt. <b>For example, Garrett Morgan noticed that cars and people kept crashing at intersections, so he invented a traffic signal to keep everyone safe.</b>
+    </div>
+
+    <p style="margin-top:12px;"><b>2. Stop repeating "inventors and problem-solvers."</b> You wrote that phrase <b>6 times</b>. After using it once, switch to pronouns:</p>
+    <div class="pattern-row"><span class="pattern-wrong">Inventors and problem-solvers help by...</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right"><b>They</b> help by...</span></div>
+    <div class="pattern-row"><span class="pattern-wrong">Inventors and problem-solvers can make...</span> <span class="pattern-arrow">&rarr;</span> <span class="pattern-right"><b>These thinkers</b> can make...</span></div>
+
+    <div class="tip-box">
+      <div class="label">PARAGRAPH PLAN REMINDER</div>
+      <b>TS</b> (Topic Sentence) &rarr; <b>D1</b> (Detail) &rarr; <b>W</b> (Why it matters) &rarr; <b>D2</b> &rarr; <b>W</b> &rarr; <b>D3</b> &rarr; <b>W</b> &rarr; <b>CS</b> (Concluding Sentence)<br><br>
+      You already have the TS and CS. The missing piece is the <b>evidence</b> — real details from the passage that support your claims. Every time you make a point, back it up with something specific from the article.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 7: Proofreading Checklist ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Proofreading Checklist</h2>
+    <div class="card-subtitle">Check these before you hand in your test</div>
+  </div>
+  <div class="card-body">
+    <p>In AlphaWrite, the <b>Polish</b> stage is where you fix errors before your writing is graded. On a test, you need to be your own editor. Here's your personal checklist based on the mistakes in <i>your</i> test:</p>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Read your writing out loud.</b><br><span style="font-size:10pt;color:#555;">If something sounds awkward or a word sounds wrong (like "maked"), your ear will catch it before your eyes do.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Check words you use more than once.</b><br><span style="font-size:10pt;color:#555;">You misspelled "things" two different ways: "<b>thigns</b>" and "<b>thinks</b>" (meant "things"). You also wrote "<b>communties</b>" instead of <b>communities</b>. When you use a word multiple times, make sure you spell it the same (correct) way each time.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Check irregular past tenses.</b><br><span style="font-size:10pt;color:#555;">"<b>maked</b>" should be <b>made</b>. If adding "-ed" sounds wrong, it probably is. Say the sentence out loud to check.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Check verb forms after "to."</b><br><span style="font-size:10pt;color:#555;">You wrote "decided to <b>built</b>" — after "to," always use the base form: "decided to <b>build</b>." Same pattern: "wanted to <b>make</b>," "tried to <b>help</b>."</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Does every "explain" answer include specific details?</b><br><span style="font-size:10pt;color:#555;">Go back to each sentence question and check: did I mention something specific from the passage? If your answer could apply to any topic, it's too vague — add a name, event, or example.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 8: Goals ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">You have great organization — now add the details</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Use specific details and evidence from the passage in every answer and in your paragraph.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Your answers on Q6, Q8, and Q10 were too general. After every claim you make, add a specific detail from the article — a name, an event, or an example of how something works. In your paragraph, mention Garrett Morgan and his invention by name. If your answer could be about anything, it needs more detail.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>Keep appositives short — 3-6 words between the commas.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Your appositive on Q3 was 13 words long and took over the sentence. Remember the pattern: <b>Name, [short description], rest of sentence.</b> Try "Garrett Morgan, <i>a clever inventor</i>, built an early traffic signal." Short and smooth.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Proofread: check irregular past tenses and spelling of repeated words.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Watch out for "maked" (it's <b>made</b>), "built" after "to" (it's <b>build</b>), and spelling words like "things" and "communities" correctly — especially when you use them more than once. Read your work out loud. Your ear will catch what your eyes miss.</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">THE BIG PICTURE</div>
+      Your biggest strength is your <b>organization</b>. You use transitions, you structure your paragraphs clearly, and you always attempt every question. That takes real effort. The next step is filling in your strong structure with <b>specific evidence</b> from the passage and cleaning up small grammar and spelling errors. You're close to an even stronger score — keep going, Ian.
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+let current = 0;
+
+cards.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  bar.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done' : 'Next \u2192';
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) return;
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+goTo(0);
+</script>
+</body>
+</html>
