@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Elle's Writing Test Review — G6.3</title>
+<title>Elle's Writing Test Review — G6.3 (UI Prototype)</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -19,13 +19,52 @@
     padding: 20px;
   }
 
-  .progress-bar { display: flex; gap: 6px; margin-bottom: 16px; }
+  /* ── LABELED PROGRESS BAR (feature #2) ── */
+  .progress-bar {
+    display: flex; gap: 4px; margin-bottom: 8px; flex-wrap: wrap;
+    justify-content: center; max-width: 700px;
+  }
   .progress-dot {
     width: 12px; height: 12px; border-radius: 50%;
-    background: #ccc; transition: background 0.3s; cursor: pointer;
+    background: #ccc; transition: background 0.3s, transform 0.2s; cursor: pointer;
+    position: relative;
   }
-  .progress-dot.active { background: #1a1a2e; }
-  .progress-dot:hover { background: #555; }
+  .progress-dot.active { background: #1a1a2e; transform: scale(1.25); }
+  .progress-dot.visited { background: #7a7a9e; }
+  .progress-dot:hover { background: #555; transform: scale(1.3); }
+
+  /* Tooltip on hover */
+  .progress-dot .dot-tooltip {
+    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: #1a1a2e; color: #fff; padding: 4px 10px; border-radius: 6px;
+    font-size: 8.5pt; white-space: nowrap; opacity: 0;
+    pointer-events: none; transition: opacity 0.2s;
+    z-index: 100;
+  }
+  .progress-dot .dot-tooltip::after {
+    content: ''; position: absolute; top: 100%; left: 50%;
+    transform: translateX(-50%); border: 5px solid transparent;
+    border-top-color: #1a1a2e;
+  }
+  .progress-dot:hover .dot-tooltip { opacity: 1; }
+
+  /* Breadcrumb label below dots */
+  .card-breadcrumb {
+    font-size: 9.5pt; color: #888; margin-bottom: 14px;
+    text-align: center; transition: opacity 0.3s;
+    min-height: 1.2em;
+  }
+  .card-breadcrumb b { color: #1a1a2e; }
+
+  /* ── STICKY CARD INDICATOR (feature #5) ── */
+  .sticky-indicator {
+    position: fixed; top: 12px; right: 16px;
+    background: #1a1a2e; color: #fff; padding: 5px 14px;
+    border-radius: 20px; font-size: 9pt; font-weight: 700;
+    opacity: 0; transition: opacity 0.3s; z-index: 200;
+    pointer-events: none; letter-spacing: 0.5px;
+  }
+  .sticky-indicator.visible { opacity: 1; }
 
   .card-container { position: relative; width: 680px; min-height: 420px; }
 
@@ -65,6 +104,7 @@
   .score-good .big { color: #2d6a2d; }
   .score-warn .big { color: #cc6600; }
 
+  /* ── REVEAL ANIMATION (feature #3) ── */
   .you-wrote {
     background: #fff3f3; border-left: 3px solid #cc0000;
     padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
@@ -79,11 +119,66 @@
   }
   .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
 
+  /* Revealable better version */
+  .reveal-wrapper { position: relative; }
+  .reveal-cover {
+    background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%);
+    border-left: 3px solid #2d6a2d;
+    padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0;
+    cursor: pointer; user-select: none;
+    display: flex; align-items: center; gap: 10px;
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+  .reveal-cover:hover {
+    box-shadow: 0 2px 8px rgba(45,106,45,0.15);
+    background: linear-gradient(135deg, #d4edda 0%, #c8e6c9 100%);
+  }
+  .reveal-cover .reveal-icon {
+    width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
+  .reveal-cover .reveal-text {
+    font-weight: 600; font-size: 10.5pt; color: #2d6a2d;
+  }
+  .reveal-cover .reveal-hint {
+    font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px;
+  }
+  .reveal-content {
+    max-height: 0; overflow: hidden; opacity: 0;
+    transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease;
+    margin: 0;
+  }
+  .reveal-content.shown {
+    max-height: 600px; opacity: 1; margin: 8px 0;
+  }
+  .reveal-cover.hidden { display: none; }
+
   .tip-box {
     background: #e8edf5; border-left: 3px solid #1a1a2e;
     padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0;
   }
   .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  /* ── EXPANDABLE EXAMPLES IN TIP BOXES (feature #7) ── */
+  .tip-expand {
+    margin-top: 8px; border-top: 1px dashed #b0b8cc; padding-top: 6px;
+  }
+  .tip-expand summary {
+    font-size: 9.5pt; font-weight: 600; color: #1a1a2e;
+    cursor: pointer; padding: 4px 0; list-style: none;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .tip-expand summary::-webkit-details-marker { display: none; }
+  .tip-expand summary::before {
+    content: '\25B6'; font-size: 8pt; transition: transform 0.2s;
+    display: inline-block;
+  }
+  .tip-expand[open] summary::before { transform: rotate(90deg); }
+  .tip-expand .expand-body {
+    margin-top: 6px; font-size: 10pt; line-height: 1.5;
+    background: #f4f6fb; padding: 10px 12px; border-radius: 6px;
+  }
 
   .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
   .error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
@@ -146,14 +241,31 @@
   .para-tag.warn { background: #fff3cd; border-color: #e6a800; color: #996600; }
   .para-tag.bad { background: #fff3f3; border-color: #cc0000; color: #cc0000; }
 
+  /* ── BIGGER CHECKBOXES + TAP TARGETS (feature #4) ── */
   .check-item {
-    display: flex; align-items: flex-start; gap: 10px;
-    padding: 8px 0; border-bottom: 1px solid #eee; font-size: 11pt;
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 10px 8px; border-bottom: 1px solid #eee; font-size: 11pt;
+    cursor: pointer; border-radius: 6px;
+    transition: background 0.15s;
+    user-select: none;
   }
-  .check-item:last-child { border-bottom: none; }
+  .check-item:last-of-type { border-bottom: none; }
+  .check-item:hover { background: #f8f8fc; }
+  .check-item.checked { background: #f0f8f0; }
+  .check-item.checked .check-box {
+    background: #2d6a2d; border-color: #2d6a2d;
+  }
+  .check-item.checked .check-box::after {
+    content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700;
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  }
+  .check-item.checked > div:last-child {
+    text-decoration: line-through; color: #999;
+  }
   .check-box {
-    width: 20px; height: 20px; border: 2px solid #1a1a2e;
-    border-radius: 4px; flex-shrink: 0; margin-top: 1px;
+    width: 28px; height: 28px; border: 2.5px solid #1a1a2e;
+    border-radius: 6px; flex-shrink: 0; margin-top: 1px;
+    position: relative; transition: background 0.2s, border-color 0.2s;
   }
 
   .goal-num {
@@ -172,7 +284,7 @@
   }
   .nav button:hover { background: #1a1a2e; color: #fff; }
 
-    .print-btn {
+  .print-btn {
     display: inline-flex; align-items: center; gap: 6px;
     margin-top: 12px; padding: 8px 20px;
     border: 2px solid #1a1a2e; border-radius: 8px;
@@ -183,9 +295,57 @@
   .print-btn:hover { background: #1a1a2e; color: #fff; }
   .print-btn svg { width: 16px; height: 16px; fill: currentColor; }
 
+  /* ── CONFETTI / COMPLETION (feature #8) ── */
+  .completion-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(26,26,46,0.6); z-index: 500;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.4s;
+  }
+  .completion-overlay.visible { opacity: 1; pointer-events: auto; }
+  .completion-card {
+    background: #fff; border-radius: 16px; padding: 40px 48px;
+    text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+    transform: scale(0.8); transition: transform 0.4s ease;
+    max-width: 420px;
+  }
+  .completion-overlay.visible .completion-card { transform: scale(1); }
+  .completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+  .completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; }
+  .completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+  .completion-close {
+    margin-top: 20px; padding: 10px 32px;
+    background: #1a1a2e; color: #fff; border: none; border-radius: 8px;
+    font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .completion-close:hover { background: #2d2d4e; }
+
+  /* Confetti canvas */
+  #confettiCanvas {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 501;
+  }
+
+  /* Checklist progress bar */
+  .checklist-progress {
+    background: #eee; border-radius: 10px; height: 8px;
+    margin: 12px 0 6px; overflow: hidden;
+  }
+  .checklist-progress-fill {
+    background: linear-gradient(90deg, #2d6a2d, #4caf50);
+    height: 100%; border-radius: 10px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+  .checklist-progress-label {
+    font-size: 8.5pt; color: #888; text-align: right;
+    margin-bottom: 6px;
+  }
+
   @media print {
     body { background: #fff; padding: 0; min-height: auto; }
-    .progress-bar, .nav, .print-btn { display: none !important; }
+    .progress-bar, .nav, .print-btn, .card-breadcrumb, .sticky-indicator { display: none !important; }
     .card-container { width: 100%; min-height: auto; }
     .card { display: none !important; }
     .card.print-target {
@@ -199,160 +359,10 @@
     .error-mark { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
 
-@media (max-width: 720px) {
+  @media (max-width: 720px) {
     .card-container { width: 100%; }
     .score-grid { grid-template-columns: 1fr; }
   }
-
-  /* ── UI UPGRADE: LABELED PROGRESS BAR ── */
-  .progress-bar { flex-wrap: wrap; justify-content: center; }
-  .progress-dot { position: relative; transition: background 0.3s, transform 0.2s; }
-  .progress-dot.active { transform: scale(1.25); }
-  .progress-dot.visited { background: #7a7a9e; }
-  .progress-dot:hover { transform: scale(1.3); }
-  .progress-dot .dot-tooltip {
-    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-    background: #1a1a2e; color: #fff; padding: 4px 10px; border-radius: 6px;
-    font-size: 8.5pt; white-space: nowrap; opacity: 0;
-    pointer-events: none; transition: opacity 0.2s; z-index: 100;
-  }
-  .progress-dot .dot-tooltip::after {
-    content: ''; position: absolute; top: 100%; left: 50%;
-    transform: translateX(-50%); border: 5px solid transparent;
-    border-top-color: #1a1a2e;
-  }
-  .progress-dot:hover .dot-tooltip { opacity: 1; }
-  .card-breadcrumb {
-    font-size: 9.5pt; color: #888; margin-bottom: 14px;
-    text-align: center; transition: opacity 0.3s; min-height: 1.2em;
-  }
-  .card-breadcrumb b { color: #1a1a2e; }
-
-  /* ── UI UPGRADE: STICKY INDICATOR ── */
-  .sticky-indicator {
-    position: fixed; top: 12px; right: 16px;
-    background: #1a1a2e; color: #fff; padding: 5px 14px;
-    border-radius: 20px; font-size: 9pt; font-weight: 700;
-    opacity: 0; transition: opacity 0.3s; z-index: 200;
-    pointer-events: none; letter-spacing: 0.5px;
-  }
-  .sticky-indicator.visible { opacity: 1; }
-
-  /* ── UI UPGRADE: REVEAL INTERACTION ── */
-  .reveal-wrapper { position: relative; }
-  .reveal-cover {
-    background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%);
-    border-left: 3px solid #2d6a2d;
-    padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0;
-    cursor: pointer; user-select: none;
-    display: flex; align-items: center; gap: 10px;
-    transition: background 0.2s, box-shadow 0.2s;
-  }
-  .reveal-cover:hover {
-    box-shadow: 0 2px 8px rgba(45,106,45,0.15);
-    background: linear-gradient(135deg, #d4edda 0%, #c8e6c9 100%);
-  }
-  .reveal-cover .reveal-icon {
-    width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  }
-  .reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
-  .reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #2d6a2d; }
-  .reveal-cover .reveal-hint { font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px; }
-  .reveal-content {
-    max-height: 0; overflow: hidden; opacity: 0;
-    transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0;
-  }
-  .reveal-content.shown { max-height: 600px; opacity: 1; margin: 8px 0; }
-  .reveal-cover.hidden { display: none; }
-
-  /* ── UI UPGRADE: EXPANDABLE EXAMPLES ── */
-  .tip-expand {
-    margin-top: 8px; border-top: 1px dashed #b0b8cc; padding-top: 6px;
-  }
-  .tip-expand summary {
-    font-size: 9.5pt; font-weight: 600; color: #1a1a2e;
-    cursor: pointer; padding: 4px 0; list-style: none;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .tip-expand summary::-webkit-details-marker { display: none; }
-  .tip-expand summary::before {
-    content: '\25B6'; font-size: 8pt; transition: transform 0.2s; display: inline-block;
-  }
-  .tip-expand[open] summary::before { transform: rotate(90deg); }
-  .tip-expand .expand-body {
-    margin-top: 6px; font-size: 10pt; line-height: 1.5;
-    background: #f4f6fb; padding: 10px 12px; border-radius: 6px;
-  }
-
-  /* ── UI UPGRADE: TAPPABLE CHECKBOXES ── */
-  .check-item {
-    gap: 12px; padding: 10px 8px; cursor: pointer;
-    border-radius: 6px; transition: background 0.15s; user-select: none;
-  }
-  .check-item:hover { background: #f8f8fc; }
-  .check-item.checked { background: #f0f8f0; }
-  .check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
-  .check-item.checked .check-box::after {
-    content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700;
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-  }
-  .check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
-  .check-box {
-    width: 28px; height: 28px; border: 2.5px solid #1a1a2e;
-    border-radius: 6px; position: relative; transition: background 0.2s, border-color 0.2s;
-  }
-  .checklist-progress {
-    background: #eee; border-radius: 10px; height: 8px;
-    margin: 12px 0 6px; overflow: hidden;
-  }
-  .checklist-progress-fill {
-    background: linear-gradient(90deg, #2d6a2d, #4caf50);
-    height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%;
-  }
-  .checklist-progress-label {
-    font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px;
-  }
-
-  /* ── UI UPGRADE: COMPLETION OVERLAY ── */
-  .completion-overlay {
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(26,26,46,0.6); z-index: 500;
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0; pointer-events: none; transition: opacity 0.4s;
-  }
-  .completion-overlay.visible { opacity: 1; pointer-events: auto; }
-  .completion-card {
-    background: #fff; border-radius: 16px; padding: 40px 48px;
-    text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2);
-    transform: scale(0.8); transition: transform 0.4s ease; max-width: 420px;
-  }
-  .completion-overlay.visible .completion-card { transform: scale(1); }
-  .completion-emoji { font-size: 48pt; margin-bottom: 12px; }
-  .completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; }
-  .completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
-  .completion-close {
-    margin-top: 20px; padding: 10px 32px;
-    background: #1a1a2e; color: #fff; border: none; border-radius: 8px;
-    font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer;
-    transition: background 0.2s;
-  }
-  .completion-close:hover { background: #2d2d4e; }
-  #confettiCanvas {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    pointer-events: none; z-index: 501;
-  }
-
-  /* ── UI UPGRADE: PRINT ADDITIONS ── */
-  @media print {
-    .card-breadcrumb, .sticky-indicator, .completion-overlay, #confettiCanvas,
-    .reveal-cover, .checklist-progress, .checklist-progress-label,
-    .nav-buttons, .bottom-note { display: none !important; }
-    .reveal-content {
-      max-height: none !important; opacity: 1 !important; margin: 8px 0 !important;
-    }
-  }
-
 </style>
 </head>
 <body>
@@ -360,6 +370,7 @@
 <div class="progress-bar" id="progressBar"></div>
 <div class="card-breadcrumb" id="breadcrumb"></div>
 
+<!-- Sticky card indicator (feature #5) -->
 <div class="sticky-indicator" id="stickyIndicator"></div>
 
 <div class="card-container" id="cardContainer">
@@ -413,8 +424,8 @@
   </div>
 </div>
 
-<!-- ═══════════ CARD 3: Write a Thesis That Previews 3 Points ═══════════ -->
-<div class="card" data-title="Write a Thesis That">
+<!-- ═══════════ CARD 3: Thesis (with reveal — feature #3) ═══════════ -->
+<div class="card" data-title="Thesis Fix">
   <div class="card-header">
     <h2>Write a Thesis That Previews 3 Points</h2>
     <div class="card-subtitle">Your thesis repeats itself and doesn't preview your topics</div>
@@ -431,19 +442,21 @@
       <li>Neither sentence previews <i>how</i> people are helping — it doesn't name your 3 body paragraph topics</li>
     </ul>
     <p>A strong thesis names your three main points so the reader knows what's coming:</p>
-        <div class="reveal-wrapper">
+
+    <!-- Reveal interaction (feature #3) -->
+    <div class="reveal-wrapper">
       <div class="reveal-cover" onclick="revealBetter(this)">
         <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></div>
         <div>
-          <div class="reveal-text">Tap to see the improved version</div>
-          <div class="reveal-hint">Read the explanation above first</div>
+          <div class="reveal-text">Tap to see the stronger version</div>
+          <div class="reveal-hint">Read yours first, then compare</div>
         </div>
       </div>
       <div class="reveal-content">
-<div class="better">
-      <div class="label">FOCUSED THESIS</div>
-      "People are helping monarch butterflies survive through citizen science programs that track migration, individual efforts like Carter Steadman's way station, and planting milkweed and native plants to restore butterfly habitats."
-    </div>
+        <div class="better">
+          <div class="label">FOCUSED THESIS</div>
+          "People are helping monarch butterflies survive through citizen science programs that track migration, individual efforts like Carter Steadman's way station, and planting milkweed and native plants to restore butterfly habitats."
+        </div>
       </div>
     </div>
 
@@ -451,12 +464,21 @@
       <div class="label">THE FORMULA</div>
       <b>Topic + 3 main points:</b> "People are helping monarchs through [Point 1], [Point 2], and [Point 3]."<br><br>
       This thesis acts as a <b>roadmap</b> — it forces you to plan three distinct body paragraphs before you start writing. If your thesis names three topics, you'll never accidentally skip a body paragraph or put new evidence in the conclusion.
+      <details class="tip-expand">
+        <summary>Show me another example</summary>
+        <div class="expand-body">
+          <b>Prompt:</b> "Explain how weather affects daily life."<br><br>
+          <span style="color:#cc0000;"><b>Weak:</b></span> "Weather affects daily life in many ways. It affects what we do every day."<br><br>
+          <span style="color:#2d6a2d;"><b>Strong:</b></span> "Weather shapes daily life by determining what people wear, whether outdoor events can happen, and how farmers plan their growing seasons."<br><br>
+          Notice how the strong version names <b>3 specific topics</b> — clothing, events, farming — that become 3 body paragraphs.
+        </div>
+      </details>
     </div>
   </div>
 </div>
 
-<!-- ═══════════ CARD 4: Add a Third Body Paragraph ═══════════ -->
-<div class="card" data-title="Add a Third Body">
+<!-- ═══════════ CARD 4: Third Body Paragraph ═══════════ -->
+<div class="card" data-title="Add BP3">
   <div class="card-header">
     <h2>Add a Third Body Paragraph</h2>
     <div class="card-subtitle">Move the 43% statistic out of the conclusion</div>
@@ -476,15 +498,15 @@
       </div>
       <div class="outline-row">
         <span class="outline-tag">BP1</span>
-        <span>Citizen scientists &mdash; E1: tracking migration data &rarr; X1: why this data helps &rarr; E2: reporting sightings &rarr; X2: how scientists use the info</span>
+        <span>Citizen scientists — E1: tracking migration data &rarr; X1: why this data helps &rarr; E2: reporting sightings &rarr; X2: how scientists use the info</span>
       </div>
       <div class="outline-row">
         <span class="outline-tag">BP2</span>
-        <span>Carter Steadman &mdash; E1: 9th birthday donations + way station &rarr; X1: direct impact &rarr; E2: "Humans may be the problem..." quote &rarr; X2: inspires others</span>
+        <span>Carter Steadman — E1: 9th birthday donations + way station &rarr; X1: direct impact &rarr; E2: "Humans may be the problem..." quote &rarr; X2: inspires others</span>
       </div>
       <div class="outline-row">
         <span class="outline-tag" style="background:#cc6600;">BP3</span>
-        <span><b>Habitat restoration</b> &mdash; E1: planting milkweed and native plants &rarr; X1: why monarchs need milkweed &rarr; E2: <b>43% more eggs</b> &rarr; X2: shows restoration works</span>
+        <span><b>Habitat restoration</b> — E1: planting milkweed and native plants &rarr; X1: why monarchs need milkweed &rarr; E2: <b>43% more eggs</b> &rarr; X2: shows restoration works</span>
       </div>
       <div class="outline-row">
         <span class="outline-tag">CONC</span>
@@ -495,12 +517,23 @@
     <div class="tip-box">
       <div class="label">THE FIX</div>
       Take the 43% statistic and the milkweed/native plants detail out of your conclusion and build a full <b>BP3</b> around habitat restoration. Use the <b>TS &rarr; E1 &rarr; X1 &rarr; E2 &rarr; X2 &rarr; CS</b> pattern. Then write a conclusion that restates your three main points without introducing any new facts.
+      <details class="tip-expand">
+        <summary>Show me what BP3 could look like</summary>
+        <div class="expand-body">
+          <b>[TS]</b> Another way people are saving monarchs is by restoring the habitats they need to survive.<br>
+          <b>[E1]</b> According to the passage, volunteers have been planting milkweed and native plants in areas where monarchs breed and migrate.<br>
+          <b>[X1]</b> This is important because milkweed is the only plant monarch caterpillars can eat, so without it, the next generation of butterflies cannot survive.<br>
+          <b>[E2]</b> The passage states that these efforts led to 43% more eggs being laid in restored areas.<br>
+          <b>[X2]</b> This shows that habitat restoration has a direct, measurable impact — it doesn't just help in theory but actually increases the monarch population.<br>
+          <b>[CS]</b> By replanting what monarchs need, everyday people are giving butterflies a real chance at survival.
+        </div>
+      </details>
     </div>
   </div>
 </div>
 
-<!-- ═══════════ CARD 5: Explain Your Evidence ═══════════ -->
-<div class="card" data-title="Explain Your Evidence">
+<!-- ═══════════ CARD 5: Explain Evidence (with reveal — feature #3) ═══════════ -->
+<div class="card" data-title="Explain Evidence">
   <div class="card-header">
     <h2>Explain Your Evidence</h2>
     <div class="card-subtitle">P2 lists what citizen scientists do — but not WHY it matters</div>
@@ -522,20 +555,21 @@
       </tr>
     </table>
     <p>Every piece of evidence needs an <b>explanation</b> — the "X" in <b>E &rarr; X</b>. Here's how that looks:</p>
-        <div class="reveal-wrapper">
+
+    <div class="reveal-wrapper">
       <div class="reveal-cover" onclick="revealBetter(this)">
         <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></div>
         <div>
-          <div class="reveal-text">Tap to see the improved version</div>
-          <div class="reveal-hint">Read the explanation above first</div>
+          <div class="reveal-text">Tap to see evidence + explanation</div>
+          <div class="reveal-hint">Think about what's missing first</div>
         </div>
       </div>
       <div class="reveal-content">
-<div class="better">
-      <div class="label">EVIDENCE + EXPLANATION</div>
-      <b>[E1]</b> According to the passage, citizen scientists track monarch migration patterns and report sightings across the country.
-      <b>[X1]</b> This data is important because it helps researchers identify which migration routes are declining, so they know where to focus conservation efforts.
-    </div>
+        <div class="better">
+          <div class="label">EVIDENCE + EXPLANATION</div>
+          <b>[E1]</b> According to the passage, citizen scientists track monarch migration patterns and report sightings across the country.
+          <b>[X1]</b> This data is important because it helps researchers identify which migration routes are declining, so they know where to focus conservation efforts.
+        </div>
       </div>
     </div>
 
@@ -547,8 +581,8 @@
   </div>
 </div>
 
-<!-- ═══════════ CARD 6: The Body Paragraph Pattern ═══════════ -->
-<div class="card" data-title="The Body Paragraph">
+<!-- ═══════════ CARD 6: Body Paragraph Pattern ═══════════ -->
+<div class="card" data-title="BP Pattern">
   <div class="card-header">
     <h2>The Body Paragraph Pattern</h2>
     <div class="card-subtitle">How to build a strong body paragraph every time</div>
@@ -559,48 +593,49 @@
       <div class="outline-label">Body Paragraph Formula</div>
       <div class="outline-row">
         <span class="outline-tag">TS</span>
-        <span><b>Topic Sentence</b> &mdash; states the paragraph's main point</span>
+        <span><b>Topic Sentence</b> — states the paragraph's main point</span>
       </div>
       <div class="outline-row">
         <span class="outline-tag">E1</span>
-        <span><b>Evidence 1</b> &mdash; a specific fact, quote, or example from the passage</span>
+        <span><b>Evidence 1</b> — a specific fact, quote, or example from the passage</span>
       </div>
       <div class="outline-row">
         <span class="outline-tag" style="background:#2d6a2d;">X1</span>
-        <span><b>Explanation 1</b> &mdash; explain <i>why</i> that evidence matters</span>
+        <span><b>Explanation 1</b> — explain <i>why</i> that evidence matters</span>
       </div>
       <div class="outline-row">
         <span class="outline-tag">E2</span>
-        <span><b>Evidence 2</b> &mdash; a second fact or example from the passage</span>
+        <span><b>Evidence 2</b> — a second fact or example from the passage</span>
       </div>
       <div class="outline-row">
         <span class="outline-tag" style="background:#2d6a2d;">X2</span>
-        <span><b>Explanation 2</b> &mdash; explain <i>why</i> that evidence matters</span>
+        <span><b>Explanation 2</b> — explain <i>why</i> that evidence matters</span>
       </div>
       <div class="outline-row">
         <span class="outline-tag">CS</span>
-        <span><b>Concluding Sentence</b> &mdash; wraps up the paragraph's main idea</span>
+        <span><b>Concluding Sentence</b> — wraps up the paragraph's main idea</span>
       </div>
     </div>
     <p style="margin-top:12px;">Here's what your P2 (citizen scientists) would look like with this pattern:</p>
-        <div class="reveal-wrapper">
+
+    <div class="reveal-wrapper">
       <div class="reveal-cover" onclick="revealBetter(this)">
         <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></div>
         <div>
-          <div class="reveal-text">Tap to see the improved version</div>
-          <div class="reveal-hint">Read the explanation above first</div>
+          <div class="reveal-text">Tap to see a full body paragraph</div>
+          <div class="reveal-hint">Study the formula above first</div>
         </div>
       </div>
       <div class="reveal-content">
-<div class="better">
-      <div class="label">EXAMPLE BODY PARAGRAPH</div>
-      <b>[TS]</b> Citizen scientists play a key role in helping monarchs survive by collecting important data.
-      <b>[E1]</b> According to the passage, thousands of people across North America tag butterflies, count caterpillars, and record monarch sightings online.
-      <b>[X1]</b> This matters because without this data, scientists would not know where monarchs are struggling or where they need the most protection.
-      <b>[E2]</b> The passage also explains that these reports help experts understand how the butterflies are doing and where they need help.
-      <b>[X2]</b> As a result, citizen science turns everyday people into part of the solution, making monarch conservation a shared effort rather than something only researchers can do.
-      <b>[CS]</b> By collecting and sharing data, ordinary citizens are helping ensure that monarchs get the protection they need.
-    </div>
+        <div class="better">
+          <div class="label">EXAMPLE BODY PARAGRAPH</div>
+          <b>[TS]</b> Citizen scientists play a key role in helping monarchs survive by collecting important data.
+          <b>[E1]</b> According to the passage, thousands of people across North America tag butterflies, count caterpillars, and record monarch sightings online.
+          <b>[X1]</b> This matters because without this data, scientists would not know where monarchs are struggling or where they need the most protection.
+          <b>[E2]</b> The passage also explains that these reports help experts understand how the butterflies are doing and where they need help.
+          <b>[X2]</b> As a result, citizen science turns everyday people into part of the solution, making monarch conservation a shared effort rather than something only researchers can do.
+          <b>[CS]</b> By collecting and sharing data, ordinary citizens are helping ensure that monarchs get the protection they need.
+        </div>
       </div>
     </div>
 
@@ -611,16 +646,17 @@
   </div>
 </div>
 
-<!-- ═══════════ CARD 7: Proofreading Checklist ═══════════ -->
+<!-- ═══════════ CARD 7: Proofreading Checklist (feature #4 + #8) ═══════════ -->
 <div class="card" data-title="Checklist">
   <div class="card-header">
     <h2>Proofreading Checklist</h2>
     <div class="card-subtitle">Personalized to your recurring errors</div>
   </div>
   <div class="card-body">
-        <div class="checklist-progress-label" id="checkProgressLabel">0 checked</div>
+    <div class="checklist-progress-label" id="checkProgressLabel">0 of 7 checked</div>
     <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
-<div class="check-item" onclick="toggleCheck(this)">
+
+    <div class="check-item" onclick="toggleCheck(this)">
       <div class="check-box"></div>
       <div><b>Spelling — "birday":</b> <span class="error-mark">birday</span> &rarr; <span class="pattern-right">birthday</span>. Sound out the full word: birth + day.</div>
     </div>
@@ -652,11 +688,11 @@
       <div class="label">3-MINUTE RULE</div>
       Save the last 3 minutes of your test for proofreading. Read backward (last sentence first) to catch spelling — when you read forward, your brain auto-corrects. Then do a quick structure check: intro, 3 body paragraphs, conclusion. No new evidence in the conclusion.
     </div>
-      <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg> Print this checklist</button>
-</div>
+    <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg> Print this checklist</button>
+  </div>
 </div>
 
-<!-- ═══════════ CARD 7: Your 3 Goals ═══════════ -->
+<!-- ═══════════ CARD 8: Goals ═══════════ -->
 <div class="card" data-title="3 Goals">
   <div class="card-header">
     <h2>Your 3 Goals for Next Time</h2>
@@ -698,46 +734,51 @@
   <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
 </div>
 
-
-<!-- Completion overlay -->
+<!-- Completion overlay (feature #8) -->
 <div class="completion-overlay" id="completionOverlay">
   <div class="completion-card">
     <div class="completion-emoji">&#127881;</div>
     <div class="completion-title">Nice work, Elle!</div>
-    <div class="completion-sub">You reviewed all your cards. Remember your goals:<br><b>Write a thesis that previews your 3 body paragr... &bull; Write 3 full body paragraphs — and keep new evi... &bull; Explain WHY your evidence matters — don't just ...</b></div>
+    <div class="completion-sub">You reviewed all 8 cards. Remember your 3 goals:<br><b>Preview thesis &bull; 3 body paragraphs &bull; Explain WHY</b></div>
     <button class="completion-close" onclick="closeCompletion()">Got it!</button>
   </div>
 </div>
 <canvas id="confettiCanvas"></canvas>
 
 <script>
-var cards = document.querySelectorAll('.card');
-var bar = document.getElementById('progressBar');
-var breadcrumb = document.getElementById('breadcrumb');
-var stickyEl = document.getElementById('stickyIndicator');
-var current = 0;
-var visited = [0];
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+const breadcrumb = document.getElementById('breadcrumb');
+const stickyEl = document.getElementById('stickyIndicator');
+let current = 0;
+const visited = new Set([0]);
 
-cards.forEach(function(card, i) {
-  var dot = document.createElement('div');
+// Build progress dots with tooltips (feature #2)
+cards.forEach((card, i) => {
+  const dot = document.createElement('div');
   dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
-  var tooltip = document.createElement('span');
+  const tooltip = document.createElement('span');
   tooltip.className = 'dot-tooltip';
   tooltip.textContent = card.getAttribute('data-title') || ('Card ' + (i + 1));
   dot.appendChild(tooltip);
-  dot.addEventListener('click', function() { goTo(i); });
+  dot.addEventListener('click', () => goTo(i));
   bar.appendChild(dot);
 });
 
 function updateBreadcrumb() {
-  var title = cards[current].getAttribute('data-title') || ('Card ' + (current + 1));
-  breadcrumb.innerHTML = 'Card <b>' + (current + 1) + '</b> of ' + cards.length + ' \u2014 ' + title;
+  const title = cards[current].getAttribute('data-title') || ('Card ' + (current + 1));
+  breadcrumb.innerHTML = 'Card <b>' + (current + 1) + '</b> of ' + cards.length + ' &mdash; ' + title;
   stickyEl.textContent = (current + 1) + ' / ' + cards.length;
 }
 
+// Sticky indicator visibility on scroll (feature #5)
 function checkSticky() {
-  var barRect = bar.getBoundingClientRect();
-  stickyEl.classList.toggle('visible', barRect.bottom < 0);
+  const barRect = bar.getBoundingClientRect();
+  if (barRect.bottom < 0) {
+    stickyEl.classList.add('visible');
+  } else {
+    stickyEl.classList.remove('visible');
+  }
 }
 window.addEventListener('scroll', checkSticky);
 
@@ -746,59 +787,67 @@ function goTo(idx) {
   cards[current].classList.remove('active');
   bar.children[current].classList.remove('active');
   current = idx;
-  if (visited.indexOf(current) === -1) visited.push(current);
+  visited.add(current);
   cards[current].classList.add('active');
   bar.children[current].classList.add('active');
-  visited.forEach(function(v) { if (v !== current) bar.children[v].classList.add('visited'); });
-  var prevBtn = document.getElementById('prevBtn');
-  var nextBtn = document.getElementById('nextBtn');
-  if (prevBtn) {
-    prevBtn.style.visibility = current === 0 ? 'hidden' : 'visible';
-    prevBtn.disabled = current === 0;
-  }
-  if (nextBtn) {
-    nextBtn.textContent = current === cards.length - 1 ? 'Done \u2713' : 'Next \u2192';
-    nextBtn.disabled = false;
-  }
+
+  // Mark visited dots
+  visited.forEach(v => {
+    if (v !== current) bar.children[v].classList.add('visited');
+  });
+
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  const nextBtn = document.getElementById('nextBtn');
+  nextBtn.textContent = current === cards.length - 1 ? 'Done \u2713' : 'Next \u2192';
+
   updateBreadcrumb();
+
+  // Scroll to top of card on mobile
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function navigate(dir) {
-  if (dir === 1 && current === cards.length - 1) { showCompletion(); return; }
+  if (dir === 1 && current === cards.length - 1) {
+    // Last card — show completion (feature #8)
+    showCompletion();
+    return;
+  }
   goTo(current + dir);
 }
 
-document.addEventListener('keydown', function(e) {
+document.addEventListener('keydown', e => {
   if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
   if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
 });
 
+// Reveal interaction (feature #3)
 function revealBetter(cover) {
-  var content = cover.nextElementSibling;
+  const content = cover.nextElementSibling;
   content.classList.add('shown');
   cover.classList.add('hidden');
 }
 
+// Checklist toggle (feature #4)
 function toggleCheck(item) {
   item.classList.toggle('checked');
   updateCheckProgress();
 }
 
 function updateCheckProgress() {
-  var items = document.querySelectorAll('.check-item');
-  var checked = document.querySelectorAll('.check-item.checked').length;
-  var total = items.length;
-  var fill = document.getElementById('checkProgressFill');
-  var lbl = document.getElementById('checkProgressLabel');
-  if (fill) fill.style.width = Math.round((checked / total) * 100) + '%';
-  if (lbl) {
-    lbl.innerHTML = checked === total
-      ? '<b style="color:#2d6a2d;">All done! Nice work.</b>'
-      : checked + ' of ' + total + ' checked';
+  const items = document.querySelectorAll('.check-item');
+  const checked = document.querySelectorAll('.check-item.checked').length;
+  const total = items.length;
+  const pct = Math.round((checked / total) * 100);
+  document.getElementById('checkProgressFill').style.width = pct + '%';
+  document.getElementById('checkProgressLabel').textContent = checked + ' of ' + total + ' checked';
+
+  // All checked — mini celebration
+  if (checked === total) {
+    document.getElementById('checkProgressLabel').innerHTML = '<b style="color:#2d6a2d;">All done! Nice work.</b>';
   }
 }
 
+// Print — always prints a clean, unchecked version
 function printChecklist(btn) {
   var card = btn.closest('.card');
   var checkedItems = card.querySelectorAll('.check-item.checked');
@@ -809,42 +858,52 @@ function printChecklist(btn) {
   checkedItems.forEach(function(item) { item.classList.add('checked'); });
 }
 
+// ── Completion + Confetti (feature #8) ──
 function showCompletion() {
   document.getElementById('completionOverlay').classList.add('visible');
   launchConfetti();
 }
-
 function closeCompletion() {
   document.getElementById('completionOverlay').classList.remove('visible');
 }
 
 function launchConfetti() {
-  var canvas = document.getElementById('confettiCanvas');
-  var ctx = canvas.getContext('2d');
+  const canvas = document.getElementById('confettiCanvas');
+  const ctx = canvas.getContext('2d');
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
-  var colors = ['#1a1a2e','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b','#42a5f5'];
-  var particles = [];
-  for (var i = 0; i < 120; i++) {
+
+  const colors = ['#1a1a2e','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b','#42a5f5'];
+  const particles = [];
+  for (let i = 0; i < 120; i++) {
     particles.push({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height - canvas.height,
-      w: Math.random() * 10 + 5, h: Math.random() * 6 + 3,
+      w: Math.random() * 10 + 5,
+      h: Math.random() * 6 + 3,
       color: colors[Math.floor(Math.random() * colors.length)],
-      vx: (Math.random() - 0.5) * 4, vy: Math.random() * 3 + 2,
-      rot: Math.random() * 360, rotV: (Math.random() - 0.5) * 10, life: 1
+      vx: (Math.random() - 0.5) * 4,
+      vy: Math.random() * 3 + 2,
+      rot: Math.random() * 360,
+      rotV: (Math.random() - 0.5) * 10,
+      life: 1,
     });
   }
-  var frame = 0;
+
+  let frame = 0;
   function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    var alive = false;
-    particles.forEach(function(p) {
+    let alive = false;
+    particles.forEach(p => {
       if (p.life <= 0) return;
       alive = true;
-      p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.rot += p.rotV;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.05;
+      p.rot += p.rotV;
       if (p.y > canvas.height + 20) { p.life = 0; return; }
       if (frame > 60) p.life -= 0.01;
+
       ctx.save();
       ctx.translate(p.x, p.y);
       ctx.rotate(p.rot * Math.PI / 180);
