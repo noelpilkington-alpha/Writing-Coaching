@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Shepperd's Writing Test Review — G8.5</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar { display: flex; gap: 6px; margin-bottom: 16px; }
+  .progress-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: #ccc; transition: background 0.3s; cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container { position: relative; width: 680px; min-height: 420px; }
+
+  .card {
+    position: absolute; top: 0; left: 0; width: 100%;
+    background: #fff; border: 2.5px solid #1a1a2e; border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0; pointer-events: none; transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1; pointer-events: auto; transform: translateX(0); position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e; color: #fff; padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+  .card-header .card-subtitle { font-size: 9.5pt; color: #aaa; margin-top: 2px; }
+
+  .card-body { padding: 18px 22px 22px; line-height: 1.55; }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px; margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc; border: 1.5px solid #e0e0e8;
+    border-radius: 8px; padding: 10px 14px; text-align: center;
+  }
+  .score-box .big { font-size: 20pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3; border-left: 3px solid #cc0000;
+    padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+    font-style: italic; font-size: 10.5pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9; border-left: 3px solid #2d6a2d;
+    padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+    font-size: 10.5pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5; border-left: 3px solid #1a1a2e;
+    padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+  .error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+
+  .essay-excerpt {
+    background: #fafafa; border: 1px solid #e0e0e8;
+    border-radius: 6px; padding: 10px 14px; font-size: 10.5pt;
+    margin: 8px 0; line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700; font-size: 9pt; color: #888;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;
+  }
+
+  .outline-box {
+    background: #f8f8fc; border: 1.5px solid #e0e0e8;
+    border-radius: 8px; padding: 12px 16px; margin: 8px 0; font-size: 10.5pt;
+  }
+  .outline-box .outline-label {
+    font-weight: 700; font-size: 9pt; color: #1a1a2e;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+  }
+  .outline-row {
+    display: flex; gap: 10px; padding: 5px 0;
+    border-bottom: 1px dashed #ddd;
+  }
+  .outline-row:last-child { border-bottom: none; }
+  .outline-tag {
+    font-weight: 700; font-size: 9pt; color: #fff; background: #1a1a2e;
+    border-radius: 4px; padding: 2px 8px; min-width: 50px;
+    text-align: center; flex-shrink: 0; line-height: 1.6;
+  }
+
+  .pattern-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 6px 0; border-bottom: 1px solid #eee; font-size: 11pt;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; }
+
+  table.compare {
+    width: 100%; border-collapse: collapse; font-size: 10.5pt; margin: 8px 0;
+  }
+  table.compare th {
+    background: #1a1a2e; color: #fff; padding: 6px 10px;
+    text-align: left; font-size: 9.5pt;
+  }
+  table.compare td { padding: 6px 10px; border: 1px solid #ddd; vertical-align: top; }
+
+  .para-map {
+    display: flex; gap: 6px; margin: 10px 0; flex-wrap: wrap;
+  }
+  .para-tag {
+    padding: 6px 12px; border-radius: 6px; font-size: 10pt; font-weight: 600;
+    border: 1.5px solid;
+  }
+  .para-tag.good { background: #e8f5e9; border-color: #2d6a2d; color: #2d6a2d; }
+  .para-tag.warn { background: #fff3cd; border-color: #e6a800; color: #996600; }
+  .para-tag.bad { background: #fff3f3; border-color: #cc0000; color: #cc0000; }
+
+  .check-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid #eee; font-size: 11pt;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-box {
+    width: 20px; height: 20px; border: 2px solid #1a1a2e;
+    border-radius: 4px; flex-shrink: 0; margin-top: 1px;
+  }
+
+  .goal-num {
+    display: inline-block; background: #1a1a2e; color: #fff;
+    border-radius: 50%; width: 24px; height: 24px; text-align: center;
+    line-height: 24px; font-size: 11pt; font-weight: 700; margin-right: 8px; flex-shrink: 0;
+  }
+  .goal-row { display: flex; align-items: flex-start; gap: 4px; margin: 10px 0; }
+
+  .nav { display: flex; gap: 12px; margin-top: 16px; }
+  .nav button {
+    padding: 8px 28px; border: 2px solid #1a1a2e; border-radius: 8px;
+    background: #fff; color: #1a1a2e; font-family: inherit;
+    font-size: 11pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover { background: #1a1a2e; color: #fff; }
+
+  @media (max-width: 720px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Score Overview ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G8.5</div>
+  </div>
+  <div class="card-body">
+    <p>Shepperd, let's walk through your writing test together. Here's your full breakdown.</p>
+    <div class="score-grid">
+      <div class="score-box score-warn">
+        <div class="big">70%</div>
+        <div class="label">Overall Score (21/30)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">8/10</div>
+        <div class="label">Multiple Choice</div>
+      </div>
+      <div class="score-box score-warn">
+        <div class="big">13/20</div>
+        <div class="label">Essay</div>
+      </div>
+    </div>
+    <p>You got <b>8 out of 10 multiple choice questions right</b>, which shows solid grammar and writing knowledge. You also <b>wrote all 5 paragraphs</b> and included lots of details from the passage.</p>
+    <p>The points you lost came from 2 MCQ errors (sentence types and conjunctions), a <b>missing thesis</b>, <b>retelling instead of explaining</b>, <b>mixed organization</b>, and <b>spelling errors</b>. The next cards walk through each one.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: What You Did Well ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>What You Did Well</h2>
+    <div class="card-subtitle">You clearly read the passage carefully</div>
+  </div>
+  <div class="card-body">
+    <ul>
+      <li><b>8/10 MCQ</b> — strong grammar knowledge: complete sentences, imperative sentences, combining sentences, appositives, elaboration, irrelevant sentences, transitions, and topic sentences.</li>
+      <li><b>Used lots of passage details</b> — sensors, cameras, radar, lidar, AI, the elderly, disabilities, accidents, legal questions, jobs, Phoenix, San Francisco, Austin. You clearly read and absorbed the passage.</li>
+      <li><b>Wrote all 5 paragraphs</b> — you attempted the full essay structure, which many students don't finish.</li>
+      <li><b>Mentioned both benefits AND concerns</b> — saving lives, helping elderly/disabled people (benefits) and tech failures, accidents, legal questions, job losses (concerns).</li>
+      <li><b>Engaging intro hook</b> — "Did you know that there are cars that can do all the things that you used to do while driving?" draws the reader in.</li>
+      <li><b>Good transitions</b> — "Having these items is only part of it," "The tech also helps," "Right now" all move the reader forward.</li>
+    </ul>
+    <div class="tip-box">
+      <div class="label">KEY TAKEAWAY</div>
+      You included tons of specific details from the passage — sensors, AI, lidar, elderly people, disabilities, accidents, jobs, testing cities. That's a real strength. The next step is <b>organizing</b> those details into clear paragraphs and <b>explaining</b> what they mean instead of just listing them.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: Q3 — Declarative vs. Imperative ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q3: Declarative vs. Imperative</h2>
+    <div class="card-subtitle">You know what an imperative is — but you wrote one when asked for a declarative</div>
+  </div>
+  <div class="card-body">
+    <p>Q3 asked you to change an interrogative sentence into a <b>declarative</b> sentence. Here's what you wrote:</p>
+    <div class="you-wrote">
+      <div class="label">YOUR ANSWER (IMPERATIVE)</div>
+      "Help elderly people travel independently with self-driving cars."
+    </div>
+    <p>That's a <b>command</b> — it tells someone to do something. That makes it <b>imperative</b>, not declarative. You actually proved you know what an imperative is on Q2 (which you got right!). The issue is mixing up which type was being asked for.</p>
+    <div class="better">
+      <div class="label">CORRECT ANSWER (DECLARATIVE)</div>
+      "Self-driving cars would help elderly people travel independently."
+    </div>
+    <p>A declarative sentence is a <b>statement</b> — it tells the reader something. It has a subject ("Self-driving cars") + verb ("would help") and ends with a period.</p>
+    <table class="compare">
+      <tr>
+        <th>Sentence Type</th>
+        <th>What It Does</th>
+        <th>Example</th>
+      </tr>
+      <tr>
+        <td><b>Declarative</b></td>
+        <td>Makes a statement (TELLS)</td>
+        <td style="color:#2d6a2d;">"Self-driving cars would help elderly people."</td>
+      </tr>
+      <tr>
+        <td><b>Imperative</b></td>
+        <td>Gives a command (COMMANDS)</td>
+        <td style="color:#cc0000;">"Help elderly people travel independently."</td>
+      </tr>
+      <tr>
+        <td><b>Interrogative</b></td>
+        <td>Asks a question (ASKS)</td>
+        <td>"Would self-driving cars help elderly people?"</td>
+      </tr>
+      <tr>
+        <td><b>Exclamatory</b></td>
+        <td>Shows strong feeling (EXCLAIMS)</td>
+        <td>"Self-driving cars would change everything!"</td>
+      </tr>
+    </table>
+    <div class="tip-box">
+      <div class="label">TIP</div>
+      Declarative = tells. Imperative = commands. If your sentence starts with a verb and has no visible subject ("Help..."), it's imperative. A declarative always has a clear subject doing or being something.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Q6 — If vs. Unless ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q6: "If" vs. "Unless"</h2>
+    <div class="card-subtitle">These are both subordinating conjunctions — but they create opposite conditions</div>
+  </div>
+  <div class="card-body">
+    <p>The sentence: <i>"Self-driving cars could transform transportation. ______ the technology fails, difficult questions arise about safety and trust."</i></p>
+    <div class="you-wrote">
+      <div class="label">YOUR ANSWER</div>
+      "Unless the technology fails, difficult questions arise about safety and trust."
+    </div>
+    <div class="better">
+      <div class="label">CORRECT ANSWER</div>
+      "If the technology fails, difficult questions arise about safety and trust."
+    </div>
+    <p>Both "if" and "unless" are subordinating conjunctions, but they create <b>opposite</b> meanings:</p>
+    <table class="compare">
+      <tr>
+        <th>Word</th>
+        <th>Meaning</th>
+        <th>What the sentence says</th>
+      </tr>
+      <tr>
+        <td><b>"If"</b></td>
+        <td>In the event that</td>
+        <td style="color:#2d6a2d;">When the tech fails &rarr; questions arise. (Makes sense!)</td>
+      </tr>
+      <tr>
+        <td><b>"Unless"</b></td>
+        <td>Except if / Only if NOT</td>
+        <td style="color:#cc0000;">Questions arise EXCEPT when the tech fails. (Reversed logic!)</td>
+      </tr>
+    </table>
+    <p>"Unless" means "except if" — so "unless the technology fails" would mean questions arise in <i>every situation except</i> when the tech fails. That's the opposite of what the passage means.</p>
+    <div class="tip-box">
+      <div class="label">TIP</div>
+      When choosing between "if" and "unless," try replacing the word with its meaning. "If" = "in the event that." "Unless" = "except if." Plug both into the sentence and see which one makes logical sense with the rest of the paragraph.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: From Retelling to Explaining ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>From Retelling to Explaining</h2>
+    <div class="card-subtitle">This is the biggest issue in your essay</div>
+  </div>
+  <div class="card-body">
+    <p>Here's the prompt again. Look at the highlighted words:</p>
+    <div class="tip-box">
+      <div class="label">THE PROMPT</div>
+      "Write an expository essay explaining <span class="highlight">WHY it is important for readers to understand</span> <span class="highlight">BOTH the benefits AND concerns</span> of self-driving car technology before self-driving cars become more common."
+    </div>
+    <p>Now look at your intro — <b>7 sentences</b> describing HOW the technology works:</p>
+    <div class="essay-excerpt">
+      <div class="para-label">Your Paragraph 1 (Intro)</div>
+      Did you know that there are cars that can do all the things that you used to do while driving? <span class="highlight">Cars that are self-driving can do all of these things without owning human eyes. They must depend on tools such as sensors to veiw the world that is around them. These sensors/cameras work similer to eyes. They can capture images of markings in lanes, traffic lights, and pedestrians. The radar can send out radio waves to see the distance between cars and how fast they are going. The lidar is different in ways such as the laser beams, so it can build a 3d map of the things nearby.</span>
+    </div>
+    <p>Those 6 highlighted sentences <b>retell</b> how sensors, cameras, radar, and lidar work. But the prompt doesn't ask how the technology works — it asks <b>why it's important to understand both benefits and concerns</b>.</p>
+    <table class="compare">
+      <tr>
+        <th>Retelling (what your essay does)</th>
+        <th>Explaining (what the prompt asks for)</th>
+      </tr>
+      <tr>
+        <td style="color:#cc0000;">"The lidar shoots laser beams to build a 3D map of things nearby."</td>
+        <td style="color:#2d6a2d;">"Understanding how sensors like lidar work helps readers see why supporters believe the technology is advanced enough to be safe — but also why critics worry about what happens when these sensors fail."</td>
+      </tr>
+      <tr>
+        <td style="color:#cc0000;">Describes the technology</td>
+        <td style="color:#2d6a2d;">Explains WHY understanding it matters</td>
+      </tr>
+    </table>
+    <p>Your essay answers: <i>"How do self-driving cars work?"</i><br>The prompt asks: <i>"Why should people understand both sides?"</i></p>
+    <div class="tip-box">
+      <div class="label">TIP</div>
+      Before you write, read the prompt and <b>circle the key question word</b>. If it says "why," every paragraph should answer "because..." If it says "how," every paragraph should show a process. Your intro should be <b>short</b> (hook + thesis), not a 7-sentence retelling.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Essay Structure ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Organize Benefits and Concerns Separately</h2>
+    <div class="card-subtitle">One main point per paragraph</div>
+  </div>
+  <div class="card-body">
+    <p>Your P3 mixes benefits and concerns into one paragraph:</p>
+    <div class="essay-excerpt">
+      <div class="para-label">Your Paragraph 3 (Mixed)</div>
+      <span class="highlight">The tech also helps people who are not able to drive.</span> Elderly people who are not allowed to drive themselves or others would be able to travel indepentently again. People who have disabilites could have more freedom, and overall it would solve many issues. <span class="highlight">Some people have concerns, such as what if the tech fails, or what if people get accidents.</span> People have infact gotten in accidents because of this.
+    </div>
+    <p>Benefits and concerns should be in <b>separate paragraphs</b>. Here's the essay plan:</p>
+    <div class="outline-box">
+      <div class="outline-label">Essay Outline</div>
+      <div class="outline-row">
+        <span class="outline-tag">INTRO</span>
+        <span>Hook &rarr; <b>Thesis:</b> "It is important for readers to understand both the benefits and concerns of self-driving cars because..."</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">BP1</span>
+        <span>Benefits &mdash; E1: saving lives / preventing distracted driving &rarr; X1: why this matters &rarr; E2: helping elderly / disabled people &rarr; X2: why this matters &rarr; CS</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">BP2</span>
+        <span>Concerns &mdash; E1: technology failures / accidents &rarr; X1: why this matters &rarr; E2: legal questions / job losses &rarr; X2: why this matters &rarr; CS</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">BP3</span>
+        <span>Why understanding BOTH matters &mdash; informed decisions, balanced view, technology still being tested</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">CONC</span>
+        <span>Restate thesis &rarr; final thought about why this understanding matters for the future</span>
+      </div>
+    </div>
+    <p style="font-size:10pt;color:#888;margin-top:4px;">BP = Body Paragraph &bull; E = Evidence &bull; X = Explanation &bull; TS = Topic Sentence &bull; CS = Concluding Sentence</p>
+    <p><b>Body paragraph pattern:</b> TS &rarr; E1 &rarr; X1 &rarr; E2 &rarr; X2 &rarr; CS</p>
+    <p>Your P1 should be a <b>short intro</b> (hook + thesis), not a 7-sentence retelling of how sensors work. Your P5 should <b>restate your thesis and summarize your main points</b>, not add new facts about testing cities.</p>
+    <div class="tip-box">
+      <div class="label">WHY THIS MATTERS</div>
+      When benefits and concerns are in the same paragraph, neither one gets fully developed. Separating them gives you room to include <b>evidence from the passage</b> and <b>explain what it shows</b> — which is exactly what earns points on the essay.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 7: Proofreading Checklist ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Proofreading Checklist</h2>
+    <div class="card-subtitle">Personalized to your recurring errors</div>
+  </div>
+  <div class="card-body">
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Spelling errors:</b> <span class="error-mark">veiw</span> &rarr; <span class="pattern-right">view</span>, <span class="error-mark">similer</span> &rarr; <span class="pattern-right">similar</span>, <span class="error-mark">exaclty</span> &rarr; <span class="pattern-right">exactly</span>, <span class="error-mark">poeple</span> &rarr; <span class="pattern-right">people</span>, <span class="error-mark">indepentently</span> &rarr; <span class="pattern-right">independently</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>More spelling:</b> <span class="error-mark">disabilites</span> &rarr; <span class="pattern-right">disabilities</span>, <span class="error-mark">questnoning</span> &rarr; <span class="pattern-right">questioning</span>, <span class="error-mark">citys</span> &rarr; <span class="pattern-right">cities</span>, <span class="error-mark">infact</span> &rarr; <span class="pattern-right">in fact</span>, <span class="error-mark">everyday</span> &rarr; <span class="pattern-right">every day</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Typo:</b> "You might <span class="error-mark">me</span> wondering" &rarr; "You might <span class="pattern-right">be</span> wondering."</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Run-on sentence (P4):</b> "what if you crash, who will be held accountable<span class="error-mark"> </span>People are still figuring these things out." &rarr; Add a <span class="pattern-right">period</span> after "accountable."</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Awkward phrasing:</b> "what it is supposed to/what it should do" &rarr; pick <b>one</b> phrasing and delete the other.</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Read each paragraph out loud.</b> If you stumble over a sentence, it probably needs to be rewritten or split into two sentences.</div>
+    </div>
+    <div class="tip-box">
+      <div class="label">3-MINUTE RULE</div>
+      Save the last 3 minutes of your test for proofreading. Read backward (last sentence first) to catch spelling — when you read forward, your brain auto-corrects words you've already written.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 8: Your 3 Goals ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">You have the knowledge — now organize and explain it</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Answer the PROMPT, not just the topic.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Read the prompt, highlight the key question, and make sure your thesis answers it directly. If the prompt says "explain why," your thesis should say "because..." Don't just describe the topic — explain what the prompt is actually asking.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>Organize: one paragraph per main point.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Don't mix benefits and concerns in the same paragraph. Each body paragraph should have one clear topic sentence and follow the TS &rarr; E1 &rarr; X1 &rarr; E2 &rarr; X2 &rarr; CS pattern. Give each point its own space to be fully developed with evidence and explanation.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Explain, don't retell.</b><br>
+        <span style="font-size:10.5pt;color:#555;">After each piece of evidence, write ONE sentence explaining WHY it matters or WHAT it shows. Instead of "The lidar builds a 3D map," write "This shows how advanced the technology is, which is why supporters believe it can be trusted — but also why the stakes are so high if something goes wrong."</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">THE BIG PICTURE</div>
+      You clearly read the passage carefully — you included tons of details about sensors, AI, elderly people, disabilities, accidents, jobs, and testing cities. That's a real strength. Now the next step is organizing those details into clear paragraphs and explaining what they mean, not just listing them. You're capable of strong writing — these are organizational skills that improve quickly with practice.
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+let current = 0;
+
+cards.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  bar.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done' : 'Next \u2192';
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) return;
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+goTo(0);
+</script>
+</body>
+</html>
