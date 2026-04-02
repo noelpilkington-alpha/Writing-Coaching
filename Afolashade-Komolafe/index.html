@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Afolashade's Writing Test Review — G4.2</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .progress-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ccc;
+    transition: background 0.3s;
+    cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container {
+    position: relative;
+    width: 640px;
+    min-height: 420px;
+  }
+
+  .card {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    background: #fff;
+    border: 2.5px solid #1a1a2e;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 {
+    font-size: 15pt;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .card-header .card-subtitle {
+    font-size: 9.5pt;
+    color: #aaa;
+    margin-top: 2px;
+  }
+
+  .card-body {
+    padding: 18px 22px 22px;
+    line-height: 1.55;
+  }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+  }
+  .score-box .big { font-size: 20pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3;
+    border-left: 3px solid #cc0000;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    font-size: 10.5pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9;
+    border-left: 3px solid #2d6a2d;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 10.5pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5;
+    border-left: 3px solid #1a1a2e;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+
+  .pattern-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; }
+
+  .goal-num {
+    display: inline-block;
+    background: #1a1a2e;
+    color: #fff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    line-height: 24px;
+    font-size: 11pt;
+    font-weight: 700;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .goal-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    margin: 10px 0;
+  }
+
+  .essay-excerpt {
+    background: #fafafa;
+    border: 1px solid #e0e0e8;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 10.5pt;
+    margin: 8px 0;
+    line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+
+  .outline-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 8px 0;
+    font-size: 10.5pt;
+  }
+  .outline-box .outline-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .outline-row {
+    display: flex;
+    gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px dashed #ddd;
+  }
+  .outline-row:last-child { border-bottom: none; }
+  .outline-tag {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #fff;
+    background: #1a1a2e;
+    border-radius: 4px;
+    padding: 2px 8px;
+    min-width: 36px;
+    text-align: center;
+    flex-shrink: 0;
+    line-height: 1.6;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-box {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #1a1a2e;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .nav {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .nav button {
+    padding: 8px 28px;
+    border: 2px solid #1a1a2e;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a2e;
+    font-family: inherit;
+    font-size: 11pt;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover {
+    background: #1a1a2e;
+    color: #fff;
+  }
+
+  @media (max-width: 720px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Score Overview ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G4.2</div>
+  </div>
+  <div class="card-body">
+    <p>Afolashade, let's look at your writing test together so you can see what you did well and what to work on next.</p>
+    <div class="score-grid">
+      <div class="score-box score-warn">
+        <div class="big">53%</div>
+        <div class="label">Overall Score (24/45)</div>
+      </div>
+      <div class="score-box score-warn">
+        <div class="big">3/11</div>
+        <div class="label">Perfect Answers</div>
+      </div>
+      <div class="score-box score-warn">
+        <div class="big">8/20</div>
+        <div class="label">Paragraph</div>
+      </div>
+    </div>
+    <p>This test shows us exactly what to work on, and the good news is that the fixes are very learnable. Let's go through them together.</p>
+    <p>You earned <b>3 perfect answers</b> and partial credit on many others. The biggest area to improve is <b>punctuation</b> — using periods to end your sentences and reading your writing out loud to catch mistakes. These are skills you can practice starting today.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: What You Did Well ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>What You Did Well</h2>
+    <div class="card-subtitle">These are real strengths</div>
+  </div>
+  <div class="card-body">
+    <p>Before we look at what to fix, here's what you got right:</p>
+    <ul>
+      <li><b>Q2 — Fragment expansion!</b> You took a fragment and turned it into a complete sentence. That means you <i>know</i> what a complete sentence looks like.</li>
+      <li><b>Q3 — Subordinating conjunction!</b> You finished a sentence that started with a conjunction — you can complete a thought when given a start.</li>
+      <li><b>Q5 — "Because" connection!</b> You used "because" to connect two ideas. You understand how to give a reason.</li>
+      <li><b>You never left anything blank.</b> Every question has an answer. You clearly read the passages and had ideas about each one.</li>
+    </ul>
+    <p>You have ideas about nature, spring, and the world around you. The points you lost are mostly about <b>punctuation</b> — using periods to end your thoughts — and <b>writing in your own words</b>. These are fixable skills, not missing knowledge. Let's work through them.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: What's an Appositive? ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Q4: What's an Appositive?</h2>
+    <div class="card-subtitle">A short description tucked inside the sentence</div>
+  </div>
+  <div class="card-body">
+    <p>The question asked you to <b>rewrite the sentence and add an appositive</b>:</p>
+    <div class="essay-excerpt">
+      <div class="para-label">Original</div>
+      Many people attend bluebonnet festivals in small towns all over Texas.
+    </div>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Many people attend bluebonnet festivals in small towns all over Texas, because its a beautiful sight.
+    </div>
+    <p>You added a <b>reason</b> ("because it's a beautiful sight"), but the question asked for an <b>appositive</b>. Those are different things. Also, <span class="highlight">"its" should be "it's"</span> (short for "it is").</p>
+    <p>An appositive is a <b>short description</b> placed right after a noun, set off by commas. It tells the reader <i>what</i> something is.</p>
+    <div class="better">
+      <div class="label">WITH AN APPOSITIVE</div>
+      Many people attend bluebonnet festivals, <b><span class="highlight">fun outdoor events with food and music</span></b>, in small towns all over Texas.
+    </div>
+    <div class="tip-box">
+      <div class="label">THE APPOSITIVE PATTERN</div>
+      <b>Noun, [short description], rest of sentence.</b><br><br>
+      Think of it like a whisper to the reader: <i>"bluebonnet festivals — oh, by the way, those are fun outdoor events — in small towns."</i><br><br>
+      More examples:<br>
+      &bull; Texas, <b>the Lone Star State</b>, is famous for its wildflowers.<br>
+      &bull; Bluebonnets, <b>bright blue wildflowers</b>, bloom every spring.
+    </div>
+    <p style="font-size:10pt;color:#555;margin-top:8px;"><b>Quick spelling tip:</b> "its" = belongs to it. "It's" = it is. If you can replace the word with "it is," use the apostrophe: it's.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Write Complete Sentences ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Write Complete Sentences</h2>
+    <div class="card-subtitle">Every sentence needs a subject doing something</div>
+  </div>
+  <div class="card-body">
+    <p>On Q7 and Q8, your answers are <b>fragments</b> — they start a thought but don't finish it. A complete sentence needs: <b>Subject + Verb + Complete thought</b>.</p>
+
+    <p style="margin-top:10px;"><b>Q7</b> — Write a sentence about what happens in spring.</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      More flowers and green and farmers plant more food.
+    </div>
+    <p>This reads more like a list than a sentence. Try reading it out loud — does it sound finished? Who is doing what?</p>
+    <div class="better">
+      <div class="label">COMPLETE SENTENCE</div>
+      <b>In spring, more flowers bloom and the grass turns green.</b>
+    </div>
+
+    <p style="margin-top:14px;"><b>Q8</b> — Write about bluebonnets.</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Bluebonnets because when they are together they are bright and pretty.
+    </div>
+    <p>This starts a thought but doesn't finish it — there's no main verb telling us what bluebonnets <i>do</i> or <i>are</i>.</p>
+    <div class="better">
+      <div class="label">COMPLETE SENTENCE</div>
+      <b>Bluebonnets are interesting because when they grow together, they create a bright blue field.</b>
+    </div>
+
+    <div class="tip-box">
+      <div class="label">THE "READ IT OUT LOUD" TEST</div>
+      After you write a sentence, <b>read it out loud</b>. Ask yourself:<br><br>
+      &bull; Does it have a subject? (Who or what is the sentence about?)<br>
+      &bull; Does the subject DO something? (What's the verb?)<br>
+      &bull; Does it sound finished? Can it stand on its own?<br><br>
+      If it sounds like it stops in the middle, add more to finish the thought.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: Punctuation Is Your Guide ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Punctuation Is Your Guide</h2>
+    <div class="card-subtitle">Periods and commas are traffic signals for reading</div>
+  </div>
+  <div class="card-body">
+    <p>This is the <b>most important card</b> in your review. Your coach noticed something that connects your reading and your writing: <b>you tend to skip past punctuation marks</b> without pausing.</p>
+    <p>Punctuation marks are like <b>traffic signals</b>:</p>
+    <div class="pattern-row"><span class="pattern-wrong" style="color:#cc0000;">PERIOD = STOP</span> <span class="pattern-arrow">&nbsp;</span> <span style="color:#555;">That thought is done. Take a breath. Start a new idea.</span></div>
+    <div class="pattern-row"><span class="pattern-right" style="color:#cc6600;">COMMA = SLOW DOWN</span> <span class="pattern-arrow">&nbsp;</span> <span style="color:#555;">Pause briefly, then keep going in the same thought.</span></div>
+
+    <p style="margin-top:10px;">Look at your paragraph. Almost every comma should actually be a <b>period</b>:</p>
+    <div class="you-wrote">
+      <div class="label">YOUR VERSION (COMMAS EVERYWHERE)</div>
+      In real life, robots help people in many ways<b style="color:#cc0000;">,</b> In some jobs, robots work with people<b style="color:#cc0000;">,</b> In one factory in the Netherlands, workers use robot arms...
+    </div>
+    <p>When you read this without stopping, it sounds like one long blur of words.</p>
+    <div class="better">
+      <div class="label">WITH PERIODS (EACH IDEA IS CLEAR)</div>
+      In real life, robots help people in many ways<b style="color:#2d6a2d;">.</b> In some jobs, robots work with people<b style="color:#2d6a2d;">.</b> In one factory in the Netherlands, workers use robot arms...
+    </div>
+    <p>Now each idea gets its own sentence. The reader can follow along.</p>
+
+    <div class="tip-box">
+      <div class="label">YOUR COACH'S ADVICE</div>
+      Your coach noticed something important: when you read out loud, you skip past the periods and commas without pausing. Try this: <b>every time you see a period, STOP and count to one. Every time you see a comma, pause for half a second.</b> This will help you hear when something doesn't sound right — both in your own writing AND in other people's writing.<br><br>
+      <b>The rule:</b> If you're starting a new thought with a capital letter, the word before it needs a <b>period</b>, not a comma.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Your Paragraph ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your Paragraph: Write YOUR Ideas</h2>
+    <div class="card-subtitle">Use the article as evidence, but explain in your own words</div>
+  </div>
+  <div class="card-body">
+    <p>Your paragraph scored <b>8/20</b>. The biggest issue is that most of the paragraph is <b>copied directly from the article</b> rather than written in your own words. The prompt asks you to <i>explain</i> something using evidence — not to copy the article.</p>
+
+    <p style="margin-top:10px;"><b>Copying vs. explaining:</b></p>
+    <div class="you-wrote">
+      <div class="label">COPYING (FROM YOUR PARAGRAPH)</div>
+      In one factory in the Netherlands, workers use robot arms to put together parts for machines.
+    </div>
+    <div class="better">
+      <div class="label">EXPLAINING (YOUR OWN WORDS)</div>
+      For example, in the Netherlands, robots help factory workers build machine parts faster. <b>This shows that robots make work easier and quicker.</b>
+    </div>
+    <p style="font-size:10pt;color:#555;">See the difference? You read the fact, then explain <i>what it shows</i> in your own words.</p>
+
+    <p style="margin-top:12px;"><b>Your paragraph also needs a plan:</b></p>
+    <div class="outline-box">
+      <div class="outline-label">Paragraph Plan — "Are People Ready for Robots?"</div>
+      <div style="font-size:9.5pt;color:#888;margin-bottom:6px;"><b>TS</b> = Topic Sentence &nbsp;&bull;&nbsp; <b>D</b> = Detail from the article &nbsp;&bull;&nbsp; <b>W</b> = Why it matters &nbsp;&bull;&nbsp; <b>CS</b> = Concluding Sentence</div>
+      <div class="outline-row">
+        <span class="outline-tag">TS</span>
+        <span>Robots help people in many ways at home and at work.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D1</span>
+        <span>In a factory in the Netherlands, robots help workers put together machine parts.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">W</span>
+        <span>This shows that robots can make hard work faster and easier for people.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D2</span>
+        <span>Robots also work with people in other jobs, not just factories.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">W</span>
+        <span>This matters because robots are becoming part of everyday life, not just science fiction.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D3</span>
+        <span>With help from robots, workers can make many more parts each hour.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">W</span>
+        <span>This shows that robots don't replace people — they help people do more.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">CS</span>
+        <span>Robots are already helping people, and that is why people should be ready for them.</span>
+      </div>
+    </div>
+
+    <p style="margin-top:8px;">Also, don't forget: end each sentence with a <b>period</b>. Read your paragraph out loud and stop at every period to make sure each idea sounds complete.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 7: Read Your Writing Out Loud ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Read Your Writing Out Loud</h2>
+    <div class="card-subtitle">The proofreading secret that catches mistakes</div>
+  </div>
+  <div class="card-body">
+    <p>Your coach shared a powerful tip: <b>reading out loud</b> is the best way to catch mistakes in your own writing. Here's how to do it step by step:</p>
+
+    <div class="outline-box">
+      <div class="outline-label">The Read-It-Out-Loud Method</div>
+      <div class="outline-row">
+        <span class="outline-tag">Step 1</span>
+        <span>Write your answer.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">Step 2</span>
+        <span>Put your pencil down.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">Step 3</span>
+        <span>Read it out loud SLOWLY — point to each word as you read.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">Step 4</span>
+        <span>At every period, STOP completely. At every comma, pause.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">Step 5</span>
+        <span>Ask yourself: Does this sound right? Does it sound finished?</span>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <div class="label">WHAT TO LISTEN FOR</div>
+      &bull; If you <b>run out of breath</b> before hitting a period, your sentence is probably too long — split it!<br>
+      &bull; If a sentence <b>sounds like it stops in the middle</b>, it might be a fragment — add more to finish the thought.<br>
+      &bull; If two ideas are <b>smashed together with a comma</b>, replace that comma with a period.
+    </div>
+
+    <p style="margin-top:10px;"><b>Your personal proofreading checklist:</b></p>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Did I capitalize "I" every time?</b><br><span style="font-size:10pt;color:#555;">You wrote "i like to plant flowers" — "I" is always capitalized, no matter where it appears in the sentence.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Does every sentence start with a capital letter?</b><br><span style="font-size:10pt;color:#555;">In your paragraph, "robotsmay" starts without a capital. Every new sentence = capital letter.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Does every sentence end with a period or question mark?</b><br><span style="font-size:10pt;color:#555;">Many of your sentences end with commas instead of periods. If the next word starts a new idea, use a period.</span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Did I spell tricky words right?</b><br><span style="font-size:10pt;color:#555;">"atack" &rarr; <b>attack</b>, "its" &rarr; <b>it's</b> (it is), "spring time" &rarr; <b>springtime</b></span></div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div><b>Are my words spaced correctly?</b><br><span style="font-size:10pt;color:#555;">"robotsmay" should be "robots may" — always check that words have spaces between them.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 8: Goals ═══════════ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">You understand sentences — now show it with punctuation</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>End every sentence with a PERIOD, not a comma.</b><br>
+        <span style="font-size:10.5pt;color:#555;">If you're starting a new thought, the last thought is done — put a period. Ask yourself: "Am I starting a new idea?" If yes, the word before needs a period and a capital letter after it. This one fix will improve your paragraph score the most.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>Write your OWN ideas in the paragraph.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Read the article, then explain what you learned in YOUR words. Don't copy sentences from the passage. Use the paragraph plan: start with a topic sentence that answers the prompt, give details from the article, and after each detail, add one sentence explaining <i>why it matters</i>. End with a concluding sentence.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Read everything out loud before you submit.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Point to each word. Stop at periods. Pause at commas. If it doesn't sound right, fix it. Check: Did I capitalize "I"? Did I end each sentence? Did I spell tricky words correctly? Reading out loud is your secret weapon.</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">THE BIG PICTURE</div>
+      You understand sentence structure — you proved it on Q2, Q3, and Q5. You know what a complete sentence looks like, you can use "because" to connect ideas, and you can finish a thought when given a start. Now practice using <b>periods and capital letters</b> to show the reader where your ideas start and stop. <b>Reading out loud is your secret weapon</b> — it will help you hear mistakes that your eyes might miss. Keep going, Afolashade. These are skills you can build every day.
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<script>
+const cards = document.querySelectorAll('.card');
+const bar = document.getElementById('progressBar');
+let current = 0;
+
+cards.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  bar.appendChild(dot);
+});
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done' : 'Next \u2192';
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) return;
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+goTo(0);
+</script>
+</body>
+</html>
