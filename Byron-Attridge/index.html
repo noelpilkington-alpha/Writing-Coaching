@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Byron's Writing Test Review — G7.3</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar { display: flex; gap: 6px; margin-bottom: 16px; }
+  .progress-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: #ccc; transition: background 0.3s; cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container { position: relative; width: 680px; min-height: 420px; }
+
+  .card {
+    position: absolute; top: 0; left: 0; width: 100%;
+    background: #fff; border: 2.5px solid #1a1a2e; border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0; pointer-events: none; transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1; pointer-events: auto; transform: translateX(0); position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e; color: #fff; padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+  .card-header .card-subtitle { font-size: 9.5pt; color: #aaa; margin-top: 2px; }
+
+  .card-body { padding: 18px 22px 22px; line-height: 1.55; }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px; margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc; border: 1.5px solid #e0e0e8;
+    border-radius: 8px; padding: 10px 14px; text-align: center;
+  }
+  .score-box .big { font-size: 20pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3; border-left: 3px solid #cc0000;
+    padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+    font-style: italic; font-size: 10.5pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9; border-left: 3px solid #2d6a2d;
+    padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+    font-size: 10.5pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5; border-left: 3px solid #1a1a2e;
+    padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+  .error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+
+  .essay-excerpt {
+    background: #fafafa; border: 1px solid #e0e0e8;
+    border-radius: 6px; padding: 10px 14px; font-size: 10.5pt;
+    margin: 8px 0; line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700; font-size: 9pt; color: #888;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;
+  }
+
+  .outline-box {
+    background: #f8f8fc; border: 1.5px solid #e0e0e8;
+    border-radius: 8px; padding: 12px 16px; margin: 8px 0; font-size: 10.5pt;
+  }
+  .outline-box .outline-label {
+    font-weight: 700; font-size: 9pt; color: #1a1a2e;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+  }
+  .outline-row {
+    display: flex; gap: 10px; padding: 5px 0;
+    border-bottom: 1px dashed #ddd;
+  }
+  .outline-row:last-child { border-bottom: none; }
+  .outline-tag {
+    font-weight: 700; font-size: 9pt; color: #fff; background: #1a1a2e;
+    border-radius: 4px; padding: 2px 8px; min-width: 50px;
+    text-align: center; flex-shrink: 0; line-height: 1.6;
+  }
+
+  .pattern-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 6px 0; border-bottom: 1px solid #eee; font-size: 11pt;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; }
+
+  table.compare {
+    width: 100%; border-collapse: collapse; font-size: 10.5pt; margin: 8px 0;
+  }
+  table.compare th {
+    background: #1a1a2e; color: #fff; padding: 6px 10px;
+    text-align: left; font-size: 9.5pt;
+  }
+  table.compare td { padding: 6px 10px; border: 1px solid #ddd; vertical-align: top; }
+
+  .para-map {
+    display: flex; gap: 6px; margin: 10px 0; flex-wrap: wrap;
+  }
+  .para-tag {
+    padding: 6px 12px; border-radius: 6px; font-size: 10pt; font-weight: 600;
+    border: 1.5px solid;
+  }
+  .para-tag.good { background: #e8f5e9; border-color: #2d6a2d; color: #2d6a2d; }
+  .para-tag.warn { background: #fff3cd; border-color: #e6a800; color: #996600; }
+  .para-tag.bad { background: #fff3f3; border-color: #cc0000; color: #cc0000; }
+
+  .check-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid #eee; font-size: 11pt;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-box {
+    width: 20px; height: 20px; border: 2px solid #1a1a2e;
+    border-radius: 4px; flex-shrink: 0; margin-top: 1px;
+  }
+
+  .goal-num {
+    display: inline-block; background: #1a1a2e; color: #fff;
+    border-radius: 50%; width: 24px; height: 24px; text-align: center;
+    line-height: 24px; font-size: 11pt; font-weight: 700; margin-right: 8px; flex-shrink: 0;
+  }
+  .goal-row { display: flex; align-items: flex-start; gap: 4px; margin: 10px 0; }
+
+  .nav { display: flex; gap: 12px; margin-top: 16px; }
+  .nav button {
+    padding: 8px 28px; border: 2px solid #1a1a2e; border-radius: 8px;
+    background: #fff; color: #1a1a2e; font-family: inherit;
+    font-size: 11pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover { background: #1a1a2e; color: #fff; }
+
+    .print-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 12px; padding: 8px 20px;
+    border: 2px solid #1a1a2e; border-radius: 8px;
+    background: #fff; color: #1a1a2e; font-family: inherit;
+    font-size: 10.5pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .print-btn:hover { background: #1a1a2e; color: #fff; }
+  .print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+  @media print {
+    body { background: #fff; padding: 0; min-height: auto; }
+    .progress-bar, .nav, .print-btn { display: none !important; }
+    .card-container { width: 100%; min-height: auto; }
+    .card { display: none !important; }
+    .card.print-target {
+      display: block !important; opacity: 1 !important;
+      pointer-events: auto !important; position: relative !important;
+      transform: none !important; box-shadow: none;
+      border: 2px solid #1a1a2e; page-break-inside: avoid;
+    }
+    .check-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .card-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .error-mark { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+@media (max-width: 720px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── UI UPGRADE: LABELED PROGRESS BAR ── */
+  .progress-bar { flex-wrap: wrap; justify-content: center; }
+  .progress-dot { position: relative; transition: background 0.3s, transform 0.2s; }
+  .progress-dot.active { transform: scale(1.25); }
+  .progress-dot.visited { background: #7a7a9e; }
+  .progress-dot:hover { transform: scale(1.3); }
+  .progress-dot .dot-tooltip {
+    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: #1a1a2e; color: #fff; padding: 4px 10px; border-radius: 6px;
+    font-size: 8.5pt; white-space: nowrap; opacity: 0;
+    pointer-events: none; transition: opacity 0.2s; z-index: 100;
+  }
+  .progress-dot .dot-tooltip::after {
+    content: ''; position: absolute; top: 100%; left: 50%;
+    transform: translateX(-50%); border: 5px solid transparent;
+    border-top-color: #1a1a2e;
+  }
+  .progress-dot:hover .dot-tooltip { opacity: 1; }
+  .card-breadcrumb {
+    font-size: 9.5pt; color: #888; margin-bottom: 14px;
+    text-align: center; transition: opacity 0.3s; min-height: 1.2em;
+  }
+  .card-breadcrumb b { color: #1a1a2e; }
+
+  /* ── UI UPGRADE: STICKY INDICATOR ── */
+  .sticky-indicator {
+    position: fixed; top: 12px; right: 16px;
+    background: #1a1a2e; color: #fff; padding: 5px 14px;
+    border-radius: 20px; font-size: 9pt; font-weight: 700;
+    opacity: 0; transition: opacity 0.3s; z-index: 200;
+    pointer-events: none; letter-spacing: 0.5px;
+  }
+  .sticky-indicator.visible { opacity: 1; }
+
+  /* ── UI UPGRADE: REVEAL INTERACTION ── */
+  .reveal-wrapper { position: relative; }
+  .reveal-cover {
+    background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%);
+    border-left: 3px solid #2d6a2d;
+    padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0;
+    cursor: pointer; user-select: none;
+    display: flex; align-items: center; gap: 10px;
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+  .reveal-cover:hover {
+    box-shadow: 0 2px 8px rgba(45,106,45,0.15);
+    background: linear-gradient(135deg, #d4edda 0%, #c8e6c9 100%);
+  }
+  .reveal-cover .reveal-icon {
+    width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
+  .reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #2d6a2d; }
+  .reveal-cover .reveal-hint { font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px; }
+  .reveal-content {
+    max-height: 0; overflow: hidden; opacity: 0;
+    transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0;
+  }
+  .reveal-content.shown { max-height: 600px; opacity: 1; margin: 8px 0; }
+  .reveal-cover.hidden { display: none; }
+
+  /* ── UI UPGRADE: EXPANDABLE EXAMPLES ── */
+  .tip-expand {
+    margin-top: 8px; border-top: 1px dashed #b0b8cc; padding-top: 6px;
+  }
+  .tip-expand summary {
+    font-size: 9.5pt; font-weight: 600; color: #1a1a2e;
+    cursor: pointer; padding: 4px 0; list-style: none;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .tip-expand summary::-webkit-details-marker { display: none; }
+  .tip-expand summary::before {
+    content: '\25B6'; font-size: 8pt; transition: transform 0.2s; display: inline-block;
+  }
+  .tip-expand[open] summary::before { transform: rotate(90deg); }
+  .tip-expand .expand-body {
+    margin-top: 6px; font-size: 10pt; line-height: 1.5;
+    background: #f4f6fb; padding: 10px 12px; border-radius: 6px;
+  }
+
+  /* ── UI UPGRADE: TAPPABLE CHECKBOXES ── */
+  .check-item {
+    gap: 12px; padding: 10px 8px; cursor: pointer;
+    border-radius: 6px; transition: background 0.15s; user-select: none;
+  }
+  .check-item:hover { background: #f8f8fc; }
+  .check-item.checked { background: #f0f8f0; }
+  .check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
+  .check-item.checked .check-box::after {
+    content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700;
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  }
+  .check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
+  .check-box {
+    width: 28px; height: 28px; border: 2.5px solid #1a1a2e;
+    border-radius: 6px; position: relative; transition: background 0.2s, border-color 0.2s;
+  }
+  .checklist-progress {
+    background: #eee; border-radius: 10px; height: 8px;
+    margin: 12px 0 6px; overflow: hidden;
+  }
+  .checklist-progress-fill {
+    background: linear-gradient(90deg, #2d6a2d, #4caf50);
+    height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%;
+  }
+  .checklist-progress-label {
+    font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px;
+  }
+
+  /* ── UI UPGRADE: COMPLETION OVERLAY ── */
+  .completion-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(26,26,46,0.6); z-index: 500;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.4s;
+  }
+  .completion-overlay.visible { opacity: 1; pointer-events: auto; }
+  .completion-card {
+    background: #fff; border-radius: 16px; padding: 40px 48px;
+    text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+    transform: scale(0.8); transition: transform 0.4s ease; max-width: 420px;
+  }
+  .completion-overlay.visible .completion-card { transform: scale(1); }
+  .completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+  .completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; }
+  .completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+  .completion-close {
+    margin-top: 20px; padding: 10px 32px;
+    background: #1a1a2e; color: #fff; border: none; border-radius: 8px;
+    font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .completion-close:hover { background: #2d2d4e; }
+  #confettiCanvas {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 501;
+  }
+
+  /* ── UI UPGRADE: PRINT ADDITIONS ── */
+  @media print {
+    .card-breadcrumb, .sticky-indicator, .completion-overlay, #confettiCanvas,
+    .reveal-cover, .checklist-progress, .checklist-progress-label,
+    .nav-buttons, .bottom-note { display: none !important; }
+    .reveal-content {
+      max-height: none !important; opacity: 1 !important; margin: 8px 0 !important;
+    }
+  }
+
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<div class="card-breadcrumb" id="breadcrumb"></div>
+
+<div class="sticky-indicator" id="stickyIndicator"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Score Overview ═══════════ -->
+<div class="card" data-title="Score Overview">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G7.3</div>
+  </div>
+  <div class="card-body">
+    <p>Byron, let's walk through your writing test on "More Than a Whistle." You scored well overall, and your multiple choice was flawless — here's the full breakdown.</p>
+    <div class="score-grid">
+      <div class="score-box score-good">
+        <div class="big">80%</div>
+        <div class="label">Overall Score (24/30)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">10/10</div>
+        <div class="label">Multiple Choice (PERFECT)</div>
+      </div>
+      <div class="score-box score-warn">
+        <div class="big">14/20</div>
+        <div class="label">Essay</div>
+      </div>
+    </div>
+    <p>You scored a <b>perfect 10 out of 10 on multiple choice</b> — that shows complete mastery of G7 writing concepts like sentence types, appositives, conjunctions, topic sentences, and transitions.</p>
+    <p>The 6 points you lost on the essay came from a <b>missing thesis that previews 3 points</b>, <b>body paragraphs that are too short</b> without explanation of your evidence, <b>no clear topic sentences</b>, and some <b>spelling errors</b>. The next cards show you exactly how to fix each one.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: Strengths ═══════════ -->
+<div class="card" data-title="Strengths">
+  <div class="card-header">
+    <h2>What Your Essay Did Well</h2>
+    <div class="card-subtitle">There's good material here to build on</div>
+  </div>
+  <div class="card-body">
+    <ul>
+      <li><b>Perfect MCQ</b> — complete mastery of all G7 writing concepts on the multiple-choice section. You understand sentence structure, appositives, conjunctions, topic sentences, transitions, and elaboration.</li>
+      <li><b>Clear understanding of the passage</b> — your essay covers multiple aspects of El Silbo: its origins, how it works, the government's role, and the new generation keeping it alive. You understood the passage well.</li>
+      <li><b>Good specific detail</b> — mentioning that sounds can travel "up to 2 miles away" shows you can find and use precise evidence from the passage.</li>
+      <li><b>Strong closing image</b> — "carrying the whistles of their ancestors throughout the islands" is a vivid and effective way to end your essay.</li>
+      <li><b>Good use of transition</b> — opening P4 with "However" to signal the shift to El Silbo's decline shows awareness of paragraph flow.</li>
+      <li><b>5-paragraph structure attempted</b> — you organized your essay into 5 paragraphs, which shows you understand the expected format.</li>
+    </ul>
+    <div class="tip-box">
+      <div class="label">KEY TAKEAWAY</div>
+      You clearly understood the passage and chose good evidence. The main issue is that your essay reads more like a <b>summary</b> of the passage than an organized <b>expository essay</b>. The next cards show you how to turn this into a structured essay with a thesis, topic sentences, and developed body paragraphs.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: Thesis ═══════════ -->
+<div class="card" data-title="Write a Thesis">
+  <div class="card-header">
+    <h2>Write a Thesis That Previews 3 Points</h2>
+    <div class="card-subtitle">Your intro describes El Silbo but never states what your essay will explain</div>
+  </div>
+  <div class="card-body">
+    <p>Read your introduction and notice what's missing:</p>
+    <div class="you-wrote">
+      <div class="label">YOUR INTRO</div>
+      "In La Gomera, the second smallest island in the Canary Islands, visitors often hear locals speaking El Silbo. El Silbo is the language of whistles and is spoken by whistling to other people."
+    </div>
+    <p><b>The problem:</b></p>
+    <ul>
+      <li>This describes <i>what</i> El Silbo is — but it never states what your essay will <i>explain</i></li>
+      <li>There is no thesis sentence that previews your 3 body paragraph topics</li>
+      <li>The reader finishes your intro without knowing what the essay is about</li>
+    </ul>
+    <p>A strong thesis names your three main points so the reader knows what's coming:</p>
+    <div class="reveal-wrapper">
+      <div class="reveal-cover" onclick="revealBetter(this)">
+        <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></div>
+        <div>
+          <div class="reveal-text">Tap to see the improved version</div>
+          <div class="reveal-hint">Read the explanation above first</div>
+        </div>
+      </div>
+      <div class="reveal-content">
+<div class="better">
+      <div class="label">FOCUSED THESIS</div>
+      "El Silbo, the whistled language of La Gomera, connects the island's people to their past and to one another through its ancient origins as a communication tool, the way it turns spoken Spanish into sound that carries across valleys, and the efforts of the government and young islanders like Cyro to keep it alive."
+    </div>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <div class="label">THE FORMULA</div>
+      <b>Topic + 3 main points:</b> "El Silbo connects the people of La Gomera through [Point 1], [Point 2], and [Point 3]."<br><br>
+      This thesis acts as a <b>roadmap</b> — it forces you to plan three distinct body paragraphs before you start writing. Right now your essay retells the passage in order. A thesis with three previewed points turns a summary into an essay.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Body Paragraph Development ═══════════ -->
+<div class="card" data-title="Develop Your BPs">
+  <div class="card-header">
+    <h2>Develop Your Body Paragraphs</h2>
+    <div class="card-subtitle">Your BPs are 2-3 sentences each — they need the E &rarr; X pattern</div>
+  </div>
+  <div class="card-body">
+    <p>Look at how short your body paragraphs are — each one states a fact but never explains <i>why it matters</i>:</p>
+    <div class="essay-excerpt">
+      <div class="para-label">Your P2 (History of El Silbo)</div>
+      "No one knows when El Silbo began. Historians believe it may have started with some of the <span class="error-mark">ealry</span> inhabitants on the island. For centuries, the whistled language helped people communicate and made life on this remote island much easier."
+    </div>
+    <div class="essay-excerpt">
+      <div class="para-label">Your P3 (How it works)</div>
+      "It is based off Spanish and each letter is replaced by a whistle of different tone. The sounds can travel up to 2 miles away, making long distance communication much easier."
+    </div>
+    <p><b>Both paragraphs are missing:</b></p>
+    <ul>
+      <li><b>Topic sentences</b> — neither paragraph opens with a clear statement of its main point</li>
+      <li><b>Explanations</b> — you give evidence (facts from the passage) but never explain <i>why</i> those facts matter or <i>what they show</i></li>
+      <li><b>Development</b> — 2-3 sentences is too short for a body paragraph. Each BP needs at least 5-6 sentences following the E &rarr; X pattern</li>
+    </ul>
+    <div class="tip-box">
+      <div class="label">THE KEY DIFFERENCE</div>
+      A <b>summary</b> retells facts in order: "This happened, then this happened." An <b>expository essay</b> organizes facts around main points and explains what they show: "El Silbo's origins show how deeply it connects to the island's history <i>because...</i>"
+      <details class="tip-expand">
+        <summary>See the difference in action</summary>
+        <div class="expand-body">
+          <b>Summary style:</b> "Historians believe El Silbo started with early inhabitants. It helped people communicate."<br><br>
+          <b>Essay style:</b> "El Silbo's origins show how deeply it connects the island's people to their past. Historians believe the language may have started with La Gomera's earliest inhabitants, meaning it has been part of island life for centuries. This long history shows that El Silbo is not just a way to communicate — it is a tradition passed down through generations."
+        </div>
+      </details>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: The Body Paragraph Pattern ═══════════ -->
+<div class="card" data-title="The Body Paragraph">
+  <div class="card-header">
+    <h2>The Body Paragraph Pattern</h2>
+    <div class="card-subtitle">How to build a strong body paragraph every time</div>
+  </div>
+  <div class="card-body">
+    <p>Every body paragraph in a G7+ essay should follow this pattern:</p>
+    <div class="outline-box">
+      <div class="outline-label">Body Paragraph Formula</div>
+      <div class="outline-row">
+        <span class="outline-tag">TS</span>
+        <span><b>Topic Sentence</b> &mdash; states the paragraph's main point</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">E1</span>
+        <span><b>Evidence 1</b> &mdash; a specific fact, quote, or example from the passage</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">X1</span>
+        <span><b>Explanation 1</b> &mdash; explain <i>why</i> that evidence matters</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">E2</span>
+        <span><b>Evidence 2</b> &mdash; a second fact or example from the passage</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">X2</span>
+        <span><b>Explanation 2</b> &mdash; explain <i>why</i> that evidence matters</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">CS</span>
+        <span><b>Concluding Sentence</b> &mdash; wraps up the paragraph's main idea</span>
+      </div>
+    </div>
+    <p style="margin-top:12px;">Here's what your P2 (origins of El Silbo) would look like with this pattern:</p>
+    <div class="reveal-wrapper">
+      <div class="reveal-cover" onclick="revealBetter(this)">
+        <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></div>
+        <div>
+          <div class="reveal-text">Tap to see the improved version</div>
+          <div class="reveal-hint">Read the explanation above first</div>
+        </div>
+      </div>
+      <div class="reveal-content">
+<div class="better">
+      <div class="label">EXAMPLE BODY PARAGRAPH</div>
+      <b>[TS]</b> El Silbo's ancient origins show how deeply it connects the people of La Gomera to their past.
+      <b>[E1]</b> According to the passage, historians believe the whistled language may have started with the island's earliest inhabitants, centuries before modern communication existed.
+      <b>[X1]</b> This means El Silbo is not a recent invention — it is a tradition that has been passed down through countless generations, tying today's islanders to their ancestors.
+      <b>[E2]</b> The passage also explains that for centuries, the whistled language helped people communicate across the island's deep ravines and valleys, making daily life much easier.
+      <b>[X2]</b> This shows that El Silbo was not just a novelty — it was essential to survival on a rugged island where walking between villages could take hours.
+      <b>[CS]</b> By preserving El Silbo, the people of La Gomera are keeping alive a language that has defined their island for generations.
+    </div>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <div class="label">THE KEY RULE</div>
+      Every <b>E</b> (evidence) must be followed by an <b>X</b> (explanation). Evidence without explanation is just a list of facts — which turns your essay into a summary. The explanation is where you show the reader <i>why</i> that evidence supports your point. Ask yourself: <b>"So what? Why does this matter?"</b>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Spelling ═══════════ -->
+<div class="card" data-title="Spelling Errors">
+  <div class="card-header">
+    <h2>Spelling Errors to Fix</h2>
+    <div class="card-subtitle">4 spelling mistakes cost you points</div>
+  </div>
+  <div class="card-body">
+    <p>Here are the spelling errors from your essay with corrections:</p>
+    <div class="pattern-row">
+      <span class="pattern-wrong"><span class="error-mark">ealry</span></span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">early</span>
+    </div>
+    <div class="pattern-row">
+      <span class="pattern-wrong"><span class="error-mark">recongnized</span></span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">recognized</span>
+    </div>
+    <div class="pattern-row">
+      <span class="pattern-wrong"><span class="error-mark">create</span> (past tense needed)</span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">created</span>
+    </div>
+    <div class="pattern-row">
+      <span class="pattern-wrong"><span class="error-mark">countinuing</span></span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">continuing</span>
+    </div>
+    <p style="margin-top:10px;">Also note: <b>"the government recongnized this and create some special programs"</b> — the lowercase "the" after a period is a capitalization error, and "create" should be past tense "created" to match "recognized."</p>
+    <div class="tip-box">
+      <div class="label">PROOFREADING TIP</div>
+      Most of these errors are <b>letter-order swaps</b> (ealry, recongnized, countinuing). These are easy to catch if you read your essay <b>backward</b> — start with the last sentence and read to the first. When you read forward, your brain auto-corrects these mistakes. Reading backward forces you to see each word individually.
+      <details class="tip-expand">
+        <summary>Try it now</summary>
+        <div class="expand-body">
+          Read this sentence word by word from right to left:<br>
+          "...programs special some create and this recongnized government the"<br><br>
+          See how "recongnized" and "create" jump out when you're not reading for meaning? That's the power of backward reading.
+        </div>
+      </details>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 7: Essay Structure Overview ═══════════ -->
+<div class="card" data-title="Essay Structure">
+  <div class="card-header">
+    <h2>G7 Essay Structure Plan</h2>
+    <div class="card-subtitle">Your essay retells the passage — here's how to organize it as an essay</div>
+  </div>
+  <div class="card-body">
+    <p>Here's the structure your essay should follow. Each body paragraph needs a <b>topic sentence</b> and the <b>E &rarr; X pattern</b>:</p>
+    <div class="outline-box">
+      <div class="outline-label">G7 Essay Plan — El Silbo</div>
+      <div class="outline-row">
+        <span class="outline-tag">INTRO</span>
+        <span>Hook about El Silbo &rarr; <b>Thesis:</b> El Silbo connects La Gomera's people through its ancient origins, its unique whistled communication, and the modern efforts to keep it alive.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">BP1</span>
+        <span><b>TS: Ancient origins</b> &mdash; E1: earliest inhabitants &rarr; X1: centuries of tradition &rarr; E2: helped communicate across ravines &rarr; X2: essential to island survival &rarr; CS</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">BP2</span>
+        <span><b>TS: How El Silbo works</b> &mdash; E1: based on Spanish, letters replaced by whistles &rarr; X1: shows how language adapted &rarr; E2: travels up to 2 miles &rarr; X2: why distance matters on a mountainous island &rarr; CS</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">BP3</span>
+        <span><b>TS: Preservation efforts</b> &mdash; E1: government programs after decline &rarr; X1: shows cultural value &rarr; E2: young whistlers like Cyro &rarr; X2: new generation carries it forward &rarr; CS</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">CONC</span>
+        <span>Restate 3 points &rarr; broader message about why preserving cultural traditions matters</span>
+      </div>
+    </div>
+    <p style="font-size:10pt;color:#888;margin-top:4px;">BP = Body Paragraph &bull; E = Evidence &bull; X = Explanation &bull; TS = Topic Sentence &bull; CS = Closing Sentence</p>
+    <div class="tip-box">
+      <div class="label">SUMMARY vs. ESSAY</div>
+      Your current essay follows the passage from beginning to end — that's a summary. An essay <b>organizes</b> the passage's information around your own main points. The outline above groups the passage's facts into three distinct topics. Each body paragraph has one clear focus, stated in the topic sentence.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 8: Checklist ═══════════ -->
+<div class="card" data-title="Checklist">
+  <div class="card-header">
+    <h2>Proofreading Checklist</h2>
+    <div class="card-subtitle">Personalized to your recurring errors</div>
+  </div>
+  <div class="card-body">
+    <div class="checklist-progress-label" id="checkProgressLabel">0 checked</div>
+    <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Thesis check:</b> Does my thesis preview 3 <i>specific</i> topics? (Not just a description of El Silbo — name the three things your essay will explain.)</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Topic sentences:</b> Does each body paragraph open with a clear sentence that states <i>that paragraph's</i> main point?</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>E &rarr; X check:</b> After each piece of evidence, did I explain <i>why</i> it matters? Look for the "X" after every "E."</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Paragraph length:</b> Does each body paragraph have at least 5-6 sentences? If it's only 2-3, I need to add explanations.</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Summary vs. essay:</b> Am I just retelling the passage in order, or am I organizing facts around my own main points?</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Spelling — letter swaps:</b> Read backward to catch "ealry," "recongnized," "countinuing" — words where letters are out of order.</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Verb tense:</b> Check that past-tense verbs are correct — "created" not "create," "recognized" not "recongnized."</div>
+    </div>
+    <div class="tip-box">
+      <div class="label">3-MINUTE RULE</div>
+      Save the last 3 minutes of your test for proofreading. Read backward (last sentence first) to catch spelling — when you read forward, your brain auto-corrects. Then do a quick structure check: intro with thesis, 3 body paragraphs with topic sentences, conclusion.
+    </div>
+    <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg> Print this checklist</button>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 9: 3 Goals ═══════════ -->
+<div class="card" data-title="3 Goals">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">Perfect MCQ + good passage understanding — now build a real essay</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Write a thesis that previews your 3 body paragraph topics.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Instead of describing what El Silbo is, state what your essay will explain: "El Silbo connects La Gomera's people through [Point 1], [Point 2], and [Point 3]." A thesis that names three topics forces you to plan three distinct body paragraphs before you start writing.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>Develop each body paragraph with the TS &rarr; E &rarr; X &rarr; E &rarr; X &rarr; CS pattern.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Your body paragraphs are only 2-3 sentences. Every BP needs a topic sentence, two pieces of evidence, an explanation for each piece, and a closing sentence. That's at least 6 sentences. After each piece of evidence, ask: "So what? Why does this matter?" and answer that question in your next sentence.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Organize around your own main points — don't retell the passage.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Right now your essay follows the passage from beginning to end like a summary. Instead, group the passage's information into three topics (origins, how it works, preservation). Each body paragraph should have one clear focus stated in the topic sentence — not just the next section of the passage.</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">THE BIG PICTURE</div>
+      Perfect MCQ + strong passage comprehension means you have <b>real writing knowledge</b>. The 6 points you lost are about <b>essay structure</b> — turning facts into an organized, developed essay instead of a summary. You already know <i>what</i> to write about. Now learn <i>how</i> to structure it: thesis with 3 previewed points, topic sentences, and the E &rarr; X pattern in every body paragraph.
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+
+<!-- Completion overlay -->
+<div class="completion-overlay" id="completionOverlay">
+  <div class="completion-card">
+    <div class="completion-emoji">&#127881;</div>
+    <div class="completion-title">Nice work, Byron!</div>
+    <div class="completion-sub">You reviewed all your cards. Remember your goals:<br><b>Write a thesis that previews 3 topics &bull; Develop BPs with TS &rarr; E &rarr; X &rarr; E &rarr; X &rarr; CS &bull; Organize around main points, not passage order</b></div>
+    <button class="completion-close" onclick="closeCompletion()">Got it!</button>
+  </div>
+</div>
+<canvas id="confettiCanvas"></canvas>
+
+<script>
+var cards = document.querySelectorAll('.card');
+var bar = document.getElementById('progressBar');
+var breadcrumb = document.getElementById('breadcrumb');
+var stickyEl = document.getElementById('stickyIndicator');
+var current = 0;
+var visited = [0];
+
+cards.forEach(function(card, i) {
+  var dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  var tooltip = document.createElement('span');
+  tooltip.className = 'dot-tooltip';
+  tooltip.textContent = card.getAttribute('data-title') || ('Card ' + (i + 1));
+  dot.appendChild(tooltip);
+  dot.addEventListener('click', function() { goTo(i); });
+  bar.appendChild(dot);
+});
+
+function updateBreadcrumb() {
+  var title = cards[current].getAttribute('data-title') || ('Card ' + (current + 1));
+  breadcrumb.innerHTML = 'Card <b>' + (current + 1) + '</b> of ' + cards.length + ' \u2014 ' + title;
+  stickyEl.textContent = (current + 1) + ' / ' + cards.length;
+}
+
+function checkSticky() {
+  var barRect = bar.getBoundingClientRect();
+  stickyEl.classList.toggle('visible', barRect.bottom < 0);
+}
+window.addEventListener('scroll', checkSticky);
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  if (visited.indexOf(current) === -1) visited.push(current);
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  visited.forEach(function(v) { if (v !== current) bar.children[v].classList.add('visited'); });
+  var prevBtn = document.getElementById('prevBtn');
+  var nextBtn = document.getElementById('nextBtn');
+  if (prevBtn) {
+    prevBtn.style.visibility = current === 0 ? 'hidden' : 'visible';
+    prevBtn.disabled = current === 0;
+  }
+  if (nextBtn) {
+    nextBtn.textContent = current === cards.length - 1 ? 'Done \u2713' : 'Next \u2192';
+    nextBtn.disabled = false;
+  }
+  updateBreadcrumb();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) { showCompletion(); return; }
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+function revealBetter(cover) {
+  var content = cover.nextElementSibling;
+  content.classList.add('shown');
+  cover.classList.add('hidden');
+}
+
+function toggleCheck(item) {
+  item.classList.toggle('checked');
+  updateCheckProgress();
+}
+
+function updateCheckProgress() {
+  var items = document.querySelectorAll('.check-item');
+  var checked = document.querySelectorAll('.check-item.checked').length;
+  var total = items.length;
+  var fill = document.getElementById('checkProgressFill');
+  var lbl = document.getElementById('checkProgressLabel');
+  if (fill) fill.style.width = Math.round((checked / total) * 100) + '%';
+  if (lbl) {
+    lbl.innerHTML = checked === total
+      ? '<b style="color:#2d6a2d;">All done! Nice work.</b>'
+      : checked + ' of ' + total + ' checked';
+  }
+}
+
+function printChecklist(btn) {
+  var card = btn.closest('.card');
+  var checkedItems = card.querySelectorAll('.check-item.checked');
+  checkedItems.forEach(function(item) { item.classList.remove('checked'); });
+  card.classList.add('print-target');
+  window.print();
+  card.classList.remove('print-target');
+  checkedItems.forEach(function(item) { item.classList.add('checked'); });
+}
+
+function showCompletion() {
+  document.getElementById('completionOverlay').classList.add('visible');
+  launchConfetti();
+}
+
+function closeCompletion() {
+  document.getElementById('completionOverlay').classList.remove('visible');
+}
+
+function launchConfetti() {
+  var canvas = document.getElementById('confettiCanvas');
+  var ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  var colors = ['#1a1a2e','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b','#42a5f5'];
+  var particles = [];
+  for (var i = 0; i < 120; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height - canvas.height,
+      w: Math.random() * 10 + 5, h: Math.random() * 6 + 3,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      vx: (Math.random() - 0.5) * 4, vy: Math.random() * 3 + 2,
+      rot: Math.random() * 360, rotV: (Math.random() - 0.5) * 10, life: 1
+    });
+  }
+  var frame = 0;
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    var alive = false;
+    particles.forEach(function(p) {
+      if (p.life <= 0) return;
+      alive = true;
+      p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.rot += p.rotV;
+      if (p.y > canvas.height + 20) { p.life = 0; return; }
+      if (frame > 60) p.life -= 0.01;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot * Math.PI / 180);
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    });
+    frame++;
+    if (alive) requestAnimationFrame(animate);
+    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  animate();
+}
+
+goTo(0);
+</script>
+</body>
+</html>

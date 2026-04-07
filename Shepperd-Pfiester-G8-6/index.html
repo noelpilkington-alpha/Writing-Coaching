@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shepperd's Writing Test Review — G8.6</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar { display: flex; gap: 6px; margin-bottom: 16px; }
+  .progress-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: #ccc; transition: background 0.3s; cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container { position: relative; width: 680px; min-height: 420px; }
+
+  .card {
+    position: absolute; top: 0; left: 0; width: 100%;
+    background: #fff; border: 2.5px solid #1a1a2e; border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0; pointer-events: none; transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1; pointer-events: auto; transform: translateX(0); position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e; color: #fff; padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+  .card-header .card-subtitle { font-size: 9.5pt; color: #aaa; margin-top: 2px; }
+
+  .card-body { padding: 18px 22px 22px; line-height: 1.55; }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px; margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc; border: 1.5px solid #e0e0e8;
+    border-radius: 8px; padding: 10px 14px; text-align: center;
+  }
+  .score-box .big { font-size: 20pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3; border-left: 3px solid #cc0000;
+    padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+    font-style: italic; font-size: 10.5pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9; border-left: 3px solid #2d6a2d;
+    padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+    font-size: 10.5pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5; border-left: 3px solid #1a1a2e;
+    padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+  .error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+
+  .essay-excerpt {
+    background: #fafafa; border: 1px solid #e0e0e8;
+    border-radius: 6px; padding: 10px 14px; font-size: 10.5pt;
+    margin: 8px 0; line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700; font-size: 9pt; color: #888;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;
+  }
+
+  .outline-box {
+    background: #f8f8fc; border: 1.5px solid #e0e0e8;
+    border-radius: 8px; padding: 12px 16px; margin: 8px 0; font-size: 10.5pt;
+  }
+  .outline-box .outline-label {
+    font-weight: 700; font-size: 9pt; color: #1a1a2e;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+  }
+  .outline-row {
+    display: flex; gap: 10px; padding: 5px 0;
+    border-bottom: 1px dashed #ddd;
+  }
+  .outline-row:last-child { border-bottom: none; }
+  .outline-tag {
+    font-weight: 700; font-size: 9pt; color: #fff; background: #1a1a2e;
+    border-radius: 4px; padding: 2px 8px; min-width: 50px;
+    text-align: center; flex-shrink: 0; line-height: 1.6;
+  }
+
+  .pattern-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 6px 0; border-bottom: 1px solid #eee; font-size: 11pt;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; }
+
+  table.compare {
+    width: 100%; border-collapse: collapse; font-size: 10.5pt; margin: 8px 0;
+  }
+  table.compare th {
+    background: #1a1a2e; color: #fff; padding: 6px 10px;
+    text-align: left; font-size: 9.5pt;
+  }
+  table.compare td { padding: 6px 10px; border: 1px solid #ddd; vertical-align: top; }
+
+  .para-map {
+    display: flex; gap: 6px; margin: 10px 0; flex-wrap: wrap;
+  }
+  .para-tag {
+    padding: 6px 12px; border-radius: 6px; font-size: 10pt; font-weight: 600;
+    border: 1.5px solid;
+  }
+  .para-tag.good { background: #e8f5e9; border-color: #2d6a2d; color: #2d6a2d; }
+  .para-tag.warn { background: #fff3cd; border-color: #e6a800; color: #996600; }
+  .para-tag.bad { background: #fff3f3; border-color: #cc0000; color: #cc0000; }
+
+  .check-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid #eee; font-size: 11pt;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-box {
+    width: 20px; height: 20px; border: 2px solid #1a1a2e;
+    border-radius: 4px; flex-shrink: 0; margin-top: 1px;
+  }
+
+  .goal-num {
+    display: inline-block; background: #1a1a2e; color: #fff;
+    border-radius: 50%; width: 24px; height: 24px; text-align: center;
+    line-height: 24px; font-size: 11pt; font-weight: 700; margin-right: 8px; flex-shrink: 0;
+  }
+  .goal-row { display: flex; align-items: flex-start; gap: 4px; margin: 10px 0; }
+
+  .nav { display: flex; gap: 12px; margin-top: 16px; }
+  .nav button {
+    padding: 8px 28px; border: 2px solid #1a1a2e; border-radius: 8px;
+    background: #fff; color: #1a1a2e; font-family: inherit;
+    font-size: 11pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover { background: #1a1a2e; color: #fff; }
+
+    .print-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 12px; padding: 8px 20px;
+    border: 2px solid #1a1a2e; border-radius: 8px;
+    background: #fff; color: #1a1a2e; font-family: inherit;
+    font-size: 10.5pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .print-btn:hover { background: #1a1a2e; color: #fff; }
+  .print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+  @media print {
+    body { background: #fff; padding: 0; min-height: auto; }
+    .progress-bar, .nav, .print-btn { display: none !important; }
+    .card-container { width: 100%; min-height: auto; }
+    .card { display: none !important; }
+    .card.print-target {
+      display: block !important; opacity: 1 !important;
+      pointer-events: auto !important; position: relative !important;
+      transform: none !important; box-shadow: none;
+      border: 2px solid #1a1a2e; page-break-inside: avoid;
+    }
+    .check-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .card-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .error-mark { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+@media (max-width: 720px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── UI UPGRADE: LABELED PROGRESS BAR ── */
+  .progress-bar { flex-wrap: wrap; justify-content: center; }
+  .progress-dot { position: relative; transition: background 0.3s, transform 0.2s; }
+  .progress-dot.active { transform: scale(1.25); }
+  .progress-dot.visited { background: #7a7a9e; }
+  .progress-dot:hover { transform: scale(1.3); }
+  .progress-dot .dot-tooltip {
+    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: #1a1a2e; color: #fff; padding: 4px 10px; border-radius: 6px;
+    font-size: 8.5pt; white-space: nowrap; opacity: 0;
+    pointer-events: none; transition: opacity 0.2s; z-index: 100;
+  }
+  .progress-dot .dot-tooltip::after {
+    content: ''; position: absolute; top: 100%; left: 50%;
+    transform: translateX(-50%); border: 5px solid transparent;
+    border-top-color: #1a1a2e;
+  }
+  .progress-dot:hover .dot-tooltip { opacity: 1; }
+  .card-breadcrumb {
+    font-size: 9.5pt; color: #888; margin-bottom: 14px;
+    text-align: center; transition: opacity 0.3s; min-height: 1.2em;
+  }
+  .card-breadcrumb b { color: #1a1a2e; }
+
+  /* ── UI UPGRADE: STICKY INDICATOR ── */
+  .sticky-indicator {
+    position: fixed; top: 12px; right: 16px;
+    background: #1a1a2e; color: #fff; padding: 5px 14px;
+    border-radius: 20px; font-size: 9pt; font-weight: 700;
+    opacity: 0; transition: opacity 0.3s; z-index: 200;
+    pointer-events: none; letter-spacing: 0.5px;
+  }
+  .sticky-indicator.visible { opacity: 1; }
+
+  /* ── UI UPGRADE: REVEAL INTERACTION ── */
+  .reveal-wrapper { position: relative; }
+  .reveal-cover {
+    background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%);
+    border-left: 3px solid #2d6a2d;
+    padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0;
+    cursor: pointer; user-select: none;
+    display: flex; align-items: center; gap: 10px;
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+  .reveal-cover:hover {
+    box-shadow: 0 2px 8px rgba(45,106,45,0.15);
+    background: linear-gradient(135deg, #d4edda 0%, #c8e6c9 100%);
+  }
+  .reveal-cover .reveal-icon {
+    width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
+  .reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #2d6a2d; }
+  .reveal-cover .reveal-hint { font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px; }
+  .reveal-content {
+    max-height: 0; overflow: hidden; opacity: 0;
+    transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0;
+  }
+  .reveal-content.shown { max-height: 600px; opacity: 1; margin: 8px 0; }
+  .reveal-cover.hidden { display: none; }
+
+  /* ── UI UPGRADE: EXPANDABLE EXAMPLES ── */
+  .tip-expand {
+    margin-top: 8px; border-top: 1px dashed #b0b8cc; padding-top: 6px;
+  }
+  .tip-expand summary {
+    font-size: 9.5pt; font-weight: 600; color: #1a1a2e;
+    cursor: pointer; padding: 4px 0; list-style: none;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .tip-expand summary::-webkit-details-marker { display: none; }
+  .tip-expand summary::before {
+    content: '\25B6'; font-size: 8pt; transition: transform 0.2s; display: inline-block;
+  }
+  .tip-expand[open] summary::before { transform: rotate(90deg); }
+  .tip-expand .expand-body {
+    margin-top: 6px; font-size: 10pt; line-height: 1.5;
+    background: #f4f6fb; padding: 10px 12px; border-radius: 6px;
+  }
+
+  /* ── UI UPGRADE: TAPPABLE CHECKBOXES ── */
+  .check-item {
+    gap: 12px; padding: 10px 8px; cursor: pointer;
+    border-radius: 6px; transition: background 0.15s; user-select: none;
+  }
+  .check-item:hover { background: #f8f8fc; }
+  .check-item.checked { background: #f0f8f0; }
+  .check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
+  .check-item.checked .check-box::after {
+    content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700;
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  }
+  .check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
+  .check-box {
+    width: 28px; height: 28px; border: 2.5px solid #1a1a2e;
+    border-radius: 6px; position: relative; transition: background 0.2s, border-color 0.2s;
+  }
+  .checklist-progress {
+    background: #eee; border-radius: 10px; height: 8px;
+    margin: 12px 0 6px; overflow: hidden;
+  }
+  .checklist-progress-fill {
+    background: linear-gradient(90deg, #2d6a2d, #4caf50);
+    height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%;
+  }
+  .checklist-progress-label {
+    font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px;
+  }
+
+  /* ── UI UPGRADE: COMPLETION OVERLAY ── */
+  .completion-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(26,26,46,0.6); z-index: 500;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.4s;
+  }
+  .completion-overlay.visible { opacity: 1; pointer-events: auto; }
+  .completion-card {
+    background: #fff; border-radius: 16px; padding: 40px 48px;
+    text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+    transform: scale(0.8); transition: transform 0.4s ease; max-width: 420px;
+  }
+  .completion-overlay.visible .completion-card { transform: scale(1); }
+  .completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+  .completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; }
+  .completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+  .completion-close {
+    margin-top: 20px; padding: 10px 32px;
+    background: #1a1a2e; color: #fff; border: none; border-radius: 8px;
+    font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .completion-close:hover { background: #2d2d4e; }
+  #confettiCanvas {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 501;
+  }
+
+  /* ── UI UPGRADE: PRINT ADDITIONS ── */
+  @media print {
+    .card-breadcrumb, .sticky-indicator, .completion-overlay, #confettiCanvas,
+    .reveal-cover, .checklist-progress, .checklist-progress-label,
+    .nav-buttons, .bottom-note { display: none !important; }
+    .reveal-content {
+      max-height: none !important; opacity: 1 !important; margin: 8px 0 !important;
+    }
+  }
+
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<div class="card-breadcrumb" id="breadcrumb"></div>
+
+<div class="sticky-indicator" id="stickyIndicator"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Score Overview ═══════════ -->
+<div class="card" data-title="Score Overview">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G8.6</div>
+  </div>
+  <div class="card-body">
+    <p>Shepperd, let's walk through your writing test on "How Memories are Made." You showed strong reading comprehension and included lots of evidence from the passage — here's the full breakdown.</p>
+    <div class="score-grid">
+      <div class="score-box score-warn">
+        <div class="big">70%</div>
+        <div class="label">Overall Score (21/30)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">9/10</div>
+        <div class="label">Multiple Choice</div>
+      </div>
+      <div class="score-box score-warn">
+        <div class="big">12/20</div>
+        <div class="label">Essay</div>
+      </div>
+    </div>
+    <p>You scored <b>9 out of 10 on multiple choice</b> — that shows strong understanding of G8 writing concepts. The one you missed (Q6) asked for a subordinating conjunction: "Although" vs. "Until" — more on that later.</p>
+    <p>The 8 points you lost on the essay came from two main areas: <b>essay structure</b> (no clear thesis previewing 3 points, body paragraphs without topic sentences or the E &rarr; X pattern) and <b>spelling/grammar errors</b> throughout the essay. The good news? Both are very fixable. The next cards show you exactly how.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: Strengths ═══════════ -->
+<div class="card" data-title="Strengths">
+  <div class="card-header">
+    <h2>What Your Essay Did Well</h2>
+    <div class="card-subtitle">You understood the passage and included real evidence</div>
+  </div>
+  <div class="card-body">
+    <ul>
+      <li><b>Strong MCQ performance (9/10)</b> — you understand sentence types, appositives, conjunctions, irrelevant sentences, elaboration, and transitions at the G8 level.</li>
+      <li><b>Excellent passage comprehension</b> — your essay covers all four stages: encoding, consolidation, retrieval, and forgetting. You clearly understood the passage deeply.</li>
+      <li><b>Good specific evidence</b> — "eighty-six billion neurons," "40 percent more information," and the 1975 diver experiment are strong, specific details from the passage.</li>
+      <li><b>5-paragraph structure</b> — you organized your essay into 5 paragraphs that follow the passage's structure, which shows planning.</li>
+      <li><b>Engaging opening</b> — starting with "Have you ever wondered how memories are made?" draws the reader in immediately.</li>
+      <li><b>Interesting closing idea</b> — "without forgetting things, old informations could interfere with new information" shows you can think about the bigger picture.</li>
+    </ul>
+    <div class="tip-box">
+      <div class="label">KEY TAKEAWAY</div>
+      You packed your essay with evidence — that's a real strength. The two areas to focus on are <b>structure</b> (thesis + topic sentences + E &rarr; X pattern) and <b>proofreading</b> (spelling and grammar errors). These are mechanical skills that improve quickly with practice.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: Thesis ═══════════ -->
+<div class="card" data-title="Write a Thesis">
+  <div class="card-header">
+    <h2>Write a Thesis That Previews 3 Points</h2>
+    <div class="card-subtitle">Your intro asks questions but never states what your essay will explain</div>
+  </div>
+  <div class="card-body">
+    <p>Read your introduction and notice what's missing:</p>
+    <div class="you-wrote">
+      <div class="label">YOUR INTRO</div>
+      "Have you ever wondered how memories are made? You should think about your first day of school, and everything that made you feel nervous. How might the brain keep that experience? The answer includes a thing that sceintists are still trying to figure out."
+    </div>
+    <p><b>Two problems:</b></p>
+    <ul>
+      <li>The intro asks questions and mentions "a thing that scientists are still trying to figure out" — but never states <i>what</i> your essay will explain</li>
+      <li>There is no thesis sentence that previews your 3 body paragraph topics</li>
+    </ul>
+    <p>A strong thesis names your three main points so the reader knows what's coming:</p>
+    <div class="reveal-wrapper">
+      <div class="reveal-cover" onclick="revealBetter(this)">
+        <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></div>
+        <div>
+          <div class="reveal-text">Tap to see the improved version</div>
+          <div class="reveal-hint">Read the explanation above first</div>
+        </div>
+      </div>
+      <div class="reveal-content">
+<div class="better">
+      <div class="label">FOCUSED THESIS</div>
+      "The brain forms, stores, and retrieves memories through a remarkable process: encoding turns experiences into electrical signals, consolidation moves short-term memories into long-term storage during sleep, and retrieval reconstructs those memories in ways that can change them over time."
+    </div>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <div class="label">THE FORMULA</div>
+      <b>Topic + 3 main points:</b> "The brain handles memories through [Point 1: encoding], [Point 2: consolidation], and [Point 3: retrieval]."<br><br>
+      Your intro has an engaging hook — keep the opening questions. But add a thesis sentence at the end that names your three topics. This acts as a <b>roadmap</b> for the reader and forces you to plan three focused body paragraphs.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Body Paragraph Development ═══════════ -->
+<div class="card" data-title="Develop Your BPs">
+  <div class="card-header">
+    <h2>Develop Your Body Paragraphs</h2>
+    <div class="card-subtitle">You have evidence — now add topic sentences and explanations</div>
+  </div>
+  <div class="card-body">
+    <p>Your body paragraphs contain good evidence, but they're missing <b>topic sentences</b> and <b>explanations</b>. Look at how your P2 starts:</p>
+    <div class="essay-excerpt">
+      <div class="para-label">Your P2 (Encoding) — First 2 sentences</div>
+      "Each and every memory starts with an <span class="error-mark">expeirience</span>, such as when something happens, the senses can <span class="error-mark">collecy</span> information and then they send electrical signals to your brain. The signals can move on the pathways that are made out of nerve cells called neurons."
+    </div>
+    <p><b>What's missing:</b></p>
+    <ul>
+      <li><b>No topic sentence</b> — the paragraph jumps straight into evidence without stating its main point first</li>
+      <li><b>No explanations</b> — you list facts (86 billion neurons, synapses, signals) but never explain <i>why</i> these details matter or <i>what they show</i> about how memories are formed</li>
+    </ul>
+    <table class="compare">
+      <tr>
+        <th>What you wrote (lists facts)</th>
+        <th>What's missing (the explanation)</th>
+      </tr>
+      <tr>
+        <td>Senses collect information and send signals to the brain</td>
+        <td style="color:#cc0000;">WHY does this matter? What does this show about how memories start?</td>
+      </tr>
+      <tr>
+        <td>The brain has roughly 86 billion neurons</td>
+        <td style="color:#cc0000;">SO WHAT? Why does this number matter for understanding memory?</td>
+      </tr>
+    </table>
+    <div class="tip-box">
+      <div class="label">THE FIX</div>
+      Start each body paragraph with a <b>topic sentence</b> that states the paragraph's main point. Then after each piece of evidence, ask: <b>"So what? Why does this matter?"</b> and answer that question in your next sentence. That answer is your explanation — the "X" in the E &rarr; X pattern.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: The Body Paragraph Pattern ═══════════ -->
+<div class="card" data-title="The Body Paragraph">
+  <div class="card-header">
+    <h2>The Body Paragraph Pattern</h2>
+    <div class="card-subtitle">How to build a strong body paragraph every time</div>
+  </div>
+  <div class="card-body">
+    <p>Every body paragraph in a G8+ essay should follow this pattern:</p>
+    <div class="outline-box">
+      <div class="outline-label">Body Paragraph Formula</div>
+      <div class="outline-row">
+        <span class="outline-tag">TS</span>
+        <span><b>Topic Sentence</b> &mdash; states the paragraph's main point</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">E1</span>
+        <span><b>Evidence 1</b> &mdash; a specific fact, quote, or example from the passage</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">X1</span>
+        <span><b>Explanation 1</b> &mdash; explain <i>why</i> that evidence matters</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">E2</span>
+        <span><b>Evidence 2</b> &mdash; a second fact or example from the passage</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">X2</span>
+        <span><b>Explanation 2</b> &mdash; explain <i>why</i> that evidence matters</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">CS</span>
+        <span><b>Concluding Sentence</b> &mdash; wraps up the paragraph's main idea</span>
+      </div>
+    </div>
+    <p style="margin-top:12px;">Here's what your P3 (consolidation/sleep) would look like with this pattern:</p>
+    <div class="reveal-wrapper">
+      <div class="reveal-cover" onclick="revealBetter(this)">
+        <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></div>
+        <div>
+          <div class="reveal-text">Tap to see the improved version</div>
+          <div class="reveal-hint">Read the explanation above first</div>
+        </div>
+      </div>
+      <div class="reveal-content">
+<div class="better">
+      <div class="label">EXAMPLE BODY PARAGRAPH</div>
+      <b>[TS]</b> Once a memory is encoded, it must be consolidated — moved from short-term to long-term storage — or it will fade within seconds.
+      <b>[E1]</b> According to the passage, short-term memory holds information for only about thirty seconds, and the hippocampus acts like a sorting center that decides which memories to keep.
+      <b>[X1]</b> This shows that the brain does not store every experience equally — it selects which memories are important enough to preserve, which is why some moments stick with us and others are forgotten almost immediately.
+      <b>[E2]</b> The passage also explains that during sleep, the hippocampus replays the day's events and strengthens neural connections, and that students who sleep well after studying retain up to forty percent more information.
+      <b>[X2]</b> This means that sleep is not just rest — it is an active part of memory formation, which explains why staying up all night to study can actually make it harder to remember what you learned.
+      <b>[CS]</b> Without consolidation, even the most vivid experiences would disappear from memory in a matter of seconds.
+    </div>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <div class="label">THE KEY RULE</div>
+      Every <b>E</b> (evidence) must be followed by an <b>X</b> (explanation). You already include plenty of evidence — that's a strength. The missing piece is the explanation: <i>why</i> does that evidence matter? Ask yourself: <b>"So what? What does this show about how memory works?"</b>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Spelling & Grammar ═══════════ -->
+<div class="card" data-title="Spelling &amp; Grammar">
+  <div class="card-header">
+    <h2>Spelling &amp; Grammar Errors</h2>
+    <div class="card-subtitle">This is a major area to improve — many errors throughout your essay</div>
+  </div>
+  <div class="card-body">
+    <p>Your essay has a significant number of spelling and grammar errors. Here are the key ones to fix:</p>
+    <p style="font-size:10pt;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-top:10px;">Spelling Errors</p>
+    <div class="pattern-row">
+      <span class="pattern-wrong"><span class="error-mark">sceintists</span></span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">scientists</span>
+    </div>
+    <div class="pattern-row">
+      <span class="pattern-wrong"><span class="error-mark">expeirience</span></span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">experience</span>
+    </div>
+    <div class="pattern-row">
+      <span class="pattern-wrong"><span class="error-mark">collecy</span></span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">collect</span>
+    </div>
+    <div class="pattern-row">
+      <span class="pattern-wrong"><span class="error-mark">rouhgly</span></span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">roughly</span>
+    </div>
+    <div class="pattern-row">
+      <span class="pattern-wrong"><span class="error-mark">nother</span></span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">another</span>
+    </div>
+    <div class="pattern-row">
+      <span class="pattern-wrong"><span class="error-mark">stonger</span></span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">stronger</span>
+    </div>
+    <div class="pattern-row">
+      <span class="pattern-wrong"><span class="error-mark">similer</span></span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">similar</span>
+    </div>
+    <div class="pattern-row">
+      <span class="pattern-wrong"><span class="error-mark">comming</span></span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">coming</span>
+    </div>
+    <div class="pattern-row">
+      <span class="pattern-wrong"><span class="error-mark">informations</span></span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">information</span>
+    </div>
+    <p style="font-size:10pt;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-top:14px;">Grammar Errors</p>
+    <div class="pattern-row">
+      <span class="pattern-wrong">"Short memories <span class="error-mark">holds</span>"</span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">"Short memories <b>hold</b>" (plural subject = plural verb)</span>
+    </div>
+    <div class="pattern-row">
+      <span class="pattern-wrong">"<span class="error-mark">a</span> important role"</span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">"<b>an</b> important role" (use "an" before vowel sounds)</span>
+    </div>
+    <div class="pattern-row">
+      <span class="pattern-wrong">"changed a little <span class="error-mark">but</span> each time"</span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">"changed a little <b>bit</b> each time"</span>
+    </div>
+    <div class="pattern-row">
+      <span class="pattern-wrong">"<span class="error-mark">dont</span>"</span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">"<b>don't</b>" (apostrophe needed in contractions)</span>
+    </div>
+    <div class="tip-box">
+      <div class="label">PROOFREADING STRATEGY</div>
+      With this many errors, you need a <b>two-pass system</b>: (1) Read your essay backward, sentence by sentence, to catch spelling. (2) Read forward slowly and check each sentence for grammar — does the subject match the verb? Are articles (a/an) correct?
+      <details class="tip-expand">
+        <summary>MCQ Q6 — "Although" vs. "Until"</summary>
+        <div class="expand-body">
+          The sentence was: "_______ a memory is consolidated by the hippocampus, it remains in short-term storage and fades within seconds."<br><br>
+          You chose <b>"Although"</b> — but "although" means "even though," which would mean the memory fades <i>despite</i> being consolidated. The correct answer is <b>"Until"</b> — meaning the memory stays in short-term storage <i>until</i> the hippocampus consolidates it. "Until" shows a time relationship; "although" shows a contrast.
+        </div>
+      </details>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 7: Essay Structure Overview ═══════════ -->
+<div class="card" data-title="Essay Structure">
+  <div class="card-header">
+    <h2>G8 Essay Structure Plan</h2>
+    <div class="card-subtitle">Your essay follows the passage — here's how to organize it as an essay</div>
+  </div>
+  <div class="card-body">
+    <p>Here's the structure your essay should follow. Each body paragraph needs a <b>topic sentence</b> and the <b>E &rarr; X pattern</b>:</p>
+    <div class="outline-box">
+      <div class="outline-label">G8 Essay Plan — How Memories are Made</div>
+      <div class="outline-row">
+        <span class="outline-tag">INTRO</span>
+        <span>Hook (your opening questions work well) &rarr; <b>Thesis:</b> The brain handles memories through encoding, consolidation, and retrieval — and each step affects what people remember.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">BP1</span>
+        <span><b>TS: Encoding</b> &mdash; E1: senses collect info, send signals along neurons &rarr; X1: why this first step matters &rarr; E2: synapses + signal strength &rarr; X2: what this shows about how memories form &rarr; CS</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">BP2</span>
+        <span><b>TS: Consolidation</b> &mdash; E1: hippocampus as sorting center &rarr; X1: why selection matters &rarr; E2: sleep strengthens connections, 40% more info &rarr; X2: why sleep is essential &rarr; CS</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">BP3</span>
+        <span><b>TS: Retrieval</b> &mdash; E1: brain reconstructs, not replays &rarr; X1: why memories change &rarr; E2: 1975 diver experiment &rarr; X2: what state-dependent memory shows &rarr; CS</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">CONC</span>
+        <span>Restate 3 points &rarr; broader message: forgetting is part of the system, not a flaw</span>
+      </div>
+    </div>
+    <p style="font-size:10pt;color:#888;margin-top:4px;">BP = Body Paragraph &bull; E = Evidence &bull; X = Explanation &bull; TS = Topic Sentence &bull; CS = Closing Sentence</p>
+    <div class="tip-box">
+      <div class="label">WHAT CHANGES</div>
+      Your current essay already covers these topics — but without topic sentences, evidence-explanation pairs, or a thesis tying it all together. The content is there. You just need to <b>frame</b> it: state the point first (TS), give the evidence (E), then explain why it matters (X).
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 8: Checklist ═══════════ -->
+<div class="card" data-title="Checklist">
+  <div class="card-header">
+    <h2>Proofreading Checklist</h2>
+    <div class="card-subtitle">Personalized to your recurring errors</div>
+  </div>
+  <div class="card-body">
+    <div class="checklist-progress-label" id="checkProgressLabel">0 checked</div>
+    <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Thesis check:</b> Does my thesis preview 3 <i>specific</i> topics? (Not "a thing scientists are figuring out" — name encoding, consolidation, and retrieval.)</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Topic sentences:</b> Does each body paragraph open with a clear sentence that states <i>that paragraph's</i> main point?</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>E &rarr; X check:</b> After each piece of evidence, did I explain <i>why</i> it matters? Look for the "X" after every "E."</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Spelling pass:</b> Read backward to catch letter-swap errors — sceintists, expeirience, collecy, rouhgly, stonger, similer, comming.</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Subject-verb agreement:</b> Check that plural subjects have plural verbs — "memories <i>hold</i>" not "memories holds."</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Articles (a/an):</b> Use "an" before vowel sounds — "an important," "an experience," "an experiment."</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Apostrophes:</b> Add apostrophes to contractions — "don't" not "dont." Check "it's" vs. "its."</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Uncountable nouns:</b> "Information" never gets an "s" — it's always "information," never "informations."</div>
+    </div>
+    <div class="tip-box">
+      <div class="label">3-MINUTE RULE</div>
+      Save the last 3 minutes of your test for proofreading. Pass 1: Read backward to catch spelling. Pass 2: Read forward slowly, checking subject-verb agreement, articles, and apostrophes. These 3 minutes can save you several points.
+    </div>
+    <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg> Print this checklist</button>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 9: 3 Goals ═══════════ -->
+<div class="card" data-title="3 Goals">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">Strong reading comprehension + lots of evidence — now structure and polish it</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Write a thesis that previews your 3 body paragraph topics.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Your opening questions are a good hook — keep them. But end the intro with a clear thesis: "The brain handles memories through encoding, consolidation, and retrieval." A thesis that names three topics forces you to plan three focused body paragraphs before you start writing.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>Add topic sentences and explain your evidence with the E &rarr; X pattern.</b><br>
+        <span style="font-size:10.5pt;color:#555;">You include plenty of evidence — that's a strength. The missing piece is structure: start each BP with a topic sentence, then after each piece of evidence ask "So what? What does this show about how memory works?" and answer that question. That answer is your explanation.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Save 3 minutes to proofread spelling and grammar.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Many of your spelling errors are letter swaps (sceintists, expeirience, rouhgly) that are easy to catch when reading backward. Then check grammar: subject-verb agreement (memories hold, not holds), articles (an important, not a important), and apostrophes (don't, not dont). These small fixes can recover several points.</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">THE BIG PICTURE</div>
+      9/10 on MCQ + strong passage comprehension means you have <b>real writing knowledge</b>. Your essay shows you understood the passage deeply and found excellent evidence. The points you lost are about <b>packaging</b> — structuring your ideas with a thesis and topic sentences, explaining your evidence instead of just listing it, and cleaning up spelling and grammar. The content is already there. Now learn to present it clearly.
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+
+<!-- Completion overlay -->
+<div class="completion-overlay" id="completionOverlay">
+  <div class="completion-card">
+    <div class="completion-emoji">&#127881;</div>
+    <div class="completion-title">Nice work, Shepperd!</div>
+    <div class="completion-sub">You reviewed all your cards. Remember your goals:<br><b>Write a thesis previewing 3 topics &bull; Add topic sentences + E &rarr; X pattern &bull; Save 3 minutes to proofread spelling &amp; grammar</b></div>
+    <button class="completion-close" onclick="closeCompletion()">Got it!</button>
+  </div>
+</div>
+<canvas id="confettiCanvas"></canvas>
+
+<script>
+var cards = document.querySelectorAll('.card');
+var bar = document.getElementById('progressBar');
+var breadcrumb = document.getElementById('breadcrumb');
+var stickyEl = document.getElementById('stickyIndicator');
+var current = 0;
+var visited = [0];
+
+cards.forEach(function(card, i) {
+  var dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  var tooltip = document.createElement('span');
+  tooltip.className = 'dot-tooltip';
+  tooltip.textContent = card.getAttribute('data-title') || ('Card ' + (i + 1));
+  dot.appendChild(tooltip);
+  dot.addEventListener('click', function() { goTo(i); });
+  bar.appendChild(dot);
+});
+
+function updateBreadcrumb() {
+  var title = cards[current].getAttribute('data-title') || ('Card ' + (current + 1));
+  breadcrumb.innerHTML = 'Card <b>' + (current + 1) + '</b> of ' + cards.length + ' \u2014 ' + title;
+  stickyEl.textContent = (current + 1) + ' / ' + cards.length;
+}
+
+function checkSticky() {
+  var barRect = bar.getBoundingClientRect();
+  stickyEl.classList.toggle('visible', barRect.bottom < 0);
+}
+window.addEventListener('scroll', checkSticky);
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  if (visited.indexOf(current) === -1) visited.push(current);
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  visited.forEach(function(v) { if (v !== current) bar.children[v].classList.add('visited'); });
+  var prevBtn = document.getElementById('prevBtn');
+  var nextBtn = document.getElementById('nextBtn');
+  if (prevBtn) {
+    prevBtn.style.visibility = current === 0 ? 'hidden' : 'visible';
+    prevBtn.disabled = current === 0;
+  }
+  if (nextBtn) {
+    nextBtn.textContent = current === cards.length - 1 ? 'Done \u2713' : 'Next \u2192';
+    nextBtn.disabled = false;
+  }
+  updateBreadcrumb();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) { showCompletion(); return; }
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+function revealBetter(cover) {
+  var content = cover.nextElementSibling;
+  content.classList.add('shown');
+  cover.classList.add('hidden');
+}
+
+function toggleCheck(item) {
+  item.classList.toggle('checked');
+  updateCheckProgress();
+}
+
+function updateCheckProgress() {
+  var items = document.querySelectorAll('.check-item');
+  var checked = document.querySelectorAll('.check-item.checked').length;
+  var total = items.length;
+  var fill = document.getElementById('checkProgressFill');
+  var lbl = document.getElementById('checkProgressLabel');
+  if (fill) fill.style.width = Math.round((checked / total) * 100) + '%';
+  if (lbl) {
+    lbl.innerHTML = checked === total
+      ? '<b style="color:#2d6a2d;">All done! Nice work.</b>'
+      : checked + ' of ' + total + ' checked';
+  }
+}
+
+function printChecklist(btn) {
+  var card = btn.closest('.card');
+  var checkedItems = card.querySelectorAll('.check-item.checked');
+  checkedItems.forEach(function(item) { item.classList.remove('checked'); });
+  card.classList.add('print-target');
+  window.print();
+  card.classList.remove('print-target');
+  checkedItems.forEach(function(item) { item.classList.add('checked'); });
+}
+
+function showCompletion() {
+  document.getElementById('completionOverlay').classList.add('visible');
+  launchConfetti();
+}
+
+function closeCompletion() {
+  document.getElementById('completionOverlay').classList.remove('visible');
+}
+
+function launchConfetti() {
+  var canvas = document.getElementById('confettiCanvas');
+  var ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  var colors = ['#1a1a2e','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b','#42a5f5'];
+  var particles = [];
+  for (var i = 0; i < 120; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height - canvas.height,
+      w: Math.random() * 10 + 5, h: Math.random() * 6 + 3,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      vx: (Math.random() - 0.5) * 4, vy: Math.random() * 3 + 2,
+      rot: Math.random() * 360, rotV: (Math.random() - 0.5) * 10, life: 1
+    });
+  }
+  var frame = 0;
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    var alive = false;
+    particles.forEach(function(p) {
+      if (p.life <= 0) return;
+      alive = true;
+      p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.rot += p.rotV;
+      if (p.y > canvas.height + 20) { p.life = 0; return; }
+      if (frame > 60) p.life -= 0.01;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot * Math.PI / 180);
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    });
+    frame++;
+    if (alive) requestAnimationFrame(animate);
+    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  animate();
+}
+
+goTo(0);
+</script>
+</body>
+</html>
