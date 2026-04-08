@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sabrina — Writing Test 1 Results</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .progress-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ccc;
+    transition: background 0.3s;
+    cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container {
+    position: relative;
+    width: 640px;
+    min-height: 420px;
+  }
+
+  .card {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    background: #fff;
+    border: 2.5px solid #1a1a2e;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 {
+    font-size: 15pt;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .card-header .card-subtitle {
+    font-size: 9.5pt;
+    color: #aaa;
+    margin-top: 2px;
+  }
+
+  .card-body {
+    padding: 18px 22px 22px;
+    line-height: 1.55;
+  }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+  }
+  .score-box .big { font-size: 20pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3;
+    border-left: 3px solid #cc0000;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    font-size: 10.5pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9;
+    border-left: 3px solid #2d6a2d;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 10.5pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5;
+    border-left: 3px solid #1a1a2e;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+
+  .pattern-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; }
+
+  .goal-num {
+    display: inline-block;
+    background: #1a1a2e;
+    color: #fff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    line-height: 24px;
+    font-size: 11pt;
+    font-weight: 700;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .goal-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    margin: 10px 0;
+  }
+
+  .essay-excerpt {
+    background: #fafafa;
+    border: 1px solid #e0e0e8;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 10.5pt;
+    margin: 8px 0;
+    line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+
+  .outline-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 8px 0;
+    font-size: 10.5pt;
+  }
+  .outline-box .outline-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .outline-row {
+    display: flex;
+    gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px dashed #ddd;
+  }
+  .outline-row:last-child { border-bottom: none; }
+  .outline-tag {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #fff;
+    background: #1a1a2e;
+    border-radius: 4px;
+    padding: 2px 8px;
+    min-width: 36px;
+    text-align: center;
+    flex-shrink: 0;
+    line-height: 1.6;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-box {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #1a1a2e;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .nav {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .nav button {
+    padding: 8px 28px;
+    border: 2px solid #1a1a2e;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a2e;
+    font-family: inherit;
+    font-size: 11pt;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover {
+    background: #1a1a2e;
+    color: #fff;
+  }
+
+    .print-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 12px; padding: 8px 20px;
+    border: 2px solid #1a1a2e; border-radius: 8px;
+    background: #fff; color: #1a1a2e; font-family: inherit;
+    font-size: 10.5pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .print-btn:hover { background: #1a1a2e; color: #fff; }
+  .print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+  @media print {
+    body { background: #fff; padding: 0; min-height: auto; }
+    .progress-bar, .nav, .print-btn { display: none !important; }
+    .card-container { width: 100%; min-height: auto; }
+    .card { display: none !important; }
+    .card.print-target {
+      display: block !important; opacity: 1 !important;
+      pointer-events: auto !important; position: relative !important;
+      transform: none !important; box-shadow: none;
+      border: 2px solid #1a1a2e; page-break-inside: avoid;
+    }
+    .check-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .card-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .error-mark { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+@media (max-width: 720px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+
+  /* -- UI UPGRADE: LABELED PROGRESS BAR -- */
+  .progress-bar { flex-wrap: wrap; justify-content: center; }
+  .progress-dot { position: relative; transition: background 0.3s, transform 0.2s; }
+  .progress-dot.active { transform: scale(1.25); }
+  .progress-dot.visited { background: #7a7a9e; }
+  .progress-dot:hover { transform: scale(1.3); }
+  .progress-dot .dot-tooltip {
+    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: #1a1a2e; color: #fff; padding: 4px 10px; border-radius: 6px;
+    font-size: 8.5pt; white-space: nowrap; opacity: 0;
+    pointer-events: none; transition: opacity 0.2s; z-index: 100;
+  }
+  .progress-dot .dot-tooltip::after {
+    content: ''; position: absolute; top: 100%; left: 50%;
+    transform: translateX(-50%); border: 5px solid transparent;
+    border-top-color: #1a1a2e;
+  }
+  .progress-dot:hover .dot-tooltip { opacity: 1; }
+  .card-breadcrumb {
+    font-size: 9.5pt; color: #888; margin-bottom: 14px;
+    text-align: center; transition: opacity 0.3s; min-height: 1.2em;
+  }
+  .card-breadcrumb b { color: #1a1a2e; }
+
+  /* -- UI UPGRADE: STICKY INDICATOR -- */
+  .sticky-indicator {
+    position: fixed; top: 12px; right: 16px;
+    background: #1a1a2e; color: #fff; padding: 5px 14px;
+    border-radius: 20px; font-size: 9pt; font-weight: 700;
+    opacity: 0; transition: opacity 0.3s; z-index: 200;
+    pointer-events: none; letter-spacing: 0.5px;
+  }
+  .sticky-indicator.visible { opacity: 1; }
+
+  /* -- UI UPGRADE: REVEAL INTERACTION -- */
+  .reveal-wrapper { position: relative; }
+  .reveal-cover {
+    background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%);
+    border-left: 3px solid #2d6a2d;
+    padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0;
+    cursor: pointer; user-select: none;
+    display: flex; align-items: center; gap: 10px;
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+  .reveal-cover:hover {
+    box-shadow: 0 2px 8px rgba(45,106,45,0.15);
+    background: linear-gradient(135deg, #d4edda 0%, #c8e6c9 100%);
+  }
+  .reveal-cover .reveal-icon {
+    width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
+  .reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #2d6a2d; }
+  .reveal-cover .reveal-hint { font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px; }
+  .reveal-content {
+    max-height: 0; overflow: hidden; opacity: 0;
+    transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0;
+  }
+  .reveal-content.shown { max-height: 600px; opacity: 1; margin: 8px 0; }
+  .reveal-cover.hidden { display: none; }
+
+  /* -- UI UPGRADE: EXPANDABLE EXAMPLES -- */
+  .tip-expand {
+    margin-top: 8px; border-top: 1px dashed #b0b8cc; padding-top: 6px;
+  }
+  .tip-expand summary {
+    font-size: 9.5pt; font-weight: 600; color: #1a1a2e;
+    cursor: pointer; padding: 4px 0; list-style: none;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .tip-expand summary::-webkit-details-marker { display: none; }
+  .tip-expand summary::before {
+    content: '\25B6'; font-size: 8pt; transition: transform 0.2s; display: inline-block;
+  }
+  .tip-expand[open] summary::before { transform: rotate(90deg); }
+  .tip-expand .expand-body {
+    margin-top: 6px; font-size: 10pt; line-height: 1.5;
+    background: #f4f6fb; padding: 10px 12px; border-radius: 6px;
+  }
+
+  /* -- UI UPGRADE: TAPPABLE CHECKBOXES -- */
+  .check-item {
+    gap: 12px; padding: 10px 8px; cursor: pointer;
+    border-radius: 6px; transition: background 0.15s; user-select: none;
+  }
+  .check-item:hover { background: #f8f8fc; }
+  .check-item.checked { background: #f0f8f0; }
+  .check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
+  .check-item.checked .check-box::after {
+    content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700;
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  }
+  .check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
+  .check-box {
+    width: 28px; height: 28px; border: 2.5px solid #1a1a2e;
+    border-radius: 6px; position: relative; transition: background 0.2s, border-color 0.2s;
+  }
+  .checklist-progress {
+    background: #eee; border-radius: 10px; height: 8px;
+    margin: 12px 0 6px; overflow: hidden;
+  }
+  .checklist-progress-fill {
+    background: linear-gradient(90deg, #2d6a2d, #4caf50);
+    height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%;
+  }
+  .checklist-progress-label {
+    font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px;
+  }
+
+  /* -- UI UPGRADE: COMPLETION OVERLAY -- */
+  .completion-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(26,26,46,0.6); z-index: 500;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.4s;
+  }
+  .completion-overlay.visible { opacity: 1; pointer-events: auto; }
+  .completion-card {
+    background: #fff; border-radius: 16px; padding: 40px 48px;
+    text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+    transform: scale(0.8); transition: transform 0.4s ease; max-width: 420px;
+  }
+  .completion-overlay.visible .completion-card { transform: scale(1); }
+  .completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+  .completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; }
+  .completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+  .completion-close {
+    margin-top: 20px; padding: 10px 32px;
+    background: #1a1a2e; color: #fff; border: none; border-radius: 8px;
+    font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .completion-close:hover { background: #2d2d4e; }
+  #confettiCanvas {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 501;
+  }
+
+  /* -- UI UPGRADE: PRINT ADDITIONS -- */
+  @media print {
+    .card-breadcrumb, .sticky-indicator, .completion-overlay, #confettiCanvas,
+    .reveal-cover, .checklist-progress, .checklist-progress-label,
+    .nav-buttons, .bottom-note { display: none !important; }
+    .reveal-content {
+      max-height: none !important; opacity: 1 !important; margin: 8px 0 !important;
+    }
+  }
+
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<div class="card-breadcrumb" id="breadcrumb"></div>
+
+<div class="sticky-indicator" id="stickyIndicator"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- =========== CARD 1: Score Overview =========== -->
+<div class="card" data-title="Score Overview">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G3.3 &mdash; Test 1</div>
+  </div>
+  <div class="card-body">
+    <p>Sabrina, welcome to AlphaWrite! This is your first writing test review. Let's look at what you did well and what to work on next.</p>
+    <div class="score-grid">
+      <div class="score-box score-good">
+        <div class="big">80%</div>
+        <div class="label">Overall Score (36/45)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">3/11</div>
+        <div class="label">Perfect Answers</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">17/20</div>
+        <div class="label">Paragraph</div>
+      </div>
+    </div>
+    <div class="score-grid">
+      <div class="score-box score-good">
+        <div class="big">8/10</div>
+        <div class="label">Editing (Q1-Q5)</div>
+      </div>
+      <div class="score-box score-warn">
+        <div class="big">11/15</div>
+        <div class="label">Sentences (Q6-Q10)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">17/20</div>
+        <div class="label">Paragraph (Q11)</div>
+      </div>
+    </div>
+    <p>You got <b>3 questions exactly right</b> (Q1, Q4, Q6) and earned partial credit on many others. Your editing section was strong and your paragraph had a clear topic sentence.</p>
+    <p>The areas to improve are: <b>understanding appositives vs. adverbs</b>, <b>using subordinating conjunctions</b>, and <b>writing stronger, more developed sentences and paragraphs</b>. The next cards show you exactly how.</p>
+  </div>
+</div>
+
+<!-- =========== CARD 2: What You Did Well =========== -->
+<div class="card" data-title="Strengths">
+  <div class="card-header">
+    <h2>What You Did Well</h2>
+    <div class="card-subtitle">These are real strengths</div>
+  </div>
+  <div class="card-body">
+    <p>Before we look at what to fix, here's what you got right:</p>
+    <ul>
+      <li><b>Q1 &mdash; Perfect question formation!</b> "Did Anna name the seal Sally?" You flipped the word order correctly and used a question mark. That's exactly right.</li>
+      <li><b>Q4 &mdash; Great sentence combining.</b> "Anna and Jim ran to the beach and found a baby seal in a fishnet." You smoothly joined two ideas into one sentence.</li>
+      <li><b>Q6 &mdash; Strong answer.</b> You wrote a clear, complete sentence that answered the question well.</li>
+      <li><b>Q2 &mdash; Good kernel expansion.</b> "Dad freed the pup in the morning at a park." You added details about when and where. Nice additions.</li>
+      <li><b>Q10 &mdash; Solid response.</b> You gave a complete answer with your reasoning.</li>
+      <li><b>Your paragraph's topic sentence</b> was clear: "Tajiri's childhood helped him create a famous game called Pokemon." You answered the prompt right away.</li>
+    </ul>
+    <p>You know how to form questions, combine sentences, and start a paragraph with a clear topic sentence. The points you lost are about <b>appositives</b>, <b>subordinating conjunctions</b>, and <b>developing your ideas more fully</b>. Let's fix those.</p>
+  </div>
+</div>
+
+<!-- =========== CARD 3: What Is an Appositive? =========== -->
+<div class="card" data-title="Appositives &amp; Conjunctions">
+  <div class="card-header">
+    <h2>What Is an Appositive?</h2>
+    <div class="card-subtitle">Q3 &amp; Q5 &mdash; Two different grammar tools</div>
+  </div>
+  <div class="card-body">
+    <p>On Q3 and Q5, you mixed up two different grammar tools. Let's clear this up.</p>
+
+    <p style="margin-top:10px;"><b>Q3</b> &mdash; Add an appositive to the sentence:</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      Sally <span class="highlight">carefully</span> swam to the other seals.
+    </div>
+    <p>You added an adverb ("carefully"), not an appositive. An <b>appositive</b> is a phrase that <b>renames or describes the noun</b> right next to it, set off by commas.</p>
+
+    <div class="reveal-wrapper">
+      <div class="reveal-cover" onclick="revealBetter(this)">
+        <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></div>
+        <div>
+          <div class="reveal-text">Tap to see the improved version</div>
+          <div class="reveal-hint">Read the explanation above first</div>
+        </div>
+      </div>
+      <div class="reveal-content">
+        <div class="better">
+          <div class="label">BETTER &mdash; WITH AN APPOSITIVE</div>
+          Sally, <b>the baby seal</b>, swam to the other seals.
+        </div>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <div class="label">HOW TO SPOT AN APPOSITIVE</div>
+      An appositive comes right after a noun and <b>renames it</b>. It's surrounded by commas.<br><br>
+      <b>Pattern:</b> [Noun], <i>[who or what it is]</i>, [rest of sentence]<br>
+      <b>Example:</b> Sally, <i>the baby seal</i>, swam to the other seals.<br>
+      <b>Example:</b> Anna, <i>a girl who loved animals</i>, ran to help.<br><br>
+      <b>An adverb</b> (like "carefully") tells <i>how</i> something happened. An <b>appositive</b> tells <i>who or what</i> the noun is.
+      <details class="tip-expand">
+        <summary>More examples</summary>
+        <div class="expand-body">
+          <b>Adverb (not appositive):</b> Dad <i>quickly</i> freed the pup.<br>
+          <b>Appositive:</b> Dad, <i>a strong fisherman</i>, freed the pup.<br><br>
+          <b>Adverb:</b> The seal <i>happily</i> swam away.<br>
+          <b>Appositive:</b> The seal, <i>a healthy young pup</i>, swam away.
+        </div>
+      </details>
+    </div>
+
+    <p style="margin-top:14px;"><b>Q5</b> &mdash; Combine sentences using a subordinating conjunction:</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      <span class="highlight">Later,</span> ...
+    </div>
+    <p>"Later" is a <b>time word</b>, not a subordinating conjunction. A subordinating conjunction shows a <b>relationship</b> between two ideas (cause, contrast, condition).</p>
+
+    <div class="reveal-wrapper">
+      <div class="reveal-cover" onclick="revealBetter(this)">
+        <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></div>
+        <div>
+          <div class="reveal-text">Tap to see examples with subordinating conjunctions</div>
+          <div class="reveal-hint">Read the explanation above first</div>
+        </div>
+      </div>
+      <div class="reveal-content">
+        <div class="better">
+          <div class="label">EXAMPLES WITH SUBORDINATING CONJUNCTIONS</div>
+          <b>Since</b> the seal was trapped, Dad carefully cut the net.<br>
+          <b>Because</b> Anna loved animals, she wanted to help right away.<br>
+          <b>Although</b> the seal was scared, it let the family get close.
+        </div>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <div class="label">SUBORDINATING CONJUNCTIONS TO MEMORIZE</div>
+      These words show a <b>relationship</b> between two ideas:<br><br>
+      <b>Cause:</b> because, since<br>
+      <b>Contrast:</b> although, even though<br>
+      <b>Time:</b> when, before, after, while, until<br>
+      <b>Condition:</b> if, unless<br><br>
+      "Later" just tells <i>when</i> something happened. "Because" tells <i>why</i>. "Although" shows a <i>contrast</i>. Those are subordinating conjunctions.
+    </div>
+  </div>
+</div>
+
+<!-- =========== CARD 4: Stronger Sentences =========== -->
+<div class="card" data-title="Stronger Sentences">
+  <div class="card-header">
+    <h2>Stronger Sentences</h2>
+    <div class="card-subtitle">Q7, Q8, Q9 &mdash; Complete thoughts with more detail</div>
+  </div>
+  <div class="card-body">
+    <p>You lost points on three sentence questions because your answers were either <b>incomplete</b> or <b>too brief</b>. Let's look at the patterns.</p>
+
+    <p style="margin-top:10px;"><b>Q7</b> &mdash; What was the most meaningful moment?</p>
+    <div class="you-wrote">
+      <div class="label">YOU WROTE</div>
+      When the seal swam to her parents after getting stuck in a fishnet.
+    </div>
+    <p>This is a <b>fragment</b> &mdash; it starts with "When" but never finishes the main thought. "When the seal swam..." tells us the moment, but there's no main clause saying <i>why</i> it was meaningful.</p>
+
+    <div class="reveal-wrapper">
+      <div class="reveal-cover" onclick="revealBetter(this)">
+        <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></div>
+        <div>
+          <div class="reveal-text">Tap to see the improved version</div>
+          <div class="reveal-hint">Read the explanation above first</div>
+        </div>
+      </div>
+      <div class="reveal-content">
+        <div class="better">
+          <div class="label">FINISHED THOUGHT</div>
+          The most meaningful moment was when the seal swam back to its parents after being rescued, because it showed that the family's help made a real difference.
+        </div>
+      </div>
+    </div>
+
+    <p style="margin-top:14px;"><b>Q8 &amp; Q9</b> had the right idea but needed more <b>specific details</b>:</p>
+    <div class="tip-box">
+      <div class="label">HOW TO WRITE A STRONGER ANSWER</div>
+      Follow this pattern for every sentence question:<br><br>
+      <b>Step 1:</b> Answer the question directly. ("The most meaningful moment was...")<br>
+      <b>Step 2:</b> Give a specific detail from the story. ("...when the seal swam back to its parents...")<br>
+      <b>Step 3:</b> Explain why with "because." ("...because it showed the rescue worked.")<br><br>
+      <b>Fragment check:</b> If your sentence starts with "when," "because," "since," or "although," make sure there's a <b>main clause</b> too. Read it out loud &mdash; if it sounds like it's waiting for more, add the missing part.
+      <details class="tip-expand">
+        <summary>Fragment vs. complete sentence</summary>
+        <div class="expand-body">
+          <b>Fragment:</b> When the seal swam to her parents.<br>
+          <b>Complete:</b> <i>It was meaningful</i> when the seal swam to her parents.<br><br>
+          <b>Fragment:</b> Because they helped the baby seal.<br>
+          <b>Complete:</b> <i>The story was touching</i> because they helped the baby seal.
+        </div>
+      </details>
+    </div>
+  </div>
+</div>
+
+<!-- =========== CARD 5: Build Your Paragraph =========== -->
+<div class="card" data-title="Build Your Paragraph">
+  <div class="card-header">
+    <h2>Build Your Paragraph</h2>
+    <div class="card-subtitle">Q11 &mdash; Good start, needs more development</div>
+  </div>
+  <div class="card-body">
+    <p>Your paragraph scored <b>17/20</b>. You had a clear topic sentence and a concluding sentence, but the middle needs more <b>specific details</b> and <b>explanations</b>.</p>
+
+    <div class="essay-excerpt">
+      <div class="para-label">YOUR PARAGRAPH</div>
+      Tajiri's childhood helped him create a famous game called Pokemon. In Tajiri's childhood he loved catching bugs. <span class="highlight">So,</span> he used the idea to make a fun game. There are creatures to catch called Pokemon and you could trade Pokemon with others. That is how Tajiri's childhood helped him create a famous game.
+    </div>
+    <p>Good things: you answered the prompt and tried to connect the childhood to the game. But there are issues:</p>
+    <ul>
+      <li>The opening and closing say almost the <b>same thing</b> &mdash; reword your conclusion</li>
+      <li><b>"So"</b> is a vague transition &mdash; explain <i>how</i> bug catching led to the game</li>
+      <li>You need more <b>specific evidence</b> from the passage</li>
+      <li>The sentences are mostly general &mdash; add "why it matters" after each detail</li>
+    </ul>
+
+    <p style="margin-top:10px;">Here's the G3 paragraph plan you should follow:</p>
+    <div class="outline-box">
+      <div class="outline-label">Paragraph Plan &mdash; TS &rarr; D1 &rarr; W &rarr; D2 &rarr; W &rarr; D3 &rarr; W &rarr; CS</div>
+      <div style="font-size:9.5pt;color:#888;margin-bottom:6px;"><b>TS</b> = Topic Sentence &nbsp;&bull;&nbsp; <b>D</b> = Detail from the article &nbsp;&bull;&nbsp; <b>W</b> = Why it matters &nbsp;&bull;&nbsp; <b>CS</b> = Concluding Sentence</div>
+      <div class="outline-row">
+        <span class="outline-tag">TS</span>
+        <span>Tajiri's childhood love of catching bugs helped him create the famous game Pok&eacute;mon.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D1</span>
+        <span>As a child, Tajiri spent hours catching bugs in fields and ponds near his home.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">W</span>
+        <span>This shows how much he loved collecting creatures, which later became the main idea behind Pok&eacute;mon.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D2</span>
+        <span>His friends even called him "Dr. Bug" because he knew so much about insects.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">W</span>
+        <span>This shows that his hobby was a big part of who he was, not just something he did once in a while.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D3</span>
+        <span>When he grew up, Tajiri remembered his bug-catching adventures and used that idea to design a video game where players catch and trade creatures.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">W</span>
+        <span>This shows that without his childhood memories, the game might never have been created.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">CS</span>
+        <span>In conclusion, Tajiri turned a simple childhood hobby into one of the most popular games in the world.</span>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <div class="label">TWO TIPS FOR A BETTER PARAGRAPH</div>
+      <b>1. Don't repeat your topic sentence as your conclusion.</b> Your conclusion should restate the main point in a <b>new way</b>. Compare:<br>
+      &nbsp;&nbsp;&bull; <i>Repetitive:</i> "That is how Tajiri's childhood helped him create a famous game."<br>
+      &nbsp;&nbsp;&bull; <i>Better:</i> "In conclusion, Tajiri turned a simple childhood hobby into one of the most popular games in the world."<br><br>
+      <b>2. Replace "So" with a specific explanation.</b> Instead of "So, he used the idea to make a fun game," explain <i>how</i>: "He remembered catching bugs and designed a game where players could catch and trade creatures too."
+    </div>
+  </div>
+</div>
+
+<!-- =========== CARD 6: Proofreading Checklist =========== -->
+<div class="card" data-title="Checklist">
+  <div class="card-header">
+    <h2>Your Proofreading Checklist</h2>
+    <div class="card-subtitle">Check these before you hand in your test</div>
+  </div>
+  <div class="card-body">
+    <p>In AlphaWrite, the <b>Polish</b> stage is where you fix errors before your writing is graded. On a test, you need to be your own editor. Here's your personal checklist based on the mistakes in <i>your</i> test:</p>
+    <div class="checklist-progress-label" id="checkProgressLabel">0 checked</div>
+    <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Did I write an appositive (not an adverb)?</b><br><span style="font-size:10pt;color:#555;">An appositive <i>renames</i> the noun: "Sally, <b>the baby seal</b>, swam..." An adverb tells <i>how</i>: "Sally <b>carefully</b> swam..." If the question asks for an appositive, add a renaming phrase with commas.</span></div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Did I use a real subordinating conjunction?</b><br><span style="font-size:10pt;color:#555;">"Later" is just a time word. Subordinating conjunctions show relationships: <b>because, since, although, when, before, after, if, while</b>.</span></div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Are all my sentences complete?</b><br><span style="font-size:10pt;color:#555;">If your sentence starts with "when," "because," or "although," make sure there's a main clause too. Read it out loud &mdash; if it sounds unfinished, add the missing part.</span></div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Did I give specific details and explain why they matter?</b><br><span style="font-size:10pt;color:#555;">For sentence questions, use the pattern: Answer + Detail + "because" + reason. Don't leave your answer too brief.</span></div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Does my paragraph have at least 6-8 sentences?</b><br><span style="font-size:10pt;color:#555;">Follow the plan: TS, D1, W, D2, W, D3, W, CS. Add details from the passage and explain why each one matters.</span></div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Is my concluding sentence different from my topic sentence?</b><br><span style="font-size:10pt;color:#555;">Don't just repeat your opening. Restate your main point in a new way that wraps up everything you explained.</span></div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Did I replace vague words like "So" with specific explanations?</b><br><span style="font-size:10pt;color:#555;">Instead of "So, he made a game," explain <i>how</i>: "He remembered catching bugs and designed a game where players could catch creatures too."</span></div>
+    </div>
+    <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg> Print this checklist</button>
+  </div>
+</div>
+
+<!-- =========== CARD 7: 3 Goals =========== -->
+<div class="card" data-title="3 Goals">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">Good first test &mdash; here's how to keep improving</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Learn the difference between appositives, adverbs, and subordinating conjunctions.</b><br>
+        <span style="font-size:10.5pt;color:#555;">On Q3, you added an adverb instead of an appositive. On Q5, you used a time word instead of a subordinating conjunction. Remember: an appositive <b>renames the noun</b> (set off by commas), and a subordinating conjunction shows a <b>relationship</b> like cause, contrast, or condition (because, since, although, when, if).</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>Write complete sentences with specific details and "because."</b><br>
+        <span style="font-size:10.5pt;color:#555;">On Q7, you wrote a fragment that started with "When" but never finished. For every answer, make sure you have a main clause that answers the question, a detail from the story, and "because" to explain your thinking. Read your answer out loud &mdash; if it sounds unfinished, add the missing part.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Develop your paragraph: add details, explain why they matter, and write a new conclusion.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Your topic sentence was strong. Now follow the TS &rarr; D1 &rarr; W &rarr; D2 &rarr; W &rarr; D3 &rarr; W &rarr; CS plan. After each detail, write one sentence explaining <b>why it matters</b>. And don't repeat your topic sentence as your conclusion &mdash; restate your main point in a new way.</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">THE BIG PICTURE</div>
+      Sabrina, this is a solid first test! You scored <b>80%</b> and showed real skill with question formation, sentence combining, and writing a clear topic sentence. The points you lost came from mixing up grammar terms (appositive vs. adverb, subordinating conjunction vs. time word) and not developing your sentences and paragraph enough. These are all <b>learnable skills</b> &mdash; once you know the patterns, you'll pick up points quickly. You're at 80% &mdash; learning these patterns could push you into the high 80s or 90s. Great start!
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<!-- Completion overlay -->
+<div class="completion-overlay" id="completionOverlay">
+  <div class="completion-card">
+    <div class="completion-emoji">&#127881;</div>
+    <div class="completion-title">Nice work, Sabrina!</div>
+    <div class="completion-sub">You reviewed all your cards. Remember your goals:<br><b>Learn appositives vs. adverbs and subordinating conjunctions &bull; Write complete sentences with "because" &bull; Develop your paragraph with the TS-D-W-CS plan</b></div>
+    <button class="completion-close" onclick="closeCompletion()">Got it!</button>
+  </div>
+</div>
+<canvas id="confettiCanvas"></canvas>
+
+<script>
+var cards = document.querySelectorAll('.card');
+var bar = document.getElementById('progressBar');
+var breadcrumb = document.getElementById('breadcrumb');
+var stickyEl = document.getElementById('stickyIndicator');
+var current = 0;
+var visited = [0];
+
+cards.forEach(function(card, i) {
+  var dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  var tooltip = document.createElement('span');
+  tooltip.className = 'dot-tooltip';
+  tooltip.textContent = card.getAttribute('data-title') || ('Card ' + (i + 1));
+  dot.appendChild(tooltip);
+  dot.addEventListener('click', function() { goTo(i); });
+  bar.appendChild(dot);
+});
+
+function updateBreadcrumb() {
+  var title = cards[current].getAttribute('data-title') || ('Card ' + (current + 1));
+  breadcrumb.innerHTML = 'Card <b>' + (current + 1) + '</b> of ' + cards.length + ' \u2014 ' + title;
+  stickyEl.textContent = (current + 1) + ' / ' + cards.length;
+}
+
+function checkSticky() {
+  var barRect = bar.getBoundingClientRect();
+  stickyEl.classList.toggle('visible', barRect.bottom < 0);
+}
+window.addEventListener('scroll', checkSticky);
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  if (visited.indexOf(current) === -1) visited.push(current);
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  visited.forEach(function(v) { if (v !== current) bar.children[v].classList.add('visited'); });
+  var prevBtn = document.getElementById('prevBtn');
+  var nextBtn = document.getElementById('nextBtn');
+  if (prevBtn) {
+    prevBtn.style.visibility = current === 0 ? 'hidden' : 'visible';
+    prevBtn.disabled = current === 0;
+  }
+  if (nextBtn) {
+    nextBtn.textContent = current === cards.length - 1 ? 'Done \u2713' : 'Next \u2192';
+    nextBtn.disabled = false;
+  }
+  updateBreadcrumb();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) { showCompletion(); return; }
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+function revealBetter(cover) {
+  var content = cover.nextElementSibling;
+  content.classList.add('shown');
+  cover.classList.add('hidden');
+}
+
+function toggleCheck(item) {
+  item.classList.toggle('checked');
+  updateCheckProgress();
+}
+
+function updateCheckProgress() {
+  var items = document.querySelectorAll('.check-item');
+  var checked = document.querySelectorAll('.check-item.checked').length;
+  var total = items.length;
+  var fill = document.getElementById('checkProgressFill');
+  var lbl = document.getElementById('checkProgressLabel');
+  if (fill) fill.style.width = Math.round((checked / total) * 100) + '%';
+  if (lbl) {
+    lbl.innerHTML = checked === total
+      ? '<b style="color:#2d6a2d;">All done! Nice work.</b>'
+      : checked + ' of ' + total + ' checked';
+  }
+}
+
+function printChecklist(btn) {
+  var card = btn.closest('.card');
+  var checkedItems = card.querySelectorAll('.check-item.checked');
+  checkedItems.forEach(function(item) { item.classList.remove('checked'); });
+  card.classList.add('print-target');
+  window.print();
+  card.classList.remove('print-target');
+  checkedItems.forEach(function(item) { item.classList.add('checked'); });
+}
+
+function showCompletion() {
+  document.getElementById('completionOverlay').classList.add('visible');
+  launchConfetti();
+}
+
+function closeCompletion() {
+  document.getElementById('completionOverlay').classList.remove('visible');
+}
+
+function launchConfetti() {
+  var canvas = document.getElementById('confettiCanvas');
+  var ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  var colors = ['#1a1a2e','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b','#42a5f5'];
+  var particles = [];
+  for (var i = 0; i < 120; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height - canvas.height,
+      w: Math.random() * 10 + 5, h: Math.random() * 6 + 3,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      vx: (Math.random() - 0.5) * 4, vy: Math.random() * 3 + 2,
+      rot: Math.random() * 360, rotV: (Math.random() - 0.5) * 10, life: 1
+    });
+  }
+  var frame = 0;
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    var alive = false;
+    particles.forEach(function(p) {
+      if (p.life <= 0) return;
+      alive = true;
+      p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.rot += p.rotV;
+      if (p.y > canvas.height + 20) { p.life = 0; return; }
+      if (frame > 60) p.life -= 0.01;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot * Math.PI / 180);
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    });
+    frame++;
+    if (alive) requestAnimationFrame(animate);
+    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  animate();
+}
+
+goTo(0);
+</script>
+</body>
+</html>

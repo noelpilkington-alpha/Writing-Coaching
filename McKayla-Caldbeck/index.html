@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>McKayla — Writing Test 1 Results</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar { display: flex; gap: 6px; margin-bottom: 16px; }
+  .progress-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: #ccc; transition: background 0.3s; cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container { position: relative; width: 680px; min-height: 420px; }
+
+  .card {
+    position: absolute; top: 0; left: 0; width: 100%;
+    background: #fff; border: 2.5px solid #1a1a2e; border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0; pointer-events: none; transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1; pointer-events: auto; transform: translateX(0); position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e; color: #fff; padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+  .card-header .card-subtitle { font-size: 9.5pt; color: #aaa; margin-top: 2px; }
+
+  .card-body { padding: 18px 22px 22px; line-height: 1.55; }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px; margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc; border: 1.5px solid #e0e0e8;
+    border-radius: 8px; padding: 10px 14px; text-align: center;
+  }
+  .score-box .big { font-size: 20pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+
+  .you-wrote {
+    background: #fff3f3; border-left: 3px solid #cc0000;
+    padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+    font-style: italic; font-size: 10.5pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9; border-left: 3px solid #2d6a2d;
+    padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+    font-size: 10.5pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5; border-left: 3px solid #1a1a2e;
+    padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+  .error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+
+  .essay-excerpt {
+    background: #fafafa; border: 1px solid #e0e0e8;
+    border-radius: 6px; padding: 10px 14px; font-size: 10.5pt;
+    margin: 8px 0; line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700; font-size: 9pt; color: #888;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;
+  }
+
+  .outline-box {
+    background: #f8f8fc; border: 1.5px solid #e0e0e8;
+    border-radius: 8px; padding: 12px 16px; margin: 8px 0; font-size: 10.5pt;
+  }
+  .outline-box .outline-label {
+    font-weight: 700; font-size: 9pt; color: #1a1a2e;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+  }
+  .outline-row {
+    display: flex; gap: 10px; padding: 5px 0;
+    border-bottom: 1px dashed #ddd;
+  }
+  .outline-row:last-child { border-bottom: none; }
+  .outline-tag {
+    font-weight: 700; font-size: 9pt; color: #fff; background: #1a1a2e;
+    border-radius: 4px; padding: 2px 8px; min-width: 50px;
+    text-align: center; flex-shrink: 0; line-height: 1.6;
+  }
+
+  .pattern-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 6px 0; border-bottom: 1px solid #eee; font-size: 11pt;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; }
+
+  table.compare {
+    width: 100%; border-collapse: collapse; font-size: 10.5pt; margin: 8px 0;
+  }
+  table.compare th {
+    background: #1a1a2e; color: #fff; padding: 6px 10px;
+    text-align: left; font-size: 9.5pt;
+  }
+  table.compare td { padding: 6px 10px; border: 1px solid #ddd; vertical-align: top; }
+
+  .para-map {
+    display: flex; gap: 6px; margin: 10px 0; flex-wrap: wrap;
+  }
+  .para-tag {
+    padding: 6px 12px; border-radius: 6px; font-size: 10pt; font-weight: 600;
+    border: 1.5px solid;
+  }
+  .para-tag.good { background: #e8f5e9; border-color: #2d6a2d; color: #2d6a2d; }
+  .para-tag.warn { background: #fff3cd; border-color: #e6a800; color: #996600; }
+  .para-tag.bad { background: #fff3f3; border-color: #cc0000; color: #cc0000; }
+
+  .check-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid #eee; font-size: 11pt;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-box {
+    width: 20px; height: 20px; border: 2px solid #1a1a2e;
+    border-radius: 4px; flex-shrink: 0; margin-top: 1px;
+  }
+
+  .goal-num {
+    display: inline-block; background: #1a1a2e; color: #fff;
+    border-radius: 50%; width: 24px; height: 24px; text-align: center;
+    line-height: 24px; font-size: 11pt; font-weight: 700; margin-right: 8px; flex-shrink: 0;
+  }
+  .goal-row { display: flex; align-items: flex-start; gap: 4px; margin: 10px 0; }
+
+  .nav { display: flex; gap: 12px; margin-top: 16px; }
+  .nav button {
+    padding: 8px 28px; border: 2px solid #1a1a2e; border-radius: 8px;
+    background: #fff; color: #1a1a2e; font-family: inherit;
+    font-size: 11pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover { background: #1a1a2e; color: #fff; }
+
+    .print-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 12px; padding: 8px 20px;
+    border: 2px solid #1a1a2e; border-radius: 8px;
+    background: #fff; color: #1a1a2e; font-family: inherit;
+    font-size: 10.5pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .print-btn:hover { background: #1a1a2e; color: #fff; }
+  .print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+  @media print {
+    body { background: #fff; padding: 0; min-height: auto; }
+    .progress-bar, .nav, .print-btn { display: none !important; }
+    .card-container { width: 100%; min-height: auto; }
+    .card { display: none !important; }
+    .card.print-target {
+      display: block !important; opacity: 1 !important;
+      pointer-events: auto !important; position: relative !important;
+      transform: none !important; box-shadow: none;
+      border: 2px solid #1a1a2e; page-break-inside: avoid;
+    }
+    .check-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .card-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .error-mark { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+@media (max-width: 720px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── UI UPGRADE: LABELED PROGRESS BAR ── */
+  .progress-bar { flex-wrap: wrap; justify-content: center; }
+  .progress-dot { position: relative; transition: background 0.3s, transform 0.2s; }
+  .progress-dot.active { transform: scale(1.25); }
+  .progress-dot.visited { background: #7a7a9e; }
+  .progress-dot:hover { transform: scale(1.3); }
+  .progress-dot .dot-tooltip {
+    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: #1a1a2e; color: #fff; padding: 4px 10px; border-radius: 6px;
+    font-size: 8.5pt; white-space: nowrap; opacity: 0;
+    pointer-events: none; transition: opacity 0.2s; z-index: 100;
+  }
+  .progress-dot .dot-tooltip::after {
+    content: ''; position: absolute; top: 100%; left: 50%;
+    transform: translateX(-50%); border: 5px solid transparent;
+    border-top-color: #1a1a2e;
+  }
+  .progress-dot:hover .dot-tooltip { opacity: 1; }
+  .card-breadcrumb {
+    font-size: 9.5pt; color: #888; margin-bottom: 14px;
+    text-align: center; transition: opacity 0.3s; min-height: 1.2em;
+  }
+  .card-breadcrumb b { color: #1a1a2e; }
+
+  /* ── UI UPGRADE: STICKY INDICATOR ── */
+  .sticky-indicator {
+    position: fixed; top: 12px; right: 16px;
+    background: #1a1a2e; color: #fff; padding: 5px 14px;
+    border-radius: 20px; font-size: 9pt; font-weight: 700;
+    opacity: 0; transition: opacity 0.3s; z-index: 200;
+    pointer-events: none; letter-spacing: 0.5px;
+  }
+  .sticky-indicator.visible { opacity: 1; }
+
+  /* ── UI UPGRADE: REVEAL INTERACTION ── */
+  .reveal-wrapper { position: relative; }
+  .reveal-cover {
+    background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%);
+    border-left: 3px solid #2d6a2d;
+    padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0;
+    cursor: pointer; user-select: none;
+    display: flex; align-items: center; gap: 10px;
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+  .reveal-cover:hover {
+    box-shadow: 0 2px 8px rgba(45,106,45,0.15);
+    background: linear-gradient(135deg, #d4edda 0%, #c8e6c9 100%);
+  }
+  .reveal-cover .reveal-icon {
+    width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
+  .reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #2d6a2d; }
+  .reveal-cover .reveal-hint { font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px; }
+  .reveal-content {
+    max-height: 0; overflow: hidden; opacity: 0;
+    transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0;
+  }
+  .reveal-content.shown { max-height: 600px; opacity: 1; margin: 8px 0; }
+  .reveal-cover.hidden { display: none; }
+
+  /* ── UI UPGRADE: EXPANDABLE EXAMPLES ── */
+  .tip-expand {
+    margin-top: 8px; border-top: 1px dashed #b0b8cc; padding-top: 6px;
+  }
+  .tip-expand summary {
+    font-size: 9.5pt; font-weight: 600; color: #1a1a2e;
+    cursor: pointer; padding: 4px 0; list-style: none;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .tip-expand summary::-webkit-details-marker { display: none; }
+  .tip-expand summary::before {
+    content: '\25B6'; font-size: 8pt; transition: transform 0.2s; display: inline-block;
+  }
+  .tip-expand[open] summary::before { transform: rotate(90deg); }
+  .tip-expand .expand-body {
+    margin-top: 6px; font-size: 10pt; line-height: 1.5;
+    background: #f4f6fb; padding: 10px 12px; border-radius: 6px;
+  }
+
+  /* ── UI UPGRADE: TAPPABLE CHECKBOXES ── */
+  .check-item {
+    gap: 12px; padding: 10px 8px; cursor: pointer;
+    border-radius: 6px; transition: background 0.15s; user-select: none;
+  }
+  .check-item:hover { background: #f8f8fc; }
+  .check-item.checked { background: #f0f8f0; }
+  .check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
+  .check-item.checked .check-box::after {
+    content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700;
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  }
+  .check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
+  .check-box {
+    width: 28px; height: 28px; border: 2.5px solid #1a1a2e;
+    border-radius: 6px; position: relative; transition: background 0.2s, border-color 0.2s;
+  }
+  .checklist-progress {
+    background: #eee; border-radius: 10px; height: 8px;
+    margin: 12px 0 6px; overflow: hidden;
+  }
+  .checklist-progress-fill {
+    background: linear-gradient(90deg, #2d6a2d, #4caf50);
+    height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%;
+  }
+  .checklist-progress-label {
+    font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px;
+  }
+
+  /* ── UI UPGRADE: COMPLETION OVERLAY ── */
+  .completion-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(26,26,46,0.6); z-index: 500;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.4s;
+  }
+  .completion-overlay.visible { opacity: 1; pointer-events: auto; }
+  .completion-card {
+    background: #fff; border-radius: 16px; padding: 40px 48px;
+    text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+    transform: scale(0.8); transition: transform 0.4s ease; max-width: 420px;
+  }
+  .completion-overlay.visible .completion-card { transform: scale(1); }
+  .completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+  .completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; }
+  .completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+  .completion-close {
+    margin-top: 20px; padding: 10px 32px;
+    background: #1a1a2e; color: #fff; border: none; border-radius: 8px;
+    font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .completion-close:hover { background: #2d2d4e; }
+  #confettiCanvas {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 501;
+  }
+
+  /* ── UI UPGRADE: PRINT ADDITIONS ── */
+  @media print {
+    .card-breadcrumb, .sticky-indicator, .completion-overlay, #confettiCanvas,
+    .reveal-cover, .checklist-progress, .checklist-progress-label,
+    .nav-buttons, .bottom-note { display: none !important; }
+    .reveal-content {
+      max-height: none !important; opacity: 1 !important; margin: 8px 0 !important;
+    }
+  }
+
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<div class="card-breadcrumb" id="breadcrumb"></div>
+
+<div class="sticky-indicator" id="stickyIndicator"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Score Overview ═══════════ -->
+<div class="card" data-title="Score Overview">
+  <div class="card-header">
+    <h2>Your Writing Test Score</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G6.2</div>
+  </div>
+  <div class="card-body">
+    <p>McKayla, welcome to AlphaWrite! Let's walk through your first writing test together. This test was about how animated movies teach life lessons.</p>
+    <div class="score-grid">
+      <div class="score-box score-warn">
+        <div class="big">70%</div>
+        <div class="label">Overall Score (21/30)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">8/10</div>
+        <div class="label">Multiple Choice</div>
+      </div>
+      <div class="score-box score-warn">
+        <div class="big">13/20</div>
+        <div class="label">Essay</div>
+      </div>
+    </div>
+    <p>Your multiple choice was solid at <b>8 out of 10</b> — you clearly understand fragments vs. sentences, sentence types, appositives, conjunctions, topic sentences, and paragraph structure. That's a strong foundation.</p>
+    <p>The 2 MCQ points came from <b>conjunction choice</b> (Q3) and <b>transition words</b> (Q8). Your essay lost points for <b>missing a separate conclusion paragraph</b>, a <b>one-sentence introduction</b>, <b>generic examples instead of passage evidence</b>, and <b>unnecessary commas</b>. The next cards will walk you through each fix.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: Strengths ═══════════ -->
+<div class="card" data-title="Strengths">
+  <div class="card-header">
+    <h2>What You Did Well</h2>
+    <div class="card-subtitle">There's real skill here — especially in your MCQ and structure</div>
+  </div>
+  <div class="card-body">
+    <ul>
+      <li><b>Strong MCQ score (8/10)</b> — you nailed fragments, sentence types, appositives, conjunctions, topic sentences, irrelevant sentences, sequencing, and elaboration. That's a wide range of G6 skills.</li>
+      <li><b>Clear 3-topic structure</b> — you chose bravery, kindness, and honesty as your three life lessons. That shows you can organize an essay around distinct main points.</li>
+      <li><b>Each body paragraph stays on topic</b> — P2 is about bravery, P3 is about kindness, P4 is about honesty. You never wander off-topic or mix ideas between paragraphs.</li>
+      <li><b>Good vocabulary and sentence variety</b> — words like "courage," "comforts," and phrases like "even when it is scary" show clear, expressive writing.</li>
+      <li><b>Strong thesis that names 3 topics</b> — "kindness, bravery, and honesty" previews your three body paragraphs. That's the right instinct.</li>
+    </ul>
+    <div class="tip-box">
+      <div class="label">KEY TAKEAWAY</div>
+      You already know how to organize an essay around three clear topics — that's one of the hardest parts. Now you need to support those topics with <b>evidence from the passage</b> instead of made-up examples, and build a full 5-paragraph structure with a separate introduction and conclusion.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: Conjunction & Transition Fix ═══════════ -->
+<div class="card" data-title="Conjunctions &amp; Transitions">
+  <div class="card-header">
+    <h2>Conjunctions &amp; Transition Words</h2>
+    <div class="card-subtitle">Q3 and Q8 — understanding how ideas connect</div>
+  </div>
+  <div class="card-body">
+    <p><b>Q3 — Combining Sentences:</b></p>
+    <div class="essay-excerpt">
+      <div class="para-label">The two sentences</div>
+      "Animated movies are fun. They also include valuable lessons."
+    </div>
+    <p>You chose <span class="error-mark">because</span>, but the correct answer was <span class="highlight">but</span>.</p>
+    <p>Why? The word "also" signals that the second idea is <b>surprising or added</b> — fun movies <i>also</i> teach lessons. That's a contrast: "Animated movies are fun <b>but</b> they also include valuable lessons." The word "because" would mean lessons are the <i>reason</i> they're fun — that's a different relationship.</p>
+
+    <div class="reveal-wrapper">
+      <div class="reveal-cover" onclick="revealBetter(this)">
+        <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></div>
+        <div>
+          <div class="reveal-text">Tap to see the quick-reference guide</div>
+          <div class="reveal-hint">Read the explanation above first</div>
+        </div>
+      </div>
+      <div class="reveal-content">
+<div class="better">
+      <div class="label">CONJUNCTION CHEAT SHEET</div>
+      <b>"because"</b> = cause &rarr; effect (A <i>causes</i> B)<br>
+      <b>"but"</b> = contrast/surprise (A is true, <i>yet</i> B is also true)<br>
+      <b>"so"</b> = result (A happened, <i>therefore</i> B)<br>
+      <b>"and"</b> = addition (A <i>plus</i> B)
+    </div>
+      </div>
+    </div>
+
+    <p style="margin-top:14px;"><b>Q8 — Transition Words:</b></p>
+    <p>You chose <span class="error-mark">Then</span>, but the correct answer was <span class="highlight">As a result</span>.</p>
+    <p>The sentence described a <b>cause-and-effect</b> relationship — something happened, and then something else happened <i>because of it</i>. "Then" is a <b>sequence word</b> (first this, then that). "As a result" shows that the second thing happened <b>because of</b> the first thing.</p>
+
+    <div class="reveal-wrapper">
+      <div class="reveal-cover" onclick="revealBetter(this)">
+        <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></div>
+        <div>
+          <div class="reveal-text">Tap to see the transition guide</div>
+          <div class="reveal-hint">Read the explanation above first</div>
+        </div>
+      </div>
+      <div class="reveal-content">
+<div class="better">
+      <div class="label">TRANSITION WORD GUIDE</div>
+      <b>Sequence:</b> First, Next, Then, Finally<br>
+      <b>Cause &rarr; Effect:</b> As a result, Therefore, Consequently, Because of this<br>
+      <b>Contrast:</b> However, On the other hand, Although<br>
+      <b>Addition:</b> In addition, Furthermore, Also
+    </div>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <div class="label">THE TRICK</div>
+      Before picking a transition word, ask: <b>"What is the relationship between these two ideas?"</b> If Idea B happened <i>because of</i> Idea A, use a cause-effect word. If Idea B just comes <i>after</i> Idea A in time, use a sequence word. Matching the transition to the relationship is key.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Strengthen Your Essay ═══════════ -->
+<div class="card" data-title="Strengthen Your Essay">
+  <div class="card-header">
+    <h2>Strengthen Your Essay</h2>
+    <div class="card-subtitle">Use passage evidence, build 5 paragraphs, and expand your intro</div>
+  </div>
+  <div class="card-body">
+    <p><b>Problem 1: Generic examples instead of passage evidence</b></p>
+    <p>The prompt says "Use information from the passage to support your ideas." But your examples are made up:</p>
+    <div class="you-wrote">
+      <div class="label">YOUR EXAMPLE (GENERIC)</div>
+      "An example of someone in an animated movie doing that is, when a character is scared of fire and when a fire starts going around their town, the character stays calm and tries to guide their family to a safe place."
+    </div>
+    <p>This describes a character that doesn't exist in the passage. You need to use <b>specific details from the passage you read</b> — real movie titles, real character names, real scenes.</p>
+
+    <div class="reveal-wrapper">
+      <div class="reveal-cover" onclick="revealBetter(this)">
+        <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></div>
+        <div>
+          <div class="reveal-text">Tap to see what passage-based evidence looks like</div>
+          <div class="reveal-hint">Read the explanation above first</div>
+        </div>
+      </div>
+      <div class="reveal-content">
+<div class="better">
+      <div class="label">PASSAGE-BASED EVIDENCE (EXAMPLE)</div>
+      <b>[E]</b> According to the passage, in <i>[Movie Name]</i>, <i>[Character]</i> shows bravery when <i>[specific scene from passage]</i>.
+      <b>[X]</b> This shows that animated movies can teach children about bravery because the character faces a real fear and overcomes it, which gives viewers a model for their own lives.
+    </div>
+      </div>
+    </div>
+
+    <p style="margin-top:14px;"><b>Problem 2: Only 4 paragraphs — needs 5</b></p>
+    <p>Your essay goes: Intro (1 sentence) &rarr; BP1 &rarr; BP2 &rarr; BP3 with a closing sentence. A G6 essay needs <b>5 separate paragraphs</b>:</p>
+    <div class="para-map">
+      <span class="para-tag warn">INTRO (too short)</span>
+      <span class="para-tag good">BP1</span>
+      <span class="para-tag good">BP2</span>
+      <span class="para-tag warn">BP3 + CONC (merged)</span>
+      <span class="para-tag bad">CONC (missing)</span>
+    </div>
+    <p>Your last paragraph ends with "Overall, animated movies teach important life lessons..." — that's a conclusion sentence, but it should be its own paragraph.</p>
+
+    <p style="margin-top:14px;"><b>Problem 3: Introduction needs a hook</b></p>
+    <div class="you-wrote">
+      <div class="label">YOUR INTRO (1 SENTENCE)</div>
+      "Animated movies can teach children many important life lessons such as kindness, bravery, and honesty."
+    </div>
+    <p>This is a good thesis sentence, but the intro needs a <b>hook</b> before the thesis — something that grabs the reader's attention:</p>
+
+    <div class="reveal-wrapper">
+      <div class="reveal-cover" onclick="revealBetter(this)">
+        <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></div>
+        <div>
+          <div class="reveal-text">Tap to see an improved introduction</div>
+          <div class="reveal-hint">Read the explanation above first</div>
+        </div>
+      </div>
+      <div class="reveal-content">
+<div class="better">
+      <div class="label">BETTER INTRODUCTION</div>
+      <b>[Hook]</b> Many children grow up watching animated movies, but these films do more than just entertain — they also teach important values.
+      <b>[Thesis]</b> Animated movies can teach children many important life lessons such as kindness, bravery, and honesty.
+    </div>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <div class="label">THE BIG RULE</div>
+      <b>Every piece of evidence must come from the passage.</b> If the prompt says "use information from the passage," made-up examples — no matter how good — will cost you points. Read the passage, underline key details, and use those details as your evidence.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: The Body Paragraph Pattern ═══════════ -->
+<div class="card" data-title="Body Paragraph Pattern">
+  <div class="card-header">
+    <h2>The Body Paragraph Pattern</h2>
+    <div class="card-subtitle">How to build a strong body paragraph every time</div>
+  </div>
+  <div class="card-body">
+    <p>Every body paragraph in a G6+ essay should follow this pattern:</p>
+    <div class="outline-box">
+      <div class="outline-label">Body Paragraph Formula</div>
+      <div class="outline-row">
+        <span class="outline-tag">TS</span>
+        <span><b>Topic Sentence</b> &mdash; states the paragraph's main point</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">E1</span>
+        <span><b>Evidence 1</b> &mdash; a specific fact, quote, or example from the passage</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">X1</span>
+        <span><b>Explanation 1</b> &mdash; explain <i>why</i> that evidence matters</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">E2</span>
+        <span><b>Evidence 2</b> &mdash; a second fact or example from the passage</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">X2</span>
+        <span><b>Explanation 2</b> &mdash; explain <i>why</i> that evidence matters</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">CS</span>
+        <span><b>Concluding Sentence</b> &mdash; wraps up the paragraph's main idea</span>
+      </div>
+    </div>
+    <p style="margin-top:12px;">Here's what your bravery paragraph would look like with this pattern, using passage evidence:</p>
+
+    <div class="reveal-wrapper">
+      <div class="reveal-cover" onclick="revealBetter(this)">
+        <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></div>
+        <div>
+          <div class="reveal-text">Tap to see an example body paragraph</div>
+          <div class="reveal-hint">Read the pattern above first</div>
+        </div>
+      </div>
+      <div class="reveal-content">
+<div class="better">
+      <div class="label">EXAMPLE BODY PARAGRAPH</div>
+      <b>[TS]</b> One important life lesson animated movies teach is bravery.
+      <b>[E1]</b> According to the passage, <i>[specific character]</i> faces a frightening situation when <i>[specific scene from passage]</i>.
+      <b>[X1]</b> This shows children that being brave does not mean having no fear — it means doing the right thing even when you are scared.
+      <b>[E2]</b> The passage also explains that <i>[second specific detail from passage]</i>.
+      <b>[X2]</b> This matters because it gives young viewers a real example of courage they can look up to and learn from.
+      <b>[CS]</b> Through scenes like these, animated movies show children what bravery looks like in action.
+    </div>
+      </div>
+    </div>
+
+    <p style="margin-top:12px;">Now look at the complete G6 essay plan:</p>
+    <div class="outline-box">
+      <div class="outline-label">G6 Essay Plan</div>
+      <div class="outline-row">
+        <span class="outline-tag">INTRO</span>
+        <span>Hook about animated movies &rarr; <b>Thesis:</b> Animated movies teach kindness, bravery, and honesty.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">BP1</span>
+        <span>Bravery &mdash; E1: <i>[passage detail]</i> &rarr; X1: why it matters &rarr; E2: <i>[passage detail]</i> &rarr; X2: what it shows &rarr; CS</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">BP2</span>
+        <span>Kindness &mdash; E1: <i>[passage detail]</i> &rarr; X1: why it matters &rarr; E2: <i>[passage detail]</i> &rarr; X2: what it shows &rarr; CS</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">BP3</span>
+        <span>Honesty &mdash; E1: <i>[passage detail]</i> &rarr; X1: why it matters &rarr; E2: <i>[passage detail]</i> &rarr; X2: what it shows &rarr; CS</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">CONC</span>
+        <span>Restate 3 lessons &rarr; broader message about why these lessons matter</span>
+      </div>
+    </div>
+    <p style="font-size:10pt;color:#888;margin-top:4px;">BP = Body Paragraph &bull; E = Evidence &bull; X = Explanation &bull; TS = Topic Sentence &bull; CS = Closing Sentence</p>
+
+    <div class="tip-box">
+      <div class="label">THE KEY DIFFERENCE</div>
+      Your current body paragraphs <b>define</b> each word (bravery is when..., kindness is..., honesty is when...) and then give a <b>made-up example</b>. Instead, skip the dictionary definition — <b>show</b> the lesson through specific evidence from the passage, then <b>explain</b> why that evidence matters. Evidence + Explanation is always stronger than Definition + Made-Up Example.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Checklist ═══════════ -->
+<div class="card" data-title="Checklist">
+  <div class="card-header">
+    <h2>Proofreading Checklist</h2>
+    <div class="card-subtitle">Personalized to your recurring errors</div>
+  </div>
+  <div class="card-body">
+    <div class="checklist-progress-label" id="checkProgressLabel">0 checked</div>
+    <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Passage evidence check:</b> Does every body paragraph use specific details <i>from the passage</i>? If I made up an example, replace it with a real one from the text.</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Paragraph count:</b> Do I have exactly 5 paragraphs? INTRO &rarr; BP1 &rarr; BP2 &rarr; BP3 &rarr; CONC. Count them.</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Introduction check:</b> Does my intro have at least 2 sentences — a hook AND a thesis? One sentence is not enough.</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Conclusion check:</b> Is my conclusion its own paragraph? It should restate main points and end with a final thought — not be tacked onto my last body paragraph.</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Comma after "is" fix:</b> Remove unnecessary commas after "is" — <span class="error-mark">The next life lesson is, kindness</span> &rarr; <span class="pattern-right">The next life lesson is kindness</span>.</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Conjunction check:</b> "But" = contrast/surprise. "Because" = cause. "So" = result. Did I pick the right one for the relationship between the ideas?</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Transition check:</b> "As a result" = cause &rarr; effect. "Then" = time sequence. Did I match the transition to the relationship?</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>E &rarr; X check:</b> After each piece of evidence, did I explain <i>why</i> it matters? No listing facts without explanation.</div>
+    </div>
+    <div class="tip-box">
+      <div class="label">3-MINUTE RULE</div>
+      Save the last 3 minutes of your test for proofreading. First, count your paragraphs (you need 5). Then check: does every example come from the passage? Finally, scan for unnecessary commas. This quick check can save you several points.
+    </div>
+    <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg> Print this checklist</button>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 7: Your 3 Goals ═══════════ -->
+<div class="card" data-title="3 Goals">
+  <div class="card-header">
+    <h2>Your 3 Goals for Next Time</h2>
+    <div class="card-subtitle">Strong MCQ + clear organization — now build a complete essay</div>
+  </div>
+  <div class="card-body">
+    <div class="goal-row">
+      <span class="goal-num">1</span>
+      <div>
+        <b>Use evidence from the passage — not made-up examples.</b><br>
+        <span style="font-size:10.5pt;color:#555;">When the prompt says "use information from the passage," every example in your essay must come from the text you read. Underline key details in the passage before you start writing. Instead of inventing a character scared of fire, find a real character and a real scene from the passage that shows bravery.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">2</span>
+      <div>
+        <b>Write 5 full paragraphs: INTRO (hook + thesis) &rarr; BP1 &rarr; BP2 &rarr; BP3 &rarr; CONC.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Your intro needs at least 2 sentences (a hook that grabs attention + your thesis). Your conclusion needs to be its own separate paragraph that restates your main points and ends with a final thought. Don't merge the conclusion into your last body paragraph.</span>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-num">3</span>
+      <div>
+        <b>Show the lesson through evidence — don't define the word.</b><br>
+        <span style="font-size:10.5pt;color:#555;">Instead of writing "Bravery is when you do something you are scared of..." go straight to the evidence: "In the passage, [Character] shows bravery when [specific scene]." Then explain why it matters. Use the TS &rarr; E1 &rarr; X1 &rarr; E2 &rarr; X2 &rarr; CS pattern for every body paragraph.</span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">THE BIG PICTURE</div>
+      You got <b>8/10 on multiple choice</b> and you already know how to organize around three clear topics — that's a strong start. The biggest points you can gain come from using <b>real passage evidence</b> and writing a <b>full 5-paragraph essay</b> with a complete introduction and a separate conclusion. Your organization skills are there; now fill them with the right content.
+    </div>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+
+<!-- Completion overlay -->
+<div class="completion-overlay" id="completionOverlay">
+  <div class="completion-card">
+    <div class="completion-emoji">&#127881;</div>
+    <div class="completion-title">Nice work, McKayla!</div>
+    <div class="completion-sub">You reviewed all your cards. Remember your goals:<br><b>Use passage evidence, not made-up examples &bull; Write 5 full paragraphs with hook + conclusion &bull; Show lessons through evidence, not definitions</b></div>
+    <button class="completion-close" onclick="closeCompletion()">Got it!</button>
+  </div>
+</div>
+<canvas id="confettiCanvas"></canvas>
+
+<script>
+var cards = document.querySelectorAll('.card');
+var bar = document.getElementById('progressBar');
+var breadcrumb = document.getElementById('breadcrumb');
+var stickyEl = document.getElementById('stickyIndicator');
+var current = 0;
+var visited = [0];
+
+cards.forEach(function(card, i) {
+  var dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  var tooltip = document.createElement('span');
+  tooltip.className = 'dot-tooltip';
+  tooltip.textContent = card.getAttribute('data-title') || ('Card ' + (i + 1));
+  dot.appendChild(tooltip);
+  dot.addEventListener('click', function() { goTo(i); });
+  bar.appendChild(dot);
+});
+
+function updateBreadcrumb() {
+  var title = cards[current].getAttribute('data-title') || ('Card ' + (current + 1));
+  breadcrumb.innerHTML = 'Card <b>' + (current + 1) + '</b> of ' + cards.length + ' \u2014 ' + title;
+  stickyEl.textContent = (current + 1) + ' / ' + cards.length;
+}
+
+function checkSticky() {
+  var barRect = bar.getBoundingClientRect();
+  stickyEl.classList.toggle('visible', barRect.bottom < 0);
+}
+window.addEventListener('scroll', checkSticky);
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  if (visited.indexOf(current) === -1) visited.push(current);
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  visited.forEach(function(v) { if (v !== current) bar.children[v].classList.add('visited'); });
+  var prevBtn = document.getElementById('prevBtn');
+  var nextBtn = document.getElementById('nextBtn');
+  if (prevBtn) {
+    prevBtn.style.visibility = current === 0 ? 'hidden' : 'visible';
+    prevBtn.disabled = current === 0;
+  }
+  if (nextBtn) {
+    nextBtn.textContent = current === cards.length - 1 ? 'Done \u2713' : 'Next \u2192';
+    nextBtn.disabled = false;
+  }
+  updateBreadcrumb();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) { showCompletion(); return; }
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+function revealBetter(cover) {
+  var content = cover.nextElementSibling;
+  content.classList.add('shown');
+  cover.classList.add('hidden');
+}
+
+function toggleCheck(item) {
+  item.classList.toggle('checked');
+  updateCheckProgress();
+}
+
+function updateCheckProgress() {
+  var items = document.querySelectorAll('.check-item');
+  var checked = document.querySelectorAll('.check-item.checked').length;
+  var total = items.length;
+  var fill = document.getElementById('checkProgressFill');
+  var lbl = document.getElementById('checkProgressLabel');
+  if (fill) fill.style.width = Math.round((checked / total) * 100) + '%';
+  if (lbl) {
+    lbl.innerHTML = checked === total
+      ? '<b style="color:#2d6a2d;">All done! Nice work.</b>'
+      : checked + ' of ' + total + ' checked';
+  }
+}
+
+function printChecklist(btn) {
+  var card = btn.closest('.card');
+  var checkedItems = card.querySelectorAll('.check-item.checked');
+  checkedItems.forEach(function(item) { item.classList.remove('checked'); });
+  card.classList.add('print-target');
+  window.print();
+  card.classList.remove('print-target');
+  checkedItems.forEach(function(item) { item.classList.add('checked'); });
+}
+
+function showCompletion() {
+  document.getElementById('completionOverlay').classList.add('visible');
+  launchConfetti();
+}
+
+function closeCompletion() {
+  document.getElementById('completionOverlay').classList.remove('visible');
+}
+
+function launchConfetti() {
+  var canvas = document.getElementById('confettiCanvas');
+  var ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  var colors = ['#1a1a2e','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b','#42a5f5'];
+  var particles = [];
+  for (var i = 0; i < 120; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height - canvas.height,
+      w: Math.random() * 10 + 5, h: Math.random() * 6 + 3,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      vx: (Math.random() - 0.5) * 4, vy: Math.random() * 3 + 2,
+      rot: Math.random() * 360, rotV: (Math.random() - 0.5) * 10, life: 1
+    });
+  }
+  var frame = 0;
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    var alive = false;
+    particles.forEach(function(p) {
+      if (p.life <= 0) return;
+      alive = true;
+      p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.rot += p.rotV;
+      if (p.y > canvas.height + 20) { p.life = 0; return; }
+      if (frame > 60) p.life -= 0.01;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot * Math.PI / 180);
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    });
+    frame++;
+    if (alive) requestAnimationFrame(animate);
+    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  animate();
+}
+
+goTo(0);
+</script>
+</body>
+</html>
