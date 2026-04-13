@@ -67,12 +67,15 @@
  *
  * 7. Commit and push — tracking is now live
  *
- * SHARING LINKS:
- *   Student links:  https://...github.io/Writing-Coaching/Student-Name/?t=1
- *   Staff/preview:  https://...github.io/Writing-Coaching/Student-Name/
+ * STAFF EXCLUSION:
+ *   You and your guides share the same links as students, so tracking
+ *   uses a browser opt-out instead of URL parameters.
  *
- *   Only URLs with ?t=1 are tracked. Staff reviewing cards without
- *   ?t=1 will not appear in the spreadsheet.
+ *   Visit staff.html once in each browser you use:
+ *     https://...github.io/Writing-Coaching/staff.html
+ *
+ *   This sets a localStorage flag so your card views are never tracked.
+ *   Students will never see or know about staff.html.
  *
  * ═══════════════════════════════════════════════════════════════════
  */
@@ -84,9 +87,8 @@
   // If no endpoint configured, tracking is silently disabled
   if (!ENDPOINT) return;
 
-  // Only track when the URL contains ?t=1 (added to student-shared links).
-  // Staff/guides opening the normal URL without ?t=1 won't trigger tracking.
-  if (!/[?&]t=1/.test(window.location.search)) return;
+  // Skip tracking for staff/guides who have activated staff mode via staff.html
+  try { if (localStorage.getItem('_wc_staff') === '1') return; } catch(e) {}
 
   // ── Session state ──
   var sid = Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
