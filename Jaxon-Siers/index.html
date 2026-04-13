@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Jaxon's Writing Test Review — G6.2</title>
+<title>Jaxon's Writing Test Review — G6.3</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -19,13 +19,42 @@
     padding: 20px;
   }
 
-  .progress-bar { display: flex; gap: 6px; margin-bottom: 16px; }
+  .progress-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
   .progress-dot {
     width: 12px; height: 12px; border-radius: 50%;
-    background: #ccc; transition: background 0.3s; cursor: pointer;
+    background: #ccc; cursor: pointer; position: relative;
+    transition: background 0.3s, transform 0.2s;
   }
-  .progress-dot.active { background: #1a1a2e; }
-  .progress-dot:hover { background: #555; }
+  .progress-dot.active { background: #1a1a2e; transform: scale(1.25); }
+  .progress-dot.visited { background: #7a7a9e; }
+  .progress-dot:hover { background: #555; transform: scale(1.3); }
+  .progress-dot .dot-tooltip {
+    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: #1a1a2e; color: #fff; padding: 4px 10px; border-radius: 6px;
+    font-size: 8.5pt; white-space: nowrap; opacity: 0;
+    pointer-events: none; transition: opacity 0.2s; z-index: 100;
+  }
+  .progress-dot .dot-tooltip::after {
+    content: ''; position: absolute; top: 100%; left: 50%;
+    transform: translateX(-50%); border: 5px solid transparent;
+    border-top-color: #1a1a2e;
+  }
+  .progress-dot:hover .dot-tooltip { opacity: 1; }
+
+  .card-breadcrumb {
+    font-size: 9.5pt; color: #888; margin-bottom: 14px;
+    text-align: center; transition: opacity 0.3s; min-height: 1.2em;
+  }
+  .card-breadcrumb b { color: #1a1a2e; }
+
+  .sticky-indicator {
+    position: fixed; top: 12px; right: 16px;
+    background: #1a1a2e; color: #fff; padding: 5px 14px;
+    border-radius: 20px; font-size: 9pt; font-weight: 700;
+    opacity: 0; transition: opacity 0.3s; z-index: 200;
+    pointer-events: none; letter-spacing: 0.5px;
+  }
+  .sticky-indicator.visible { opacity: 1; }
 
   .card-container { position: relative; width: 680px; min-height: 420px; }
 
@@ -64,6 +93,18 @@
   .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
   .score-good .big { color: #2d6a2d; }
   .score-warn .big { color: #cc6600; }
+
+  /* ── Score Timeline ── */
+  .score-timeline { margin: 12px 0; }
+  .timeline-row { display: flex; align-items: center; gap: 8px; margin: 3px 0; }
+  .timeline-label { font-size: 8.5pt; font-weight: 600; color: #888; min-width: 32px; text-align: right; }
+  .timeline-track { flex: 1; background: #eee; border-radius: 4px; height: 20px; overflow: hidden; }
+  .timeline-bar {
+    height: 100%; border-radius: 4px; font-size: 8pt; color: #fff; font-weight: 700;
+    display: flex; align-items: center; justify-content: flex-end; padding-right: 6px; min-width: 32px;
+  }
+  .timeline-row.current .timeline-label { color: #1a1a2e; font-weight: 700; }
+  .timeline-row.current .timeline-bar { box-shadow: 0 0 0 2px #1a1a2e; }
 
   .you-wrote {
     background: #fff3f3; border-left: 3px solid #cc0000;
@@ -126,14 +167,11 @@
   .pattern-arrow { color: #888; font-size: 14pt; }
   .pattern-right { color: #2d6a2d; font-weight: 600; }
 
-  table.compare {
-    width: 100%; border-collapse: collapse; font-size: 10.5pt; margin: 8px 0;
+  .pattern-note {
+    background: #f3e8f9; border-left: 3px solid #7b2d8e;
+    padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0;
   }
-  table.compare th {
-    background: #1a1a2e; color: #fff; padding: 6px 10px;
-    text-align: left; font-size: 9.5pt;
-  }
-  table.compare td { padding: 6px 10px; border: 1px solid #ddd; vertical-align: top; }
+  .pattern-note .label { font-weight: 700; font-size: 9.5pt; color: #7b2d8e; margin-bottom: 3px; }
 
   .para-map {
     display: flex; gap: 6px; margin: 10px 0; flex-wrap: wrap;
@@ -144,129 +182,41 @@
   }
   .para-tag.good { background: #e8f5e9; border-color: #2d6a2d; color: #2d6a2d; }
   .para-tag.warn { background: #fff3cd; border-color: #e6a800; color: #996600; }
-  .para-tag.bad { background: #fff3f3; border-color: #cc0000; color: #cc0000; }
 
-  .check-item {
-    display: flex; align-items: flex-start; gap: 10px;
-    padding: 8px 0; border-bottom: 1px solid #eee; font-size: 11pt;
-  }
-  .check-item:last-child { border-bottom: none; }
-  .check-box {
-    width: 20px; height: 20px; border: 2px solid #1a1a2e;
-    border-radius: 4px; flex-shrink: 0; margin-top: 1px;
-  }
-
-  .goal-num {
-    display: inline-block; background: #1a1a2e; color: #fff;
-    border-radius: 50%; width: 24px; height: 24px; text-align: center;
-    line-height: 24px; font-size: 11pt; font-weight: 700; margin-right: 8px; flex-shrink: 0;
-  }
-  .goal-row { display: flex; align-items: flex-start; gap: 4px; margin: 10px 0; }
-
-  .nav { display: flex; gap: 12px; margin-top: 16px; }
-  .nav button {
-    padding: 8px 28px; border: 2px solid #1a1a2e; border-radius: 8px;
-    background: #fff; color: #1a1a2e; font-family: inherit;
-    font-size: 11pt; font-weight: 600; cursor: pointer;
-    transition: background 0.2s, color 0.2s;
-  }
-  .nav button:hover { background: #1a1a2e; color: #fff; }
-
-    .print-btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    margin-top: 12px; padding: 8px 20px;
-    border: 2px solid #1a1a2e; border-radius: 8px;
-    background: #fff; color: #1a1a2e; font-family: inherit;
-    font-size: 10.5pt; font-weight: 600; cursor: pointer;
-    transition: background 0.2s, color 0.2s;
-  }
-  .print-btn:hover { background: #1a1a2e; color: #fff; }
-  .print-btn svg { width: 16px; height: 16px; fill: currentColor; }
-
-  @media print {
-    body { background: #fff; padding: 0; min-height: auto; }
-    .progress-bar, .nav, .print-btn { display: none !important; }
-    .card-container { width: 100%; min-height: auto; }
-    .card { display: none !important; }
-    .card.print-target {
-      display: block !important; opacity: 1 !important;
-      pointer-events: auto !important; position: relative !important;
-      transform: none !important; box-shadow: none;
-      border: 2px solid #1a1a2e; page-break-inside: avoid;
-    }
-    .check-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .card-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .error-mark { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  }
-
-@media (max-width: 720px) {
-    .card-container { width: 100%; }
-    .score-grid { grid-template-columns: 1fr; }
-  }
-
-  /* ── UI UPGRADE: LABELED PROGRESS BAR ── */
-  .progress-bar { flex-wrap: wrap; justify-content: center; }
-  .progress-dot { position: relative; transition: background 0.3s, transform 0.2s; }
-  .progress-dot.active { transform: scale(1.25); }
-  .progress-dot.visited { background: #7a7a9e; }
-  .progress-dot:hover { transform: scale(1.3); }
-  .progress-dot .dot-tooltip {
-    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-    background: #1a1a2e; color: #fff; padding: 4px 10px; border-radius: 6px;
-    font-size: 8.5pt; white-space: nowrap; opacity: 0;
-    pointer-events: none; transition: opacity 0.2s; z-index: 100;
-  }
-  .progress-dot .dot-tooltip::after {
-    content: ''; position: absolute; top: 100%; left: 50%;
-    transform: translateX(-50%); border: 5px solid transparent;
-    border-top-color: #1a1a2e;
-  }
-  .progress-dot:hover .dot-tooltip { opacity: 1; }
-  .card-breadcrumb {
-    font-size: 9.5pt; color: #888; margin-bottom: 14px;
-    text-align: center; transition: opacity 0.3s; min-height: 1.2em;
-  }
-  .card-breadcrumb b { color: #1a1a2e; }
-
-  /* ── UI UPGRADE: STICKY INDICATOR ── */
-  .sticky-indicator {
-    position: fixed; top: 12px; right: 16px;
-    background: #1a1a2e; color: #fff; padding: 5px 14px;
-    border-radius: 20px; font-size: 9pt; font-weight: 700;
-    opacity: 0; transition: opacity 0.3s; z-index: 200;
-    pointer-events: none; letter-spacing: 0.5px;
-  }
-  .sticky-indicator.visible { opacity: 1; }
-
-  /* ── UI UPGRADE: REVEAL INTERACTION ── */
-  .reveal-wrapper { position: relative; }
-  .reveal-cover {
-    background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%);
-    border-left: 3px solid #2d6a2d;
-    padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0;
-    cursor: pointer; user-select: none;
+  /* ── Discrimination Challenges ── */
+  .discrim-challenge { margin: 12px 0; }
+  .discrim-prompt { font-weight: 600; margin-bottom: 8px; }
+  .discrim-options { display: flex; flex-direction: column; gap: 8px; }
+  .discrim-option {
     display: flex; align-items: center; gap: 10px;
-    transition: background 0.2s, box-shadow 0.2s;
+    padding: 10px 14px; border: 2px solid #e0e0e8; border-radius: 8px;
+    cursor: pointer; transition: border-color 0.2s, background 0.2s;
   }
-  .reveal-cover:hover {
-    box-shadow: 0 2px 8px rgba(45,106,45,0.15);
-    background: linear-gradient(135deg, #d4edda 0%, #c8e6c9 100%);
+  .discrim-option:hover { border-color: #1a1a2e; }
+  .discrim-label {
+    background: #1a1a2e; color: #fff; border-radius: 50%;
+    width: 28px; height: 28px; display: flex; align-items: center;
+    justify-content: center; font-weight: 700; font-size: 11pt; flex-shrink: 0;
   }
-  .reveal-cover .reveal-icon {
-    width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  .discrim-option.correct { border-color: #2d6a2d; background: #e8f5e9; }
+  .discrim-option.correct .discrim-label { background: #2d6a2d; }
+  .discrim-option.wrong { border-color: #cc0000; background: #fff3f3; }
+  .discrim-option.wrong .discrim-label { background: #cc0000; }
+  .discrim-option.locked { pointer-events: none; opacity: 0.5; }
+  .discrim-feedback {
+    max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.3s;
+    font-size: 10.5pt; padding: 0 14px; border-radius: 6px;
   }
-  .reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
-  .reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #2d6a2d; }
-  .reveal-cover .reveal-hint { font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px; }
-  .reveal-content {
+  .discrim-feedback.shown { max-height: 200px; padding: 10px 14px; margin-top: 8px; }
+  .discrim-feedback.right-fb { background: #e8f5e9; border: 1px solid #a5d6a7; color: #2d6a2d; }
+  .discrim-feedback.wrong-fb { background: #fff3f3; border: 1px solid #ffcdd2; color: #cc0000; }
+  .discrim-then {
     max-height: 0; overflow: hidden; opacity: 0;
-    transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0;
+    transition: max-height 0.6s ease, opacity 0.5s ease;
   }
-  .reveal-content.shown { max-height: 600px; opacity: 1; margin: 8px 0; }
-  .reveal-cover.hidden { display: none; }
+  .discrim-then.revealed { max-height: 5000px; opacity: 1; }
 
-  /* ── UI UPGRADE: EXPANDABLE EXAMPLES ── */
+  /* ── Expandable Examples ── */
   .tip-expand {
     margin-top: 8px; border-top: 1px dashed #b0b8cc; padding-top: 6px;
   }
@@ -285,11 +235,14 @@
     background: #f4f6fb; padding: 10px 12px; border-radius: 6px;
   }
 
-  /* ── UI UPGRADE: TAPPABLE CHECKBOXES ── */
+  /* ── Checkboxes & Progress ── */
   .check-item {
-    gap: 12px; padding: 10px 8px; cursor: pointer;
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 10px 8px; cursor: pointer; border-bottom: 1px solid #eee;
     border-radius: 6px; transition: background 0.15s; user-select: none;
+    font-size: 11pt;
   }
+  .check-item:last-of-type { border-bottom: none; }
   .check-item:hover { background: #f8f8fc; }
   .check-item.checked { background: #f0f8f0; }
   .check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
@@ -300,7 +253,8 @@
   .check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
   .check-box {
     width: 28px; height: 28px; border: 2.5px solid #1a1a2e;
-    border-radius: 6px; position: relative; transition: background 0.2s, border-color 0.2s;
+    border-radius: 6px; flex-shrink: 0; position: relative;
+    transition: background 0.2s, border-color 0.2s;
   }
   .checklist-progress {
     background: #eee; border-radius: 10px; height: 8px;
@@ -314,7 +268,51 @@
     font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px;
   }
 
-  /* ── UI UPGRADE: COMPLETION OVERLAY ── */
+  /* ── Practice Links ── */
+  .practice-tier { margin: 12px 0; }
+  .practice-tier .tier-label {
+    font-weight: 700; font-size: 9.5pt; text-transform: uppercase;
+    letter-spacing: 0.5px; margin-bottom: 6px;
+  }
+  .tier-primary .tier-label { color: #2d6a2d; }
+  .tier-extra .tier-label { color: #888; }
+  .practice-links { display: flex; flex-direction: column; gap: 6px; }
+  .practice-links a {
+    display: block; padding: 8px 14px; border-radius: 6px;
+    text-decoration: none; font-size: 10.5pt; font-weight: 600;
+    transition: background 0.2s;
+  }
+  .tier-primary .practice-links a {
+    background: #e8f5e9; color: #2d6a2d; border: 1px solid #a5d6a7;
+  }
+  .tier-primary .practice-links a:hover { background: #d4edda; }
+  .tier-extra .practice-links a {
+    background: #f8f8fc; color: #555; border: 1px solid #e0e0e8;
+  }
+  .tier-extra .practice-links a:hover { background: #eee; }
+
+  /* ── Navigation ── */
+  .nav { display: flex; gap: 12px; margin-top: 16px; }
+  .nav button {
+    padding: 8px 28px; border: 2px solid #1a1a2e; border-radius: 8px;
+    background: #fff; color: #1a1a2e; font-family: inherit;
+    font-size: 11pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover { background: #1a1a2e; color: #fff; }
+
+  .print-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 12px; padding: 8px 20px;
+    border: 2px solid #1a1a2e; border-radius: 8px;
+    background: #fff; color: #1a1a2e; font-family: inherit;
+    font-size: 10.5pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .print-btn:hover { background: #1a1a2e; color: #fff; }
+  .print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+  /* ── Completion Overlay ── */
   .completion-overlay {
     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(26,26,46,0.6); z-index: 500;
@@ -343,23 +341,35 @@
     pointer-events: none; z-index: 501;
   }
 
-  /* ── UI UPGRADE: PRINT ADDITIONS ── */
+  /* ── Print ── */
   @media print {
-    .card-breadcrumb, .sticky-indicator, .completion-overlay, #confettiCanvas,
-    .reveal-cover, .checklist-progress, .checklist-progress-label,
-    .nav-buttons, .bottom-note { display: none !important; }
-    .reveal-content {
-      max-height: none !important; opacity: 1 !important; margin: 8px 0 !important;
+    body { background: #fff; padding: 0; min-height: auto; }
+    .progress-bar, .nav, .print-btn, .card-breadcrumb,
+    .sticky-indicator, .completion-overlay, #confettiCanvas,
+    .checklist-progress, .checklist-progress-label { display: none !important; }
+    .card-container { width: 100%; min-height: auto; }
+    .card { display: none !important; }
+    .card.print-target {
+      display: block !important; opacity: 1 !important;
+      pointer-events: auto !important; position: relative !important;
+      transform: none !important; box-shadow: none;
+      border: 2px solid #1a1a2e; page-break-inside: avoid;
     }
+    .check-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .card-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .error-mark { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
 
+  @media (max-width: 720px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
 
 <div class="progress-bar" id="progressBar"></div>
 <div class="card-breadcrumb" id="breadcrumb"></div>
-
 <div class="sticky-indicator" id="stickyIndicator"></div>
 
 <div class="card-container" id="cardContainer">
@@ -367,15 +377,15 @@
 <!-- ═══════════ CARD 1: Score Overview ═══════════ -->
 <div class="card" data-title="Score Overview">
   <div class="card-header">
-    <h2>Jaxon &mdash; Writing Test 1 Results</h2>
-    <div class="card-subtitle">Alpha Standardized Writing G6.2</div>
+    <h2>Jaxon &mdash; Writing Test Results</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G6.3</div>
   </div>
   <div class="card-body">
-    <p>Jaxon, let's walk through your very first writing test. This is a great starting point &mdash; here's the full breakdown.</p>
+    <p>Jaxon, here's your breakdown for G6.3. Same score as last time &mdash; but the story underneath is different.</p>
     <div class="score-grid">
       <div class="score-box score-warn">
         <div class="big">77%</div>
-        <div class="label">Overall Score (23/30)</div>
+        <div class="label">Overall (23/30)</div>
       </div>
       <div class="score-box score-good">
         <div class="big">9/10</div>
@@ -383,347 +393,455 @@
       </div>
       <div class="score-box score-warn">
         <div class="big">14/20</div>
-        <div class="label">Essay</div>
+        <div class="label">Essay (70%)</div>
       </div>
     </div>
-    <p>Strong MCQ performance &mdash; <b>9 out of 10</b> shows you understand G6 writing concepts well. And your essay is impressive for a first test: you wrote a <b>full 5-paragraph essay</b> with an introduction, three body paragraphs, and a conclusion. That takes real ambition.</p>
-    <p>The 6 essay points you lost came from <b>off-topic body paragraphs</b> (BP1 and BP2 don't address life lessons), <b>using outside examples instead of the passage</b>, <b>repetitive sentence structure</b>, and <b>many spelling errors</b>. The next cards show you exactly how to fix each one.</p>
+    <p>Your essay was scored on five areas:</p>
+    <ul>
+      <li><b>Structure</b> (5 points) &mdash; introduction, 3 body paragraphs, conclusion</li>
+      <li><b>Evidence and explanation</b> (5 points) &mdash; facts from the passage + explain why they matter</li>
+      <li><b>Organization</b> (4 points) &mdash; transitions, logical order, stay on topic</li>
+      <li><b>Sentence quality</b> (3 points) &mdash; variety, clear language</li>
+      <li><b>Editing</b> (3 points) &mdash; spelling, punctuation, grammar</li>
+    </ul>
+    <p style="margin-top:10px;">The big news: you <b>fixed the two biggest problems</b> from G6.2. Your body paragraphs now answer the prompt, and you use evidence from the passage instead of outside sources. That's real progress. The next cards show you where the remaining 6 essay points went &mdash; and how to get them back.</p>
   </div>
 </div>
 
-<!-- ═══════════ CARD 2: Strengths ═══════════ -->
-<div class="card" data-title="Strengths">
+<!-- ═══════════ CARD 2: Your Writing Journey ═══════════ -->
+<div class="card" data-title="Your Writing Journey">
+  <div class="card-header">
+    <h2>Your Writing Journey</h2>
+    <div class="card-subtitle">11 tests from G3 to G6 &mdash; a lot of growth</div>
+  </div>
+  <div class="card-body">
+    <div class="score-timeline">
+      <div class="timeline-row">
+        <span class="timeline-label">G3.1</span>
+        <div class="timeline-track"><div class="timeline-bar" style="width:78%;background:#cc6600;">78%</div></div>
+      </div>
+      <div class="timeline-row">
+        <span class="timeline-label">G3.2</span>
+        <div class="timeline-track"><div class="timeline-bar" style="width:73%;background:#cc6600;">73%</div></div>
+      </div>
+      <div class="timeline-row">
+        <span class="timeline-label">G3.3</span>
+        <div class="timeline-track"><div class="timeline-bar" style="width:69%;background:#cc0000;">69%</div></div>
+      </div>
+      <div class="timeline-row">
+        <span class="timeline-label">G3.4</span>
+        <div class="timeline-track"><div class="timeline-bar" style="width:96%;background:#2d6a2d;">96%</div></div>
+      </div>
+      <div class="timeline-row">
+        <span class="timeline-label">G4.1</span>
+        <div class="timeline-track"><div class="timeline-bar" style="width:90%;background:#2d6a2d;">90%</div></div>
+      </div>
+      <div class="timeline-row">
+        <span class="timeline-label">G5.1</span>
+        <div class="timeline-track"><div class="timeline-bar" style="width:86%;background:#2d6a2d;">86%</div></div>
+      </div>
+      <div class="timeline-row">
+        <span class="timeline-label">G5.2</span>
+        <div class="timeline-track"><div class="timeline-bar" style="width:81%;background:#cc6600;">81%</div></div>
+      </div>
+      <div class="timeline-row">
+        <span class="timeline-label">G5.3</span>
+        <div class="timeline-track"><div class="timeline-bar" style="width:91%;background:#2d6a2d;">91%</div></div>
+      </div>
+      <div class="timeline-row">
+        <span class="timeline-label">G6.1</span>
+        <div class="timeline-track"><div class="timeline-bar" style="width:63%;background:#cc0000;">63%</div></div>
+      </div>
+      <div class="timeline-row">
+        <span class="timeline-label">G6.2</span>
+        <div class="timeline-track"><div class="timeline-bar" style="width:77%;background:#cc6600;">77%</div></div>
+      </div>
+      <div class="timeline-row current">
+        <span class="timeline-label">G6.3</span>
+        <div class="timeline-track"><div class="timeline-bar" style="width:77%;background:#cc6600;">77%</div></div>
+      </div>
+    </div>
+
+    <p>You rocketed from G3 through G5 &mdash; finishing G5 at <b>91%</b>. When G6 hit, the essay expectations jumped and your score dropped to 63%. You recovered to 77% on G6.2 and held that on G6.3.</p>
+
+    <p style="margin-top:8px;">Here's what changed between G6.2 and G6.3:</p>
+    <div class="para-map">
+      <span class="para-tag good">On topic &mdash; fixed</span>
+      <span class="para-tag good">Passage evidence &mdash; fixed</span>
+      <span class="para-tag warn">Spelling &mdash; still heavy</span>
+      <span class="para-tag warn">Thesis &mdash; needs preview</span>
+      <span class="para-tag warn">Body paragraph 3 repeats</span>
+    </div>
+
+    <div class="pattern-note">
+      <div class="label">ROOT CAUSE</div>
+      Your multiple choice stays strong (9/10 on both G6.2 and G6.3). The essay is where your points are. Last time, the essay lost points because paragraphs drifted off the prompt. This time, they stay on topic &mdash; so the remaining losses come from <b>spelling</b>, a <b>thesis that doesn't preview your topics</b>, and a <b>body paragraph that repeats earlier content</b>. These are smaller, more targeted fixes.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: What Your Essay Did Well ═══════════ -->
+<div class="card" data-title="Essay Strengths">
   <div class="card-header">
     <h2>What Your Essay Did Well</h2>
-    <div class="card-subtitle">There's real skill here &mdash; especially your essay structure</div>
+    <div class="card-subtitle">You made two major improvements from G6.2</div>
   </div>
   <div class="card-body">
-    <ul>
-      <li><b>Excellent MCQ score (9/10)</b> &mdash; you clearly understand sentence types, conjunctions, topic sentences, transitions, and paragraph structure.</li>
-      <li><b>Full 5-paragraph essay</b> &mdash; intro, 3 body paragraphs, and conclusion. For a first test, that's impressive and shows strong writing ambition.</li>
-      <li><b>Creative hook in the intro</b> &mdash; "Movies come in all shapes and sizes" draws the reader in naturally before narrowing to your topic.</li>
-      <li><b>Good thesis that previews 3 topics</b> &mdash; "Animated movies are fun and colorful, but they can also teach valuable lessons that can help shape a child's future" tells the reader what's coming.</li>
-      <li><b>Conclusion effectively summarizes all 3 points</b> &mdash; you revisit fun, colorful, and lessons, which ties the whole essay together.</li>
-      <li><b>Strong writing voice</b> &mdash; you write with confidence and use a variety of movie examples to support your points. That shows real thinking.</li>
-    </ul>
-    <div class="tip-box">
-      <div class="label">KEY TAKEAWAY</div>
-      Writing a complete 5-paragraph essay on your very first test is a big deal. You have the <b>structure</b> and the <b>ambition</b> &mdash; now the next step is making sure every body paragraph stays on topic and uses evidence from the passage. That's what the next cards will help you with.
-    </div>
-  </div>
-</div>
+    <p>On G6.2, your top two goals were: <b>stay on topic</b> and <b>use evidence from the passage</b>. Look at what you did on G6.3:</p>
 
-<!-- ═══════════ CARD 3: Fragments vs. Complete Sentences ═══════════ -->
-<div class="card" data-title="Fragments vs. Sentences">
-  <div class="card-header">
-    <h2>Fragments vs. Complete Sentences</h2>
-    <div class="card-subtitle">Q1 &mdash; the one MCQ you missed</div>
-  </div>
-  <div class="card-body">
-    <p>You chose this as a complete sentence:</p>
-    <div class="you-wrote">
-      <div class="label">YOUR ANSWER</div>
-      "Because characters often face big problems."
-    </div>
-    <p><b>The problem:</b> This starts with <span class="highlight">"Because"</span> &mdash; that makes it a <b>dependent clause</b>. It depends on a main clause to be complete. By itself, it's a <b>fragment</b>.</p>
-    <p>A complete sentence needs: <b>subject + verb + complete thought</b>. "Because characters often face big problems" has a subject and verb, but the "because" makes the thought incomplete &mdash; the reader is left asking "what happens because of that?"</p>
-
-    <div class="reveal-wrapper">
-      <div class="reveal-cover" onclick="revealBetter(this)">
-        <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></div>
-        <div>
-          <div class="reveal-text">Tap to see the correct answer</div>
-          <div class="reveal-hint">Read the explanation above first</div>
-        </div>
-      </div>
-      <div class="reveal-content">
-<div class="better">
-      <div class="label">CORRECT ANSWER</div>
-      <b>"Animated movies are fun and colorful."</b><br><br>
-      This is a complete sentence: <b>subject</b> (animated movies) + <b>verb</b> (are) + <b>complete thought</b> (fun and colorful). No dangling "because" &mdash; it stands on its own.
-    </div>
-      </div>
-    </div>
-
-    <div class="tip-box">
-      <div class="label">QUICK TEST</div>
-      If a sentence starts with <b>because, since, although, when, if, or unless</b> and there's no main clause after it, it's a <b>fragment</b>. These words create dependent clauses &mdash; they need a main clause to form a complete sentence.
-      <details class="tip-expand">
-        <summary>See examples</summary>
-        <div class="expand-body">
-          <b>Fragment:</b> "Because characters often face big problems."<br>
-          <b>Complete:</b> "Because characters often face big problems, <u>animated movies feel exciting</u>."<br><br>
-          <b>Fragment:</b> "Although the movie was long."<br>
-          <b>Complete:</b> "Although the movie was long, <u>the audience enjoyed every minute</u>."
-        </div>
-      </details>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════ CARD 4: Stay on Topic + Use the Passage ═══════════ -->
-<div class="card" data-title="Stay on Topic">
-  <div class="card-header">
-    <h2>Stay on Topic + Use the Passage</h2>
-    <div class="card-subtitle">BP1 and BP2 drift away from the prompt's main question</div>
-  </div>
-  <div class="card-body">
-    <p>The prompt asked about <b>life lessons</b> in animated movies. Let's look at what your body paragraphs actually focus on:</p>
+    <p style="margin-top:8px;"><b>Every body paragraph addresses the prompt:</b></p>
     <div class="para-map">
-      <span class="para-tag bad">BP1: "fun" (worlds that can't be real)</span>
-      <span class="para-tag bad">BP2: "colorful" (bright colors)</span>
-      <span class="para-tag good">BP3: life lessons (bravery, decisions, apologizing)</span>
+      <span class="para-tag good">Body 1: Tagging monarchs</span>
+      <span class="para-tag good">Body 2: Counting caterpillars</span>
+      <span class="para-tag good">Body 3: Sharing findings online</span>
     </div>
-    <p><b>Only BP3 actually addresses life lessons.</b> BP1 talks about fun fantasy worlds and BP2 talks about bright colors &mdash; those are interesting topics, but they don't answer the prompt. Each body paragraph should focus on <b>one specific life lesson</b> (bravery, kindness, perseverance, etc.).</p>
+    <p>The prompt asked <i>"how are people helping monarch butterflies survive?"</i> &mdash; and all three body paragraphs give a specific way people are helping. On G6.2, only one of three actually answered the prompt. <b>That's a big improvement.</b></p>
 
-    <p><b>Second problem:</b> The prompt says <i>"Use information from the passage."</i> But you used outside examples &mdash; Fantastic Four, Teen Titans, Fairly Odd Parents, Wreck-It Ralph. You need to use specific examples <b>from the passage text</b>.</p>
-
-    <div class="reveal-wrapper">
-      <div class="reveal-cover" onclick="revealBetter(this)">
-        <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></div>
-        <div>
-          <div class="reveal-text">Tap to see an improved BP1</div>
-          <div class="reveal-hint">Read the explanation above first</div>
-        </div>
-      </div>
-      <div class="reveal-content">
-<div class="better">
-      <div class="label">IMPROVED BP1 &mdash; FOCUSED ON A LIFE LESSON</div>
-      <b>[TS]</b> One important life lesson animated movies teach is bravery. <b>[E1]</b> According to the passage, many animated characters face dangerous situations and must find the courage to stand up for what is right. <b>[X1]</b> This shows children that being brave does not mean being fearless &mdash; it means doing the right thing even when you are scared. <b>[E2]</b> The passage also explains that these characters often protect others by putting themselves in harm's way. <b>[X2]</b> When children watch this, they learn that standing up for someone who needs help is one of the most important things a person can do. <b>[CS]</b> Through stories of bravery, animated movies help children understand that courage is something they can practice in their own lives.
+    <p style="margin-top:10px;"><b>Your evidence comes from the passage:</b></p>
+    <div class="essay-excerpt">
+      <div class="para-label">Your Body Paragraph 2</div>
+      Many people are counting how many caterpillars are in their area. This can help scientists understand how many are not only making migration but also laying eggs. Scientists can use this to understand how many monarchs can survive the dangerous trip.
     </div>
-      </div>
-    </div>
+    <p>This pulls details directly from the reading passage about citizen science &mdash; no outside sources, no guessing. On G6.2, you used movies like Fantastic Four and Wreck-It Ralph instead of the passage. You fixed that completely.</p>
 
     <div class="tip-box">
-      <div class="label">THE FIX</div>
-      <b>Before you write,</b> reread the prompt and underline the key question. Then make sure every body paragraph answers THAT question. If the prompt says "life lessons," every body paragraph should be about a life lesson &mdash; not about fun worlds or bright colors. And always pull your evidence from the passage, not from movies you know.
+      <div class="label">THE TAKEAWAY</div>
+      You attacked your two biggest weaknesses and fixed them both. That shows you can improve when you know what to focus on. The rest of these cards target the <b>next layer</b> of improvements &mdash; smaller refinements that will push your score past 80%.
     </div>
   </div>
 </div>
 
-<!-- ═══════════ CARD 5: The Body Paragraph Pattern ═══════════ -->
-<div class="card" data-title="Body Paragraph Pattern">
+<!-- ═══════════ CARD 4: Make Your Thesis a Roadmap ═══════════ -->
+<div class="card" data-title="Thesis Roadmap">
   <div class="card-header">
-    <h2>The Body Paragraph Pattern</h2>
-    <div class="card-subtitle">How to build a strong body paragraph every time</div>
+    <h2>Make Your Thesis a Roadmap</h2>
+    <div class="card-subtitle">Tell the reader where your essay is going</div>
   </div>
   <div class="card-body">
-    <p>Every body paragraph in a G6+ essay should follow this pattern:</p>
-    <div class="outline-box">
-      <div class="outline-label">Body Paragraph Formula</div>
-      <div class="outline-row">
-        <span class="outline-tag">TS</span>
-        <span><b>Topic Sentence</b> &mdash; states the paragraph's main point (one life lesson)</span>
-      </div>
-      <div class="outline-row">
-        <span class="outline-tag">E1</span>
-        <span><b>Evidence 1</b> &mdash; a specific fact, quote, or example <i>from the passage</i></span>
-      </div>
-      <div class="outline-row">
-        <span class="outline-tag" style="background:#2d6a2d;">X1</span>
-        <span><b>Explanation 1</b> &mdash; explain <i>why</i> that evidence matters</span>
-      </div>
-      <div class="outline-row">
-        <span class="outline-tag">E2</span>
-        <span><b>Evidence 2</b> &mdash; a second fact or example <i>from the passage</i></span>
-      </div>
-      <div class="outline-row">
-        <span class="outline-tag" style="background:#2d6a2d;">X2</span>
-        <span><b>Explanation 2</b> &mdash; explain <i>why</i> that evidence matters</span>
-      </div>
-      <div class="outline-row">
-        <span class="outline-tag">CS</span>
-        <span><b>Concluding Sentence</b> &mdash; wraps up the paragraph's main idea</span>
-      </div>
+    <p>Here's your thesis (the last sentence of your introduction):</p>
+    <div class="you-wrote">
+      <div class="label">YOUR THESIS</div>
+      "Many people are taking action to ensure that monarch butterflies make the trip to Mexico."
     </div>
+    <p>This tells the reader <i>what</i> your essay is about &mdash; but not <i>how</i>. A strong thesis previews the three specific topics your body paragraphs will cover. Think of it as a GPS for your reader: it tells them exactly where the essay is going.</p>
 
-    <p style="margin-top:12px;">Here's how your full essay should be planned:</p>
-    <div class="outline-box">
-      <div class="outline-label">G6 Essay Plan</div>
-      <div class="outline-row">
-        <span class="outline-tag">INTRO</span>
-        <span>Hook &rarr; <b>Thesis:</b> Animated movies teach life lessons such as bravery, kindness, and perseverance.</span>
-      </div>
-      <div class="outline-row">
-        <span class="outline-tag">BP1</span>
-        <span><b>Bravery</b> &mdash; TS &rarr; E1 (passage example) &rarr; X1 &rarr; E2 (passage example) &rarr; X2 &rarr; CS</span>
-      </div>
-      <div class="outline-row">
-        <span class="outline-tag">BP2</span>
-        <span><b>Kindness</b> &mdash; TS &rarr; E1 (passage example) &rarr; X1 &rarr; E2 (passage example) &rarr; X2 &rarr; CS</span>
-      </div>
-      <div class="outline-row">
-        <span class="outline-tag">BP3</span>
-        <span><b>Perseverance</b> &mdash; TS &rarr; E1 (passage example) &rarr; X1 &rarr; E2 (passage example) &rarr; X2 &rarr; CS</span>
-      </div>
-      <div class="outline-row">
-        <span class="outline-tag">CONC</span>
-        <span>Restate 3 life lessons &rarr; broader message about why these lessons matter</span>
-      </div>
-    </div>
-    <p style="font-size:10pt;color:#888;margin-top:4px;">BP = Body Paragraph &bull; E = Evidence &bull; X = Explanation &bull; TS = Topic Sentence &bull; CS = Closing Sentence</p>
-
-    <p style="margin-top:12px;">Here's what a model body paragraph about bravery looks like using passage evidence:</p>
-    <div class="reveal-wrapper">
-      <div class="reveal-cover" onclick="revealBetter(this)">
-        <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></div>
-        <div>
-          <div class="reveal-text">Tap to see a model body paragraph</div>
-          <div class="reveal-hint">Read the formula above first</div>
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which thesis previews the three body paragraph topics?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="This is too vague. It says 'taking action' but doesn't tell the reader what those actions are. The reader has to guess what's coming." onclick="handleDiscrim(this)">
+          <span class="discrim-label">A</span>
+          <span>"Many people are taking action to ensure that monarch butterflies make the trip to Mexico."</span>
         </div>
-      </div>
-      <div class="reveal-content">
-<div class="better">
-      <div class="label">MODEL BODY PARAGRAPH</div>
-      <b>[TS]</b> One valuable life lesson that animated movies teach is bravery. <b>[E1]</b> According to the passage, animated characters often face dangerous challenges and must find the courage to protect the people they care about. <b>[X1]</b> This shows young viewers that being brave does not mean having no fear &mdash; it means choosing to act even when you are afraid. <b>[E2]</b> The passage also explains that these characters sometimes have to stand up to much stronger opponents to do what is right. <b>[X2]</b> This teaches children that courage is about doing the right thing, even when it is difficult or scary. <b>[CS]</b> By showing characters who face their fears, animated movies help children understand that bravery is something they can practice in everyday life.
-    </div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="This thesis tells the reader exactly what the three body paragraphs will cover: tagging, counting caterpillars, and sharing findings." onclick="handleDiscrim(this)">
+          <span class="discrim-label">B</span>
+          <span>"Citizens are helping monarch butterflies survive by tagging them before migration, counting caterpillars, and sharing their findings with scientists online."</span>
+        </div>
+        <div class="discrim-feedback"></div>
       </div>
     </div>
 
-    <div class="tip-box">
-      <div class="label">THE KEY RULE</div>
-      Every <b>E</b> (evidence) must be followed by an <b>X</b> (explanation). Evidence without explanation is just a list of facts. The explanation is where you show the reader <i>why</i> that evidence supports your point. Ask yourself: <b>"So what? Why does this matter?"</b>
+    <div class="discrim-then">
+      <div class="better">
+        <div class="label">THE FIX</div>
+        After you plan your three body paragraphs, go back to your introduction and <b>name all three topics in your thesis</b>. Use this template:<br><br>
+        <b>[Main idea] by [topic 1], [topic 2], and [topic 3].</b><br><br>
+        For this essay: "Citizens are helping monarchs survive <b>by tagging them before migration, counting caterpillars, and sharing their findings online</b>."
+      </div>
+
+      <div class="tip-box">
+        <div class="label">SO WHAT?</div>
+        A thesis that previews your topics earns points in <b>two</b> rubric areas: <i>structure</i> (shows your essay is planned) and <i>organization</i> (helps the reader follow your argument). One sentence, double the payoff.
+      </div>
     </div>
   </div>
 </div>
 
-<!-- ═══════════ CARD 6: Spelling Spotlight ═══════════ -->
+<!-- ═══════════ CARD 5: Give Each Body Paragraph New Content ═══════════ -->
+<div class="card" data-title="Avoid Repetition">
+  <div class="card-header">
+    <h2>Give Each Body Paragraph New Content</h2>
+    <div class="card-subtitle">Body paragraph 3 repeats what you already covered</div>
+  </div>
+  <div class="card-body">
+    <p>Your third body paragraph is about "submitting findings online." But look closely at what it actually says:</p>
+
+    <div class="essay-excerpt">
+      <div class="para-label">Your Body Paragraph 3</div>
+      Everyone submits their findings online so people can see how the monarch population is growing or shrinking. People submit their findings about <span class="highlight">monarch migration paths</span> so scientists can get multiple perspectives. Many others submit how many <span class="highlight">caterpillars</span> they found in their areas which helps scientists figure out which areas have the most. People submitting their findings can help scientists learn about how the monarch butterfly species is doing.
+    </div>
+
+    <p>The highlighted parts &mdash; <b>migration paths</b> and <b>caterpillars</b> &mdash; are the exact topics from body paragraphs 1 and 2. This paragraph recycles earlier content under a new heading instead of adding genuinely new information.</p>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which body paragraph 3 adds NEW information?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="This repeats migration paths from body paragraph 1 and caterpillars from body paragraph 2. It doesn't add anything new for the reader." onclick="handleDiscrim(this)">
+          <span class="discrim-label">A</span>
+          <span>"People submit their findings about migration paths and caterpillar counts so scientists can get multiple perspectives."</span>
+        </div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="Planting milkweed is a completely new action that wasn't covered in the tagging or caterpillar paragraphs. This gives the reader a genuinely different point." onclick="handleDiscrim(this)">
+          <span class="discrim-label">B</span>
+          <span>"Many people are planting milkweed along monarch migration routes so the butterflies have food and shelter during their long journey."</span>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-then">
+      <p>Your own essay actually mentions milkweed twice &mdash; in the introduction ("loss of milkweed") and in body paragraph 1 ("the best spots to plant milkweed"). That could have been its own full body paragraph instead of being buried inside another topic.</p>
+
+      <div class="tip-box">
+        <div class="label">THE RULE</div>
+        Each body paragraph should make the reader learn something <b>new</b>. Before you write body paragraph 3, ask yourself: <i>"Did I already say this?"</i> If the answer is yes, find a different point from the passage.
+        <details class="tip-expand">
+          <summary>How to plan three distinct topics</summary>
+          <div class="expand-body">
+            After reading the passage, jot down three different ways people help monarchs:<br><br>
+            <b>1.</b> Tagging butterflies to track migration<br>
+            <b>2.</b> Counting caterpillars to monitor population<br>
+            <b>3.</b> Planting milkweed to provide food and shelter<br><br>
+            Check: Are these three genuinely different actions? Yes &mdash; none of them overlap. Use one per body paragraph.
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Transitions and Fragments ═══════════ -->
+<div class="card" data-title="Transitions &amp; Fragments">
+  <div class="card-header">
+    <h2>Transitions and Fragments</h2>
+    <div class="card-subtitle">Picking the right connecting word + a fragment in your essay</div>
+  </div>
+  <div class="card-body">
+    <p><b>Question 9</b> asked you to connect these two sentences:</p>
+    <div class="essay-excerpt">
+      Sentence 1: "Fewer butterflies are surviving their trips."<br>
+      Sentence 2: "People are taking action to protect them."
+    </div>
+    <p>You chose <span class="error-mark">Meanwhile</span>. The correct answer was <b>However</b>.</p>
+    <p>The key: Sentence 1 is <b>bad news</b> and Sentence 2 is <b>good news</b>. That's a <b>contrast</b>. "However" signals contrast. "Meanwhile" signals two things happening at the same time &mdash; it doesn't capture the shift from bad to good.</p>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which transition best connects these sentences?<br><i>"The journey south is long and dangerous for monarchs. _____, thousands of butterflies complete the trip every year."</i></div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="'As a result' means the second thing was caused by the first. But the danger doesn't cause the butterflies to succeed &mdash; they succeed despite it." onclick="handleDiscrim(this)">
+          <span class="discrim-label">A</span>
+          <span>As a result</span>
+        </div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="'However' signals contrast: the journey is dangerous, BUT many butterflies still make it. That shift from bad news to good news is exactly what 'However' communicates." onclick="handleDiscrim(this)">
+          <span class="discrim-label">B</span>
+          <span>However</span>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-then">
+      <div class="outline-box">
+        <div class="outline-label">Transition Quick Reference</div>
+        <div class="outline-row">
+          <span class="outline-tag" style="background:#2d6a2d;">Contrast</span>
+          <span>However &bull; On the other hand &bull; In contrast &bull; Nevertheless</span>
+        </div>
+        <div class="outline-row">
+          <span class="outline-tag" style="background:#cc6600;">Time</span>
+          <span>Meanwhile &bull; Afterward &bull; Next &bull; Then &bull; Finally</span>
+        </div>
+        <div class="outline-row">
+          <span class="outline-tag">Cause</span>
+          <span>As a result &bull; Therefore &bull; Because of this &bull; Consequently</span>
+        </div>
+        <div class="outline-row">
+          <span class="outline-tag" style="background:#555;">Addition</span>
+          <span>Additionally &bull; Furthermore &bull; In addition &bull; Also</span>
+        </div>
+      </div>
+
+      <p style="margin-top:12px;"><b>One more thing:</b> Your essay also has a <b>fragment</b> in body paragraph 1:</p>
+      <div class="you-wrote">
+        <div class="label">FRAGMENT</div>
+        "<span class="error-mark">Aswel as</span> letting scientists figure out migration paths."
+      </div>
+      <p>This phrase can't stand alone as a sentence. It needs to be attached to the sentence before it: "This deed can help scientists track how many monarchs are making the full trip <b>as well as</b> figure out migration paths."</p>
+
+      <div class="tip-box">
+        <div class="label">QUICK CHECK</div>
+        Phrases starting with <b>"as well as," "such as," "including,"</b> or <b>"along with"</b> are connecting phrases, not sentences. They always need to be joined to a main sentence &mdash; never standing alone with a period.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 7: Spelling Spotlight ═══════════ -->
 <div class="card" data-title="Spelling Spotlight">
   <div class="card-header">
     <h2>Spelling Spotlight</h2>
-    <div class="card-subtitle">Your most frequent errors &mdash; learn these and your score jumps</div>
+    <div class="card-subtitle">Your biggest remaining area for improvement</div>
   </div>
   <div class="card-body">
-    <p>Your essay has strong ideas, but spelling errors appeared throughout. Here are the ones to focus on:</p>
+    <p>Your essay has <b>15+ spelling errors</b>. This was also the main editing issue on G6.2. Here are the patterns:</p>
 
+    <p style="margin-top:8px;font-weight:700;font-size:10pt;color:#1a1a2e;">Missing doubled letters:</p>
     <div class="pattern-row">
-      <span class="pattern-wrong"><span class="error-mark">valuble</span> (x4!)</span>
+      <span class="pattern-wrong"><span class="error-mark">taging</span></span>
       <span class="pattern-arrow">&rarr;</span>
-      <span class="pattern-right">valuable</span>
+      <span class="pattern-right">tagging</span>
     </div>
     <div class="pattern-row">
-      <span class="pattern-wrong"><span class="error-mark">excitment</span> (x2)</span>
+      <span class="pattern-wrong"><span class="error-mark">submiting</span> (&times;2)</span>
       <span class="pattern-arrow">&rarr;</span>
-      <span class="pattern-right">excitement</span>
+      <span class="pattern-right">submitting</span>
     </div>
     <div class="pattern-row">
-      <span class="pattern-wrong"><span class="error-mark">desions / desion</span></span>
+      <span class="pattern-wrong"><span class="error-mark">paterns</span></span>
       <span class="pattern-arrow">&rarr;</span>
-      <span class="pattern-right">decisions / decision</span>
-    </div>
-    <div class="pattern-row">
-      <span class="pattern-wrong"><span class="error-mark">biuld</span></span>
-      <span class="pattern-arrow">&rarr;</span>
-      <span class="pattern-right">build</span>
-    </div>
-    <div class="pattern-row">
-      <span class="pattern-wrong"><span class="error-mark">villans</span></span>
-      <span class="pattern-arrow">&rarr;</span>
-      <span class="pattern-right">villains</span>
-    </div>
-    <div class="pattern-row">
-      <span class="pattern-wrong"><span class="error-mark">especialy</span></span>
-      <span class="pattern-arrow">&rarr;</span>
-      <span class="pattern-right">especially</span>
-    </div>
-    <div class="pattern-row">
-      <span class="pattern-wrong"><span class="error-mark">childs</span></span>
-      <span class="pattern-arrow">&rarr;</span>
-      <span class="pattern-right">child's</span>
+      <span class="pattern-right">patterns</span>
     </div>
 
-    <p style="margin-top:10px;">Other errors in your essay: <span class="error-mark">realisem</span>&rarr;realism, <span class="error-mark">te ach</span>&rarr;teach, <span class="error-mark">Fantasic</span>&rarr;Fantastic, <span class="error-mark">were</span>&rarr;where, <span class="error-mark">wisards</span>&rarr;wizards, <span class="error-mark">unnormal</span>&rarr;unusual, <span class="error-mark">Reck it Ralph</span>&rarr;Wreck-It Ralph, <span class="error-mark">faires</span>&rarr;fairies, and a <b>missing period</b> at the very end.</p>
+    <p style="margin-top:10px;font-weight:700;font-size:10pt;color:#1a1a2e;">Swapped or misplaced letters:</p>
+    <div class="pattern-row">
+      <span class="pattern-wrong"><span class="error-mark">berfore</span></span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">before</span>
+    </div>
+    <div class="pattern-row">
+      <span class="pattern-wrong"><span class="error-mark">monrachs</span></span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">monarchs</span>
+    </div>
+    <div class="pattern-row">
+      <span class="pattern-wrong"><span class="error-mark">firgure</span></span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">figure</span>
+    </div>
+    <div class="pattern-row">
+      <span class="pattern-wrong"><span class="error-mark">speices</span> (&times;2)</span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">species</span>
+    </div>
 
-    <div class="tip-box">
-      <div class="label">PROOFREADING TRICK</div>
-      Read your essay <b>backwards</b>, sentence by sentence (start with the last sentence, then the second-to-last, and so on). When you read forward, your brain auto-corrects errors. Reading backwards forces you to see each sentence on its own, which makes misspellings jump out.
-      <details class="tip-expand">
-        <summary>Why "valuable" trips you up</summary>
-        <div class="expand-body">
-          Many people drop the second <b>a</b> in "valu<u>a</u>ble." Think of it this way: something of <b>value</b> &rarr; valu<b>able</b>. The word "value" is hiding inside "valuable." If you can remember that, you'll catch it every time.
+    <p style="margin-top:10px;font-weight:700;font-size:10pt;color:#1a1a2e;">Other errors:</p>
+    <div class="pattern-row">
+      <span class="pattern-wrong"><span class="error-mark">journies</span></span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">journeys</span>
+    </div>
+    <div class="pattern-row">
+      <span class="pattern-wrong"><span class="error-mark">acroos</span></span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">across</span>
+    </div>
+    <div class="pattern-row">
+      <span class="pattern-wrong"><span class="error-mark">multible</span></span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">multiple</span>
+    </div>
+    <div class="pattern-row">
+      <span class="pattern-wrong"><span class="error-mark">thier</span></span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">their</span>
+    </div>
+    <div class="pattern-row">
+      <span class="pattern-wrong"><span class="error-mark">Poeple</span></span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">People</span>
+    </div>
+    <p style="font-size:9.5pt;color:#888;margin-top:6px;">Also: <span class="error-mark">caterpiller</span>&rarr;caterpillars, <span class="error-mark">about</span>&rarr;amount, <span class="error-mark">scientist</span>&rarr;scientists (&times;3, missing the plural -s)</p>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which sentence is ready to submit?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Three errors: 'monrachs' should be 'monarchs,' 'taging' needs a double g ('tagging'), and 'berfore' should be 'before.'" onclick="handleDiscrim(this)">
+          <span class="discrim-label">A</span>
+          <span>"Citizens are helping monrachs by taging them berfore migration."</span>
         </div>
-      </details>
+        <div class="discrim-option" data-correct="true" data-right-feedback="No errors. 'Monarchs,' 'tagging,' and 'before' are all spelled correctly. This is what careful proofreading looks like." onclick="handleDiscrim(this)">
+          <span class="discrim-label">B</span>
+          <span>"Citizens are helping monarchs by tagging them before migration."</span>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-then">
+      <div class="tip-box">
+        <div class="label">PROOFREADING STRATEGY</div>
+        Read your essay <b>backwards</b>, one sentence at a time. Start with the last sentence, then the second-to-last, and so on. When you read forward, your brain auto-corrects errors. Reading backwards forces you to see each word on its own.<br><br>
+        Focus especially on words you use often: <b>their, people, before, because, species, scientists</b>. These are the words that trip you up most.
+        <details class="tip-expand">
+          <summary>Why doubled letters matter</summary>
+          <div class="expand-body">
+            When you add <b>-ing</b> or <b>-ed</b> to a short word that ends in a consonant, you usually <b>double the last letter</b>:<br><br>
+            tag &rarr; tag<b>g</b>ing<br>
+            submit &rarr; submit<b>t</b>ing<br>
+            stop &rarr; stop<b>p</b>ed<br><br>
+            If the word already ends in two consonants or a silent e, you don't double: jump &rarr; jumping, write &rarr; writing.
+          </div>
+        </details>
+      </div>
+
+      <div class="pattern-note">
+        <div class="label">ACROSS BOTH G6 TESTS</div>
+        On G6.2, your most frequent errors were "valuable" (&times;4), "excitement" (&times;2), and "decisions." On G6.3, it's "submitting" (&times;2), "species" (&times;2), and "before." The error types are the same &mdash; swapped letters and missing doubled letters. <b>Backwards proofreading is the single highest-value habit you can build right now.</b>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- ═══════════ CARD 7: Checklist ═══════════ -->
-<div class="card" data-title="Checklist">
+<!-- ═══════════ CARD 8: Checklist & Practice ═══════════ -->
+<div class="card" data-title="Checklist &amp; Practice">
   <div class="card-header">
-    <h2>Proofreading Checklist</h2>
-    <div class="card-subtitle">Personalized to your test &mdash; check these before you submit</div>
+    <h2>Checklist &amp; Practice</h2>
+    <div class="card-subtitle">Personalized to your G6.3 test &mdash; check these before you submit</div>
   </div>
   <div class="card-body">
     <div class="checklist-progress-label" id="checkProgressLabel">0 checked</div>
     <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
-    <div class="check-item" onclick="toggleCheck(this)">
-      <div class="check-box"></div>
-      <div><b>Fragments:</b> I can tell the difference between a fragment and a complete sentence. If it starts with "because/since/although" and has no main clause, it's a fragment.</div>
-    </div>
-    <div class="check-item" onclick="toggleCheck(this)">
-      <div class="check-box"></div>
-      <div><b>On topic:</b> Each body paragraph focuses on one life lesson from the prompt &mdash; not "fun" or "colorful," but bravery, kindness, perseverance, etc.</div>
-    </div>
-    <div class="check-item" onclick="toggleCheck(this)">
-      <div class="check-box"></div>
-      <div><b>Passage evidence:</b> I use evidence from the passage, not outside examples like Fantastic Four or Wreck-It Ralph.</div>
-    </div>
-    <div class="check-item" onclick="toggleCheck(this)">
-      <div class="check-box"></div>
-      <div><b>Body paragraph pattern:</b> Each body paragraph follows TS &rarr; E &rarr; X &rarr; E &rarr; X &rarr; CS.</div>
-    </div>
-    <div class="check-item" onclick="toggleCheck(this)">
-      <div class="check-box"></div>
-      <div><b>Sentence variety:</b> I vary my sentence starters &mdash; not "This shows how animated movies stand out because..." every time.</div>
-    </div>
-    <div class="check-item" onclick="toggleCheck(this)">
-      <div class="check-box"></div>
-      <div><b>Spelling:</b> I proofread for spelling, especially "valuable" and "excitement."</div>
-    </div>
-    <div class="check-item" onclick="toggleCheck(this)">
-      <div class="check-box"></div>
-      <div><b>Punctuation:</b> My essay ends with proper punctuation (period, not nothing).</div>
-    </div>
-    <div class="tip-box">
-      <div class="label">3-MINUTE RULE</div>
-      Save the last 3 minutes of your test for proofreading. First, do a quick structure check: intro, 3 body paragraphs that each answer the prompt, conclusion. Then read backwards sentence-by-sentence to catch spelling errors.
-    </div>
-    <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg> Print this checklist</button>
-  </div>
-</div>
 
-<!-- ═══════════ CARD 8: Your 3 Goals ═══════════ -->
-<div class="card" data-title="3 Goals">
-  <div class="card-header">
-    <h2>Your 3 Goals for Next Time</h2>
-    <div class="card-subtitle">Strong MCQ + full 5-paragraph essay &mdash; now sharpen the focus</div>
-  </div>
-  <div class="card-body">
-    <div class="goal-row">
-      <span class="goal-num">1</span>
-      <div>
-        <b>Make every body paragraph answer the prompt's main question.</b><br>
-        <span style="font-size:10.5pt;color:#555;">Before you write, underline the key question in the prompt. If it asks about "life lessons," every body paragraph must focus on a specific life lesson &mdash; not "fun worlds" or "bright colors." Read the prompt twice and plan three on-topic body paragraphs before you start writing.</span>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Thesis previews my topics:</b> My thesis names the three specific points my body paragraphs will cover.</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Each body paragraph adds new content:</b> I haven't repeated the same facts or examples across body paragraphs.</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Every evidence has an explanation:</b> After each fact from the passage, I explain why it matters.</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Transitions match meaning:</b> I use "however" for contrast, "meanwhile" for time, and "as a result" for cause.</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>No fragments:</b> Phrases starting with "as well as," "such as," or "including" are attached to a main sentence, not standing alone.</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Backwards proofreading:</b> I read my essay backwards, one sentence at a time, checking spelling &mdash; especially doubled letters (tagging, submitting, patterns) and commonly confused words (their, species, before).</div>
+    </div>
+
+    <div class="practice-tier tier-primary" style="margin-top:16px;">
+      <div class="tier-label">Start Here</div>
+      <div class="practice-links">
+        <a href="https://alphawrite.alpha.school/practice/6/2/using-transition-words" target="_blank">Using Transition Words &rarr;</a>
+        <a href="https://alphawrite.alpha.school/practice/6/2/write-paragraph-from-prompt" target="_blank">Write a Paragraph from Prompt &rarr;</a>
       </div>
     </div>
-    <div class="goal-row">
-      <span class="goal-num">2</span>
-      <div>
-        <b>Use evidence from the passage, not from outside examples.</b><br>
-        <span style="font-size:10.5pt;color:#555;">The prompt says "Use information from the passage." That means your evidence should come directly from the text you read &mdash; not from Fantastic Four, Teen Titans, or Wreck-It Ralph. Go back to the passage, find specific details, and use those to support each body paragraph.</span>
+    <div class="practice-tier tier-extra">
+      <div class="tier-label">Extra Practice</div>
+      <div class="practice-links">
+        <a href="https://alphawrite.alpha.school/practice/6/2/writing-spos" target="_blank">Writing Paragraph Outlines &rarr;</a>
+        <a href="https://alphawrite.alpha.school/practice/6/2/kernel-expansion" target="_blank">Kernel Expansion &rarr;</a>
+        <a href="https://alphawrite.alpha.school/practice/6/2/elaborate-paragraphs" target="_blank">Elaborate Paragraphs &rarr;</a>
       </div>
     </div>
-    <div class="goal-row">
-      <span class="goal-num">3</span>
-      <div>
-        <b>Proofread for spelling &mdash; especially your repeat errors.</b><br>
-        <span style="font-size:10.5pt;color:#555;">"Valuable" appeared misspelled 4 times. Save the last 3 minutes of your test to read backwards, sentence by sentence. Focus on the words you know trip you up: valuable, excitement, decisions, build, especially. Catching even half of these errors could earn you 2+ more points on the essay.</span>
-      </div>
-    </div>
-    <div class="tip-box" style="margin-top:16px;">
-      <div class="label">THE BIG PICTURE</div>
-      9/10 MCQ + a full 5-paragraph essay on your <b>first test</b> is a strong foundation. You clearly have the writing ambition and structural skills. The points you lost are about <b>staying on topic, using the passage, and proofreading</b>. Fix those three things and your score will jump significantly.
-    </div>
+
+    <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg> Print this checklist</button>
   </div>
 </div>
 
@@ -734,13 +852,12 @@
   <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
 </div>
 
-
 <!-- Completion overlay -->
 <div class="completion-overlay" id="completionOverlay">
   <div class="completion-card">
     <div class="completion-emoji">&#127881;</div>
     <div class="completion-title">Nice work, Jaxon!</div>
-    <div class="completion-sub">You reviewed all your cards. Remember your goals:<br><b>Every body paragraph answers the prompt &bull; Use evidence from the passage &bull; Proofread for spelling</b></div>
+    <div class="completion-sub">You reviewed all your cards. You already fixed your two biggest areas &mdash; now focus on:<br><b>Preview topics in your thesis &bull; No repeated body paragraphs &bull; Proofread backwards for spelling</b></div>
     <button class="completion-close" onclick="closeCompletion()">Got it!</button>
   </div>
 </div>
@@ -810,10 +927,34 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
 });
 
-function revealBetter(cover) {
-  var content = cover.nextElementSibling;
-  content.classList.add('shown');
-  cover.classList.add('hidden');
+function handleDiscrim(opt) {
+  var options = opt.parentElement;
+  if (options.querySelector('.correct') || options.querySelector('.locked')) return;
+  var feedback = options.querySelector('.discrim-feedback');
+  if (opt.getAttribute('data-correct') === 'true') {
+    opt.classList.add('correct');
+    Array.from(options.querySelectorAll('.discrim-option')).forEach(function(o) {
+      if (o !== opt) o.classList.add('locked');
+    });
+    if (feedback) {
+      feedback.textContent = opt.getAttribute('data-right-feedback') || 'Correct!';
+      feedback.className = 'discrim-feedback shown right-fb';
+    }
+    var thenEl = options.closest('.discrim-challenge').nextElementSibling;
+    if (thenEl && thenEl.classList.contains('discrim-then')) {
+      setTimeout(function() { thenEl.classList.add('revealed'); }, 600);
+    }
+  } else {
+    opt.classList.add('wrong');
+    if (feedback) {
+      feedback.textContent = opt.getAttribute('data-wrong-feedback') || 'Try again.';
+      feedback.className = 'discrim-feedback shown wrong-fb';
+    }
+    setTimeout(function() {
+      opt.classList.remove('wrong');
+      if (feedback) feedback.className = 'discrim-feedback';
+    }, 2000);
+  }
 }
 
 function toggleCheck(item) {
