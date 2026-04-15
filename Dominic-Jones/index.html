@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dominic's Paragraph Writing Card</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .progress-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ccc;
+    transition: background 0.3s, transform 0.2s;
+    cursor: pointer;
+    position: relative;
+  }
+  .progress-dot.active { background: #1a1a2e; transform: scale(1.25); }
+  .progress-dot.visited { background: #7a7a9e; }
+  .progress-dot:hover { transform: scale(1.3); background: #555; }
+  .progress-dot .dot-tooltip {
+    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: #1a1a2e; color: #fff; padding: 4px 10px; border-radius: 6px;
+    font-size: 8.5pt; white-space: nowrap; opacity: 0;
+    pointer-events: none; transition: opacity 0.2s; z-index: 100;
+  }
+  .progress-dot .dot-tooltip::after {
+    content: ''; position: absolute; top: 100%; left: 50%;
+    transform: translateX(-50%); border: 5px solid transparent;
+    border-top-color: #1a1a2e;
+  }
+  .progress-dot:hover .dot-tooltip { opacity: 1; }
+
+  .card-breadcrumb {
+    font-size: 9.5pt; color: #888; margin-bottom: 14px;
+    text-align: center; transition: opacity 0.3s; min-height: 1.2em;
+  }
+  .card-breadcrumb b { color: #1a1a2e; }
+
+  .sticky-indicator {
+    position: fixed; top: 12px; right: 16px;
+    background: #1a1a2e; color: #fff; padding: 5px 14px;
+    border-radius: 20px; font-size: 9pt; font-weight: 700;
+    opacity: 0; transition: opacity 0.3s; z-index: 200;
+    pointer-events: none; letter-spacing: 0.5px;
+  }
+  .sticky-indicator.visible { opacity: 1; }
+
+  .card-container {
+    position: relative;
+    width: 640px;
+    min-height: 420px;
+  }
+
+  .card {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    background: #fff;
+    border: 2.5px solid #1a1a2e;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 11px 11px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card-header .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    color: #1a1a2e;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    font-size: 14pt;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  .card-header .title {
+    font-size: 15pt;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+
+  .card-body {
+    padding: 18px 22px 20px;
+    line-height: 1.5;
+  }
+
+  .trick-box {
+    background: #eef6ee;
+    border-left: 4px solid #2d6a2d;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 8px 8px 0;
+  }
+  .trick-name { font-weight: 700; color: #2d6a2d; }
+
+  .example { margin: 8px 0; padding-left: 4px; }
+  .label-bad { color: #cc0000; font-weight: 700; }
+  .label-good { color: #008000; font-weight: 700; }
+  .ex-text { font-style: italic; }
+  .remember { font-size: 10pt; color: #888; font-style: italic; margin-top: 2px; }
+
+  .test-box {
+    background: #fff8e1;
+    border-left: 4px solid #e6a800;
+    padding: 8px 14px;
+    margin: 10px 0;
+    border-radius: 0 8px 8px 0;
+    font-size: 11pt;
+  }
+
+  .fb-row {
+    display: flex;
+    gap: 8px;
+    margin: 4px 0;
+    align-items: flex-start;
+  }
+  .fb-label {
+    font-weight: 700;
+    color: #1a1a2e;
+    min-width: 110px;
+    flex-shrink: 0;
+  }
+
+  .fix-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10.5pt;
+    margin-top: 8px;
+  }
+  .fix-table th {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 4px 8px;
+    text-align: center;
+    font-size: 10pt;
+  }
+  .fix-table td {
+    border: 1px solid #ccc;
+    padding: 4px 8px;
+    text-align: center;
+  }
+  .bad { color: #cc0000; font-weight: 600; }
+  .good { color: #008000; font-weight: 700; }
+
+  /* ── DISCRIMINATION CHALLENGE ── */
+  .discrim-challenge {
+    background: #f8f5ff; border: 1.5px solid #d4c5ff; border-radius: 8px;
+    padding: 14px; margin: 10px 0;
+  }
+  .discrim-prompt {
+    font-weight: 700; font-size: 10.5pt; margin-bottom: 10px; color: #5c2dcc;
+  }
+  .discrim-options { display: flex; flex-direction: column; gap: 8px; }
+  .discrim-option {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 14px; border: 2px solid #d4c5ff; border-radius: 8px;
+    cursor: pointer; transition: all 0.2s; font-size: 10.5pt;
+    background: #fff;
+  }
+  .discrim-option:hover { border-color: #7c4dff; background: #f5f0ff; }
+  .discrim-label { font-weight: 800; color: #7c4dff; min-width: 20px; flex-shrink: 0; }
+  .discrim-option.correct { border-color: #2d6a2d; background: #e8f5e9; cursor: default; }
+  .discrim-option.correct .discrim-label { color: #2d6a2d; }
+  .discrim-option.wrong { border-color: #cc0000; background: #fff3f3; }
+  .discrim-option.wrong .discrim-label { color: #cc0000; }
+  .discrim-option.locked { pointer-events: none; opacity: 0.5; }
+  .discrim-feedback {
+    margin-top: 0; font-size: 10pt; line-height: 1.4;
+    max-height: 0; overflow: hidden; opacity: 0;
+    transition: max-height 0.3s, opacity 0.3s, margin 0.3s;
+  }
+  .discrim-feedback.shown { max-height: 200px; opacity: 1; margin-top: 10px; }
+  .discrim-feedback.wrong-fb { color: #cc0000; }
+  .discrim-feedback.right-fb { color: #2d6a2d; font-weight: 600; }
+
+  .discrim-then {
+    max-height: 0; overflow: hidden; opacity: 0;
+    transition: max-height 0.6s ease, opacity 0.5s ease;
+  }
+  .discrim-then.revealed { max-height: 5000px; opacity: 1; }
+
+  /* ── COACH BOX ── */
+  .coach-box {
+    background: #e8edf5;
+    border-left: 4px solid #3f51b5;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 8px 8px 0;
+  }
+  .coach-label { font-weight: 700; color: #3f51b5; font-size: 10pt; }
+
+  /* ── UI UPGRADE: REVEAL INTERACTION ── */
+  .reveal-wrapper { position: relative; }
+  .reveal-cover {
+    background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%);
+    border-left: 3px solid #2d6a2d;
+    padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0;
+    cursor: pointer; user-select: none;
+    display: flex; align-items: center; gap: 10px;
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+  .reveal-cover:hover {
+    box-shadow: 0 2px 8px rgba(45,106,45,0.15);
+    background: linear-gradient(135deg, #d4edda 0%, #c8e6c9 100%);
+  }
+  .reveal-cover .reveal-icon {
+    width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
+  .reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #2d6a2d; }
+  .reveal-cover .reveal-hint { font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px; }
+  .reveal-content {
+    max-height: 0; overflow: hidden; opacity: 0;
+    transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0;
+  }
+  .reveal-content.shown { max-height: 600px; opacity: 1; margin: 8px 0; }
+  .reveal-cover.hidden { display: none; }
+
+  /* ── UI UPGRADE: EXPANDABLE EXAMPLES ── */
+  .tip-expand {
+    margin-top: 8px; border-top: 1px dashed #b0b8cc; padding-top: 6px;
+  }
+  .tip-expand summary {
+    font-size: 9.5pt; font-weight: 600; color: #1a1a2e;
+    cursor: pointer; padding: 4px 0; list-style: none;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .tip-expand summary::-webkit-details-marker { display: none; }
+  .tip-expand summary::before {
+    content: '\25B6'; font-size: 8pt; transition: transform 0.2s; display: inline-block;
+  }
+  .tip-expand[open] summary::before { transform: rotate(90deg); }
+  .tip-expand .expand-body {
+    margin-top: 6px; font-size: 10pt; line-height: 1.5;
+    background: #f4f6fb; padding: 10px 12px; border-radius: 6px;
+  }
+
+  /* ── UI UPGRADE: TAPPABLE CHECKBOXES ── */
+  .check-item {
+    display: flex; align-items: flex-start;
+    gap: 12px; padding: 10px 8px; cursor: pointer;
+    border-radius: 6px; transition: background 0.15s; user-select: none;
+    border-bottom: 1px solid #eee;
+  }
+  .check-item:last-of-type { border-bottom: none; }
+  .check-item:hover { background: #f8f8fc; }
+  .check-item.checked { background: #f0f8f0; }
+  .check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
+  .check-item.checked .check-box::after {
+    content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700;
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  }
+  .check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
+  .check-box {
+    width: 28px; height: 28px; border: 2.5px solid #1a1a2e;
+    border-radius: 6px; position: relative; transition: background 0.2s, border-color 0.2s;
+    flex-shrink: 0;
+  }
+  .checklist-progress {
+    background: #eee; border-radius: 10px; height: 8px;
+    margin: 12px 0 6px; overflow: hidden;
+  }
+  .checklist-progress-fill {
+    background: linear-gradient(90deg, #2d6a2d, #4caf50);
+    height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%;
+  }
+  .checklist-progress-label {
+    font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px;
+  }
+
+  .nav-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .nav-btn {
+    background: #1a1a2e;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 28px;
+    font-size: 12pt;
+    font-family: Calibri, sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    letter-spacing: 0.3px;
+  }
+  .nav-btn:hover { background: #2d2d5e; }
+  .nav-btn:active { transform: scale(0.97); }
+  .nav-btn:disabled { background: #bbb; cursor: default; transform: none; }
+
+  .bottom-note {
+    margin-top: 14px;
+    text-align: center;
+    font-size: 10pt;
+    color: #888;
+  }
+
+  .print-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 12px; padding: 8px 20px;
+    border: 2px solid #1a1a2e; border-radius: 8px;
+    background: #fff; color: #1a1a2e; font-family: inherit;
+    font-size: 10.5pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .print-btn:hover { background: #1a1a2e; color: #fff; }
+  .print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+  /* ── COMPLETION OVERLAY ── */
+  .completion-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(26,26,46,0.6); z-index: 500;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.4s;
+  }
+  .completion-overlay.visible { opacity: 1; pointer-events: auto; }
+  .completion-card {
+    background: #fff; border-radius: 16px; padding: 40px 48px;
+    text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+    transform: scale(0.8); transition: transform 0.4s ease; max-width: 420px;
+  }
+  .completion-overlay.visible .completion-card { transform: scale(1); }
+  .completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+  .completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; }
+  .completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+  .completion-close {
+    margin-top: 20px; padding: 10px 32px;
+    background: #1a1a2e; color: #fff; border: none; border-radius: 8px;
+    font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .completion-close:hover { background: #2d2d4e; }
+  #confettiCanvas {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 501;
+  }
+
+  /* ── PRINT ── */
+  @media print {
+    body { background: #fff; padding: 0; min-height: auto; }
+    .progress-bar, .nav-buttons, .bottom-note, .print-btn,
+    .card-breadcrumb, .sticky-indicator, .completion-overlay, #confettiCanvas,
+    .reveal-cover, .checklist-progress, .checklist-progress-label,
+    .discrim-challenge { display: none !important; }
+    .card-container { width: 100%; min-height: auto; }
+    .card { display: none !important; }
+    .card.print-target {
+      display: block !important; opacity: 1 !important;
+      pointer-events: auto !important; position: relative !important;
+      transform: none !important; box-shadow: none;
+      border: 2px solid #1a1a2e; page-break-inside: avoid;
+    }
+    .card-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .reveal-content {
+      max-height: none !important; opacity: 1 !important; margin: 8px 0 !important;
+    }
+    .discrim-then {
+      max-height: none !important; opacity: 1 !important;
+    }
+  }
+
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<div class="card-breadcrumb" id="breadcrumb"></div>
+
+<div class="sticky-indicator" id="stickyIndicator"></div>
+
+<div class="card-container" id="cardContainer">
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- CARD 1: Answer the Question -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="card active" data-card="0" data-title="Answer the Question">
+    <div class="card-header">
+      <span class="num">1</span>
+      <span class="title">Answer the Question</span>
+    </div>
+    <div class="card-body">
+      <p>Your first sentence answers the question. Don&rsquo;t use words from the passage&mdash;go straight to the answer using <b>your own thinking</b>.</p>
+
+      <div class="trick-box">
+        <span class="trick-name">Question Flip:</span> Take the question, flip it around, add <b>&ldquo;because,&rdquo;</b> then finish the sentence from your head. Don&rsquo;t look at the passage.
+      </div>
+
+      <p style="margin-top:12px"><b>Your puppy breeds question:</b> <i>Why did Golden Retrievers, Beagles, and German Shepherds become famous puppy breeds?</i></p>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which opening sentence better answers the question?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" onclick="handleDiscrim(this)"
+               data-correct="false"
+               data-wrong-feedback="This sentence is copied word-for-word from the end of the passage. It uses the passage's words, not yours.">
+            <span class="discrim-label">A</span>
+            <span>&ldquo;All of these puppy breeds became famous because they are good at different jobs and make wonderful pets.&rdquo;</span>
+          </div>
+          <div class="discrim-option" onclick="handleDiscrim(this)"
+               data-correct="true"
+               data-right-feedback="This answers the question using your own words and your own thinking. That's the Question Flip!">
+            <span class="discrim-label">B</span>
+            <span>&ldquo;Golden Retrievers, Beagles, and German Shepherds became famous because each breed has special skills that people love.&rdquo;</span>
+          </div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-then">
+        <div class="example">
+          <span class="label-bad">&#10007; What you wrote:</span> <span class="ex-text">&ldquo;All of these puppy breeds became famous because they are good at different jobs and make wonderful pets.&rdquo;</span>
+          <div class="remember">(This was the last sentence of the passage, copied word-for-word. The grader caught it.)</div>
+        </div>
+        <div class="example">
+          <span class="label-good">&#10003; With the Question Flip:</span> <span class="ex-text">&ldquo;Golden Retrievers, Beagles, and German Shepherds became famous because each breed has special skills that people love.&rdquo;</span>
+        </div>
+
+        <div class="test-box">
+          <b>Quick check:</b> Read your first sentence. Did you write it from your head, or did you copy it from the passage? If it sounds exactly like the passage, cover the passage and try again.
+        </div>
+
+        <div class="coach-box">
+          <span class="coach-label">Coach tip:</span> Have Dominic read the question aloud. Then say: &ldquo;Now flip it around and add &lsquo;because.&rsquo; Don&rsquo;t look at the passage&mdash;just tell me what you think.&rdquo; Write down whatever he says. That&rsquo;s his topic sentence.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- CARD 2: Pick Different Details -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="card" data-card="1" data-title="Pick Different Details">
+    <div class="card-header">
+      <span class="num">2</span>
+      <span class="title">Pick 2&ndash;3 DIFFERENT Details</span>
+    </div>
+    <div class="card-body">
+      <p>Each detail sentence gives a <b>new</b> fact. If two sentences are about the same thing, that only counts as one.</p>
+
+      <p style="margin-top:10px"><b>Here is what you wrote about the puppy breeds:</b></p>
+      <div class="example">
+        <span class="label-bad">&#10007; Your sentence 1:</span> <span class="ex-text">&ldquo;Golden Retrievers have soft fur, friendly faces, being gentle, and good with children.&rdquo;</span>
+      </div>
+      <div class="example">
+        <span class="label-bad">&#10007; Your sentence 2:</span> <span class="ex-text">&ldquo;Beagles have floppy ears and love to sniff everything.&rdquo;</span>
+      </div>
+      <div class="example">
+        <span class="label-bad">&#10007; Your sentence 3:</span> <span class="ex-text">&ldquo;German Shepherds are smart and brave.&rdquo;</span>
+      </div>
+      <p style="margin-top:6px">You did pick three different breeds&mdash;that&rsquo;s good! But the grader said these sentences are <b>copied from the passage</b>, not written in your own words. Each detail needs to come from <b>your thinking</b>, not just the passage&rsquo;s words rearranged.</p>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which detail sentence uses the student&rsquo;s OWN thinking about Golden Retrievers?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" onclick="handleDiscrim(this)"
+               data-correct="false"
+               data-wrong-feedback="This takes words straight from the passage ('soft, golden fur,' 'friendly faces,' 'gentle'). It rearranges them but doesn't add any of your own thinking.">
+            <span class="discrim-label">A</span>
+            <span>&ldquo;Golden Retrievers have soft fur, friendly faces, being gentle, and good with children.&rdquo;</span>
+          </div>
+          <div class="discrim-option" onclick="handleDiscrim(this)"
+               data-correct="true"
+               data-right-feedback="This takes the idea (good with kids) and adds the student's own thinking about WHY that matters. That's what the grader wants to see!">
+            <span class="discrim-label">B</span>
+            <span>&ldquo;Golden Retrievers are great family dogs because they are calm and patient, which makes kids feel safe around them.&rdquo;</span>
+          </div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-then">
+        <div class="trick-box">
+          <span class="trick-name">Find a fact, then add YOUR thought:</span><br>
+          <b>Passage fact:</b> <i>Golden Retrievers are gentle and good with children.</i><br>
+          <b>Your thought:</b> <i>&ldquo;Golden Retrievers are great family dogs because they are calm and patient, which makes kids feel safe around them.&rdquo;</i><br><br>
+          The passage gives you the fact. <b>You</b> explain why it matters or what it means.
+        </div>
+
+        <div class="test-box">
+          <b>After each sentence, ask:</b> <i>&ldquo;Did I just list facts from the passage, or did I add something from my own head?&rdquo;</i> If you only listed passage facts, add a &ldquo;because&rdquo; or &ldquo;this means&rdquo; to explain why it matters.
+        </div>
+
+        <div class="coach-box">
+          <span class="coach-label">Coach tip:</span> After Dominic reads a fact from the passage, ask: &ldquo;Why does that matter? Why would someone care about that?&rdquo; Whatever he says out loud is the explanation he should write down.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- CARD 3: Use Your Own Words (Close and Tell) -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="card" data-card="2" data-title="Use Your Own Words">
+    <div class="card-header">
+      <span class="num">3</span>
+      <span class="title">Use Your Own Words</span>
+    </div>
+    <div class="card-body">
+      <p>The grader said your paragraph copies sentences from the passage and puts them in a different order. Swapping a few words or rearranging sentences is still copying&mdash;it does not count.</p>
+
+      <p style="margin-top:10px"><b>Here is what happened in your paragraph:</b></p>
+      <table class="fix-table" style="font-size:10.5pt">
+        <tr>
+          <th style="background:#cc0000">What the Passage Says</th>
+          <th style="background:#cc0000">What You Wrote</th>
+        </tr>
+        <tr>
+          <td class="bad" style="text-align:left">&ldquo;Beagle puppies have floppy ears and love to sniff everything.&rdquo;</td>
+          <td class="bad" style="text-align:left">&ldquo;Beagles have floppy ears and love to sniff everything.&rdquo;</td>
+        </tr>
+        <tr>
+          <td class="bad" style="text-align:left">&ldquo;Some dog breeds are very famous around the world.&rdquo; (first sentence)</td>
+          <td class="bad" style="text-align:left">&ldquo;Some dog breeds are very famous around the world.&rdquo; (your last sentence)</td>
+        </tr>
+      </table>
+      <p style="margin-top:6px">The sentences are almost identical. Moving a sentence from the beginning to the end doesn&rsquo;t make it your own.</p>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which version of the Beagle detail is written in the student&rsquo;s own words?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" onclick="handleDiscrim(this)"
+               data-correct="false"
+               data-wrong-feedback="This is almost exactly what the passage says. Dropping the word 'puppies' isn't enough to make it your own.">
+            <span class="discrim-label">A</span>
+            <span>&ldquo;Beagles have floppy ears and love to sniff everything.&rdquo;</span>
+          </div>
+          <div class="discrim-option" onclick="handleDiscrim(this)"
+               data-correct="true"
+               data-right-feedback="This takes the idea (good noses) and says it in a completely new way, then explains why it matters. That's your own words!">
+            <span class="discrim-label">B</span>
+            <span>&ldquo;Beagles became famous because their amazing noses helped hunters find animals, and people liked how friendly they were.&rdquo;</span>
+          </div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-then">
+        <div class="trick-box">
+          <span class="trick-name">Close and Tell:</span><br>
+          1. Read the fact in the passage.<br>
+          2. Cover the passage with your hand.<br>
+          3. Say it out loud like you&rsquo;re telling a friend. Write that down.<br>
+          4. Then add <b>&ldquo;because&rdquo;</b> or <b>&ldquo;this means&rdquo;</b> to explain why it matters.
+        </div>
+
+        <div class="example" style="margin-top:10px">
+          <span class="label-good">&#10003; Your own words + explanation:</span> <span class="ex-text">&ldquo;Beagles became famous because their amazing noses helped hunters find animals, and people liked how friendly they were.&rdquo;</span>
+        </div>
+        <p>It doesn&rsquo;t have to sound fancy. It just has to sound like <b>you</b>.</p>
+
+        <div class="test-box">
+          <b>The #1 rule:</b> If you can find your sentence in the passage, it&rsquo;s not your own words yet. Cover the passage and try again.
+        </div>
+
+        <div class="coach-box">
+          <span class="coach-label">Coach tip:</span> This is Dominic&rsquo;s biggest area to work on. Physically cover or minimize the passage before he writes. If he opens it, gently say: &ldquo;Close it. Now just tell me what you remember about Beagles.&rdquo; Write down what he says&mdash;that&rsquo;s his sentence.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- CARD 4: Write a Closing Sentence -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="card" data-card="3" data-title="Write a Closing">
+    <div class="card-header">
+      <span class="num">4</span>
+      <span class="title">Write a Closing Sentence</span>
+    </div>
+    <div class="card-body">
+      <p>Your last sentence wraps everything up. It should come from <b>your own thinking</b>&mdash;not the passage.</p>
+
+      <p style="margin-top:10px"><b>From your puppy breeds paragraph:</b></p>
+      <div class="example">
+        <span class="label-bad">&#10007; What you wrote:</span> <span class="ex-text">&ldquo;Some dog breeds are very famous around the world.&rdquo;</span>
+        <div class="remember">(This is the first sentence of the passage, copied exactly. The grader caught it.)</div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which closing sentence wraps up the paragraph in the student&rsquo;s own words?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" onclick="handleDiscrim(this)"
+               data-correct="false"
+               data-wrong-feedback="This is copied straight from the passage. A closing sentence needs to be your own words that wrap up what YOU wrote.">
+            <span class="discrim-label">A</span>
+            <span>&ldquo;Some dog breeds are very famous around the world.&rdquo;</span>
+          </div>
+          <div class="discrim-option" onclick="handleDiscrim(this)"
+               data-correct="true"
+               data-right-feedback="This wraps up the whole paragraph by connecting all three breeds back to the question. It's your own thought, not the passage's words!">
+            <span class="discrim-label">B</span>
+            <span>&ldquo;That is why these three breeds are some of the most popular dogs&mdash;they each do something special that people love.&rdquo;</span>
+          </div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-then">
+        <div class="trick-box">
+          Start your closing with: <b>&ldquo;That is why...&rdquo;</b> or <b>&ldquo;This is what makes...&rdquo;</b><br>
+          Then connect your details back to the question.
+        </div>
+
+        <div class="example" style="margin-top:8px">
+          <span class="label-good">&#10003; Simple closing:</span> <span class="ex-text">&ldquo;That is why these three breeds are some of the most popular dogs&mdash;they each do something special that people love.&rdquo;</span>
+        </div>
+
+        <div class="test-box">
+          <b>Tip:</b> Look at your 2&ndash;3 details. Can you put them together? If you wrote about families, hunting, and helping people, your closing could mention all three.
+        </div>
+
+        <div class="coach-box">
+          <span class="coach-label">Coach tip:</span> Ask Dominic: &ldquo;You wrote about Golden Retrievers, Beagles, and German Shepherds. What do all three of them have in common?&rdquo; His answer is his closing sentence. Start with &ldquo;That is why...&rdquo;
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- CARD 5: Check for Copied Sentences -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="card" data-card="4" data-title="Check for Copying">
+    <div class="card-header">
+      <span class="num">5</span>
+      <span class="title">Check for Copied Sentences</span>
+    </div>
+    <div class="card-body">
+      <p>Before you submit, read each sentence and ask:</p>
+      <p style="text-align:center;font-size:14pt;font-weight:700;font-style:italic;margin:10px 0;">&ldquo;Can I find this sentence in the passage?&rdquo;</p>
+      <p>If the answer is yes&mdash;even if you moved it or changed a word or two&mdash;cover the passage and rewrite it in your own words.</p>
+
+      <p style="margin-top:14px"><b>From your puppy breeds paragraph:</b></p>
+      <table class="fix-table" style="font-size:11pt">
+        <tr>
+          <th style="background:#cc0000">Copied from the Passage</th>
+          <th style="background:#008000">Written in Your Own Words</th>
+        </tr>
+        <tr>
+          <td class="bad" style="text-align:left">&ldquo;All of these puppy breeds became famous because they are good at different jobs and make wonderful pets.&rdquo;</td>
+          <td class="good" style="text-align:left">&ldquo;These three breeds became famous because each one has special skills that people love.&rdquo;</td>
+        </tr>
+        <tr>
+          <td class="bad" style="text-align:left">&ldquo;Beagles have floppy ears and love to sniff everything.&rdquo;</td>
+          <td class="good" style="text-align:left">&ldquo;Beagles became famous because their noses helped hunters find animals.&rdquo;</td>
+        </tr>
+        <tr>
+          <td class="bad" style="text-align:left">&ldquo;Some dog breeds are very famous around the world.&rdquo;</td>
+          <td class="good" style="text-align:left">&ldquo;That is why these three breeds are some of the most popular dogs.&rdquo;</td>
+        </tr>
+      </table>
+      <p style="margin-top:8px">The left side uses the passage&rsquo;s exact words. The right side says the <b>same idea</b> but in <b>your own way</b>, and adds your own thinking about why it matters.</p>
+
+      <div class="coach-box">
+        <span class="coach-label">Coach tip:</span> After Dominic finishes a paragraph, open the passage side-by-side. Read each sentence and ask: &ldquo;Can we find this in the passage?&rdquo; If yes, cover the passage and have him say it again in his own words.
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- CARD 6: When You Get Feedback -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="card" data-card="5" data-title="When You Get Feedback">
+    <div class="card-header">
+      <span class="num">6</span>
+      <span class="title">When You Get Feedback</span>
+    </div>
+    <div class="card-body">
+      <p>The grader gives you two scores:</p>
+      <p style="margin:4px 0"><b>Ideas &amp; Organization:</b> You need <b>12 out of 15</b> &mdash; Did you answer the question? Different details? Own words?</p>
+      <p style="margin:4px 0 10px"><b>Conventions:</b> You need <b>4 out of 5</b> &mdash; Spelling, capitals, grammar, punctuation.</p>
+
+      <p>Read the notes under your score. Find the sentence it quotes. Then:</p>
+
+      <div class="fb-row"><span class="fb-label">&ldquo;Copied&rdquo;</span> &rarr; Cover the passage. Say it your way. (Card 3: Close and Tell)</div>
+      <div class="fb-row"><span class="fb-label">&ldquo;Not your idea&rdquo;</span> &rarr; The grader wants YOUR thinking, not the passage&rsquo;s words. Add &ldquo;because&rdquo; to explain why it matters. (Card 2)</div>
+      <div class="fb-row"><span class="fb-label">&ldquo;Rearranged&rdquo;</span> &rarr; Changing the order of passage sentences is still copying. Rewrite from memory. (Card 3)</div>
+      <div class="fb-row"><span class="fb-label">&ldquo;Doesn&rsquo;t answer&rdquo;</span> &rarr; Rewrite sentence 1 with the Question Flip. (Card 1)</div>
+      <div class="fb-row"><span class="fb-label">&ldquo;Grammar&rdquo;</span> &rarr; Check the spelling and grammar card. (Card 8)</div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">The grader says: &ldquo;This sentence is copied word-for-word from the passage.&rdquo; What should you do?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" onclick="handleDiscrim(this)"
+               data-correct="false"
+               data-wrong-feedback="Changing a few words is synonym swapping. The grader will still catch it because the sentence has the same shape.">
+            <span class="discrim-label">A</span>
+            <span>Change a few words and submit again.</span>
+          </div>
+          <div class="discrim-option" onclick="handleDiscrim(this)"
+               data-correct="true"
+               data-right-feedback="That's right! Close and Tell means you put the idea in your own words from memory, not just swap a few words.">
+            <span class="discrim-label">B</span>
+            <span>Cover the passage, say the idea in your own words, and write that down instead.</span>
+          </div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-then">
+        <div class="test-box" style="margin-top:10px">
+          <b>On your puppy breeds paragraph,</b> the grader said you copied sentences from the passage and put them in a different order. That means: go to Card 3 (Close and Tell) and rewrite each detail without looking at the passage.
+        </div>
+
+        <div class="coach-box">
+          <span class="coach-label">Coach tip:</span> Read the grader&rsquo;s notes with Dominic. Point to each quoted sentence and ask: &ldquo;What does this note say you should change?&rdquo; Then connect it to a card number. The goal is for Dominic to learn to read feedback on his own.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- CARD 7: What If I'm Stuck? -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="card" data-card="6" data-title="What If I'm Stuck?">
+    <div class="card-header">
+      <span class="num">7</span>
+      <span class="title">What If I&rsquo;m Stuck?</span>
+    </div>
+    <div class="card-body">
+      <p><b>If you don&rsquo;t know how to start:</b></p>
+      <p>Use the Question Flip. Write the question words, add &ldquo;because,&rdquo; and finish with the first thing that comes to mind. You can fix it later. Don&rsquo;t open the passage yet.</p>
+
+      <p style="margin-top:12px"><b>If the grader keeps saying &ldquo;copied&rdquo;:</b></p>
+      <p>Do not look at the passage while you write. Read it first. Then cover it up. Write your whole paragraph from memory. It does not have to be perfect&mdash;it just has to be yours.</p>
+
+      <p style="margin-top:12px"><b>If you can&rsquo;t think of what to say about a detail:</b></p>
+      <p>Ask yourself: &ldquo;Why would someone care about this?&rdquo; or &ldquo;What does this remind me of?&rdquo; Your answer is the explanation.</p>
+
+      <p style="margin-top:12px"><b>If you tried once and it did not pass:</b></p>
+      <p>That is normal! Here is what to do:</p>
+      <p>1. Read the feedback notes. Find the one or two things the grader marked.</p>
+      <p>2. Fix just those things. Don&rsquo;t rewrite everything.</p>
+      <p>3. Check for copied sentences one more time.</p>
+      <p>4. Submit again.</p>
+
+      <div class="test-box" style="margin-top:12px">
+        <b>Remember:</b> Your puppy breeds paragraph scored 5 out of 15 on Ideas. The main reason was copying. If you rewrite each sentence in your own words and add your own thinking, your score will go up a lot.
+      </div>
+
+      <div class="coach-box" style="margin-top:10px">
+        <span class="coach-label">Coach quick-reference:</span>
+        <table class="fix-table" style="margin-top:6px; font-size:10pt">
+          <tr><th style="width:40%">If Dominic...</th><th>Say This</th></tr>
+          <tr>
+            <td style="text-align:left">Starts copying from the passage</td>
+            <td style="text-align:left">&ldquo;Stop. Cover the passage. Now tell me what that sentence said&mdash;just talk to me.&rdquo; Write down what he says.</td>
+          </tr>
+          <tr>
+            <td style="text-align:left">Doesn&rsquo;t know how to start</td>
+            <td style="text-align:left">&ldquo;What&rsquo;s the question? Read it to me. Now flip it around and add &lsquo;because.&rsquo; Don&rsquo;t look at the passage&mdash;just tell me what you think.&rdquo;</td>
+          </tr>
+          <tr>
+            <td style="text-align:left">Lists facts without explaining</td>
+            <td style="text-align:left">&ldquo;Good fact. Now why does that matter? Why would someone care?&rdquo; Whatever he says, write it down after &lsquo;because.&rsquo;</td>
+          </tr>
+          <tr>
+            <td style="text-align:left">Gets frustrated after a failed attempt</td>
+            <td style="text-align:left">&ldquo;Almost nobody gets it on the first try. Let&rsquo;s look at what the grader said and fix just that one thing.&rdquo;</td>
+          </tr>
+          <tr>
+            <td style="text-align:left">Swaps words instead of rephrasing</td>
+            <td style="text-align:left">&ldquo;You changed some words, but the sentence still has the same shape. Cover the passage. Say it your way&mdash;like you&rsquo;re telling me at lunch.&rdquo;</td>
+          </tr>
+          <tr>
+            <td style="text-align:left">Submits without checking</td>
+            <td style="text-align:left">&ldquo;Hold on&mdash;let&rsquo;s use the checklist first. Read me item one.&rdquo;</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- CARD 8: Spelling & Grammar -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="card" data-card="7" data-title="Spelling &amp; Grammar">
+    <div class="card-header">
+      <span class="num">8</span>
+      <span class="title">Quick Spelling &amp; Grammar Fix</span>
+    </div>
+    <div class="card-body">
+      <p>Your Conventions score was 3 out of 5. You need a 4. Here is the grammar mistake the grader found:</p>
+
+      <p style="margin-top:10px"><b>Parallel structure &mdash; making a list match:</b></p>
+      <div class="example">
+        <span class="label-bad">&#10007; You wrote:</span> <span class="ex-text">&ldquo;Golden Retrievers have soft fur, friendly faces, <u>being gentle</u>, and good with children.&rdquo;</span>
+        <div class="remember">(The list mixes nouns with a verb phrase. &ldquo;Being gentle&rdquo; doesn&rsquo;t match the other items.)</div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which version fixes the list so all items match?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" onclick="handleDiscrim(this)"
+               data-correct="true"
+               data-right-feedback="Now every item in the list is a noun phrase: soft fur, friendly faces, gentle personalities, and good behavior. They all match!">
+            <span class="discrim-label">A</span>
+            <span>&ldquo;Golden Retrievers have soft fur, friendly faces, gentle personalities, and good behavior with children.&rdquo;</span>
+          </div>
+          <div class="discrim-option" onclick="handleDiscrim(this)"
+               data-correct="false"
+               data-wrong-feedback="'Being gentle' still doesn't match the other items. 'Soft fur' and 'friendly faces' are things (nouns), but 'being gentle' is an action (verb). They need to match.">
+            <span class="discrim-label">B</span>
+            <span>&ldquo;Golden Retrievers have soft fur, friendly faces, being gentle, and they are good with children.&rdquo;</span>
+          </div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-then">
+        <div class="trick-box">
+          <span class="trick-name">List rule:</span> When you write a list, make every item the same <b>kind</b> of word. If you start with nouns (things), keep using nouns. If you start with actions, keep using actions.<br><br>
+          <b>Check:</b> Read each item in your list. Do they all sound the same kind? If one sounds different, change it to match the others.
+        </div>
+
+        <div class="test-box" style="margin-top:8px">
+          <b>The good news:</b> This was your only grammar mistake. Fix it and your Conventions score goes from 3 to 4 or 5. Read your sentences out loud before submitting&mdash;if something sounds off, it probably is.
+        </div>
+
+        <div class="coach-box">
+          <span class="coach-label">Coach tip:</span> If Dominic writes a list, have him read each item separately: &ldquo;soft fur&rdquo; &mdash; thing. &ldquo;Friendly faces&rdquo; &mdash; thing. &ldquo;Being gentle&rdquo; &mdash; wait, that&rsquo;s an action, not a thing. Can you make it a thing? &ldquo;Gentle personalities&rdquo; &mdash; yes!
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- CARD 9: Checklist -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="card" data-card="8" data-title="Checklist">
+    <div class="card-header">
+      <span class="num">9</span>
+      <span class="title">Before You Submit</span>
+    </div>
+    <div class="card-body">
+      <p style="margin-bottom:8px">Go through each one before you hit submit:</p>
+
+      <div class="checklist-progress-label" id="checkProgressLabel">0 of 6 checked</div>
+      <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
+
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div>Does my first sentence answer the question using my own words? (Question Flip + &ldquo;because&rdquo;)</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div>Do my 2&ndash;3 details each give a DIFFERENT fact with my own explanation? (Not just passage facts listed)</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div>Did I use my own words, not the passage&rsquo;s? (Close and Tell &mdash; cover the passage first)</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div>Does my last sentence wrap up the whole paragraph in my own words? (&ldquo;That is why...&rdquo;)</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div>Can I find any of my sentences in the passage? (If yes, rewrite them)</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div>Did I read it out loud to catch grammar mistakes? (Check that lists match)</div>
+      </div>
+
+      <div style="text-align:center;margin-top:20px;padding:12px;background:#1a1a2e;color:#fff;border-radius:8px;font-size:12pt;font-weight:600;">
+        It&rsquo;s okay to take a few tries. Each try should get a little better. You&rsquo;ve got this, Dominic!
+      </div>
+
+      <div style="text-align:center">
+        <button class="print-btn" onclick="printChecklist(this)">
+          <svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+          Print this checklist
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="nav-buttons">
+  <button class="nav-btn" id="prevBtn" onclick="navigate(-1)" disabled>&#8592; Back</button>
+  <button class="nav-btn" id="nextBtn" onclick="navigate(1)">Next &#8594;</button>
+</div>
+
+<div class="bottom-note" id="pageLabel">Card 1 of 9</div>
+
+<!-- Completion overlay -->
+<div class="completion-overlay" id="completionOverlay">
+  <div class="completion-card">
+    <div class="completion-emoji">&#127881;</div>
+    <div class="completion-title">Nice work, Dominic!</div>
+    <div class="completion-sub">You reviewed all your cards. Remember your goals:<br><b>Use your own words &bull; Explain why details matter &bull; Use the checklist</b></div>
+    <button class="completion-close" onclick="closeCompletion()">Got it!</button>
+  </div>
+</div>
+<canvas id="confettiCanvas"></canvas>
+
+<script>
+var cards = document.querySelectorAll('.card');
+var bar = document.getElementById('progressBar');
+var breadcrumb = document.getElementById('breadcrumb');
+var stickyEl = document.getElementById('stickyIndicator');
+var current = 0;
+var visited = [0];
+
+cards.forEach(function(card, i) {
+  var dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  var tooltip = document.createElement('span');
+  tooltip.className = 'dot-tooltip';
+  tooltip.textContent = card.getAttribute('data-title') || ('Card ' + (i + 1));
+  dot.appendChild(tooltip);
+  dot.addEventListener('click', function() { goTo(i); });
+  bar.appendChild(dot);
+});
+
+function updateBreadcrumb() {
+  var title = cards[current].getAttribute('data-title') || ('Card ' + (current + 1));
+  breadcrumb.innerHTML = 'Card <b>' + (current + 1) + '</b> of ' + cards.length + ' \u2014 ' + title;
+  stickyEl.textContent = (current + 1) + ' / ' + cards.length;
+}
+
+function checkSticky() {
+  var barRect = bar.getBoundingClientRect();
+  stickyEl.classList.toggle('visible', barRect.bottom < 0);
+}
+window.addEventListener('scroll', checkSticky);
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  if (visited.indexOf(current) === -1) visited.push(current);
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  visited.forEach(function(v) { if (v !== current) bar.children[v].classList.add('visited'); });
+  var prevBtn = document.getElementById('prevBtn');
+  var nextBtn = document.getElementById('nextBtn');
+  if (prevBtn) {
+    prevBtn.style.visibility = current === 0 ? 'hidden' : 'visible';
+    prevBtn.disabled = current === 0;
+  }
+  if (nextBtn) {
+    nextBtn.textContent = current === cards.length - 1 ? 'Done \u2713' : 'Next \u2192';
+    nextBtn.disabled = false;
+  }
+  updateBreadcrumb();
+  document.getElementById('pageLabel').textContent = 'Card ' + (current + 1) + ' of ' + cards.length;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) { showCompletion(); return; }
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+function revealBetter(cover) {
+  var content = cover.nextElementSibling;
+  content.classList.add('shown');
+  cover.classList.add('hidden');
+}
+
+/* ── DISCRIMINATION INTERACTION (force-correct) ── */
+function handleDiscrim(option) {
+  var challenge = option.closest('.discrim-challenge');
+  var feedback = challenge.querySelector('.discrim-feedback');
+  var options = challenge.querySelectorAll('.discrim-option');
+  var isCorrect = option.getAttribute('data-correct') === 'true';
+
+  if (option.classList.contains('correct') || option.classList.contains('locked')) return;
+
+  if (isCorrect) {
+    option.classList.add('correct');
+    options.forEach(function(o) {
+      if (o !== option) o.classList.add('locked');
+    });
+    feedback.textContent = option.getAttribute('data-right-feedback') || 'Correct!';
+    feedback.className = 'discrim-feedback shown right-fb';
+    // Reveal the discrim-then content
+    var sibling = challenge.nextElementSibling;
+    while (sibling) {
+      if (sibling.classList && sibling.classList.contains('discrim-then')) {
+        setTimeout(function() { sibling.classList.add('revealed'); }, 600);
+        break;
+      }
+      sibling = sibling.nextElementSibling;
+    }
+  } else {
+    option.classList.add('wrong');
+    feedback.textContent = option.getAttribute('data-wrong-feedback') || 'Not quite \u2014 think again.';
+    feedback.className = 'discrim-feedback shown wrong-fb';
+    setTimeout(function() {
+      option.classList.remove('wrong');
+      feedback.className = 'discrim-feedback';
+    }, 2000);
+  }
+}
+
+function toggleCheck(item) {
+  item.classList.toggle('checked');
+  updateCheckProgress();
+}
+
+function updateCheckProgress() {
+  var items = document.querySelectorAll('.check-item');
+  var checked = document.querySelectorAll('.check-item.checked').length;
+  var total = items.length;
+  var fill = document.getElementById('checkProgressFill');
+  var lbl = document.getElementById('checkProgressLabel');
+  if (fill) fill.style.width = Math.round((checked / total) * 100) + '%';
+  if (lbl) {
+    lbl.innerHTML = checked === total
+      ? '<b style="color:#2d6a2d;">All done! Nice work.</b>'
+      : checked + ' of ' + total + ' checked';
+  }
+}
+
+function printChecklist(btn) {
+  var card = btn.closest('.card');
+  var checkedItems = card.querySelectorAll('.check-item.checked');
+  checkedItems.forEach(function(item) { item.classList.remove('checked'); });
+  card.classList.add('print-target');
+  window.print();
+  card.classList.remove('print-target');
+  checkedItems.forEach(function(item) { item.classList.add('checked'); });
+}
+
+function showCompletion() {
+  document.getElementById('completionOverlay').classList.add('visible');
+  launchConfetti();
+}
+
+function closeCompletion() {
+  document.getElementById('completionOverlay').classList.remove('visible');
+}
+
+function launchConfetti() {
+  var canvas = document.getElementById('confettiCanvas');
+  var ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  var colors = ['#1a1a2e','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b','#42a5f5'];
+  var particles = [];
+  for (var i = 0; i < 120; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height - canvas.height,
+      w: Math.random() * 10 + 5, h: Math.random() * 6 + 3,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      vx: (Math.random() - 0.5) * 4, vy: Math.random() * 3 + 2,
+      rot: Math.random() * 360, rotV: (Math.random() - 0.5) * 10, life: 1
+    });
+  }
+  var frame = 0;
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    var alive = false;
+    particles.forEach(function(p) {
+      if (p.life <= 0) return;
+      alive = true;
+      p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.rot += p.rotV;
+      if (p.y > canvas.height + 20) { p.life = 0; return; }
+      if (frame > 60) p.life -= 0.01;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot * Math.PI / 180);
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    });
+    frame++;
+    if (alive) requestAnimationFrame(animate);
+    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  animate();
+}
+
+goTo(0);
+</script>
+
+<script src="../tracking.js"></script>
+</body>
+</html>
