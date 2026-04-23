@@ -160,6 +160,20 @@ Cards must **never** tell students that direct quotes are required for essay evi
 
 **Model rewrites** can use direct quotes as one example, but the teaching language must not present quoting as the only correct approach. When praising a student who DID quote, it's fine to mention — just don't prescribe quoting.
 
+**Show HOW to quote and paraphrase.** Saying "quoted or paraphrased" without showing the point-earning technique is not enough. Every card that teaches Evidence Sandwich must include concrete DO/DO NOT guidance:
+
+**Quoting well:**
+- DO pull a short, exact phrase (2–8 words) and put it in "double quotation marks"
+- DO introduce with "The article says…" / "The passage explains…" so the grader sees it's the author's words
+- DON'T copy a whole sentence or paragraph — long quotes don't show understanding, they fill space
+- DON'T drop a bare quote — always add a sentence explaining what it shows
+
+**Paraphrasing well:**
+- DO put the idea in your own words while keeping the **specific fact** (name, place, date, number, what someone did)
+- DO keep the detail specific — "people played sports" is too general; "British schools wrote down cricket rules in the 1800s" has the fact
+- DON'T copy word-for-word without quotation marks — that's not paraphrasing and can lose points
+- DON'T leave out the specific fact — every paraphrase needs at least one concrete detail anchored in the passage
+
 ### 3.5 Q6–Q10 on G3–G5 are one-sentence, three-point questions
 
 On G3–G5 writing tests, Questions 6–10 are **Write Sentence from a Prompt** items. The prompt explicitly instructs students to write **one sentence** that includes a reason, explanation, or example. Each question is worth **3 points**.
@@ -171,6 +185,41 @@ On G3–G5 writing tests, Questions 6–10 are **Write Sentence from a Prompt** 
 - Reference scores as "X of 3 points", never "X / 1" or "X.XX out of 1.0"
 
 **Why:** on Ozzie's and Brooks's initial drafts I violated both rules. The test prompt itself says "in one sentence" — telling students to write two directly contradicts the assessment.
+
+### 3.6 Tests are digital — no paper-based instructions
+
+The Alpha Standardized Writing tests run in a browser. Students type answers into a text box; there is no paper, no pencil, and no margin.
+
+**Never** instruct students to:
+- ❌ "Circle the word 'and'"
+- ❌ "Underline the verb"
+- ❌ "Jot the outline in the margin"
+- ❌ "Put down your pencil"
+- ❌ "Mark the passage with a highlighter"
+
+**Use** digital-friendly alternatives:
+- ✅ "Look for the word 'and'" / "notice the second question mark"
+- ✅ "Find the verb and say it out loud to yourself"
+- ✅ "Type a quick outline at the top of the answer box, draft your paragraph below it, then delete the outline before you submit"
+- ✅ "Your hand is off the keyboard"
+- ✅ "Re-read the passage in the panel above"
+
+**Why:** Ozzie's card told him to "circle or underline the word 'and'" on a digital test. Students literally cannot do this. Paper-era habits (margin notes, pencil marks) don't translate — the coaching has to match the actual test environment.
+
+### 3.7 Score references must name the correct denominator
+
+Every student-facing score reference must match the question's actual point value from Section 2.
+
+**Examples:**
+- ✅ "Q1 earned 0 of 2 points" (Q1-Q5 on G3-G5 is 2-point)
+- ✅ "Q6 earned 2 of 3 points" (Q6-Q10 on G3-G5 is 3-point)
+- ✅ "Q11 earned 13/20"
+- ✅ Q1-Q10 total on G3-G5 is out of **25 points** (Q1-Q5 = 10, Q6-Q10 = 15)
+- ❌ "Q1-Q10 = 9.5/10" (Q1-Q10 is worth 25 points, not 10)
+- ❌ "Q6 got 0.67 / 1" (Q6-Q10 is 3-point)
+- ❌ "Q1 lost a half point" (partial 0.5 on a 2-pt Q1 = 1 point lost)
+
+**Why:** Ozzie's card showed "9.5/10" for Questions 1-10 and elsewhere said "Q1 got 0 pts" — the numbers were internally inconsistent (if Q1-Q10 is out of 10 and Q1 is 0, the rest can't average to 9.5). The Q1-Q10 box must use the correct /25 denominator so the overall percentage math checks out.
 
 ---
 
@@ -421,3 +470,7 @@ Patterns from past violations the user has flagged:
 - ❌ Writing "Quote Sandwich" or telling students direct quotes are required
 - ❌ Omitting the Print button, completion celebration, reveal interaction, or discrimination challenges
 - ❌ Skipping the longitudinal analysis step and relying on prior card HTML alone
+- ❌ Showing the Q1–Q10 score box as "9.5/10" (Q1–Q10 is worth 25 points on G3–G5, not 10)
+- ❌ Telling students to "circle" or "underline" words on the test — the test is digital
+- ❌ Prescribing margin-based planning ("jot the outline in the margin") — there is no margin in a text box
+- ❌ Teaching Evidence Sandwich as just "quoted or paraphrased" without showing HOW to quote and paraphrase in a point-earning way (short exact phrase in quotation marks introduced with an attribution; paraphrase in own words keeping the specific fact)
