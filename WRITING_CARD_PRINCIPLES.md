@@ -221,6 +221,24 @@ Every student-facing score reference must match the question's actual point valu
 
 **Why:** Ozzie's card showed "9.5/10" for Questions 1-10 and elsewhere said "Q1 got 0 pts" — the numbers were internally inconsistent (if Q1-Q10 is out of 10 and Q1 is 0, the rest can't average to 9.5). The Q1-Q10 box must use the correct /25 denominator so the overall percentage math checks out.
 
+### 3.8 Pacing: the test typically takes 30–40 minutes, not 60
+
+The Alpha Writing tests have a generous time limit (roughly 60 minutes available) but most students who do well finish in **about 30–40 minutes**. That's the realistic working time, not a target to race against and not a target to pad.
+
+**Use** this framing:
+- ✅ "Most students who do well take about 30–40 minutes"
+- ✅ "Give the test the time it needs — don't race, don't pad"
+- ✅ "If you finish in 15 minutes you've rushed — go back and proofread"
+- ✅ Pacing plan: 5–7 min passage read + 10–12 min Q1–Q10 + 1 min SPO + 10–12 min Q11 + 5–8 min proofread ≈ 30–40 min total
+
+**Don't** use these patterns:
+- ❌ "You have 60 minutes — use them all"
+- ❌ "Don't submit until the clock shows 30 minutes at minimum"
+- ❌ Score-grid box that says "60 / Minutes Allowed" (implies the full 60 is the target)
+- ❌ Pacing plans that allocate the full 60 minutes — that tells a student a proper test takes an hour
+
+**Why:** Alex's prep card originally told him "you have 60 minutes, use them" and allocated a 60-minute pacing plan. The user flagged that a good test usually takes 30–40 minutes; a 60-minute plan sets an unrealistic and counterproductive target. The goal is "enough time to do careful work," not "maximum time."
+
 ---
 
 ## 4. Design principles — how cards teach
@@ -474,3 +492,4 @@ Patterns from past violations the user has flagged:
 - ❌ Telling students to "circle" or "underline" words on the test — the test is digital
 - ❌ Prescribing margin-based planning ("jot the outline in the margin") — there is no margin in a text box
 - ❌ Teaching Evidence Sandwich as just "quoted or paraphrased" without showing HOW to quote and paraphrase in a point-earning way (short exact phrase in quotation marks introduced with an attribution; paraphrase in own words keeping the specific fact)
+- ❌ Telling students the test takes 60 minutes and they should use all 60 — it typically takes 30–40 minutes for students who do well. Frame pacing as "give the test the time it needs," not "use the full time limit"
