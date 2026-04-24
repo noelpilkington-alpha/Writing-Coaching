@@ -239,6 +239,40 @@ The Alpha Writing tests have a generous time limit (roughly 60 minutes available
 
 **Why:** Alex's prep card originally told him "you have 60 minutes, use them" and allocated a 60-minute pacing plan. The user flagged that a good test usually takes 30–40 minutes; a 60-minute plan sets an unrealistic and counterproductive target. The goal is "enough time to do careful work," not "maximum time."
 
+### 3.9 Use "Supporting Detail" — not "Body" — for paragraph structure
+
+When teaching paragraph structure on G3–G5 cards, use the term **Supporting Detail** (not "Body," "Body 1 / Body 2," or "body sentence"). The curriculum term for the middle rows of a Single Paragraph Outline is Supporting Detail (often abbreviated **D1 / D2** in shorthand outlines).
+
+**Use** this language:
+- ✅ SPO rows: TOPIC / **DETAIL 1** / **DETAIL 2** / CLOSE
+- ✅ "2–3 supporting details, each pulling a specific fact from the passage"
+- ✅ Shorthand outlines: "D1: …" / "D2: …"
+
+**Don't** use:
+- ❌ "Body 1 / Body 2 / B1 / B2"
+- ❌ "body sentence," "body point," "body idea"
+- ❌ Tag labels like `BODY 1` / `BODY 2` on outline rows
+
+"Body" is essay-level vocabulary (body paragraphs) — it's inaccurate and confusing when applied to a single paragraph's internal structure.
+
+### 3.10 Pre-test prep cards must not reference real test passages
+
+When a card is a **pre-test prep** for a student who hasn't yet taken the test, every example — prompts, model paragraphs, SPO topics, proofread discrim challenges — must use **invented, clearly-labeled practice content**. Don't pull phrases, characters, places, or topics from any real test form.
+
+**Use** this pattern:
+- ✅ Invent a generic topic (e.g., a community garden, a bakery opening, a kid building a fort) and label it as "a made-up practice passage"
+- ✅ Put a one-line disclaimer on the card: "the examples here use a made-up practice passage — the goal is to show you the structure, not to give you content"
+- ✅ In discrim prompts, prefix with "Practice prompt (made-up): …"
+
+**Don't** use:
+- ❌ Passage names or topics that appear on any real test: Sports and Society, Pokemon / Satoshi Tajiri, Anna + Sally the seal, Layla + the geode, Garissa Camel Library, Hershey Bears, Soil vs Dirt, or any other real passage
+- ❌ Character names from real passages (Anna, Jim, Sally, Layla, Tajiri, etc.)
+- ❌ Specific model paragraphs that mirror the organization or facts of a real passage
+
+**Why:** Alex's prep card originally used the Sports and Society passage (from G3.4) as its SPO example, and Anna/Sally/Lucy references in the proofread card. If a student studying the prep card later sees the same passage on a real test, the prep card has given them advance content — which is both unfair and useless (they've already practiced the specific answer). Prep content must teach **structure and habits** using clearly invented examples.
+
+**Double-check:** before shipping a prep card, grep the final HTML for every test passage you know of — sports/cricket/britain/1800s, pokemon/tajiri/bug, anna/sally/seal, layla/geode, garissa/camel, hershey/bear, soil/dirt, lucy/rocket — and confirm zero matches.
+
 ---
 
 ## 4. Design principles — how cards teach
@@ -493,3 +527,5 @@ Patterns from past violations the user has flagged:
 - ❌ Prescribing margin-based planning ("jot the outline in the margin") — there is no margin in a text box
 - ❌ Teaching Evidence Sandwich as just "quoted or paraphrased" without showing HOW to quote and paraphrase in a point-earning way (short exact phrase in quotation marks introduced with an attribution; paraphrase in own words keeping the specific fact)
 - ❌ Telling students the test takes 60 minutes and they should use all 60 — it typically takes 30–40 minutes for students who do well. Frame pacing as "give the test the time it needs," not "use the full time limit"
+- ❌ Using "Body 1 / Body 2" or "body sentence" for paragraph structure — the curriculum term is "Supporting Detail" (D1 / D2 in shorthand)
+- ❌ Using real test passage content (Sports and Society, Pokemon/Tajiri, Anna + Sally the seal, Layla + geode, Garissa camel library, etc.) in pre-test prep cards — every example must be an invented, clearly-labeled practice passage
