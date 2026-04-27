@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Helio's Writing Test Review &mdash; G3.2</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: Calibri, 'Segoe UI', sans-serif;
+  font-size: 12pt;
+  color: #1a1a2e;
+  background: #f0f0f5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.progress-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
+.progress-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: #ccc; transition: background 0.3s, transform 0.2s; cursor: pointer;
+  position: relative;
+}
+.progress-dot.active { background: #1a1a2e; transform: scale(1.25); }
+.progress-dot.visited { background: #7a7a9e; }
+.progress-dot:hover { transform: scale(1.3); }
+.progress-dot .dot-tooltip {
+  position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  background: #1a1a2e; color: #fff; padding: 4px 10px; border-radius: 6px;
+  font-size: 8.5pt; white-space: nowrap; opacity: 0;
+  pointer-events: none; transition: opacity 0.2s; z-index: 100;
+}
+.progress-dot .dot-tooltip::after {
+  content: ''; position: absolute; top: 100%; left: 50%;
+  transform: translateX(-50%); border: 5px solid transparent;
+  border-top-color: #1a1a2e;
+}
+.progress-dot:hover .dot-tooltip { opacity: 1; }
+
+.card-breadcrumb {
+  font-size: 9.5pt; color: #888; margin-bottom: 14px;
+  text-align: center; transition: opacity 0.3s; min-height: 1.2em;
+}
+.card-breadcrumb b { color: #1a1a2e; }
+
+.sticky-indicator {
+  position: fixed; top: 12px; right: 16px;
+  background: #1a1a2e; color: #fff; padding: 5px 14px;
+  border-radius: 20px; font-size: 9pt; font-weight: 700;
+  opacity: 0; transition: opacity 0.3s; z-index: 200;
+  pointer-events: none; letter-spacing: 0.5px;
+}
+.sticky-indicator.visible { opacity: 1; }
+
+.card-container { position: relative; width: 640px; min-height: 420px; }
+
+.card {
+  position: absolute; top: 0; left: 0; width: 100%;
+  background: #fff; border: 2.5px solid #1a1a2e; border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+  opacity: 0; pointer-events: none; transform: translateX(40px);
+  transition: opacity 0.35s, transform 0.35s;
+}
+.card.active {
+  opacity: 1; pointer-events: auto; transform: translateX(0); position: relative;
+}
+
+.card-header {
+  background: #1a1a2e; color: #fff; padding: 14px 20px;
+  border-radius: 11px 11px 0 0;
+}
+.card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+.card-header .card-subtitle { font-size: 9.5pt; color: #aaa; margin-top: 2px; }
+
+.card-body { padding: 18px 22px 22px; line-height: 1.55; }
+.card-body p { margin: 6px 0; }
+.card-body ul { margin: 6px 0 6px 18px; }
+.card-body li { margin: 3px 0; }
+
+.score-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px; margin: 12px 0;
+}
+.score-box {
+  background: #f8f8fc; border: 1.5px solid #e0e0e8;
+  border-radius: 8px; padding: 10px 14px; text-align: center;
+}
+.score-box .big { font-size: 20pt; font-weight: 700; }
+.score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+.score-good .big { color: #2d6a2d; }
+.score-warn .big { color: #cc6600; }
+.score-low .big { color: #cc0000; }
+
+.you-wrote {
+  background: #fff3f3; border-left: 3px solid #cc0000;
+  padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+  font-style: italic; font-size: 10.5pt;
+}
+.you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+.better {
+  background: #e8f5e9; border-left: 3px solid #2d6a2d;
+  padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+  font-size: 10.5pt;
+}
+.better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+.tip-box {
+  background: #e8edf5; border-left: 3px solid #1a1a2e;
+  padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0;
+}
+.tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+.highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+.error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+
+.essay-excerpt {
+  background: #fafafa; border: 1px solid #e0e0e8;
+  border-radius: 6px; padding: 10px 14px; font-size: 10.5pt;
+  margin: 8px 0; line-height: 1.6;
+}
+
+.outline-box {
+  background: #f8f8fc; border: 1.5px solid #e0e0e8;
+  border-radius: 8px; padding: 12px 16px; margin: 8px 0; font-size: 10.5pt;
+}
+.outline-box .outline-label {
+  font-weight: 700; font-size: 9pt; color: #1a1a2e;
+  text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+}
+.outline-row {
+  display: flex; gap: 10px; padding: 5px 0;
+  border-bottom: 1px dashed #ddd;
+}
+.outline-row:last-child { border-bottom: none; }
+.outline-tag {
+  font-weight: 700; font-size: 9pt; color: #fff; background: #1a1a2e;
+  border-radius: 4px; padding: 2px 8px; min-width: 50px;
+  text-align: center; flex-shrink: 0; line-height: 1.6;
+}
+
+.pattern-note {
+  background: #f5f0ff; border-left: 3px solid #7c4dff;
+  padding: 9px 14px; margin: 0 0 12px; border-radius: 0 6px 6px 0;
+  font-size: 10pt; line-height: 1.45;
+  display: flex; align-items: flex-start; gap: 8px;
+}
+.pattern-note .pattern-note-icon { font-size: 14pt; flex-shrink: 0; line-height: 1; }
+.pattern-note b { color: #5c2dcc; }
+
+.discrim-challenge {
+  background: #f8f5ff; border: 1.5px solid #d4c5ff; border-radius: 8px;
+  padding: 14px; margin: 10px 0;
+}
+.discrim-prompt {
+  font-weight: 700; font-size: 10.5pt; margin-bottom: 10px; color: #5c2dcc;
+}
+.discrim-options { display: flex; flex-direction: column; gap: 8px; }
+.discrim-option {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 14px; border: 2px solid #d4c5ff; border-radius: 8px;
+  cursor: pointer; transition: all 0.2s; font-size: 10.5pt;
+  background: #fff;
+}
+.discrim-option:hover { border-color: #7c4dff; background: #f5f0ff; }
+.discrim-label { font-weight: 800; color: #7c4dff; min-width: 20px; flex-shrink: 0; }
+.discrim-option.correct { border-color: #2d6a2d; background: #e8f5e9; cursor: default; }
+.discrim-option.correct .discrim-label { color: #2d6a2d; }
+.discrim-option.wrong { border-color: #cc0000; background: #fff3f3; }
+.discrim-option.wrong .discrim-label { color: #cc0000; }
+.discrim-option.locked { pointer-events: none; opacity: 0.5; }
+.discrim-feedback {
+  margin-top: 0; font-size: 10pt; line-height: 1.4;
+  max-height: 0; overflow: hidden; opacity: 0;
+  transition: max-height 0.3s, opacity 0.3s, margin 0.3s;
+}
+.discrim-feedback.shown { max-height: 200px; opacity: 1; margin-top: 10px; }
+.discrim-feedback.wrong-fb { color: #cc0000; }
+.discrim-feedback.right-fb { color: #2d6a2d; font-weight: 600; }
+
+.discrim-then {
+  max-height: 0; overflow: hidden; opacity: 0;
+  transition: max-height 0.6s ease, opacity 0.5s ease;
+}
+.discrim-then.revealed { max-height: 5000px; opacity: 1; }
+
+.reveal-wrapper { position: relative; }
+.reveal-cover {
+  background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%);
+  border-left: 3px solid #2d6a2d;
+  padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0;
+  cursor: pointer; user-select: none;
+  display: flex; align-items: center; gap: 10px;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.reveal-cover:hover {
+  box-shadow: 0 2px 8px rgba(45,106,45,0.15);
+  background: linear-gradient(135deg, #d4edda 0%, #c8e6c9 100%);
+}
+.reveal-cover .reveal-icon {
+  width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
+.reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #2d6a2d; }
+.reveal-cover .reveal-hint { font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px; }
+.reveal-content {
+  max-height: 0; overflow: hidden; opacity: 0;
+  transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0;
+}
+.reveal-content.shown { max-height: 800px; opacity: 1; margin: 8px 0; }
+.reveal-cover.hidden { display: none; }
+
+.tip-expand {
+  margin-top: 8px; border-top: 1px dashed #b0b8cc; padding-top: 6px;
+}
+.tip-expand summary {
+  font-size: 9.5pt; font-weight: 600; color: #1a1a2e;
+  cursor: pointer; padding: 4px 0; list-style: none;
+  display: flex; align-items: center; gap: 6px;
+}
+.tip-expand summary::-webkit-details-marker { display: none; }
+.tip-expand summary::before {
+  content: '\25B6'; font-size: 8pt; transition: transform 0.2s; display: inline-block;
+}
+.tip-expand[open] summary::before { transform: rotate(90deg); }
+.tip-expand .expand-body {
+  margin-top: 6px; font-size: 10pt; line-height: 1.5;
+  background: #f4f6fb; padding: 10px 12px; border-radius: 6px;
+}
+
+.check-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 10px 8px; cursor: pointer; border-bottom: 1px solid #eee;
+  border-radius: 6px; transition: background 0.15s; user-select: none;
+  font-size: 11pt;
+}
+.check-item:last-child { border-bottom: none; }
+.check-item:hover { background: #f8f8fc; }
+.check-item.checked { background: #f0f8f0; }
+.check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
+.check-item.checked .check-box::after {
+  content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700;
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+}
+.check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
+.check-box {
+  width: 28px; height: 28px; border: 2.5px solid #1a1a2e;
+  border-radius: 6px; flex-shrink: 0; margin-top: 1px;
+  position: relative; transition: background 0.2s, border-color 0.2s;
+}
+.checklist-progress {
+  background: #eee; border-radius: 10px; height: 8px;
+  margin: 12px 0 6px; overflow: hidden;
+}
+.checklist-progress-fill {
+  background: linear-gradient(90deg, #2d6a2d, #4caf50);
+  height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%;
+}
+.checklist-progress-label {
+  font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px;
+}
+
+.practice-recommendations {
+  margin-top: 16px; border-top: 2px solid #e0e0e8; padding-top: 14px;
+}
+.practice-recs-title {
+  font-size: 10pt; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.6px; color: #1a1a2e; margin-bottom: 10px;
+}
+.practice-tier { border-radius: 8px; padding: 12px 14px; margin: 8px 0; }
+.tier-primary { background: #e8f5e9; border: 1.5px solid #a5d6a7; }
+.tier-extra { background: #f8f8fc; border: 1.5px solid #e0e0e8; }
+.tier-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.tier-label {
+  font-size: 8.5pt; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.8px; padding: 2px 10px; border-radius: 10px;
+}
+.tier-primary .tier-label { background: #2d6a2d; color: #fff; }
+.tier-extra .tier-label { background: #888; color: #fff; }
+.tier-note { font-size: 9pt; color: #666; margin-bottom: 6px; line-height: 1.4; }
+.practice-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.practice-link {
+  display: inline-block; padding: 5px 12px; border-radius: 6px;
+  font-size: 9.5pt; font-weight: 600; text-decoration: none;
+  transition: background 0.2s, transform 0.1s;
+}
+.practice-link:hover { transform: translateY(-1px); }
+.tier-primary .practice-link { background: #c8e6c9; color: #1b5e1b; }
+.tier-primary .practice-link:hover { background: #a5d6a7; }
+.tier-extra .practice-link { background: #e8edf5; color: #1a1a2e; }
+.tier-extra .practice-link:hover { background: #d8dff0; }
+
+.nav { display: flex; gap: 12px; margin-top: 16px; }
+.nav button {
+  padding: 8px 28px; border: 2px solid #1a1a2e; border-radius: 8px;
+  background: #fff; color: #1a1a2e; font-family: inherit;
+  font-size: 11pt; font-weight: 600; cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.nav button:hover { background: #1a1a2e; color: #fff; }
+
+.print-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 12px; padding: 8px 20px;
+  border: 2px solid #1a1a2e; border-radius: 8px;
+  background: #fff; color: #1a1a2e; font-family: inherit;
+  font-size: 10.5pt; font-weight: 600; cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.print-btn:hover { background: #1a1a2e; color: #fff; }
+.print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+.completion-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(26,26,46,0.6); z-index: 500;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.4s;
+}
+.completion-overlay.visible { opacity: 1; pointer-events: auto; }
+.completion-card {
+  background: #fff; border-radius: 16px; padding: 40px 48px;
+  text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+  transform: scale(0.8); transition: transform 0.4s ease; max-width: 420px;
+}
+.completion-overlay.visible .completion-card { transform: scale(1); }
+.completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+.completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; }
+.completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+.completion-close {
+  margin-top: 20px; padding: 10px 32px;
+  background: #1a1a2e; color: #fff; border: none; border-radius: 8px;
+  font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer;
+  transition: background 0.2s;
+}
+.completion-close:hover { background: #2d2d4e; }
+#confettiCanvas {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 501;
+}
+
+.para-map {
+  display: flex; gap: 6px; margin: 10px 0; flex-wrap: wrap;
+}
+.para-tag {
+  padding: 6px 12px; border-radius: 6px; font-size: 10pt; font-weight: 600;
+  border: 1.5px solid;
+}
+.para-tag.good { background: #e8f5e9; border-color: #2d6a2d; color: #2d6a2d; }
+.para-tag.warn { background: #fff3cd; border-color: #e6a800; color: #996600; }
+.para-tag.bad { background: #fff3f3; border-color: #cc0000; color: #cc0000; }
+
+.score-timeline {
+  display: flex; align-items: flex-end; gap: 0; margin: 12px 0 16px;
+  padding: 0 10px; justify-content: space-between;
+}
+.timeline-item {
+  display: flex; flex-direction: column; align-items: center; flex: 1;
+  position: relative;
+}
+.timeline-score { font-size: 14pt; font-weight: 700; margin-bottom: 4px; }
+.timeline-bar {
+  width: 70%; border-radius: 4px 4px 0 0;
+  transition: height 0.6s ease; min-height: 8px;
+}
+.timeline-label { font-size: 8.5pt; color: #888; margin-top: 6px; font-weight: 600; }
+.timeline-date { font-size: 7.5pt; color: #aaa; margin-top: 1px; }
+.timeline-time {
+  font-size: 7.5pt; margin-top: 2px; font-weight: 700;
+  padding: 1px 5px; border-radius: 8px;
+}
+.timeline-time.rushed { background: #fff3f3; color: #cc0000; }
+.timeline-time.paced { background: #e8f5e9; color: #2d6a2d; }
+.score-green { color: #2d6a2d; }
+.score-amber { color: #cc6600; }
+.score-red { color: #cc0000; }
+.bar-green { background: linear-gradient(to top, #c8e6c9, #81c784); }
+.bar-amber { background: linear-gradient(to top, #ffe0b2, #ffb74d); }
+.bar-red { background: linear-gradient(to top, #ffcdd2, #ef9a9a); }
+
+.strength-chips {
+  display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px;
+}
+.strength-chip {
+  padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600;
+  background: #e8f5e9; color: #2d6a2d; border: 1.5px solid #a5d6a7;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.strength-chip .chip-course { font-size: 7.5pt; color: #888; font-weight: 400; }
+
+.journey-section {
+  font-size: 9.5pt; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.7px; margin: 10px 0 4px; padding-bottom: 3px;
+  border-bottom: 1.5px solid; display: flex; align-items: center; gap: 6px;
+}
+.journey-section.strengths-header { color: #2d6a2d; border-color: #c8e6c9; }
+.journey-section.growth-header { color: #cc6600; border-color: #ffe0b2; }
+
+.root-cause-teaser {
+  background: #f5f0ff; border-left: 3px solid #7c4dff;
+  padding: 10px 14px; margin: 12px 0 4px; border-radius: 0 6px 6px 0;
+  font-size: 10.5pt; line-height: 1.5;
+}
+.root-cause-teaser b { color: #5c2dcc; }
+
+.growth-chips {
+  display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0;
+}
+.growth-chip {
+  padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.growth-chip.weak { background: #fff3f3; color: #cc0000; border: 1.5px solid #ffcdd2; }
+.growth-chip.mixed { background: #fff8e8; color: #b35900; border: 1.5px solid #ffe0b2; }
+.growth-chip .chip-avg { font-size: 7.5pt; font-weight: 700; margin-left: 2px; }
+
+.evidence-block {
+  background: #fff; border: 2px solid #1a1a2e; border-radius: 10px;
+  padding: 14px 16px; margin: 12px 0;
+}
+.evidence-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 0; border-bottom: 1px dashed #ddd; font-size: 10.5pt;
+}
+.evidence-row:last-child { border-bottom: none; }
+.evidence-row .ev-label { font-weight: 700; }
+.evidence-row.rushed .ev-label { color: #cc0000; }
+.evidence-row.paced .ev-label { color: #2d6a2d; }
+.evidence-row .ev-avg {
+  font-weight: 800; font-size: 12pt;
+  padding: 2px 10px; border-radius: 14px;
+}
+.evidence-row.rushed .ev-avg { background: #fff3f3; color: #cc0000; }
+.evidence-row.paced .ev-avg { background: #e8f5e9; color: #2d6a2d; }
+.evidence-gap {
+  margin-top: 8px; padding: 8px 12px;
+  background: #fff3cd; border-radius: 8px; text-align: center;
+  font-weight: 700; font-size: 11pt; color: #6b4900;
+}
+
+.carousel-counter {
+  font-size: 9pt; color: #888; text-align: right;
+  margin-top: 4px; margin-bottom: -4px; font-weight: 600;
+}
+
+.sandwich-table {
+  width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 10pt;
+}
+.sandwich-table th, .sandwich-table td {
+  border: 1.5px solid #e0e0e8; padding: 8px 10px; text-align: left; vertical-align: top;
+}
+.sandwich-table th {
+  background: #1a1a2e; color: #fff; font-size: 9.5pt;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.sandwich-table td.do-cell { background: #e8f5e9; color: #1b5e1b; }
+.sandwich-table td.dont-cell { background: #fff3f3; color: #8a0000; }
+
+@media print {
+  body { background: #fff; padding: 0; min-height: auto; }
+  .progress-bar, .nav, .print-btn, .card-breadcrumb, .sticky-indicator,
+  .completion-overlay, #confettiCanvas, .reveal-cover,
+  .checklist-progress, .checklist-progress-label, .discrim-challenge { display: none !important; }
+  .card-container { width: 100%; min-height: auto; }
+  .card { display: none !important; }
+  .card.print-target {
+    display: block !important; opacity: 1 !important;
+    pointer-events: auto !important; position: relative !important;
+    transform: none !important; box-shadow: none;
+    border: 2px solid #1a1a2e; page-break-inside: avoid;
+  }
+  .reveal-content, .discrim-then {
+    max-height: none !important; opacity: 1 !important; margin: 8px 0 !important;
+  }
+  .practice-link { border: 1px solid #999; }
+  .check-box, .card-header, .error-mark, .pattern-note, .tip-box,
+  .tier-primary, .tier-extra, .score-timeline, .timeline-bar,
+  .strength-chip, .growth-chip, .root-cause-teaser,
+  .journey-section, .evidence-block, .evidence-row, .timeline-time,
+  .sandwich-table th, .sandwich-table td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+@media (max-width: 720px) {
+  .card-container { width: 100%; }
+  .score-grid { grid-template-columns: 1fr; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<div class="card-breadcrumb" id="breadcrumb"></div>
+<div class="sticky-indicator" id="stickyIndicator"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- Card 1: Score Overview -->
+<div class="card active" data-title="Score Overview">
+  <div class="card-header">
+    <h2>Helio Ortiz</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G3.2 &mdash; Apr 6, 2026 &mdash; Alpha School Austin</div>
+  </div>
+  <div class="card-body">
+    <div class="score-grid">
+      <div class="score-box score-warn">
+        <div class="big">79%</div>
+        <div class="label">Overall Score (G3.2)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">20.5/25</div>
+        <div class="label">Questions 1&ndash;10</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">15/20</div>
+        <div class="label">Paragraph (Question 11)</div>
+      </div>
+    </div>
+
+    <p>Helio, across 2 tests you've scored <b>87%</b> on G3.1 and <b>79%</b> on G3.2. Your short-answer sentence writing (Q6&ndash;Q10) is at <b>93%</b> across both tests &mdash; that's elite work for 3rd grade.</p>
+
+    <p>The dip from G3.1 to G3.2 isn't about effort. You spent <b>56 minutes</b> on G3.2 (way more than the 19 minutes you spent on G3.1). You were thorough. The extra time wasn't the problem &mdash; the habit gaps were. Points came off in just two places: one sentence-type question (Q4) and the big paragraph (Q11).</p>
+
+    <div class="root-cause-teaser">
+      <b>The big idea:</b> Your sentence-writing muscle is strong. Two small habits &mdash; locking in the four sentence types by their end punctuation, and using a Single Paragraph Outline before you write Q11 &mdash; are the whole path from 79% to 90%+.
+    </div>
+  </div>
+</div>
+
+<!-- Card 2: Your Writing Journey -->
+<div class="card" data-title="Your Writing Journey">
+  <div class="card-header">
+    <h2>Your Writing Journey</h2>
+    <div class="card-subtitle">2 tests &mdash; more time, but two habits slipped</div>
+  </div>
+  <div class="card-body">
+    <div class="score-timeline">
+      <div class="timeline-item">
+        <div class="timeline-score score-green">87%</div>
+        <div class="timeline-bar bar-green" style="height:120px;"></div>
+        <div class="timeline-label">G3.1</div>
+        <div class="timeline-date">Jan 14, 2026</div>
+        <div class="timeline-time rushed">19 min</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-score score-amber">79%</div>
+        <div class="timeline-bar bar-amber" style="height:108px;"></div>
+        <div class="timeline-label">G3.2</div>
+        <div class="timeline-date">Apr 6, 2026</div>
+        <div class="timeline-time paced">56 min</div>
+      </div>
+    </div>
+
+    <p><b>Notice what's interesting?</b> On G3.2 you spent <b>almost 3x as much time</b> as on G3.1 &mdash; and the score went down. That tells us something important: more time alone isn't the fix. The missing points weren't from rushing. They came from two specific habits that need a sharper edit.</p>
+
+    <p>You already slow down. You already check your work. The next level is knowing <b>what to check for</b>.</p>
+
+    <div class="journey-section strengths-header">Skills you do well</div>
+    <div class="strength-chips">
+      <span class="strength-chip">Q6&ndash;Q10 Sentence Writing <span class="chip-course">&middot; 93% avg across 10 Qs</span></span>
+      <span class="strength-chip">Change to a Question <span class="chip-course">&middot; Q3 full credit</span></span>
+      <span class="strength-chip">Edit Skills <span class="chip-course">&middot; 88% overall</span></span>
+    </div>
+
+    <div class="journey-section growth-header">Areas to work on</div>
+    <div class="growth-chips">
+      <span class="growth-chip weak">Identify Sentence Types <span class="chip-avg">100% &rarr; 50%</span></span>
+      <span class="growth-chip weak">Paragraph Structure <span class="chip-avg">run-on, no topic/close</span></span>
+      <span class="growth-chip mixed">Comma after "because/so" <span class="chip-avg">wrong spot</span></span>
+    </div>
+
+    <div class="root-cause-teaser">
+      <b>Root cause:</b> On G3.2 the points you lost were all in two places &mdash; the sentence-type question (Q4, where you called a statement "Imperative") and the Q11 paragraph (one long run-on with comma splices). Both are <b>totally fixable</b> with one focused practice session.
+    </div>
+  </div>
+</div>
+
+<!-- Card 3: Fix Card 1 - Sentence Types -->
+<div class="card" data-title="Sentence Types">
+  <div class="card-header">
+    <h2>Sentence Types &mdash; Declarative vs Imperative</h2>
+    <div class="card-subtitle">Your biggest slip on G3.2 &mdash; and a declining skill</div>
+  </div>
+  <div class="card-body">
+
+    <div class="pattern-note">
+      <span class="pattern-note-icon">&#128201;</span>
+      <div><b>Declining skill alert:</b> Your "Change the Sentence Type" score went from <b>100% on G3.1</b> down to <b>50% on G3.2</b>. The four types are slipping a bit &mdash; let's lock them back in.</div>
+    </div>
+
+    <div class="you-wrote">
+      <div class="label">FROM G3.2 Q4 &mdash; IDENTIFY THE SENTENCE TYPE</div>
+      The prompt said: <em>"Workers spent over 30 minutes clearing the ice."</em><br>
+      You wrote: <span class="error-mark">Imperative.</span>
+      <div style="font-size:9.5pt; color:#555; margin-top:4px; font-style:normal;">The correct answer is <b>Declarative</b>. This sentence is telling us a fact &mdash; it ends with a period and it's a statement. An imperative sentence <b>tells someone to do something</b>, like "Clear the ice." You lost 2 full points here.</div>
+    </div>
+
+    <div class="outline-box">
+      <div class="outline-label">The Four Sentence Types &mdash; Use the End Punctuation!</div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">.</span>
+        <span><b>Declarative</b> = a statement. It tells you something. Ends with a period.<br><em>Example: Workers cleared the ice.</em></span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#cc6600;">?</span>
+        <span><b>Interrogative</b> = a question. It asks something. Ends with a question mark.<br><em>Example: Did the workers clear the ice?</em></span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#cc0000;">!</span>
+        <span><b>Exclamatory</b> = strong feeling. Shows excitement or surprise. Ends with an exclamation point.<br><em>Example: That ice pile is huge!</em></span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#7c4dff;">cmd</span>
+        <span><b>Imperative</b> = a <b>command</b>. It tells someone to do something. Usually ends with a period, but the VERB is the giveaway &mdash; it's giving an order.<br><em>Example: Clear the ice. / Please sit down.</em></span>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which sentence is Imperative (a command)?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false"
+             data-wrong-feedback="Not quite. &ldquo;The bears skated on the ice.&rdquo; is a statement &mdash; it tells us what happened. That&rsquo;s Declarative, not Imperative. Imperative sentences TELL someone to do something."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">A</span>
+          <span>The bears skated on the ice.</span>
+        </div>
+        <div class="discrim-option" data-correct="true"
+             data-right-feedback="Correct! &ldquo;Toss the teddy bear onto the ice.&rdquo; gives a command &mdash; it tells someone to DO something. That makes it Imperative."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">B</span>
+          <span>Toss the teddy bear onto the ice.</span>
+        </div>
+        <div class="discrim-option" data-correct="false"
+             data-wrong-feedback="Not quite. &ldquo;How many bears did fans throw?&rdquo; asks a question. That&rsquo;s Interrogative (it ends with a question mark). Imperative sentences give commands."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">C</span>
+          <span>How many bears did fans throw?</span>
+        </div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="discrim-then">
+      <div class="reveal-wrapper">
+        <div class="reveal-cover" onclick="revealBetter(this)">
+          <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></div>
+          <div>
+            <div class="reveal-text">Tap to see all four types &mdash; Hershey Bears examples</div>
+            <div class="reveal-hint">One sentence of each type, side by side</div>
+          </div>
+        </div>
+        <div class="reveal-content">
+          <div class="better">
+            <div class="label">ALL FOUR TYPES &mdash; HERSHEY BEARS TEDDY TOSS</div>
+            &bull; <b>Declarative:</b> Fans tossed 45,650 teddy bears onto the ice.<br>
+            &bull; <b>Interrogative:</b> How many teddy bears did the fans toss?<br>
+            &bull; <b>Exclamatory:</b> That's the biggest teddy bear pile ever!<br>
+            &bull; <b>Imperative:</b> Toss your teddy bear when the Bears score.
+          </div>
+        </div>
+      </div>
+
+      <div class="tip-box">
+        <div class="label">YOUR QUICK CHECK</div>
+        Before you name a sentence type, ask these two questions:<br>
+        <b>1. What punctuation is at the end?</b> (. ? !)<br>
+        <b>2. Is it telling someone to DO something?</b> If yes &rarr; Imperative. If no &rarr; Declarative (statement) when it ends with a period.
+      </div>
+
+      <div class="tip-box">
+        <div class="label">SO WHAT? WHY DOES THIS MATTER?</div>
+        Q4 on G3.2 cost you <b>2 full points</b> &mdash; the biggest single-question slip on the test. One practice session on the four types, and this skill goes right back to 100%.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 4: Fix Card 2 - Paragraph Structure -->
+<div class="card" data-title="Paragraph Structure">
+  <div class="card-header">
+    <h2>Paragraph Structure &mdash; Plan Before You Write</h2>
+    <div class="card-subtitle">Good ideas, stuck inside one long sentence</div>
+  </div>
+  <div class="card-body">
+
+    <p>Helio, your Q11 paragraph had <b>real ideas</b> about the Camel Library. You understood the passage. But the grading rubric couldn't see your ideas clearly &mdash; because it was all one long sentence with commas instead of periods.</p>
+
+    <div class="you-wrote">
+      <div class="label">FROM G3.2 Q11 &mdash; ONE BOOK ONE CAMEL PARAGRAPH</div>
+      "A camel walks with books for children<span class="error-mark">,</span> the camel is a good way to help send books to schools because<span class="error-mark">,</span> cars cant drive on the rough road<span class="error-mark">,</span> instead<span class="error-mark">,</span> they send camels that are <span class="error-mark">carreing</span> books on their back<span class="error-mark">,</span> this also helps children get what they need to learn in school<span class="error-mark">,</span> many people in schools are inspired to write stories about how the camels bring the schools books."
+      <div style="font-size:9.5pt; color:#555; margin-top:4px; font-style:normal;">One long run-on sentence. No topic sentence clearly on its own. No body sentences with periods between them. No closing sentence. Score: <b>15/20</b>. Your IDEAS are good &mdash; the STRUCTURE needs work.</div>
+    </div>
+
+    <div class="para-map">
+      <span class="para-tag warn">Topic Sentence: unclear</span>
+      <span class="para-tag bad">Supporting Details: glued together</span>
+      <span class="para-tag bad">Closing: missing</span>
+      <span class="para-tag bad">Periods between sentences: missing</span>
+    </div>
+
+    <div class="pattern-note">
+      <span class="pattern-note-icon">&#128221;</span>
+      <div><b>Plan first &mdash; write second.</b> Before you write Q11, type a tiny outline at the top of the answer box. Four short lines. Then write from the outline. Delete the outline before you submit.</div>
+    </div>
+
+    <div class="outline-box">
+      <div class="outline-label">Your Single Paragraph Outline (SPO)</div>
+      <div class="outline-row">
+        <span class="outline-tag">TOPIC</span>
+        <span>One sentence that says what the paragraph is about.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#7c4dff;">D1</span>
+        <span><b>Supporting Detail 1</b> &mdash; one specific thing from the passage.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#7c4dff;">D2</span>
+        <span><b>Supporting Detail 2</b> &mdash; a different specific thing from the passage.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">CLOSE</span>
+        <span>One sentence that wraps up the main idea.</span>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which version would score higher on Q11?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false"
+             data-wrong-feedback="Not quite. This is one long sentence held together by commas &mdash; that&rsquo;s what cost points on your actual G3.2. The rubric needs to SEE the topic, details, and closing as separate sentences with periods."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">A</span>
+          <span>The camel library is a good idea, cars cant drive on rough roads, camels bring books, kids learn in school.</span>
+        </div>
+        <div class="discrim-option" data-correct="true"
+             data-right-feedback="Correct! A clear topic sentence, two supporting details with specific info from the passage, and a closing &mdash; all as SEPARATE sentences with periods. That&rsquo;s the shape the rubric rewards."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">B</span>
+          <span>The camel library is a smart way to bring books to kids. Cars can't drive on the rough roads, so people use camels instead. The camels carry books on their backs right to the schools. This helps children who live far from cities get the books they need.</span>
+        </div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="discrim-then">
+      <div class="tip-box">
+        <div class="label">THE EVIDENCE SANDWICH &mdash; HOW TO USE PASSAGE DETAILS</div>
+        When you use something from the passage, make a little sandwich: <b>your idea</b> &rarr; <b>the detail from the passage</b> &rarr; <b>why it matters</b>. Here's what to DO and what NOT to do:
+      </div>
+
+      <table class="sandwich-table">
+        <thead>
+          <tr>
+            <th>DO</th>
+            <th>DO NOT</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="do-cell"><b>Quote a short phrase</b> with quotation marks, like: The passage says the camels carry "books on their back."</td>
+            <td class="dont-cell">Copy a whole sentence from the passage without quotes or explanation.</td>
+          </tr>
+          <tr>
+            <td class="do-cell"><b>Paraphrase in your own words</b> &mdash; say the same idea a different way.</td>
+            <td class="dont-cell">Change just one word and pretend it's your own writing.</td>
+          </tr>
+          <tr>
+            <td class="do-cell"><b>Explain why the detail matters</b> to your main idea in the next sentence.</td>
+            <td class="dont-cell">Drop a detail in and move on without connecting it.</td>
+          </tr>
+          <tr>
+            <td class="do-cell"><b>Use at least two different details</b> &mdash; one per body sentence.</td>
+            <td class="dont-cell">Repeat the same detail two ways and call it two details.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="reveal-wrapper">
+        <div class="reveal-cover" onclick="revealBetter(this)">
+          <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></div>
+          <div>
+            <div class="reveal-text">Tap to see your G3.2 paragraph, rewritten with structure</div>
+            <div class="reveal-hint">Same ideas, just properly separated</div>
+          </div>
+        </div>
+        <div class="reveal-content">
+          <div class="better">
+            <div class="label">YOUR IDEAS, REWRITTEN AS A 17&ndash;18/20 PARAGRAPH</div>
+            <p style="margin:4px 0; font-size:10.5pt;">
+              <b>[TOPIC]</b> The Camel Library is a clever way to bring books to children in places where cars can't go.<br>
+              <b>[D1]</b> The roads in some areas are too rough for cars, so people send camels that carry books "on their back" instead.<br>
+              <b>[D2]</b> The camels deliver the books right to the schools, which helps kids who live far from cities get what they need to learn.<br>
+              <b>[CLOSE]</b> Many people are even inspired to write stories about the camel library, which shows how much of a difference it makes.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="tip-box">
+        <div class="label">SO WHAT? WHY DOES THIS MATTER?</div>
+        Question 11 is worth <b>20 of 45 points</b> on the whole test. Jumping from 15/20 to 18/20 is <b>3 extra points</b> &mdash; that's most of the way from 79% to 90%+. And you already have the ideas. Just plan first, then write.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 5: Fix Card 3 - Comma Placement with Conjunctions -->
+<div class="card" data-title="Comma Placement">
+  <div class="card-header">
+    <h2>Commas with "because" and "so"</h2>
+    <div class="card-subtitle">Comma goes BEFORE the word &mdash; not after</div>
+  </div>
+  <div class="card-body">
+
+    <p>Helio, here's a small habit showing up on your test: every time you use a joining word like <b>because</b>, <b>so</b>, or <b>instead</b>, you put a comma right AFTER it. The comma actually goes BEFORE the word (if any comma is needed at all).</p>
+
+    <div class="you-wrote">
+      <div class="label">FROM G3.2 Q2 &mdash; SUBORDINATING CONJUNCTION</div>
+      "Fans tossed bears onto the ice because<span class="error-mark">,</span> the Bears scored a goal."
+      <div style="font-size:9.5pt; color:#555; margin-top:4px; font-style:normal;">The comma after "because" shouldn't be there. When "because" joins two parts of a sentence and comes in the middle, you usually need <b>no comma at all</b> &mdash; or if one is needed, it goes BEFORE "because."</div>
+    </div>
+
+    <div class="you-wrote">
+      <div class="label">FROM G3.2 Q10 &mdash; BASIC CONJUNCTIONS</div>
+      "The ice was <span class="error-mark">coverd</span> in teddy bears so<span class="error-mark">,</span> the players skated among the bears."
+      <div style="font-size:9.5pt; color:#555; margin-top:4px; font-style:normal;">Same pattern &mdash; comma AFTER "so." The right spot is BEFORE "so": <em>"The ice was covered in teddy bears, so the players skated among the bears."</em></div>
+    </div>
+
+    <div class="outline-box">
+      <div class="outline-label">The Comma Rule for because / so / but / and</div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">YES</span>
+        <span>When <b>so</b>, <b>but</b>, or <b>and</b> joins two full sentences, put a comma <b>BEFORE</b> it.<br><em>The fans cheered<b>, so</b> the players waved.</em></span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">YES</span>
+        <span>When <b>because</b> comes in the middle of the sentence, usually <b>no comma</b> is needed.<br><em>Fans tossed bears <b>because</b> the team scored a goal.</em></span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#cc0000;">NO</span>
+        <span><b>Never</b> put a comma right AFTER because, so, but, or and. That's the habit we're breaking.</span>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which sentence has the comma in the RIGHT spot?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false"
+             data-wrong-feedback="Not quite. A comma AFTER &ldquo;so&rdquo; is the exact habit showing up on your tests. The comma goes BEFORE the word &ldquo;so,&rdquo; not after it."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">A</span>
+          <span>The ice was full of bears so<span class="error-mark">,</span> the players had to wait.</span>
+        </div>
+        <div class="discrim-option" data-correct="true"
+             data-right-feedback="Correct! The comma goes BEFORE &ldquo;so&rdquo; when it joins two full sentences. &ldquo;The ice was full of bears, so the players had to wait.&rdquo;"
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">B</span>
+          <span>The ice was full of bears<b>,</b> so the players had to wait.</span>
+        </div>
+        <div class="discrim-option" data-correct="false"
+             data-wrong-feedback="Not quite. Two commas (one before AND one after) isn&rsquo;t the right pattern here. Only one comma is needed, and it goes BEFORE &ldquo;so.&rdquo;"
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">C</span>
+          <span>The ice was full of bears<b>,</b> so<span class="error-mark">,</span> the players had to wait.</span>
+        </div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="discrim-then">
+      <div class="reveal-wrapper">
+        <div class="reveal-cover" onclick="revealBetter(this)">
+          <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></div>
+          <div>
+            <div class="reveal-text">Tap to see your G3.2 sentences, rewritten</div>
+            <div class="reveal-hint">Same words, comma in the right spot</div>
+          </div>
+        </div>
+        <div class="reveal-content">
+          <div class="better">
+            <div class="label">YOUR G3.2 SENTENCES, FIXED</div>
+            &bull; <b>Q2:</b> "Fans tossed bears onto the ice because the Bears scored a goal." <em>(no comma needed)</em><br>
+            &bull; <b>Q10:</b> "The ice was covered in teddy bears, so the players skated among the bears." <em>(comma BEFORE "so")</em>
+          </div>
+        </div>
+      </div>
+
+      <div class="tip-box">
+        <div class="label">SO WHAT? WHY DOES THIS MATTER?</div>
+        One small rule: <b>comma BEFORE so / but / and &mdash; never after.</b> For <b>because</b> in the middle of a sentence &mdash; usually no comma at all. This fix alone is worth a half point on most tests, every single time.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 6: Proofread Before You Submit -->
+<div class="card" data-title="Proofread Before You Submit">
+  <div class="card-header">
+    <h2>Proofread Before You Submit</h2>
+    <div class="card-subtitle">You had 56 minutes &mdash; use the last 5 for a pass</div>
+  </div>
+  <div class="card-body">
+
+    <p>Helio, you have plenty of time. You used 56 minutes on G3.2. Before you hit submit, spend <b>5 more minutes</b> on a targeted reread. Here's your personalized CUPS check:</p>
+
+    <div class="outline-box">
+      <div class="outline-label">Your Personalized CUPS Check</div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#cc0000;">C</span>
+        <span><b>Capitals at the start:</b> Every sentence starts with a capital letter &mdash; especially after you break a long run-on into separate sentences.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#cc6600;">U</span>
+        <span><b>Understanding sentence types:</b> Before you write "Imperative," ask yourself &mdash; is this sentence telling someone to DO something? If not, it's probably <b>Declarative</b>.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#7c4dff;">P</span>
+        <span><b>Punctuation:</b> Comma goes <b>BEFORE</b> so/but/and &mdash; never after. For <b>because</b> in the middle of a sentence, usually no comma. Every sentence ends with . ? or !</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">S</span>
+        <span><b>Spelling the long words:</b> On G3.2 three words tripped you up &mdash; "coverd" (should be <b>covered</b>), "cant" (should be <b>can't</b>), and "carreing" (should be <b>carrying</b>). Slow down on words with double letters or apostrophes.</span>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which sentence is spelled and punctuated correctly?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false"
+             data-wrong-feedback="Not quite. &ldquo;cant&rdquo; needs an apostrophe &mdash; &ldquo;can&rsquo;t.&rdquo; And &ldquo;coverd&rdquo; is missing the &ldquo;e&rdquo; &mdash; it should be &ldquo;covered.&rdquo; These are the exact words that slipped on your G3.2."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">A</span>
+          <span>The cars <span class="error-mark">cant</span> drive so<span class="error-mark">,</span> the road is <span class="error-mark">coverd</span> in rocks.</span>
+        </div>
+        <div class="discrim-option" data-correct="true"
+             data-right-feedback="Correct! &ldquo;can&rsquo;t&rdquo; has the apostrophe, &ldquo;covered&rdquo; has the silent &ldquo;e,&rdquo; and the comma goes BEFORE &ldquo;so.&rdquo; That&rsquo;s a clean sentence."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">B</span>
+          <span>The cars <b>can't</b> drive<b>,</b> so the road is <b>covered</b> in rocks.</span>
+        </div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="discrim-then">
+      <div class="tip-box">
+        <div class="label">YOUR 5-MINUTE PROOFREAD PASS</div>
+        <b>Minute 1:</b> Reread Q4 &mdash; check the sentence type.<br>
+        <b>Minutes 2&ndash;3:</b> Reread Q1&ndash;Q10 &mdash; check every comma is BEFORE so/but/and, not after.<br>
+        <b>Minutes 4&ndash;5:</b> Read Q11 out loud in your head, slowly, one sentence at a time. Make sure each sentence starts with a capital and ends with a period. Spell-check the 2&ndash;3 longest words.
+      </div>
+
+      <div class="tip-box">
+        <div class="label">SO WHAT? WHY DOES THIS MATTER?</div>
+        You already use most of your time thinking. The last 5 minutes is for catching the small stuff &mdash; the spelling slips, the comma-after-so, the sentence-type mix-up. Those 5 minutes are worth 3&ndash;5 points on every test.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 7: Checklist & Practice -->
+<div class="card" data-title="Checklist &amp; Practice">
+  <div class="card-header">
+    <h2>Your Checklist</h2>
+    <div class="card-subtitle">Track your progress and find practice activities</div>
+  </div>
+  <div class="card-body">
+    <div class="checklist-progress-label" id="checkProgressLabel">0 of 7 checked</div>
+    <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
+
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>PLAN FIRST</b> &mdash; type a 4-line SPO (Topic, D1, D2, Close) at the top of the Q11 answer box before you write</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div>Identify sentence type by the <b>end punctuation</b> first (. ? !), then ask "is it a command?" &mdash; if yes, Imperative; if no and it ends with a period, Declarative</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div>Put a comma <b>BEFORE</b> so / but / and &mdash; never after. For "because" in the middle of a sentence, usually no comma at all</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div>For Q11, break your paragraph into <b>4 separate sentences</b>: topic + detail 1 + detail 2 + closing &mdash; each with its own period</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div>Use <b>two different passage details</b> in Q11 &mdash; one per body sentence</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div>Proofread 2&ndash;3 long words &mdash; especially double letters and apostrophes (covered, carrying, can't)</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div>Delete the SPO outline before you submit Q11</div>
+    </div>
+
+    <div class="practice-recommendations">
+      <div class="practice-recs-title">Recommended Practice</div>
+
+      <div class="practice-tier tier-primary">
+        <div class="tier-header">
+          <span class="tier-label">Start Here</span>
+        </div>
+        <div class="tier-note">These activities target the exact skills that slipped on G3.2.</div>
+        <div class="practice-links">
+          <a class="practice-link" href="https://alphawrite.alpha.school/practice/3/2/change-sentence-type" target="_blank">Change the Sentence Type</a>
+          <a class="practice-link" href="https://alphawrite.alpha.school/practice/3/2/write-paragraph-from-prompt" target="_blank">Write a Paragraph from Prompt</a>
+          <a class="practice-link" href="https://alphawrite.alpha.school/practice/3/2/writing-spos" target="_blank">Writing SPOs (Paragraph Outlines)</a>
+        </div>
+      </div>
+
+      <div class="practice-tier tier-extra">
+        <div class="tier-header">
+          <span class="tier-label">Extra Practice</span>
+        </div>
+        <div class="practice-links">
+          <a class="practice-link" href="https://alphawrite.alpha.school/practice/3/2/write-appositives" target="_blank">Write Appositives</a>
+          <a class="practice-link" href="https://alphawrite.alpha.school/practice/3/2/combine-sentences" target="_blank">Combine Sentences</a>
+          <a class="practice-link" href="https://alphawrite.alpha.school/practice/3/2/elaborate-paragraphs" target="_blank">Elaborate on Paragraphs</a>
+        </div>
+      </div>
+    </div>
+
+    <button class="print-btn" onclick="printChecklist(this)">
+      <svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+      Print Checklist
+    </button>
+  </div>
+</div>
+
+</div>
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<div class="completion-overlay" id="completionOverlay">
+  <div class="completion-card">
+    <div class="completion-emoji">&#127881;</div>
+    <div class="completion-title">You're almost at 90%+, Helio!</div>
+    <div class="completion-sub">Three goals: <b>1)</b> Plan Q11 with a 4-line SPO before you write. <b>2)</b> Check sentence type by the end punctuation &mdash; don't mix up Declarative and Imperative. <b>3)</b> Put commas BEFORE so/but/and &mdash; never after. Your Q6&ndash;Q10 sentence writing is already at 93%. Lock in these three habits and 90%+ is right there.</div>
+    <button class="completion-close" onclick="closeCompletion()">Got it!</button>
+  </div>
+</div>
+<canvas id="confettiCanvas"></canvas>
+
+<script>
+var cards = document.querySelectorAll('.card');
+var bar = document.getElementById('progressBar');
+var breadcrumb = document.getElementById('breadcrumb');
+var stickyEl = document.getElementById('stickyIndicator');
+var current = 0;
+var visited = [0];
+
+cards.forEach(function(card, i) {
+  var dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  var tooltip = document.createElement('span');
+  tooltip.className = 'dot-tooltip';
+  tooltip.textContent = card.getAttribute('data-title') || ('Card ' + (i + 1));
+  dot.appendChild(tooltip);
+  dot.addEventListener('click', function() { goTo(i); });
+  bar.appendChild(dot);
+});
+
+function updateBreadcrumb() {
+  var title = cards[current].getAttribute('data-title') || ('Card ' + (current + 1));
+  breadcrumb.innerHTML = 'Card <b>' + (current + 1) + '</b> of ' + cards.length + ' — ' + title;
+  stickyEl.textContent = (current + 1) + ' / ' + cards.length;
+}
+
+function checkSticky() {
+  var barRect = bar.getBoundingClientRect();
+  stickyEl.classList.toggle('visible', barRect.bottom < 0);
+}
+window.addEventListener('scroll', checkSticky);
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  if (visited.indexOf(current) === -1) visited.push(current);
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  visited.forEach(function(v) { if (v !== current) bar.children[v].classList.add('visited'); });
+  var prevBtn = document.getElementById('prevBtn');
+  var nextBtn = document.getElementById('nextBtn');
+  if (prevBtn) {
+    prevBtn.style.visibility = current === 0 ? 'hidden' : 'visible';
+    prevBtn.disabled = current === 0;
+  }
+  if (nextBtn) {
+    nextBtn.textContent = current === cards.length - 1 ? 'Done ✓' : 'Next →';
+    nextBtn.disabled = false;
+  }
+  updateBreadcrumb();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) { showCompletion(); return; }
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+function revealBetter(cover) {
+  var content = cover.nextElementSibling;
+  content.classList.add('shown');
+  cover.classList.add('hidden');
+}
+
+function handleDiscrim(option) {
+  var challenge = option.closest('.discrim-challenge');
+  var feedback = challenge.querySelector('.discrim-feedback');
+  var options = challenge.querySelectorAll('.discrim-option');
+  var isCorrect = option.getAttribute('data-correct') === 'true';
+
+  if (option.classList.contains('correct') || option.classList.contains('locked')) return;
+
+  if (isCorrect) {
+    option.classList.add('correct');
+    options.forEach(function(o) {
+      if (o !== option) o.classList.add('locked');
+    });
+    feedback.innerHTML = option.getAttribute('data-right-feedback') || 'Correct!';
+    feedback.className = 'discrim-feedback shown right-fb';
+    var sibling = challenge.nextElementSibling;
+    while (sibling) {
+      if (sibling.classList && sibling.classList.contains('discrim-then')) {
+        setTimeout(function() { sibling.classList.add('revealed'); }, 600);
+        break;
+      }
+      sibling = sibling.nextElementSibling;
+    }
+  } else {
+    option.classList.add('wrong');
+    feedback.innerHTML = option.getAttribute('data-wrong-feedback') || 'Not quite — think again.';
+    feedback.className = 'discrim-feedback shown wrong-fb';
+    setTimeout(function() {
+      option.classList.remove('wrong');
+      feedback.className = 'discrim-feedback';
+    }, 2000);
+  }
+}
+
+function toggleCheck(item) {
+  item.classList.toggle('checked');
+  updateCheckProgress();
+}
+
+function updateCheckProgress() {
+  var items = document.querySelectorAll('.check-item');
+  var checked = document.querySelectorAll('.check-item.checked').length;
+  var total = items.length;
+  var fill = document.getElementById('checkProgressFill');
+  var lbl = document.getElementById('checkProgressLabel');
+  if (fill) fill.style.width = Math.round((checked / total) * 100) + '%';
+  if (lbl) {
+    lbl.innerHTML = checked === total
+      ? '<b style="color:#2d6a2d;">All done! Nice work.</b>'
+      : checked + ' of ' + total + ' checked';
+  }
+}
+
+function printChecklist(btn) {
+  var card = btn.closest('.card');
+  var checkedItems = card.querySelectorAll('.check-item.checked');
+  checkedItems.forEach(function(item) { item.classList.remove('checked'); });
+  card.classList.add('print-target');
+  window.print();
+  card.classList.remove('print-target');
+  checkedItems.forEach(function(item) { item.classList.add('checked'); });
+}
+
+function showCompletion() {
+  document.getElementById('completionOverlay').classList.add('visible');
+  launchConfetti();
+}
+
+function closeCompletion() {
+  document.getElementById('completionOverlay').classList.remove('visible');
+}
+
+function launchConfetti() {
+  var canvas = document.getElementById('confettiCanvas');
+  var ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  var colors = ['#1a1a2e','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b','#42a5f5'];
+  var particles = [];
+  for (var i = 0; i < 120; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height - canvas.height,
+      w: Math.random() * 10 + 5, h: Math.random() * 6 + 3,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      vx: (Math.random() - 0.5) * 4, vy: Math.random() * 3 + 2,
+      rot: Math.random() * 360, rotV: (Math.random() - 0.5) * 10, life: 1
+    });
+  }
+  var frame = 0;
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    var alive = false;
+    particles.forEach(function(p) {
+      if (p.life <= 0) return;
+      alive = true;
+      p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.rot += p.rotV;
+      if (p.y > canvas.height + 20) { p.life = 0; return; }
+      if (frame > 60) p.life -= 0.01;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot * Math.PI / 180);
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    });
+    frame++;
+    if (alive) requestAnimationFrame(animate);
+    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  animate();
+}
+
+goTo(0);
+
+</script>
+<script src="../tracking.js"></script>
+</body>
+</html>
