@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sammy's Writing Test Review &mdash; G4.1</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: Calibri, 'Segoe UI', sans-serif;
+  font-size: 12pt;
+  color: #1a1a2e;
+  background: #f0f0f5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.progress-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
+.progress-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: #ccc; transition: background 0.3s, transform 0.2s; cursor: pointer;
+  position: relative;
+}
+.progress-dot.active { background: #d4552a; transform: scale(1.25); }
+.progress-dot.visited { background: #e8a07a; }
+.progress-dot:hover { transform: scale(1.3); }
+.progress-dot .dot-tooltip {
+  position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  background: #d4552a; color: #fff; padding: 4px 10px; border-radius: 6px;
+  font-size: 8.5pt; white-space: nowrap; opacity: 0;
+  pointer-events: none; transition: opacity 0.2s; z-index: 100;
+}
+.progress-dot .dot-tooltip::after {
+  content: ''; position: absolute; top: 100%; left: 50%;
+  transform: translateX(-50%); border: 5px solid transparent;
+  border-top-color: #d4552a;
+}
+.progress-dot:hover .dot-tooltip { opacity: 1; }
+
+.card-breadcrumb {
+  font-size: 9.5pt; color: #888; margin-bottom: 14px;
+  text-align: center; transition: opacity 0.3s; min-height: 1.2em;
+}
+.card-breadcrumb b { color: #d4552a; }
+
+.sticky-indicator {
+  position: fixed; top: 12px; right: 16px;
+  background: #d4552a; color: #fff; padding: 5px 14px;
+  border-radius: 20px; font-size: 9pt; font-weight: 700;
+  opacity: 0; transition: opacity 0.3s; z-index: 200;
+  pointer-events: none; letter-spacing: 0.5px;
+}
+.sticky-indicator.visible { opacity: 1; }
+
+.card-container { position: relative; width: 640px; min-height: 420px; }
+
+.card {
+  position: absolute; top: 0; left: 0; width: 100%;
+  background: #fff; border: 2.5px solid #d4552a; border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+  opacity: 0; pointer-events: none; transform: translateX(40px);
+  transition: opacity 0.35s, transform 0.35s;
+}
+.card.active {
+  opacity: 1; pointer-events: auto; transform: translateX(0); position: relative;
+}
+
+.card-header {
+  background: #d4552a; color: #fff; padding: 14px 20px;
+  border-radius: 11px 11px 0 0;
+}
+.card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+.card-header .card-subtitle { font-size: 9.5pt; color: #ffe0d0; margin-top: 2px; }
+
+.card-body { padding: 18px 22px 22px; line-height: 1.55; }
+.card-body p { margin: 6px 0; }
+.card-body ul { margin: 6px 0 6px 18px; }
+.card-body li { margin: 3px 0; }
+
+.score-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px; margin: 12px 0;
+}
+.score-box {
+  background: #f8f8fc; border: 1.5px solid #e0e0e8;
+  border-radius: 8px; padding: 10px 14px; text-align: center;
+}
+.score-box .big { font-size: 20pt; font-weight: 700; }
+.score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+.score-good .big { color: #2d6a2d; }
+.score-warn .big { color: #cc6600; }
+.score-low .big { color: #cc0000; }
+
+.you-wrote {
+  background: #fff3f3; border-left: 3px solid #cc0000;
+  padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+  font-style: italic; font-size: 10.5pt;
+}
+.you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+.better {
+  background: #e8f5e9; border-left: 3px solid #2d6a2d;
+  padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+  font-size: 10.5pt;
+}
+.better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+.tip-box {
+  background: #fff1e8; border-left: 3px solid #d4552a;
+  padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0;
+}
+.tip-box .label { font-weight: 700; font-size: 9.5pt; color: #d4552a; margin-bottom: 3px; }
+
+.highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+.error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+
+.essay-excerpt {
+  background: #fafafa; border: 1px solid #e0e0e8;
+  border-radius: 6px; padding: 10px 14px; font-size: 10.5pt;
+  margin: 8px 0; line-height: 1.6;
+}
+
+.outline-box {
+  background: #f8f8fc; border: 1.5px solid #e0e0e8;
+  border-radius: 8px; padding: 12px 16px; margin: 8px 0; font-size: 10.5pt;
+}
+.outline-box .outline-label {
+  font-weight: 700; font-size: 9pt; color: #d4552a;
+  text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+}
+.outline-row {
+  display: flex; gap: 10px; padding: 5px 0;
+  border-bottom: 1px dashed #ddd;
+}
+.outline-row:last-child { border-bottom: none; }
+.outline-tag {
+  font-weight: 700; font-size: 9pt; color: #fff; background: #d4552a;
+  border-radius: 4px; padding: 2px 8px; min-width: 50px;
+  text-align: center; flex-shrink: 0; line-height: 1.6;
+}
+
+.pattern-note {
+  background: #f5f0ff; border-left: 3px solid #7c4dff;
+  padding: 9px 14px; margin: 0 0 12px; border-radius: 0 6px 6px 0;
+  font-size: 10pt; line-height: 1.45;
+  display: flex; align-items: flex-start; gap: 8px;
+}
+.pattern-note .pattern-note-icon { font-size: 14pt; flex-shrink: 0; line-height: 1; }
+.pattern-note b { color: #5c2dcc; }
+
+.discrim-challenge {
+  background: #f8f5ff; border: 1.5px solid #d4c5ff; border-radius: 8px;
+  padding: 14px; margin: 10px 0;
+}
+.discrim-prompt {
+  font-weight: 700; font-size: 10.5pt; margin-bottom: 10px; color: #5c2dcc;
+}
+.discrim-options { display: flex; flex-direction: column; gap: 8px; }
+.discrim-option {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 14px; border: 2px solid #d4c5ff; border-radius: 8px;
+  cursor: pointer; transition: all 0.2s; font-size: 10.5pt;
+  background: #fff;
+}
+.discrim-option:hover { border-color: #7c4dff; background: #f5f0ff; }
+.discrim-label { font-weight: 800; color: #7c4dff; min-width: 20px; flex-shrink: 0; }
+.discrim-option.correct { border-color: #2d6a2d; background: #e8f5e9; cursor: default; }
+.discrim-option.correct .discrim-label { color: #2d6a2d; }
+.discrim-option.wrong { border-color: #cc0000; background: #fff3f3; }
+.discrim-option.wrong .discrim-label { color: #cc0000; }
+.discrim-option.locked { pointer-events: none; opacity: 0.5; }
+.discrim-feedback {
+  margin-top: 0; font-size: 10pt; line-height: 1.4;
+  max-height: 0; overflow: hidden; opacity: 0;
+  transition: max-height 0.3s, opacity 0.3s, margin 0.3s;
+}
+.discrim-feedback.shown { max-height: 300px; opacity: 1; margin-top: 10px; }
+.discrim-feedback.wrong-fb { color: #cc0000; }
+.discrim-feedback.right-fb { color: #2d6a2d; font-weight: 600; }
+
+.discrim-then {
+  max-height: 0; overflow: hidden; opacity: 0;
+  transition: max-height 0.6s ease, opacity 0.5s ease;
+}
+.discrim-then.revealed { max-height: 5000px; opacity: 1; }
+
+.reveal-wrapper { position: relative; }
+.reveal-cover {
+  background: linear-gradient(135deg, #fff1e8 0%, #ffd9c0 100%);
+  border-left: 3px solid #d4552a;
+  padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0;
+  cursor: pointer; user-select: none;
+  display: flex; align-items: center; gap: 10px;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.reveal-cover:hover {
+  box-shadow: 0 2px 8px rgba(212,85,42,0.15);
+  background: linear-gradient(135deg, #ffd9c0 0%, #f5b795 100%);
+}
+.reveal-cover .reveal-icon {
+  width: 32px; height: 32px; background: #d4552a; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
+.reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #a03e1c; }
+.reveal-cover .reveal-hint { font-size: 8.5pt; color: #b5572e; font-weight: 400; margin-top: 1px; }
+.reveal-content {
+  max-height: 0; overflow: hidden; opacity: 0;
+  transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0;
+}
+.reveal-content.shown { max-height: 1200px; opacity: 1; margin: 8px 0; }
+.reveal-cover.hidden { display: none; }
+
+.check-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 10px 8px; cursor: pointer; border-bottom: 1px solid #eee;
+  border-radius: 6px; transition: background 0.15s; user-select: none;
+  font-size: 11pt;
+}
+.check-item:last-child { border-bottom: none; }
+.check-item:hover { background: #fff1e8; }
+.check-item.checked { background: #f0f8f0; }
+.check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
+.check-item.checked .check-box::after {
+  content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700;
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+}
+.check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
+.check-box {
+  width: 28px; height: 28px; border: 2.5px solid #d4552a;
+  border-radius: 6px; flex-shrink: 0; margin-top: 1px;
+  position: relative; transition: background 0.2s, border-color 0.2s;
+}
+.checklist-progress {
+  background: #eee; border-radius: 10px; height: 8px;
+  margin: 12px 0 6px; overflow: hidden;
+}
+.checklist-progress-fill {
+  background: linear-gradient(90deg, #2d6a2d, #4caf50);
+  height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%;
+}
+.checklist-progress-label {
+  font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px;
+}
+
+.practice-recommendations {
+  margin-top: 16px; border-top: 2px solid #e0e0e8; padding-top: 14px;
+}
+.practice-recs-title {
+  font-size: 10pt; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.6px; color: #d4552a; margin-bottom: 10px;
+}
+.practice-tier { border-radius: 8px; padding: 12px 14px; margin: 8px 0; }
+.tier-primary { background: #e8f5e9; border: 1.5px solid #a5d6a7; }
+.tier-extra { background: #f8f8fc; border: 1.5px solid #e0e0e8; }
+.tier-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.tier-label {
+  font-size: 8.5pt; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.8px; padding: 2px 10px; border-radius: 10px;
+}
+.tier-primary .tier-label { background: #2d6a2d; color: #fff; }
+.tier-extra .tier-label { background: #888; color: #fff; }
+.tier-note { font-size: 9pt; color: #666; margin-bottom: 6px; line-height: 1.4; }
+.practice-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.practice-link {
+  display: inline-block; padding: 5px 12px; border-radius: 6px;
+  font-size: 9.5pt; font-weight: 600; text-decoration: none;
+  transition: background 0.2s, transform 0.1s;
+}
+.practice-link:hover { transform: translateY(-1px); }
+.tier-primary .practice-link { background: #c8e6c9; color: #1b5e1b; }
+.tier-primary .practice-link:hover { background: #a5d6a7; }
+.tier-extra .practice-link { background: #fff1e8; color: #a03e1c; }
+.tier-extra .practice-link:hover { background: #ffd9c0; }
+
+.nav { display: flex; gap: 12px; margin-top: 16px; }
+.nav button {
+  padding: 8px 28px; border: 2px solid #d4552a; border-radius: 8px;
+  background: #fff; color: #d4552a; font-family: inherit;
+  font-size: 11pt; font-weight: 600; cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.nav button:hover { background: #d4552a; color: #fff; }
+
+.print-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 12px; padding: 8px 20px;
+  border: 2px solid #d4552a; border-radius: 8px;
+  background: #fff; color: #d4552a; font-family: inherit;
+  font-size: 10.5pt; font-weight: 600; cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.print-btn:hover { background: #d4552a; color: #fff; }
+.print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+.completion-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(212,85,42,0.6); z-index: 500;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.4s;
+}
+.completion-overlay.visible { opacity: 1; pointer-events: auto; }
+.completion-card {
+  background: #fff; border-radius: 16px; padding: 40px 48px;
+  text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+  transform: scale(0.8); transition: transform 0.4s ease; max-width: 420px;
+}
+.completion-overlay.visible .completion-card { transform: scale(1); }
+.completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+.completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; color: #d4552a; }
+.completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+.completion-close {
+  margin-top: 20px; padding: 10px 32px;
+  background: #d4552a; color: #fff; border: none; border-radius: 8px;
+  font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer;
+  transition: background 0.2s;
+}
+.completion-close:hover { background: #a03e1c; }
+#confettiCanvas {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 501;
+}
+
+.para-map {
+  display: flex; gap: 6px; margin: 10px 0; flex-wrap: wrap;
+}
+.para-tag {
+  padding: 6px 12px; border-radius: 6px; font-size: 10pt; font-weight: 600;
+  border: 1.5px solid;
+}
+.para-tag.good { background: #e8f5e9; border-color: #2d6a2d; color: #2d6a2d; }
+.para-tag.warn { background: #fff3cd; border-color: #e6a800; color: #996600; }
+.para-tag.bad { background: #fff3f3; border-color: #cc0000; color: #cc0000; }
+
+.score-timeline {
+  display: flex; align-items: flex-end; gap: 0; margin: 12px 0 16px;
+  padding: 0 10px; justify-content: center;
+}
+.timeline-item {
+  display: flex; flex-direction: column; align-items: center;
+  position: relative; width: 120px;
+}
+.timeline-score { font-size: 16pt; font-weight: 700; margin-bottom: 4px; }
+.timeline-bar {
+  width: 70%; border-radius: 4px 4px 0 0;
+  transition: height 0.6s ease; min-height: 8px;
+}
+.timeline-label { font-size: 9pt; color: #888; margin-top: 6px; font-weight: 600; }
+.timeline-date { font-size: 7.5pt; color: #aaa; margin-top: 1px; }
+.score-green { color: #2d6a2d; }
+.score-amber { color: #cc6600; }
+.score-red { color: #cc0000; }
+.bar-green { background: linear-gradient(to top, #c8e6c9, #81c784); }
+.bar-amber { background: linear-gradient(to top, #ffe0b2, #ffb74d); }
+.bar-red { background: linear-gradient(to top, #ffcdd2, #ef9a9a); }
+
+.strength-chips {
+  display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px;
+}
+.strength-chip {
+  padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600;
+  background: #e8f5e9; color: #2d6a2d; border: 1.5px solid #a5d6a7;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.strength-chip .chip-course { font-size: 7.5pt; color: #888; font-weight: 400; }
+
+.journey-section {
+  font-size: 9.5pt; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.7px; margin: 10px 0 4px; padding-bottom: 3px;
+  border-bottom: 1.5px solid; display: flex; align-items: center; gap: 6px;
+}
+.journey-section.strengths-header { color: #2d6a2d; border-color: #c8e6c9; }
+.journey-section.growth-header { color: #cc6600; border-color: #ffe0b2; }
+
+.root-cause-teaser {
+  background: #fff1e8; border-left: 3px solid #d4552a;
+  padding: 10px 14px; margin: 12px 0 4px; border-radius: 0 6px 6px 0;
+  font-size: 10.5pt; line-height: 1.5;
+}
+.root-cause-teaser b { color: #a03e1c; }
+
+.growth-chips {
+  display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0;
+}
+.growth-chip {
+  padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.growth-chip.weak { background: #fff3f3; color: #cc0000; border: 1.5px solid #ffcdd2; }
+.growth-chip.mixed { background: #fff8e8; color: #b35900; border: 1.5px solid #ffe0b2; }
+.growth-chip .chip-avg { font-size: 7.5pt; font-weight: 700; margin-left: 2px; }
+
+.spell-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  margin: 10px 0;
+}
+.spell-card {
+  background: #fff; border: 1.5px solid #e0e0e8; border-radius: 8px;
+  padding: 8px 12px; font-size: 10pt;
+}
+.spell-card .spell-q {
+  font-size: 8.5pt; font-weight: 700; color: #d4552a;
+  text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 3px;
+}
+.spell-card .spell-wrong {
+  color: #cc0000; text-decoration: line-through wavy; font-weight: 600;
+}
+.spell-card .spell-arrow { color: #888; margin: 0 4px; }
+.spell-card .spell-right { color: #2d6a2d; font-weight: 700; }
+
+.carousel-counter {
+  font-size: 9pt; color: #888; text-align: right;
+  margin-top: 4px; margin-bottom: -4px; font-weight: 600;
+}
+
+@media print {
+  body { background: #fff; padding: 0; min-height: auto; }
+  .progress-bar, .nav, .print-btn, .card-breadcrumb, .sticky-indicator,
+  .completion-overlay, #confettiCanvas, .reveal-cover,
+  .checklist-progress, .checklist-progress-label, .discrim-challenge { display: none !important; }
+  .card-container { width: 100%; min-height: auto; }
+  .card { display: none !important; }
+  .card.print-target {
+    display: block !important; opacity: 1 !important;
+    pointer-events: auto !important; position: relative !important;
+    transform: none !important; box-shadow: none;
+    border: 2px solid #d4552a; page-break-inside: avoid;
+  }
+  .reveal-content, .discrim-then {
+    max-height: none !important; opacity: 1 !important; margin: 8px 0 !important;
+  }
+  .practice-link { border: 1px solid #999; }
+  .check-box, .card-header, .error-mark, .pattern-note, .tip-box,
+  .tier-primary, .tier-extra, .score-timeline, .timeline-bar,
+  .strength-chip, .growth-chip, .root-cause-teaser,
+  .journey-section, .spell-card { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+@media (max-width: 720px) {
+  .card-container { width: 100%; }
+  .score-grid { grid-template-columns: 1fr; }
+  .spell-grid { grid-template-columns: 1fr; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<div class="card-breadcrumb" id="breadcrumb"></div>
+<div class="sticky-indicator" id="stickyIndicator"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- Card 1: Score Overview -->
+<div class="card active" data-title="Score Overview">
+  <div class="card-header">
+    <h2>Sammy Strems</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G4.1 &mdash; Apr 2026</div>
+  </div>
+  <div class="card-body">
+    <div class="score-grid">
+      <div class="score-box score-good">
+        <div class="big">85.3%</div>
+        <div class="label">Overall Score</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">8.59/10</div>
+        <div class="label">Questions 1&ndash;10</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">17/20</div>
+        <div class="label">Paragraph (Question 11)</div>
+      </div>
+    </div>
+
+    <p>Sammy, <b>85.3% on G4.1 is strong work</b>. Your ideas are clear, your sentences are well built, and your paragraph about Cody and the mud fight has real detail and heart. You are <b>one proofread pass away from 90%+</b>.</p>
+
+    <p>Here is what stands out on this test. You combined sentences cleanly on Q4 and Q7, you explained your thinking in full sentences on Q6, Q8, and Q9, and you produced a detailed paragraph that walks a reader through Cody's entire opinion change &mdash; assumption, shock, and new respect. That is a lot to be proud of.</p>
+
+    <div class="root-cause-teaser">
+      <b>The big idea:</b> The 4.7 points between you and 90%+ are almost all in one place &mdash; small <b>spelling slips</b> and a few <b>homophone mix-ups</b> (there vs. they're, form vs. from, loose vs. lose) scattered across your answers. Your <em>writing</em> is already at 90%+. A careful read-back is what gets the <em>score</em> to match.
+    </div>
+  </div>
+</div>
+
+<!-- Card 2: Writing Journey -->
+<div class="card" data-title="Your Writing Journey">
+  <div class="card-header">
+    <h2>Your Writing Journey</h2>
+    <div class="card-subtitle">First G4 test &mdash; a strong start</div>
+  </div>
+  <div class="card-body">
+    <div class="score-timeline">
+      <div class="timeline-item">
+        <div class="timeline-score score-green">85.3%</div>
+        <div class="timeline-bar bar-green" style="height:85px;"></div>
+        <div class="timeline-label">G4.1</div>
+        <div class="timeline-date">Apr 2026</div>
+      </div>
+    </div>
+
+    <p>This is your first G4 writing test, Sammy &mdash; and 85.3% is a strong starting line. From here, the goal is simple: keep the sentence and paragraph quality you already have, and tighten up the proofreading so the score reflects the writing.</p>
+
+    <div class="journey-section strengths-header">Skills you do well</div>
+    <div class="strength-chips">
+      <span class="strength-chip">Combining with because/but/so <span class="chip-course">&middot; Q4, Q7</span></span>
+      <span class="strength-chip">Fragments &rarr; full sentences <span class="chip-course">&middot; Q2</span></span>
+      <span class="strength-chip">Full-sentence opinions <span class="chip-course">&middot; Q6, Q9</span></span>
+      <span class="strength-chip">Detailed paragraph <span class="chip-course">&middot; Q11, 17/20</span></span>
+      <span class="strength-chip">Clear cause &amp; effect <span class="chip-course">&middot; Q7</span></span>
+    </div>
+
+    <div class="journey-section growth-header">Areas to work on</div>
+    <div class="growth-chips">
+      <span class="growth-chip weak">Spelling slips <span class="chip-avg">10+ on this test</span></span>
+      <span class="growth-chip mixed">Homophones: there/they're, form/from, loose/lose</span>
+      <span class="growth-chip mixed">Reading the connector-word rule (Q5)</span>
+      <span class="growth-chip mixed">Comma splice &mdash; Q8 "for example"</span>
+    </div>
+
+    <div class="root-cause-teaser">
+      <b>Root cause:</b> Almost every point you lost came from <b>conventions</b> (spelling and punctuation), not from <em>what</em> you wrote. Your ideas and your sentence structure are already at the 90%+ level. The cards below name the exact proofreading moves that close the gap.
+    </div>
+  </div>
+</div>
+
+<!-- Card 3: Proofread Before You Submit -->
+<div class="card" data-title="Proofread Before You Submit">
+  <div class="card-header">
+    <h2>Proofread Before You Submit</h2>
+    <div class="card-subtitle">The #1 move that turns 85% into 90%+</div>
+  </div>
+  <div class="card-body">
+
+    <p>Sammy, the biggest pattern on G4.1 is small spelling and homophone errors spread across almost every answer. Individually each one is tiny. Together they are the difference between 85% and 90%+.</p>
+
+    <p>Here is a map of every spelling slip we found on your test. Most of these are words you already know how to spell &mdash; they just need a second look:</p>
+
+    <div class="spell-grid">
+      <div class="spell-card">
+        <div class="spell-q">Q3 &mdash; Appositive</div>
+        <span class="spell-wrong">enviornment</span><span class="spell-arrow">&rarr;</span><span class="spell-right">environment</span>
+      </div>
+      <div class="spell-card">
+        <div class="spell-q">Q5 &mdash; Combining</div>
+        <span class="spell-wrong">tranformed</span><span class="spell-arrow">&rarr;</span><span class="spell-right">transformed</span>
+      </div>
+      <div class="spell-card">
+        <div class="spell-q">Q6 &mdash; Challenge</div>
+        <span class="spell-wrong">seperation</span><span class="spell-arrow">&rarr;</span><span class="spell-right">separation</span>
+      </div>
+      <div class="spell-card">
+        <div class="spell-q">Q10 &mdash; Homophone</div>
+        <span class="spell-wrong">there</span><span class="spell-arrow">&rarr;</span><span class="spell-right">they're</span>
+      </div>
+      <div class="spell-card">
+        <div class="spell-q">Q11 &mdash; Paragraph</div>
+        <span class="spell-wrong">feild</span><span class="spell-arrow">&rarr;</span><span class="spell-right">field</span>
+      </div>
+      <div class="spell-card">
+        <div class="spell-q">Q11 &mdash; Homophone</div>
+        <span class="spell-wrong">form</span><span class="spell-arrow">&rarr;</span><span class="spell-right">from</span>
+      </div>
+      <div class="spell-card">
+        <div class="spell-q">Q11 &mdash; Homophone</div>
+        <span class="spell-wrong">loose</span><span class="spell-arrow">&rarr;</span><span class="spell-right">lose</span>
+      </div>
+      <div class="spell-card">
+        <div class="spell-q">Q11 &mdash; Paragraph</div>
+        <span class="spell-wrong">happend</span><span class="spell-arrow">&rarr;</span><span class="spell-right">happened</span>
+      </div>
+      <div class="spell-card">
+        <div class="spell-q">Q11 &mdash; Paragraph</div>
+        <span class="spell-wrong">accually</span><span class="spell-arrow">&rarr;</span><span class="spell-right">actually</span>
+      </div>
+      <div class="spell-card">
+        <div class="spell-q">Q11 &mdash; Paragraph</div>
+        <span class="spell-wrong">deffender</span><span class="spell-arrow">&rarr;</span><span class="spell-right">defender</span>
+      </div>
+    </div>
+
+    <p style="margin-top:10px;"><b>Two patterns to notice:</b></p>
+    <ul>
+      <li><b>Double-letter words</b>: separation, happened, actually, impressive, quickly &mdash; these often have letters Sammy can miss on a first pass.</li>
+      <li><b>Homophones</b>: there / they're, form / from, loose / lose. These sound alike but mean very different things. A read-back catches them.</li>
+    </ul>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Same sentence, two versions. Which one is ready to submit?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false"
+             data-wrong-feedback="Two spelling slips here. &ldquo;seperation&rdquo; should be &ldquo;separation&rdquo; (sep-A-ration, not sep-E-ration), and &ldquo;enviornment&rdquo; should be &ldquo;environment&rdquo; (there's a silent n before the m: en-viron-ment). These are exactly the kind of words a read-back pass catches."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">A</span>
+          <span>When I was eight I struggled with <span class="error-mark">seperation</span> anxiety in a new <span class="error-mark">enviornment</span>.</span>
+        </div>
+        <div class="discrim-option" data-correct="true"
+             data-right-feedback="Correct! Same sentence, same ideas &mdash; just cleaner conventions. This is the version that earns full credit."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">B</span>
+          <span>When I was eight I struggled with separation anxiety in a new environment.</span>
+        </div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="discrim-then">
+      <div class="tip-box">
+        <div class="label">YOUR 3-MINUTE READ-BACK PASS</div>
+        <b>Check 1 &mdash; Read every answer out loud in your head.</b> Your ear will catch &ldquo;tranformed&rdquo; and &ldquo;happend&rdquo; because they don't sound right when you slow down.<br><br>
+        <b>Check 2 &mdash; Homophone sweep.</b> Every time you see <b>there / their / they're</b>, <b>form / from</b>, or <b>loose / lose</b>, stop and ask: did I pick the right one?<br><br>
+        <b>Check 3 &mdash; Double-letter words.</b> separation, happened, actually, impressive &mdash; say the word slowly and count the letters.
+      </div>
+
+      <div class="tip-box">
+        <div class="label">SO WHAT? WHY DOES THIS MATTER?</div>
+        You lost roughly <b>1.4 points on Q1&ndash;Q10</b> and <b>3 points on Q11</b> to conventions. Catching even half of the spelling slips above lifts your score past 90% &mdash; no new writing required.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 4: Read the Connector Requirement -->
+<div class="card" data-title="Read the Connector Requirement">
+  <div class="card-header">
+    <h2>Read the Connector Requirement (Q5)</h2>
+    <div class="card-subtitle">When the prompt names the words, use THOSE words</div>
+  </div>
+  <div class="card-body">
+
+    <p>Sammy, Q5 on this test asked you to combine two sentences using <b>because, but, or so</b>. Your combine was smooth and your meaning was clear &mdash; but you used <em>and</em> instead of one of the required connector words. That is why Q5 came in at 0.5 out of 1.</p>
+
+    <div class="you-wrote">
+      <div class="label">YOU WROTE (Q5)</div>
+      "His dedication has <span class="error-mark">tranformed</span> the school, <span class="error-mark">and</span> due to his efforts, enrollment has doubled..."<br>
+      <span style="font-size:9.5pt; color:#555;">Two things to catch: spelling (&ldquo;transformed&rdquo;), and the connector word. The prompt asked for because/but/so &mdash; &ldquo;and&rdquo; was not on the list.</span>
+    </div>
+
+    <div class="tip-box">
+      <div class="label">THE RULE</div>
+      When a Q5 prompt says <b>"combine these sentences using because, but, or so,"</b> those are the only three connector words that earn credit. Think of the prompt as giving you a menu &mdash; you have to pick from the menu.<br><br>
+      <b>because</b> &mdash; shows a reason (He was tired <b>because</b> he stayed up late.)<br>
+      <b>but</b> &mdash; shows a contrast (She was nervous <b>but</b> she raised her hand.)<br>
+      <b>so</b> &mdash; shows a result (It started raining <b>so</b> we went inside.)
+    </div>
+
+    <div class="better">
+      <div class="label">A BETTER COMBINE (SAMMY'S IDEAS, CORRECT CONNECTOR)</div>
+      "Peter Tabichi's dedication has transformed the school, <b>so</b> enrollment has doubled and students are performing at much higher levels."<br>
+      <span style="font-size:9.5pt; color:#555;">Same meaning, same detail. &ldquo;So&rdquo; is from the menu (because/but/so) and it correctly shows the result.</span>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">The Q5 prompt says: <em>Combine these sentences using <b>because</b>.</em><br>Which combine earns full credit?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false"
+             data-wrong-feedback="The meaning is fine, but the prompt specifically asked for &ldquo;because.&rdquo; &ldquo;And&rdquo; is not the word the prompt named, so this misses the connector requirement."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">A</span>
+          <span>Cody was nervous to face Mahender, <span class="error-mark">and</span> Mahender was a strong player.</span>
+        </div>
+        <div class="discrim-option" data-correct="true"
+             data-right-feedback="Correct! The prompt named &ldquo;because,&rdquo; and this combine uses &ldquo;because&rdquo; to show the reason Cody was nervous. That is exactly what the prompt asked for."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">B</span>
+          <span>Cody was nervous to face Mahender <b>because</b> Mahender was a strong player.</span>
+        </div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="discrim-then">
+      <div class="tip-box">
+        <div class="label">THE PROMPT-READING HABIT</div>
+        Before you write a Q5 combine, <b>circle the connector words</b> in the prompt with your eyes. If the prompt says <em>because, but, or so</em>, write one of those three words into your combine. If the prompt says <em>because</em>, use <em>because</em>. Matching the prompt word is half the grade.
+      </div>
+
+      <div class="tip-box">
+        <div class="label">SO WHAT? WHY DOES THIS MATTER?</div>
+        Q5 was worth 1 point and came in at 0.5. Reading the connector word carefully is a single-second move that recovers that half point &mdash; and the same habit protects you on every future combine question.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 5: Paragraph Review -->
+<div class="card" data-title="Paragraph Review">
+  <div class="card-header">
+    <h2>Your G4.1 Paragraph &mdash; Strong Ideas, Clean it Up</h2>
+    <div class="card-subtitle">17/20 &mdash; the ideas are 90%+, the proofreading is the lift</div>
+  </div>
+  <div class="card-body">
+
+    <p>Sammy, your paragraph about Cody's surprise in the mud fight is <b>well structured and full of detail</b>. You walk the reader through Cody's assumption, his shock when Mahender actually plays well, and his new respect for Mahender. That is a full opinion-change arc &mdash; which is why the paragraph landed at 17/20.</p>
+
+    <div class="essay-excerpt">
+      "In the story Cody has an opinion change about his friend Mahender. At the start Cody <span class="error-mark">accually</span> thinks Mahender will be a bad player and won't be able to <span class="error-mark">deffender</span> the <span class="error-mark">feild</span>. But when the mud fight starts, Cody sees that Mahender is <span class="error-mark">quikly</span> running, <span class="error-mark">confiedent</span> and <span class="error-mark">immpresive</span> in the <span class="error-mark">feild</span>. This is different <span class="error-mark">form</span> what Cody thought would <span class="error-mark">happend</span>. Cody now knows <span class="error-mark">there</span> going to <span class="error-mark">loose</span> if he isn't careful, and his opinion of Mahender changes to respect."
+    </div>
+
+    <div class="para-map">
+      <span class="para-tag good">Opening sets up opinion change</span>
+      <span class="para-tag good">Before: Cody's assumption</span>
+      <span class="para-tag good">After: Cody's shock</span>
+      <span class="para-tag good">Closing: new respect</span>
+      <span class="para-tag warn">10+ spelling &amp; homophone slips</span>
+    </div>
+
+    <p>The scoring here is a useful picture. On the Q11 rubric, <b>Ideas and Organization are strong</b> &mdash; that is what got you to 17. The points that stayed on the table are almost all in <b>Conventions</b> (spelling, homophones, a couple of missing commas). Same ideas, cleaner conventions, and the paragraph is 19&ndash;20.</p>
+
+    <div class="reveal-wrapper">
+      <div class="reveal-cover" onclick="revealBetter(this)">
+        <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></div>
+        <div>
+          <div class="reveal-text">Tap to see your paragraph polished</div>
+          <div class="reveal-hint">Exact same ideas &mdash; just the spelling and homophones cleaned up</div>
+        </div>
+      </div>
+      <div class="reveal-content">
+        <div class="better">
+          <div class="label">YOUR PARAGRAPH &mdash; POLISHED TO 19&ndash;20/20</div>
+          <p style="margin:4px 0; font-size:10.5pt;">
+            In the story, Cody has an opinion change about his friend Mahender. At the start, Cody <b>actually</b> thinks Mahender will be a bad player and won't be able to <b>defend</b> the <b>field</b>. But when the mud fight starts, Cody sees that Mahender is <b>quickly</b> running, <b>confident</b> and <b>impressive</b> in the <b>field</b>. This is different <b>from</b> what Cody thought would <b>happen</b>. Cody now knows <b>they're</b> going to <b>lose</b> if he isn't careful, and his opinion of Mahender changes to respect.
+          </p>
+          <p style="margin:8px 0 4px; font-size:9.5pt; color:#555;">
+            Notice: <b>every single idea is yours.</b> The topic sentence, the &ldquo;before and after&rdquo; structure, the mud-fight details, the closing about respect &mdash; all the same. The only thing that changed is the spelling and homophones. That alone is worth 2&ndash;3 points on Q11.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <div class="label">Q8 &mdash; ONE SMALL PUNCTUATION FIX</div>
+      On Q8 you wrote: <em>"...by sharing with others<span class="error-mark">, for example,</span> I shared a cookie with my friend..."</em><br><br>
+      &ldquo;By sharing with others&rdquo; is a complete thought, and &ldquo;I shared a cookie&rdquo; is also a complete thought. A comma alone can't hold two complete thoughts together &mdash; that's a <b>comma splice</b>.<br><br>
+      <b>The fix:</b> Use a period. <em>"...by sharing with others<b>. For example,</b> I shared a cookie with my friend..."</em>
+    </div>
+
+    <div class="outline-box">
+      <div class="outline-label">Your Paragraph-Building Strengths</div>
+      <div class="outline-row">
+        <span class="outline-tag">OPEN</span>
+        <span>You set up the opinion change right away &mdash; reader knows where the paragraph is going</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">BEFORE</span>
+        <span>Cody's assumption (Mahender will be bad) &mdash; specific and clear</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">AFTER</span>
+        <span>Cody's shock (Mahender is quick, confident, impressive) &mdash; three details</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">CLOSE</span>
+        <span>Opinion change to respect &mdash; completes the arc</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 6: Checklist & Practice -->
+<div class="card" data-title="Checklist &amp; Practice">
+  <div class="card-header">
+    <h2>Your CUPS Checklist</h2>
+    <div class="card-subtitle">Track your progress and find practice activities</div>
+  </div>
+  <div class="card-body">
+    <p style="font-size:10pt; color:#666; margin-bottom:6px;">Before you hit submit on the next test, run the <b>CUPS</b> pass: <b>C</b>apitalization, <b>U</b>sage, <b>P</b>unctuation, <b>S</b>pelling. It takes about 3 minutes and it's the single biggest score lift for you right now.</p>
+
+    <div class="checklist-progress-label" id="checkProgressLabel">0 of 6 checked</div>
+    <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
+
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>S &mdash; Spelling:</b> read every answer slowly; watch for double-letter words (separation, happened, actually, impressive)</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>U &mdash; Usage (homophones):</b> stop on every <b>there / their / they're</b>, <b>form / from</b>, <b>loose / lose</b> &mdash; pick the right one</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Q5 combine:</b> check the prompt for the required connector word (because / but / so) and use one of those, not &ldquo;and&rdquo;</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>P &mdash; Punctuation:</b> if a comma joins two complete thoughts, change the comma to a period (like Q8 &ldquo;for example&rdquo;)</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>C &mdash; Capitalization:</b> start every sentence with a capital, and keep character names (like Mud and Mahender) capitalized every time</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div>Keep your paragraph strength &mdash; topic sentence, before/after structure, closing that completes the arc (you already nail this)</div>
+    </div>
+
+    <div class="practice-recommendations">
+      <div class="practice-recs-title">Recommended Practice</div>
+
+      <div class="practice-tier tier-primary">
+        <div class="tier-header">
+          <span class="tier-label">Start Here</span>
+        </div>
+        <div class="tier-note">These activities target the exact skills from this review.</div>
+        <div class="practice-links">
+          <a class="practice-link" href="https://alphawrite.alpha.school/practice/4/2/basic-conjunctions" target="_blank">Basic Conjunctions</a>
+          <a class="practice-link" href="https://alphawrite.alpha.school/practice/4/2/elaborate-paragraphs" target="_blank">Elaborate Paragraphs</a>
+        </div>
+      </div>
+
+      <div class="practice-tier tier-extra">
+        <div class="tier-header">
+          <span class="tier-label">Extra Practice</span>
+        </div>
+        <div class="practice-links">
+          <a class="practice-link" href="https://alphawrite.alpha.school/practice/4/2/write-paragraph-from-prompt" target="_blank">Write a Paragraph from a Prompt</a>
+          <a class="practice-link" href="https://alphawrite.alpha.school/practice/4/2/using-transition-words" target="_blank">Using Transition Words</a>
+        </div>
+      </div>
+    </div>
+
+    <button class="print-btn" onclick="printChecklist(this)">
+      <svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+      Print Checklist
+    </button>
+  </div>
+</div>
+
+</div>
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<div class="completion-overlay" id="completionOverlay">
+  <div class="completion-card">
+    <div class="completion-emoji">&#127881;</div>
+    <div class="completion-title">You're right there, Sammy!</div>
+    <div class="completion-sub">85.3% with strong sentences and a well-structured paragraph &mdash; that's a great first G4 test. The 90%+ line is a proofread pass away: spelling slow-down, homophone sweep, and reading the connector word on Q5. Same ideas, cleaner conventions, higher score.</div>
+    <button class="completion-close" onclick="closeCompletion()">Got it!</button>
+  </div>
+</div>
+<canvas id="confettiCanvas"></canvas>
+
+<script>
+var cards = document.querySelectorAll('.card');
+var bar = document.getElementById('progressBar');
+var breadcrumb = document.getElementById('breadcrumb');
+var stickyEl = document.getElementById('stickyIndicator');
+var current = 0;
+var visited = [0];
+
+cards.forEach(function(card, i) {
+  var dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  var tooltip = document.createElement('span');
+  tooltip.className = 'dot-tooltip';
+  tooltip.textContent = card.getAttribute('data-title') || ('Card ' + (i + 1));
+  dot.appendChild(tooltip);
+  dot.addEventListener('click', function() { goTo(i); });
+  bar.appendChild(dot);
+});
+
+function updateBreadcrumb() {
+  var title = cards[current].getAttribute('data-title') || ('Card ' + (current + 1));
+  breadcrumb.innerHTML = 'Card <b>' + (current + 1) + '</b> of ' + cards.length + ' — ' + title;
+  stickyEl.textContent = (current + 1) + ' / ' + cards.length;
+}
+
+function checkSticky() {
+  var barRect = bar.getBoundingClientRect();
+  stickyEl.classList.toggle('visible', barRect.bottom < 0);
+}
+window.addEventListener('scroll', checkSticky);
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  if (visited.indexOf(current) === -1) visited.push(current);
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  visited.forEach(function(v) { if (v !== current) bar.children[v].classList.add('visited'); });
+  var prevBtn = document.getElementById('prevBtn');
+  var nextBtn = document.getElementById('nextBtn');
+  if (prevBtn) {
+    prevBtn.style.visibility = current === 0 ? 'hidden' : 'visible';
+    prevBtn.disabled = current === 0;
+  }
+  if (nextBtn) {
+    nextBtn.textContent = current === cards.length - 1 ? 'Done ✓' : 'Next →';
+    nextBtn.disabled = false;
+  }
+  updateBreadcrumb();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) { showCompletion(); return; }
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+function revealBetter(cover) {
+  var content = cover.nextElementSibling;
+  content.classList.add('shown');
+  cover.classList.add('hidden');
+}
+
+function handleDiscrim(option) {
+  var challenge = option.closest('.discrim-challenge');
+  var feedback = challenge.querySelector('.discrim-feedback');
+  var options = challenge.querySelectorAll('.discrim-option');
+  var isCorrect = option.getAttribute('data-correct') === 'true';
+
+  if (option.classList.contains('correct') || option.classList.contains('locked')) return;
+
+  if (isCorrect) {
+    option.classList.add('correct');
+    options.forEach(function(o) {
+      if (o !== option) o.classList.add('locked');
+    });
+    feedback.innerHTML = option.getAttribute('data-right-feedback') || 'Correct!';
+    feedback.className = 'discrim-feedback shown right-fb';
+    var sibling = challenge.nextElementSibling;
+    while (sibling) {
+      if (sibling.classList && sibling.classList.contains('discrim-then')) {
+        setTimeout(function() { sibling.classList.add('revealed'); }, 600);
+        break;
+      }
+      sibling = sibling.nextElementSibling;
+    }
+  } else {
+    option.classList.add('wrong');
+    feedback.innerHTML = option.getAttribute('data-wrong-feedback') || 'Not quite — think again.';
+    feedback.className = 'discrim-feedback shown wrong-fb';
+    setTimeout(function() {
+      option.classList.remove('wrong');
+      feedback.className = 'discrim-feedback';
+    }, 2500);
+  }
+}
+
+function toggleCheck(item) {
+  item.classList.toggle('checked');
+  updateCheckProgress();
+}
+
+function updateCheckProgress() {
+  var items = document.querySelectorAll('.check-item');
+  var checked = document.querySelectorAll('.check-item.checked').length;
+  var total = items.length;
+  var fill = document.getElementById('checkProgressFill');
+  var lbl = document.getElementById('checkProgressLabel');
+  if (fill) fill.style.width = Math.round((checked / total) * 100) + '%';
+  if (lbl) {
+    lbl.innerHTML = checked === total
+      ? '<b style="color:#2d6a2d;">All done! Nice work.</b>'
+      : checked + ' of ' + total + ' checked';
+  }
+}
+
+function printChecklist(btn) {
+  var card = btn.closest('.card');
+  var checkedItems = card.querySelectorAll('.check-item.checked');
+  checkedItems.forEach(function(item) { item.classList.remove('checked'); });
+  card.classList.add('print-target');
+  window.print();
+  card.classList.remove('print-target');
+  checkedItems.forEach(function(item) { item.classList.add('checked'); });
+}
+
+function showCompletion() {
+  document.getElementById('completionOverlay').classList.add('visible');
+  launchConfetti();
+}
+
+function closeCompletion() {
+  document.getElementById('completionOverlay').classList.remove('visible');
+}
+
+function launchConfetti() {
+  var canvas = document.getElementById('confettiCanvas');
+  var ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  var colors = ['#d4552a','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b','#f5b795'];
+  var particles = [];
+  for (var i = 0; i < 120; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height - canvas.height,
+      w: Math.random() * 10 + 5, h: Math.random() * 6 + 3,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      vx: (Math.random() - 0.5) * 4, vy: Math.random() * 3 + 2,
+      rot: Math.random() * 360, rotV: (Math.random() - 0.5) * 10, life: 1
+    });
+  }
+  var frame = 0;
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    var alive = false;
+    particles.forEach(function(p) {
+      if (p.life <= 0) return;
+      alive = true;
+      p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.rot += p.rotV;
+      if (p.y > canvas.height + 20) { p.life = 0; return; }
+      if (frame > 60) p.life -= 0.01;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot * Math.PI / 180);
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    });
+    frame++;
+    if (alive) requestAnimationFrame(animate);
+    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  animate();
+}
+
+goTo(0);
+
+</script>
+<script src="../tracking.js"></script>
+</body>
+</html>
