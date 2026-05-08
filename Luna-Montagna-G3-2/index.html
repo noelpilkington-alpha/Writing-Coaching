@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Luna's Writing Test Review — G3.2</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    font-size: 12pt;
+    color: #1a1a2e;
+    background: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .progress-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .progress-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ccc;
+    transition: background 0.3s;
+    cursor: pointer;
+  }
+  .progress-dot.active { background: #1a1a2e; }
+  .progress-dot:hover { background: #555; }
+
+  .card-container {
+    position: relative;
+    width: 640px;
+    min-height: 420px;
+  }
+
+  .card {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    background: #fff;
+    border: 2.5px solid #1a1a2e;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(40px);
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .card.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    position: relative;
+  }
+
+  .card-header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 11px 11px 0 0;
+  }
+  .card-header h2 {
+    font-size: 15pt;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .card-header .card-subtitle {
+    font-size: 9.5pt;
+    color: #aaa;
+    margin-top: 2px;
+  }
+
+  .card-body {
+    padding: 18px 22px 22px;
+    line-height: 1.55;
+  }
+  .card-body p { margin: 6px 0; }
+  .card-body ul { margin: 6px 0 6px 18px; }
+  .card-body li { margin: 3px 0; }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .score-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+  }
+  .score-box .big { font-size: 20pt; font-weight: 700; }
+  .score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+  .score-good .big { color: #2d6a2d; }
+  .score-warn .big { color: #cc6600; }
+  .score-low .big { color: #cc0000; }
+
+  .you-wrote {
+    background: #fff3f3;
+    border-left: 3px solid #cc0000;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    font-size: 10.5pt;
+  }
+  .you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+  .better {
+    background: #e8f5e9;
+    border-left: 3px solid #2d6a2d;
+    padding: 8px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 10.5pt;
+  }
+  .better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+  .tip-box {
+    background: #e8edf5;
+    border-left: 3px solid #1a1a2e;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+  .highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+
+  .pattern-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-wrong { color: #cc0000; font-weight: 600; }
+  .pattern-arrow { color: #888; font-size: 14pt; }
+  .pattern-right { color: #2d6a2d; font-weight: 600; }
+
+  .goal-num {
+    display: inline-block;
+    background: #1a1a2e;
+    color: #fff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    line-height: 24px;
+    font-size: 11pt;
+    font-weight: 700;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .goal-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    margin: 10px 0;
+  }
+
+  .essay-excerpt {
+    background: #fafafa;
+    border: 1px solid #e0e0e8;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 10.5pt;
+    margin: 8px 0;
+    line-height: 1.6;
+  }
+  .essay-excerpt .para-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+
+  .outline-box {
+    background: #f8f8fc;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 8px 0;
+    font-size: 10.5pt;
+  }
+  .outline-box .outline-label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .outline-row {
+    display: flex;
+    gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px dashed #ddd;
+  }
+  .outline-row:last-child { border-bottom: none; }
+  .outline-tag {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #fff;
+    background: #1a1a2e;
+    border-radius: 4px;
+    padding: 2px 8px;
+    min-width: 36px;
+    text-align: center;
+    flex-shrink: 0;
+    line-height: 1.6;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 8px;
+    border-bottom: 1px solid #eee;
+    font-size: 11pt;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background 0.15s;
+    user-select: none;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-item:hover { background: #f8f8fc; }
+  .check-item.checked { background: #f0f8f0; }
+  .check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
+  .check-item.checked .check-box::after {
+    content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700;
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  }
+  .check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
+  .check-box {
+    width: 28px; height: 28px; border: 2.5px solid #1a1a2e;
+    border-radius: 6px; position: relative; transition: background 0.2s, border-color 0.2s;
+    flex-shrink: 0; margin-top: 1px;
+  }
+
+  .nav {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .nav button {
+    padding: 8px 28px;
+    border: 2px solid #1a1a2e;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a2e;
+    font-family: inherit;
+    font-size: 11pt;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav button:hover {
+    background: #1a1a2e;
+    color: #fff;
+  }
+
+  .print-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 12px; padding: 8px 20px;
+    border: 2px solid #1a1a2e; border-radius: 8px;
+    background: #fff; color: #1a1a2e; font-family: inherit;
+    font-size: 10.5pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .print-btn:hover { background: #1a1a2e; color: #fff; }
+  .print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+  @media print {
+    body { background: #fff; padding: 0; min-height: auto; }
+    .progress-bar, .nav, .print-btn { display: none !important; }
+    .card-container { width: 100%; min-height: auto; }
+    .card { display: none !important; }
+    .card.print-target {
+      display: block !important; opacity: 1 !important;
+      pointer-events: auto !important; position: relative !important;
+      transform: none !important; box-shadow: none;
+      border: 2px solid #1a1a2e; page-break-inside: avoid;
+    }
+    .check-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .card-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+  @media (max-width: 720px) {
+    .card-container { width: 100%; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── UI UPGRADE: LABELED PROGRESS BAR ── */
+  .progress-bar { flex-wrap: wrap; justify-content: center; }
+  .progress-dot { position: relative; transition: background 0.3s, transform 0.2s; }
+  .progress-dot.active { transform: scale(1.25); }
+  .progress-dot.visited { background: #7a7a9e; }
+  .progress-dot:hover { transform: scale(1.3); }
+  .progress-dot .dot-tooltip {
+    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: #1a1a2e; color: #fff; padding: 4px 10px; border-radius: 6px;
+    font-size: 8.5pt; white-space: nowrap; opacity: 0;
+    pointer-events: none; transition: opacity 0.2s; z-index: 100;
+  }
+  .progress-dot .dot-tooltip::after {
+    content: ''; position: absolute; top: 100%; left: 50%;
+    transform: translateX(-50%); border: 5px solid transparent;
+    border-top-color: #1a1a2e;
+  }
+  .progress-dot:hover .dot-tooltip { opacity: 1; }
+  .card-breadcrumb {
+    font-size: 9.5pt; color: #888; margin-bottom: 14px;
+    text-align: center; transition: opacity 0.3s; min-height: 1.2em;
+  }
+  .card-breadcrumb b { color: #1a1a2e; }
+
+  /* ── UI UPGRADE: STICKY INDICATOR ── */
+  .sticky-indicator {
+    position: fixed; top: 12px; right: 16px;
+    background: #1a1a2e; color: #fff; padding: 5px 14px;
+    border-radius: 20px; font-size: 9pt; font-weight: 700;
+    opacity: 0; transition: opacity 0.3s; z-index: 200;
+    pointer-events: none; letter-spacing: 0.5px;
+  }
+  .sticky-indicator.visible { opacity: 1; }
+
+  /* ── UI UPGRADE: REVEAL INTERACTION ── */
+  .reveal-wrapper { position: relative; }
+  .reveal-cover {
+    background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%);
+    border-left: 3px solid #2d6a2d;
+    padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0;
+    cursor: pointer; user-select: none;
+    display: flex; align-items: center; gap: 10px;
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+  .reveal-cover:hover {
+    box-shadow: 0 2px 8px rgba(45,106,45,0.15);
+    background: linear-gradient(135deg, #d4edda 0%, #c8e6c9 100%);
+  }
+  .reveal-cover .reveal-icon {
+    width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
+  .reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #2d6a2d; }
+  .reveal-cover .reveal-hint { font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px; }
+  .reveal-content {
+    max-height: 0; overflow: hidden; opacity: 0;
+    transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0;
+  }
+  .reveal-content.shown { max-height: 600px; opacity: 1; margin: 8px 0; }
+  .reveal-cover.hidden { display: none; }
+
+  /* ── UI UPGRADE: EXPANDABLE EXAMPLES ── */
+  .tip-expand {
+    margin-top: 8px; border-top: 1px dashed #b0b8cc; padding-top: 6px;
+  }
+  .tip-expand summary {
+    font-size: 9.5pt; font-weight: 600; color: #1a1a2e;
+    cursor: pointer; padding: 4px 0; list-style: none;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .tip-expand summary::-webkit-details-marker { display: none; }
+  .tip-expand summary::before {
+    content: '\25B6'; font-size: 8pt; transition: transform 0.2s; display: inline-block;
+  }
+  .tip-expand[open] summary::before { transform: rotate(90deg); }
+  .tip-expand .expand-body {
+    margin-top: 6px; font-size: 10pt; line-height: 1.5;
+    background: #f4f6fb; padding: 10px 12px; border-radius: 6px;
+  }
+
+  /* ── CHECKLIST PROGRESS ── */
+  .checklist-progress {
+    background: #eee; border-radius: 10px; height: 8px;
+    margin: 12px 0 6px; overflow: hidden;
+  }
+  .checklist-progress-fill {
+    background: linear-gradient(90deg, #2d6a2d, #4caf50);
+    height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%;
+  }
+  .checklist-progress-label {
+    font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px;
+  }
+
+  /* ── COMPLETION OVERLAY ── */
+  .completion-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(26,26,46,0.6); z-index: 500;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.4s;
+  }
+  .completion-overlay.visible { opacity: 1; pointer-events: auto; }
+  .completion-card {
+    background: #fff; border-radius: 16px; padding: 40px 48px;
+    text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+    transform: scale(0.8); transition: transform 0.4s ease; max-width: 420px;
+  }
+  .completion-overlay.visible .completion-card { transform: scale(1); }
+  .completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+  .completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; }
+  .completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+  .completion-close {
+    margin-top: 20px; padding: 10px 32px;
+    background: #1a1a2e; color: #fff; border: none; border-radius: 8px;
+    font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .completion-close:hover { background: #2d2d4e; }
+  #confettiCanvas {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 501;
+  }
+
+  /* ── PRINT ADDITIONS ── */
+  @media print {
+    .card-breadcrumb, .sticky-indicator, .completion-overlay, #confettiCanvas,
+    .reveal-cover, .checklist-progress, .checklist-progress-label,
+    .nav-buttons, .bottom-note { display: none !important; }
+    .reveal-content {
+      max-height: none !important; opacity: 1 !important; margin: 8px 0 !important;
+    }
+  }
+
+  /* ── SCORE BARS ── */
+  .score-bars { margin: 14px 0; }
+  .score-bar-row {
+    display: flex; align-items: center; gap: 10px; margin: 8px 0;
+  }
+  .score-bar-label {
+    font-size: 10pt; font-weight: 600; min-width: 110px; text-align: right;
+  }
+  .score-bar-track {
+    flex: 1; height: 20px; background: #eee; border-radius: 10px; overflow: hidden;
+    position: relative;
+  }
+  .score-bar-fill {
+    height: 100%; border-radius: 10px; transition: width 0.6s ease;
+  }
+  .score-bar-fill.great { background: linear-gradient(90deg, #1a6b1a, #66bb6a); }
+  .score-bar-fill.good { background: linear-gradient(90deg, #cc6600, #e6a800); }
+  .score-bar-fill.low { background: linear-gradient(90deg, #cc0000, #e57373); }
+  .score-bar-value {
+    font-size: 9.5pt; font-weight: 700; min-width: 65px; color: #1a1a2e;
+  }
+
+  /* ── DRI BADGE ── */
+  .dri-badge {
+    display: inline-block; font-size: 8.5pt; font-weight: 700;
+    background: #d4552a; color: #fff; padding: 2px 10px;
+    border-radius: 10px; margin-top: 6px; letter-spacing: 0.3px;
+  }
+
+  /* ── WRITING JOURNEY ── */
+  .journey-step {
+    display: flex; align-items: flex-start; gap: 12px; margin: 10px 0;
+  }
+  .journey-num {
+    width: 28px; height: 28px; border-radius: 50%; background: #1a1a2e;
+    color: #fff; font-size: 11pt; font-weight: 700; display: flex;
+    align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .journey-text { font-size: 10.5pt; line-height: 1.45; }
+  .journey-text b { color: #1a1a2e; }
+
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<div class="card-breadcrumb" id="breadcrumb"></div>
+
+<div class="sticky-indicator" id="stickyIndicator"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- ═══════════ CARD 1: Score Overview ═══════════ -->
+<div class="card active" data-title="Score Overview">
+  <div class="card-header">
+    <h2>Luna Montagna</h2>
+    <div class="card-subtitle">Standardized Writing G3.2 &bull; Alpha School Miami</div>
+  </div>
+  <div class="card-body">
+    <div class="score-bars">
+      <div class="score-bar-row">
+        <div class="score-bar-label">Overall</div>
+        <div class="score-bar-track"><div class="score-bar-fill good" style="width:73%;"></div></div>
+        <div class="score-bar-value">33 / 45 (73%)</div>
+      </div>
+      <div class="score-bar-row">
+        <div class="score-bar-label">Q1-Q10</div>
+        <div class="score-bar-track"><div class="score-bar-fill great" style="width:76%;"></div></div>
+        <div class="score-bar-value">19 / 25</div>
+      </div>
+      <div class="score-bar-row">
+        <div class="score-bar-label">Paragraph (Q11)</div>
+        <div class="score-bar-track"><div class="score-bar-fill good" style="width:70%;"></div></div>
+        <div class="score-bar-value">14 / 20</div>
+      </div>
+    </div>
+
+    <p>Luna, your Q1-Q10 section is solid &mdash; you earned <b>19 out of 25</b> there. Your paragraph on Q11 earned 14 out of 20, which is a good start with room to grow.</p>
+    <p>This slideshow walks through exactly what went well and what to work on. Use the <b>Next</b> button or arrow keys to move through.</p>
+    <div class="dri-badge">DRI: Bruna Rodrigues</div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 2: Writing Journey ═══════════ -->
+<div class="card" data-title="Writing Journey">
+  <div class="card-header">
+    <h2>Your Writing Journey</h2>
+    <div class="card-subtitle">What went well and where to grow</div>
+  </div>
+  <div class="card-body">
+    <p style="margin-bottom:12px;">Here is what your test tells us about you as a writer:</p>
+
+    <div class="journey-step">
+      <div class="journey-num">+</div>
+      <div class="journey-text"><b>You used "because" correctly on Q9 and Q11!</b> You connected your ideas with a reason, which is exactly what strong writers do.</div>
+    </div>
+    <div class="journey-step">
+      <div class="journey-num">+</div>
+      <div class="journey-text"><b>Your paragraph on Q11 has a clear topic sentence.</b> You opened with what the Camel Mobile Library does and why it matters.</div>
+    </div>
+    <div class="journey-step">
+      <div class="journey-num">+</div>
+      <div class="journey-text"><b>You attempted the full paragraph on Q11</b> &mdash; many students leave it blank or write only one sentence. You wrote multiple sentences about the topic.</div>
+    </div>
+
+    <p style="margin-top:14px;">The next cards show three patterns to work on: answering the actual question, spelling, and adding different details to your paragraph.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 3: Answer the Actual Question ═══════════ -->
+<div class="card" data-title="Answer the Actual Question">
+  <div class="card-header">
+    <h2>Answer the Actual Question</h2>
+    <div class="card-subtitle">Q7 &mdash; 1 out of 3 &mdash; reading the prompt carefully</div>
+  </div>
+  <div class="card-body">
+    <p><b>Q7 &mdash; 1 out of 3.</b> The question asked: <b>"What would you change about the Teddy Bear Toss event?"</b> Your answer asks a question instead of making a change:</p>
+
+    <div class="you-wrote">
+      <div class="label">YOUR ANSWER (Q7)</div>
+      "They could say how started the event and how did he or she make it up."
+    </div>
+
+    <p>This does not tell us what <b>you</b> would change. The prompt wants your own idea for a change. Also, the first part is missing a subject ("how <span class="highlight">who</span> started the event").</p>
+
+    <div class="reveal-wrapper">
+      <div class="reveal-cover" onclick="revealBetter(this)">
+        <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></div>
+        <div>
+          <div class="reveal-text">Tap to see a stronger answer</div>
+          <div class="reveal-hint">Read the explanation above first</div>
+        </div>
+      </div>
+      <div class="reveal-content">
+        <div class="better">
+          <div class="label">STRONGER ANSWER</div>
+          "I would change the event by letting kids throw the teddy bears at halftime instead of after a goal, because then everyone would be ready."
+        </div>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <div class="label">READ THE QUESTION TWICE</div>
+      Before you write, ask yourself: <b>"What does the question want me to do?"</b> If it says "What would you change?" your answer needs to start with something like "I would change..." and give your own idea. Do not ask a question back.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 4: Spelling Patterns ═══════════ -->
+<div class="card" data-title="Spelling Patterns">
+  <div class="card-header">
+    <h2>Spelling Patterns</h2>
+    <div class="card-subtitle">Words to practice &mdash; slow read-back helps</div>
+  </div>
+  <div class="card-body">
+    <p>You had a pattern of spelling errors across several questions. Each one cost you points:</p>
+
+    <div class="pattern-row">
+      <span class="pattern-wrong">"cherrety"</span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">charity</span>
+    </div>
+    <p style="font-size:10pt;color:#555;margin:2px 0 10px;">Q9 &mdash; 2 out of 3. Sound it out: <b>char</b> + <b>i</b> + <b>ty</b>. The word has "char" like "character."</p>
+
+    <div class="pattern-row">
+      <span class="pattern-wrong">"Libery" / "liberys"</span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">Library / libraries</span>
+    </div>
+    <p style="font-size:10pt;color:#555;margin:2px 0 10px;">Q11 &mdash; 14 out of 20. The word has two r's: li-<b>brar</b>-y. For the plural, drop the "y" and add "ies."</p>
+
+    <div class="pattern-row">
+      <span class="pattern-wrong">"chrildern"</span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">children</span>
+    </div>
+    <p style="font-size:10pt;color:#555;margin:2px 0 10px;">Q11 &mdash; 14 out of 20. The letters got jumbled. Say it slowly: <b>chil</b> + <b>dren</b>.</p>
+
+    <div class="pattern-row">
+      <span class="pattern-wrong">"Kanya"</span>
+      <span class="pattern-arrow">&rarr;</span>
+      <span class="pattern-right">Kenya</span>
+    </div>
+    <p style="font-size:10pt;color:#555;margin:2px 0 10px;">Q11 &mdash; 14 out of 20. This is a place name from the passage. When in doubt, look back at the passage for the exact spelling.</p>
+
+    <div class="tip-box">
+      <div class="label">THE SLOW READ-BACK RULE</div>
+      When you finish writing an answer, read it back to yourself <b>one word at a time</b>. Point at each word with your finger or cursor. If a word looks off, sound it out slowly. For place names and tricky words, look back at the passage to check.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 5: Detail + Explanation ═══════════ -->
+<div class="card" data-title="Detail + Explanation">
+  <div class="card-header">
+    <h2>Detail + Explanation</h2>
+    <div class="card-subtitle">Q11 &mdash; how to develop your paragraph with different details</div>
+  </div>
+  <div class="card-body">
+    <p><b>Q11 &mdash; 14 out of 20.</b> You wrote about the Camel Mobile Library and said why it matters. But you repeated the same point three times (that it helps kids learn to read and write). To earn more points, add <b>different</b> details from the passage.</p>
+
+    <p>Here is the pattern:</p>
+
+    <div class="outline-box">
+      <div class="outline-label">Detail + Explanation Pattern</div>
+      <div class="outline-row">
+        <span class="outline-tag">D</span>
+        <span><b>Detail:</b> A specific fact from the passage (something new each time).</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#2d6a2d;">E</span>
+        <span><b>Explanation:</b> Why that detail matters or what it shows about the topic.</span>
+      </div>
+    </div>
+
+    <p style="margin-top:10px;">For example, instead of saying "helps kids learn" three different ways, you could add:</p>
+
+    <div class="better">
+      <div class="label">DETAIL 1</div>
+      "The camel carries books to villages that have no libraries."
+    </div>
+    <div class="better" style="border-left-color:#457b9d;">
+      <div class="label" style="color:#457b9d;">EXPLANATION</div>
+      "This is important because without the camel, those children would have no books at all."
+    </div>
+    <div class="better" style="margin-top:10px;">
+      <div class="label">DETAIL 2 (DIFFERENT)</div>
+      "One camel can carry hundreds of books on its back."
+    </div>
+    <div class="better" style="border-left-color:#457b9d;">
+      <div class="label" style="color:#457b9d;">EXPLANATION</div>
+      "This means many children can pick their own book to read each visit."
+    </div>
+
+    <div class="tip-box">
+      <div class="label">THE "DID I ALREADY SAY THAT?" CHECK</div>
+      After you write a sentence, look back at what you already wrote. If your new sentence says the same idea in different words, cross it out and find a <b>new</b> fact from the passage instead.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 6: Paragraph Review ═══════════ -->
+<div class="card" data-title="Paragraph Review">
+  <div class="card-header">
+    <h2>Paragraph Review</h2>
+    <div class="card-subtitle">Q11 &mdash; 14 out of 20 &mdash; "One Book, One Camel"</div>
+  </div>
+  <div class="card-body">
+    <p>Here is what you wrote. Notice how all three sentences repeat the same idea:</p>
+
+    <div class="essay-excerpt">
+      <div class="para-label">YOUR PARAGRAPH (Q11)</div>
+      The Camel Mobile Libery help kid learn how to read and write, because there are no liberys in Kanya. So this helps them learn. This is important, because then the chrildern can still learn how to read and write.
+    </div>
+
+    <p>You have a <b>topic sentence</b> and you use "because" well &mdash; that is a solid start. But all three sentences say "helps kids learn." Here is how to build on it with different details:</p>
+
+    <div class="outline-box">
+      <div class="outline-label">Paragraph Plan &mdash; TS &rarr; D + E &rarr; D + E &rarr; CS</div>
+      <div style="font-size:9.5pt;color:#888;margin-bottom:6px;"><b>TS</b> = Topic Sentence &nbsp;&bull;&nbsp; <b>D</b> = Detail &nbsp;&bull;&nbsp; <b>E</b> = Explanation &nbsp;&bull;&nbsp; <b>CS</b> = Closing Sentence</div>
+      <div class="outline-row">
+        <span class="outline-tag">TS</span>
+        <span>The Camel Mobile <b>Library</b> helps kids in <b>Kenya</b> learn how to read and write.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D</span>
+        <span>There are no libraries in parts of Kenya, so a camel carries books to the villages.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#457b9d;">E</span>
+        <span>This is important because without the camel, those children would never see a book.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">D</span>
+        <span>The camel visits different villages so many children get a turn to borrow books.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag" style="background:#457b9d;">E</span>
+        <span>This means more kids can practice reading at home, not just at the camel stop.</span>
+      </div>
+      <div class="outline-row">
+        <span class="outline-tag">CS</span>
+        <span>The Camel Mobile Library shows that one good idea can change many lives.</span>
+      </div>
+    </div>
+
+    <p style="margin-top:10px;">See how each <span style="color:#457b9d;font-weight:700;">E</span> sentence answers "why does this matter?" and each <b>D</b> is a different fact. That is what moves a paragraph from 14 to 17+.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CARD 7: Checklist + Practice ═══════════ -->
+<div class="card" data-title="Checklist">
+  <div class="card-header">
+    <h2>Your Writing Checklist</h2>
+    <div class="card-subtitle">Review these before your next test</div>
+  </div>
+  <div class="card-body">
+    <p>Here is your personal checklist based on the patterns in your test. Tap each item as you review it:</p>
+
+    <div class="checklist-progress-label" id="checkProgressLabel">0 checked</div>
+    <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
+
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Read the question twice before writing.</b><br><span style="font-size:10pt;color:#555;">Ask yourself: "What does it want me to do?" If it says "change," give YOUR idea. Do not ask a question back.</span></div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Slow read-back for spelling.</b><br><span style="font-size:10pt;color:#555;">Point at each word. Sound out tricky ones: char-i-ty, li-brar-y, chil-dren. Check place names against the passage.</span></div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Check plurals: does the noun need an "s" or "es"?</b><br><span style="font-size:10pt;color:#555;">"All the teddy bears go" not "all the teddy bear go." If there is more than one, add the ending.</span></div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Each paragraph detail should be different.</b><br><span style="font-size:10pt;color:#555;">After writing a sentence, ask: "Did I already say this?" If yes, find a new fact from the passage.</span></div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>After each detail, write WHY it matters.</b><br><span style="font-size:10pt;color:#555;">Use the "So what?" test. Your next sentence after a fact should explain its importance.</span></div>
+    </div>
+
+    <div class="tip-box" style="margin-top:16px;">
+      <div class="label">PRACTICE LINK</div>
+      <a href="/practice/3/2/" style="color:#457b9d;font-weight:600;text-decoration:none;">Go to Practice &rarr; Grade 3, Set 2</a><br>
+      <span style="font-size:9.5pt;color:#555;">Work through at least 3 practice questions using your checklist above.</span>
+    </div>
+
+    <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg> Print this checklist</button>
+  </div>
+</div>
+
+</div><!-- /card-container -->
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<!-- Completion overlay -->
+<div class="completion-overlay" id="completionOverlay">
+  <div class="completion-card">
+    <div class="completion-emoji">&#127881;</div>
+    <div class="completion-title">Nice work, Luna!</div>
+    <div class="completion-sub">You reviewed all your cards. Remember your goals:<br><b>Answer what's asked &bull; Slow read-back for spelling &bull; Add different details to your paragraph</b></div>
+    <button class="completion-close" onclick="closeCompletion()">Got it!</button>
+  </div>
+</div>
+<canvas id="confettiCanvas"></canvas>
+
+<script>
+var cards = document.querySelectorAll('.card');
+var bar = document.getElementById('progressBar');
+var breadcrumb = document.getElementById('breadcrumb');
+var stickyEl = document.getElementById('stickyIndicator');
+var current = 0;
+var visited = [0];
+
+cards.forEach(function(card, i) {
+  var dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  var tooltip = document.createElement('span');
+  tooltip.className = 'dot-tooltip';
+  tooltip.textContent = card.getAttribute('data-title') || ('Card ' + (i + 1));
+  dot.appendChild(tooltip);
+  dot.addEventListener('click', function() { goTo(i); });
+  bar.appendChild(dot);
+});
+
+function updateBreadcrumb() {
+  var title = cards[current].getAttribute('data-title') || ('Card ' + (current + 1));
+  breadcrumb.innerHTML = 'Card <b>' + (current + 1) + '</b> of ' + cards.length + ' — ' + title;
+  stickyEl.textContent = (current + 1) + ' / ' + cards.length;
+}
+
+function checkSticky() {
+  var barRect = bar.getBoundingClientRect();
+  stickyEl.classList.toggle('visible', barRect.bottom < 0);
+}
+window.addEventListener('scroll', checkSticky);
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  if (visited.indexOf(current) === -1) visited.push(current);
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  visited.forEach(function(v) { if (v !== current) bar.children[v].classList.add('visited'); });
+  var prevBtn = document.getElementById('prevBtn');
+  var nextBtn = document.getElementById('nextBtn');
+  if (prevBtn) {
+    prevBtn.style.visibility = current === 0 ? 'hidden' : 'visible';
+    prevBtn.disabled = current === 0;
+  }
+  if (nextBtn) {
+    nextBtn.textContent = current === cards.length - 1 ? 'Done ✓' : 'Next →';
+    nextBtn.disabled = false;
+  }
+  updateBreadcrumb();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) { showCompletion(); return; }
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+function revealBetter(cover) {
+  var content = cover.nextElementSibling;
+  content.classList.add('shown');
+  cover.classList.add('hidden');
+}
+
+function toggleCheck(item) {
+  item.classList.toggle('checked');
+  updateCheckProgress();
+}
+
+function updateCheckProgress() {
+  var items = document.querySelectorAll('.check-item');
+  var checked = document.querySelectorAll('.check-item.checked').length;
+  var total = items.length;
+  var fill = document.getElementById('checkProgressFill');
+  var lbl = document.getElementById('checkProgressLabel');
+  if (fill) fill.style.width = Math.round((checked / total) * 100) + '%';
+  if (lbl) {
+    lbl.innerHTML = checked === total
+      ? '<b style="color:#2d6a2d;">All done! Nice work.</b>'
+      : checked + ' of ' + total + ' checked';
+  }
+}
+
+function printChecklist(btn) {
+  var card = btn.closest('.card');
+  var checkedItems = card.querySelectorAll('.check-item.checked');
+  checkedItems.forEach(function(item) { item.classList.remove('checked'); });
+  card.classList.add('print-target');
+  window.print();
+  card.classList.remove('print-target');
+  checkedItems.forEach(function(item) { item.classList.add('checked'); });
+}
+
+function showCompletion() {
+  document.getElementById('completionOverlay').classList.add('visible');
+  launchConfetti();
+}
+
+function closeCompletion() {
+  document.getElementById('completionOverlay').classList.remove('visible');
+}
+
+function launchConfetti() {
+  var canvas = document.getElementById('confettiCanvas');
+  var ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  var colors = ['#1a1a2e','#2d6a2d','#cc6600','#4caf50','#e6a800','#d4552a','#42a5f5'];
+  var particles = [];
+  for (var i = 0; i < 120; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height - canvas.height,
+      w: Math.random() * 10 + 5, h: Math.random() * 6 + 3,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      vx: (Math.random() - 0.5) * 4, vy: Math.random() * 3 + 2,
+      rot: Math.random() * 360, rotV: (Math.random() - 0.5) * 10, life: 1
+    });
+  }
+  var frame = 0;
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    var alive = false;
+    particles.forEach(function(p) {
+      if (p.life <= 0) return;
+      alive = true;
+      p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.rot += p.rotV;
+      if (p.y > canvas.height + 20) { p.life = 0; return; }
+      if (frame > 60) p.life -= 0.01;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot * Math.PI / 180);
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    });
+    frame++;
+    if (alive) requestAnimationFrame(animate);
+    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  animate();
+}
+
+goTo(0);
+</script>
+<script src="../tracking.js"></script>
+</body>
+</html>
