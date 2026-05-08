@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gavyn's Writing Test Review &mdash; G7.3</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: Calibri, 'Segoe UI', sans-serif;
+  font-size: 12pt;
+  color: #1a1a2e;
+  background: #f0f0f5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.progress-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
+.progress-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: #ccc; transition: background 0.3s, transform 0.2s; cursor: pointer;
+  position: relative;
+}
+.progress-dot.active { background: #1a1a2e; transform: scale(1.25); }
+.progress-dot.visited { background: #7a7a9e; }
+.progress-dot:hover { transform: scale(1.3); }
+.progress-dot .dot-tooltip {
+  position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  background: #1a1a2e; color: #fff; padding: 4px 10px; border-radius: 6px;
+  font-size: 8.5pt; white-space: nowrap; opacity: 0;
+  pointer-events: none; transition: opacity 0.2s; z-index: 100;
+}
+.progress-dot .dot-tooltip::after {
+  content: ''; position: absolute; top: 100%; left: 50%;
+  transform: translateX(-50%); border: 5px solid transparent;
+  border-top-color: #1a1a2e;
+}
+.progress-dot:hover .dot-tooltip { opacity: 1; }
+
+.card-breadcrumb {
+  font-size: 9.5pt; color: #888; margin-bottom: 14px;
+  text-align: center; transition: opacity 0.3s; min-height: 1.2em;
+}
+.card-breadcrumb b { color: #1a1a2e; }
+
+.sticky-indicator {
+  position: fixed; top: 12px; right: 16px;
+  background: #1a1a2e; color: #fff; padding: 5px 14px;
+  border-radius: 20px; font-size: 9pt; font-weight: 700;
+  opacity: 0; transition: opacity 0.3s; z-index: 200;
+  pointer-events: none; letter-spacing: 0.5px;
+}
+.sticky-indicator.visible { opacity: 1; }
+
+.card-container { position: relative; width: 800px; min-height: 420px; }
+
+.card {
+  position: absolute; top: 0; left: 0; width: 100%;
+  background: #fff; border: 2.5px solid #1a1a2e; border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+  opacity: 0; pointer-events: none; transform: translateX(40px);
+  transition: opacity 0.35s, transform 0.35s;
+}
+.card.active {
+  opacity: 1; pointer-events: auto; transform: translateX(0); position: relative;
+}
+
+.card-header {
+  background: #1a1a2e; color: #fff; padding: 14px 20px;
+  border-radius: 11px 11px 0 0;
+}
+.card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+.card-header .card-subtitle { font-size: 9.5pt; color: #aaa; margin-top: 2px; }
+
+.card-body { padding: 18px 22px 22px; line-height: 1.55; }
+.card-body p { margin: 6px 0; }
+.card-body ul { margin: 6px 0 6px 18px; }
+.card-body li { margin: 3px 0; }
+
+.score-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px; margin: 12px 0;
+}
+.score-box {
+  background: #f8f8fc; border: 1.5px solid #e0e0e8;
+  border-radius: 8px; padding: 10px 14px; text-align: center;
+}
+.score-box .big { font-size: 20pt; font-weight: 700; }
+.score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+.score-good .big { color: #2d6a2d; }
+.score-warn .big { color: #cc6600; }
+.score-low .big { color: #cc0000; }
+
+.you-wrote {
+  background: #fff3f3; border-left: 3px solid #cc0000;
+  padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+  font-style: italic; font-size: 10.5pt;
+}
+.you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+.better {
+  background: #e8f5e9; border-left: 3px solid #2d6a2d;
+  padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+  font-size: 10.5pt;
+}
+.better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+.tip-box {
+  background: #e8edf5; border-left: 3px solid #1a1a2e;
+  padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0;
+}
+.tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+.highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+.error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+
+.essay-excerpt {
+  background: #fafafa; border: 1px solid #e0e0e8;
+  border-radius: 6px; padding: 10px 14px; font-size: 10.5pt;
+  margin: 8px 0; line-height: 1.6;
+}
+
+.pattern-note {
+  background: #f5f0ff; border-left: 3px solid #7c4dff;
+  padding: 9px 14px; margin: 0 0 12px; border-radius: 0 6px 6px 0;
+  font-size: 10pt; line-height: 1.45;
+  display: flex; align-items: flex-start; gap: 8px;
+}
+.pattern-note .pattern-note-icon { font-size: 14pt; flex-shrink: 0; line-height: 1; }
+.pattern-note b { color: #5c2dcc; }
+
+.discrim-challenge {
+  background: #f8f5ff; border: 1.5px solid #d4c5ff; border-radius: 8px;
+  padding: 14px; margin: 10px 0;
+}
+.discrim-prompt {
+  font-weight: 700; font-size: 10.5pt; margin-bottom: 10px; color: #5c2dcc;
+}
+.discrim-options { display: flex; flex-direction: column; gap: 8px; }
+.discrim-option {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 14px; border: 2px solid #d4c5ff; border-radius: 8px;
+  cursor: pointer; transition: all 0.2s; font-size: 10.5pt;
+  background: #fff;
+}
+.discrim-option:hover { border-color: #7c4dff; background: #f5f0ff; }
+.discrim-label { font-weight: 800; color: #7c4dff; min-width: 20px; flex-shrink: 0; }
+.discrim-option.correct { border-color: #2d6a2d; background: #e8f5e9; cursor: default; }
+.discrim-option.correct .discrim-label { color: #2d6a2d; }
+.discrim-option.wrong { border-color: #cc0000; background: #fff3f3; }
+.discrim-option.wrong .discrim-label { color: #cc0000; }
+.discrim-option.locked { pointer-events: none; opacity: 0.5; }
+.discrim-feedback {
+  margin-top: 0; font-size: 10pt; line-height: 1.4;
+  max-height: 0; overflow: hidden; opacity: 0;
+  transition: max-height 0.3s, opacity 0.3s, margin 0.3s;
+}
+.discrim-feedback.shown { max-height: 260px; opacity: 1; margin-top: 10px; }
+.discrim-feedback.wrong-fb { color: #cc0000; }
+.discrim-feedback.right-fb { color: #2d6a2d; font-weight: 600; }
+
+.discrim-then {
+  max-height: 0; overflow: hidden; opacity: 0;
+  transition: max-height 0.6s ease, opacity 0.5s ease;
+}
+.discrim-then.revealed { max-height: 6000px; opacity: 1; }
+
+.reveal-wrapper { position: relative; }
+.reveal-cover {
+  background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%);
+  border-left: 3px solid #2d6a2d;
+  padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0;
+  cursor: pointer; user-select: none;
+  display: flex; align-items: center; gap: 10px;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.reveal-cover:hover {
+  box-shadow: 0 2px 8px rgba(45,106,45,0.15);
+  background: linear-gradient(135deg, #d4edda 0%, #c8e6c9 100%);
+}
+.reveal-cover .reveal-icon {
+  width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
+.reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #2d6a2d; }
+.reveal-cover .reveal-hint { font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px; }
+.reveal-content {
+  max-height: 0; overflow: hidden; opacity: 0;
+  transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0;
+}
+.reveal-content.shown { max-height: 900px; opacity: 1; margin: 8px 0; }
+.reveal-cover.hidden { display: none; }
+
+.check-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 10px 8px; cursor: pointer; border-bottom: 1px solid #eee;
+  border-radius: 6px; transition: background 0.15s; user-select: none;
+  font-size: 11pt;
+}
+.check-item:last-child { border-bottom: none; }
+.check-item:hover { background: #f8f8fc; }
+.check-item.checked { background: #f0f8f0; }
+.check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
+.check-item.checked .check-box::after {
+  content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700;
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+}
+.check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
+.check-box {
+  width: 28px; height: 28px; border: 2.5px solid #1a1a2e;
+  border-radius: 6px; flex-shrink: 0; margin-top: 1px;
+  position: relative; transition: background 0.2s, border-color 0.2s;
+}
+.checklist-progress {
+  background: #eee; border-radius: 10px; height: 8px;
+  margin: 12px 0 6px; overflow: hidden;
+}
+.checklist-progress-fill {
+  background: linear-gradient(90deg, #2d6a2d, #4caf50);
+  height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%;
+}
+.checklist-progress-label {
+  font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px;
+}
+
+.practice-recommendations {
+  margin-top: 16px; border-top: 2px solid #e0e0e8; padding-top: 14px;
+}
+.practice-recs-title {
+  font-size: 10pt; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.6px; color: #1a1a2e; margin-bottom: 10px;
+}
+.practice-tier { border-radius: 8px; padding: 12px 14px; margin: 8px 0; }
+.tier-primary { background: #e8f5e9; border: 1.5px solid #a5d6a7; }
+.tier-extra { background: #f8f8fc; border: 1.5px solid #e0e0e8; }
+.tier-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.tier-label {
+  font-size: 8.5pt; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.8px; padding: 2px 10px; border-radius: 10px;
+}
+.tier-primary .tier-label { background: #2d6a2d; color: #fff; }
+.tier-extra .tier-label { background: #888; color: #fff; }
+.tier-note { font-size: 9pt; color: #666; margin-bottom: 6px; line-height: 1.4; }
+.practice-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.practice-link {
+  display: inline-block; padding: 5px 12px; border-radius: 6px;
+  font-size: 9.5pt; font-weight: 600; text-decoration: none;
+  transition: background 0.2s, transform 0.1s;
+}
+.practice-link:hover { transform: translateY(-1px); }
+.tier-primary .practice-link { background: #c8e6c9; color: #1b5e1b; }
+.tier-primary .practice-link:hover { background: #a5d6a7; }
+.tier-extra .practice-link { background: #e8edf5; color: #1a1a2e; }
+.tier-extra .practice-link:hover { background: #d8dff0; }
+
+.nav { display: flex; gap: 12px; margin-top: 16px; }
+.nav button {
+  padding: 8px 28px; border: 2px solid #1a1a2e; border-radius: 8px;
+  background: #fff; color: #1a1a2e; font-family: inherit;
+  font-size: 11pt; font-weight: 600; cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.nav button:hover { background: #1a1a2e; color: #fff; }
+
+.print-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 12px; padding: 8px 20px;
+  border: 2px solid #1a1a2e; border-radius: 8px;
+  background: #fff; color: #1a1a2e; font-family: inherit;
+  font-size: 10.5pt; font-weight: 600; cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.print-btn:hover { background: #1a1a2e; color: #fff; }
+.print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+.completion-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(26,26,46,0.6); z-index: 500;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.4s;
+}
+.completion-overlay.visible { opacity: 1; pointer-events: auto; }
+.completion-card {
+  background: #fff; border-radius: 16px; padding: 40px 48px;
+  text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+  transform: scale(0.8); transition: transform 0.4s ease; max-width: 460px;
+}
+.completion-overlay.visible .completion-card { transform: scale(1); }
+.completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+.completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; }
+.completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+.completion-goals {
+  background: #f8f8fc; border-radius: 10px; padding: 12px 16px;
+  margin: 14px 0; text-align: left; font-size: 10pt;
+}
+.completion-goals b { color: #d4552a; }
+.completion-close {
+  margin-top: 14px; padding: 10px 32px;
+  background: #1a1a2e; color: #fff; border: none; border-radius: 8px;
+  font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer;
+  transition: background 0.2s;
+}
+.completion-close:hover { background: #2d2d4e; }
+#confettiCanvas {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 501;
+}
+
+.para-map {
+  display: flex; gap: 6px; margin: 10px 0; flex-wrap: wrap;
+}
+.para-tag {
+  padding: 6px 12px; border-radius: 6px; font-size: 10pt; font-weight: 600;
+  border: 1.5px solid;
+}
+.para-tag.good { background: #e8f5e9; border-color: #2d6a2d; color: #2d6a2d; }
+.para-tag.warn { background: #fff3cd; border-color: #e6a800; color: #996600; }
+.para-tag.bad { background: #fff3f3; border-color: #cc0000; color: #cc0000; }
+
+.score-timeline {
+  display: flex; align-items: flex-end; gap: 0; margin: 12px 0 16px;
+  padding: 0 4px; justify-content: space-between;
+}
+.timeline-item {
+  display: flex; flex-direction: column; align-items: center; flex: 1;
+  position: relative;
+}
+.timeline-score { font-size: 13pt; font-weight: 700; margin-bottom: 4px; }
+.timeline-bar {
+  width: 65%; border-radius: 4px 4px 0 0;
+  transition: height 0.6s ease; min-height: 8px;
+}
+.timeline-label { font-size: 7.5pt; color: #888; margin-top: 6px; font-weight: 600; }
+.timeline-date { font-size: 7pt; color: #aaa; margin-top: 1px; }
+.score-green { color: #2d6a2d; }
+.score-amber { color: #cc6600; }
+.score-red { color: #cc0000; }
+.bar-green { background: linear-gradient(to top, #c8e6c9, #81c784); }
+.bar-amber { background: linear-gradient(to top, #ffe0b2, #ffb74d); }
+.bar-red { background: linear-gradient(to top, #ffcdd2, #ef9a9a); }
+.timeline-item.current { outline: 2px dashed #d4552a; border-radius: 6px; padding: 4px; }
+
+.strength-chips {
+  display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px;
+}
+.strength-chip {
+  padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600;
+  background: #e8f5e9; color: #2d6a2d; border: 1.5px solid #a5d6a7;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.strength-chip .chip-course { font-size: 7.5pt; color: #888; font-weight: 400; }
+
+.journey-section {
+  font-size: 9.5pt; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.7px; margin: 10px 0 4px; padding-bottom: 3px;
+  border-bottom: 1.5px solid; display: flex; align-items: center; gap: 6px;
+}
+.journey-section.strengths-header { color: #2d6a2d; border-color: #c8e6c9; }
+.journey-section.growth-header { color: #cc6600; border-color: #ffe0b2; }
+
+.root-cause-teaser {
+  background: #fff4ef; border-left: 3px solid #d4552a;
+  padding: 10px 14px; margin: 12px 0 4px; border-radius: 0 6px 6px 0;
+  font-size: 10.5pt; line-height: 1.5;
+}
+.root-cause-teaser b { color: #a8401f; }
+
+.growth-chips {
+  display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0;
+}
+.growth-chip {
+  padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.growth-chip.weak { background: #fff3f3; color: #cc0000; border: 1.5px solid #ffcdd2; }
+.growth-chip.mixed { background: #fff8e8; color: #b35900; border: 1.5px solid #ffe0b2; }
+.growth-chip .chip-avg { font-size: 7.5pt; font-weight: 700; margin-left: 2px; }
+
+.comparison-table {
+  width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 10pt;
+}
+.comparison-table th {
+  background: #1a1a2e; color: #fff; padding: 8px 12px;
+  text-align: left; font-size: 9pt; font-weight: 700;
+}
+.comparison-table td {
+  padding: 6px 12px; border-bottom: 1px solid #e0e0e8;
+}
+.comparison-table tr:nth-child(even) td { background: #f8f8fc; }
+
+@media print {
+  body { background: #fff; padding: 0; min-height: auto; }
+  .progress-bar, .nav, .print-btn, .card-breadcrumb, .sticky-indicator,
+  .completion-overlay, #confettiCanvas, .reveal-cover,
+  .checklist-progress, .checklist-progress-label, .discrim-challenge { display: none !important; }
+  .card-container { width: 100%; min-height: auto; }
+  .card { display: none !important; }
+  .card.print-target {
+    display: block !important; opacity: 1 !important;
+    pointer-events: auto !important; position: relative !important;
+    transform: none !important; box-shadow: none;
+    border: 2px solid #1a1a2e; page-break-inside: avoid;
+  }
+  .reveal-content, .discrim-then {
+    max-height: none !important; opacity: 1 !important; margin: 8px 0 !important;
+  }
+  .practice-link { border: 1px solid #999; }
+  .check-box, .card-header, .error-mark, .pattern-note, .tip-box,
+  .tier-primary, .tier-extra, .score-timeline, .timeline-bar,
+  .strength-chip, .growth-chip, .root-cause-teaser,
+  .journey-section { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+@media (max-width: 840px) {
+  .card-container { width: 100%; }
+  .score-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<div class="card-breadcrumb" id="breadcrumb"></div>
+<div class="sticky-indicator" id="stickyIndicator"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- CARD 1: Score Overview -->
+<div class="card active" data-title="Score Overview">
+  <div class="card-header">
+    <h2>Gavyn Martinez</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G7.3 &mdash; "El Silbo"</div>
+  </div>
+  <div class="card-body">
+    <div class="score-grid">
+      <div class="score-box score-good">
+        <div class="big">83%</div>
+        <div class="label">Overall Score (25/30)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">10/10</div>
+        <div class="label">Questions 1&ndash;10</div>
+      </div>
+      <div class="score-box score-warn">
+        <div class="big">15/20</div>
+        <div class="label">Essay (Question 11)</div>
+      </div>
+    </div>
+    <p>Gavyn, <b>perfect multiple-choice</b>. That is a serious achievement &mdash; 10 out of 10 means you have locked in every reading and grammar skill at the G7 level. Your overall score moved from 80% to <b>83%</b>, and the improvement came entirely from those multiple-choice questions.</p>
+    <p>Your essay has strong vocabulary, five solid paragraphs, and real engagement with the passage. But it stayed at <b>15 out of 20</b> &mdash; the same score as G7.2. The 5 points lost come from the <b>same three patterns</b> I flagged on your last card: spelling, thesis, and paragraph focus. This time, we are locking them in for good.</p>
+  </div>
+</div>
+
+<!-- CARD 2: Writing Journey -->
+<div class="card" data-title="Your Writing Journey">
+  <div class="card-header">
+    <h2>Your Writing Journey</h2>
+    <div class="card-subtitle">G7.1 &rarr; G7.2 &rarr; G7.3 &mdash; trending up</div>
+  </div>
+  <div class="card-body">
+    <div class="score-timeline">
+      <div class="timeline-item">
+        <div class="timeline-score score-amber">77%</div>
+        <div class="timeline-bar bar-amber" style="height:60px;"></div>
+        <div class="timeline-label">G7.1</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-score score-green">80%</div>
+        <div class="timeline-bar bar-green" style="height:68px;"></div>
+        <div class="timeline-label">G7.2</div>
+      </div>
+      <div class="timeline-item current">
+        <div class="timeline-score score-green">83%</div>
+        <div class="timeline-bar bar-green" style="height:74px;"></div>
+        <div class="timeline-label">G7.3</div>
+      </div>
+    </div>
+
+    <div class="journey-section strengths-header">What improved from G7.2</div>
+    <div class="strength-chips">
+      <span class="strength-chip">Multiple-choice &middot; 9/10 &rarr; 10/10</span>
+      <span class="strength-chip">Better organization overall</span>
+      <span class="strength-chip">Stronger vocabulary</span>
+      <span class="strength-chip">More passage evidence</span>
+    </div>
+
+    <div class="journey-section growth-header">Same patterns still present</div>
+    <div class="growth-chips">
+      <span class="growth-chip mixed">Spelling / proofreading <span class="chip-avg">G7.2 + G7.3</span></span>
+      <span class="growth-chip mixed">Missing thesis <span class="chip-avg">G7.2 + G7.3</span></span>
+      <span class="growth-chip mixed">Paragraph focus drift <span class="chip-avg">G7.2 + G7.3</span></span>
+    </div>
+
+    <div class="root-cause-teaser">
+      Your overall trend is <b>up</b> (77 &rarr; 80 &rarr; 83), and your multiple-choice is now <b>flawless</b>. But your essay score has been <b>15/20 on both G7.2 and G7.3</b>. The same three habits are costing you the same 5 points every time. The next cards show you each pattern side-by-side from both tests &mdash; so you can see the habit clearly and break it.
+    </div>
+  </div>
+</div>
+
+<!-- CARD 3: Same Pattern - Spelling -->
+<div class="card" data-title="Same Pattern: Spelling">
+  <div class="card-header">
+    <h2>Same Pattern &mdash; Spelling</h2>
+    <div class="card-subtitle">The same type of error on G7.2 and G7.3</div>
+  </div>
+  <div class="card-body">
+    <div class="pattern-note">
+      <span class="pattern-note-icon">&#128270;</span>
+      <span><b>Pattern alert:</b> On G7.2 you had errors like &quot;clamer,&quot; &quot;towned,&quot; and &quot;turing.&quot; On G7.3, the <b>same type</b> of error repeats: &quot;differnt,&quot; &quot;wistles,&quot; &quot;jeapardy,&quot; &quot;langauge.&quot; These are all <b>missing or swapped letters</b> in words you actually know how to spell.</span>
+    </div>
+
+    <table class="comparison-table">
+      <tr><th>G7.2 errors</th><th>G7.3 errors</th><th>What went wrong</th></tr>
+      <tr><td><span class="error-mark">clamer</span> &rarr; calmer</td><td><span class="error-mark">differnt</span> &rarr; different</td><td>Missing letter</td></tr>
+      <tr><td><span class="error-mark">towned</span> &rarr; town</td><td><span class="error-mark">wistles</span> &rarr; whistles</td><td>Missing letter</td></tr>
+      <tr><td><span class="error-mark">turing</span> &rarr; turning</td><td><span class="error-mark">jeapardy</span> &rarr; jeopardy</td><td>Swapped letters</td></tr>
+      <tr><td><span class="error-mark">thats</span> &rarr; that</td><td><span class="error-mark">langauge</span> &rarr; language</td><td>Swapped letters</td></tr>
+      <tr><td></td><td><span class="error-mark">Spainish</span> &rarr; Spanish</td><td>Extra letter</td></tr>
+      <tr><td></td><td><span class="error-mark">tech</span> &rarr; teach</td><td>Missing letter</td></tr>
+    </table>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which version of this sentence has the correct spelling?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false"
+             data-wrong-feedback="Look at &lt;b&gt;jeapardy&lt;/b&gt;. Say it slowly: jep-ar-dee. The &quot;e&quot; sound comes first, then &quot;o&quot; &mdash; it is &lt;b&gt;jeopardy&lt;/b&gt;. And &lt;b&gt;the decided&lt;/b&gt; is missing the &quot;y&quot; &mdash; it should be &lt;b&gt;they decided&lt;/b&gt;. Try again."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">A</span>
+          <span>&quot;The government realized that a massive part of the island's culture was in jeapardy, so the decided to start teaching El Silbo in schools.&quot;</span>
+        </div>
+        <div class="discrim-option" data-correct="true"
+             data-right-feedback="Correct. &lt;b&gt;Jeopardy&lt;/b&gt; (e before o) and &lt;b&gt;they decided&lt;/b&gt; (not &quot;the decided&quot;). When you whisper the word slowly, you hear every syllable: je-op-ar-dy. That is the fix."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">B</span>
+          <span>&quot;The government realized that a massive part of the island's culture was in jeopardy, so they decided to start teaching El Silbo in schools.&quot;</span>
+        </div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="discrim-then">
+      <div class="tip-box">
+        <div class="label">THE FIX: WHISPER IT AS YOU WRITE IT</div>
+        Every one of your spelling errors &mdash; across both tests &mdash; is a word where you <b>skipped a sound</b>. You know these words. You use them in speech. The problem is that your hand writes faster than your brain spells.<br><br>
+        The fix: <b>whisper each tricky word as you type it</b>, syllable by syllable.<br>
+        &bull; &quot;dif-fer-ent&quot; &mdash; you hear the second &quot;f&quot; and the &quot;e&quot;<br>
+        &bull; &quot;whis-tles&quot; &mdash; you hear the &quot;h&quot; after the &quot;w&quot;<br>
+        &bull; &quot;lan-guage&quot; &mdash; you hear &quot;gua&quot; not &quot;gau&quot;<br>
+        &bull; &quot;je-op-ar-dy&quot; &mdash; you hear &quot;eo&quot; not &quot;ea&quot;<br><br>
+        This is not about memorizing a spelling list. It is about <b>slowing down for one second</b> on words that have more than two syllables.
+      </div>
+
+      <div class="tip-box">
+        <div class="label">YOUR PROOFREADING WINDOW</div>
+        You have 90 minutes on these tests. Your essay is five paragraphs &mdash; you are not running out of time. After you finish writing, go back to the start and <b>whisper-read every sentence</b>. You will catch &quot;the decided&quot; (they decided), &quot;speaker&quot; (speakers), &quot;new&quot; (news) &mdash; all of these sound wrong when you hear them.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CARD 4: Same Pattern - Lead with a Thesis -->
+<div class="card" data-title="Same Pattern: Lead with a Thesis">
+  <div class="card-header">
+    <h2>Same Pattern &mdash; Lead with a Thesis</h2>
+    <div class="card-subtitle">G7.2 had no thesis. G7.3 still has no thesis.</div>
+  </div>
+  <div class="card-body">
+    <div class="pattern-note">
+      <span class="pattern-note-icon">&#128202;</span>
+      <span><b>Two tests, same gap:</b> On G7.2, your intro set up the scene but never stated a claim. On G7.3, your intro does the same thing &mdash; it describes La Gomera beautifully, but never answers the prompt's actual question: <b>&quot;Explain how El Silbo connects the people of La Gomera.&quot;</b></span>
+    </div>
+
+    <div class="you-wrote">
+      <div class="label">YOUR G7.3 INTRO</div>
+      &quot;The Canary Islands, a chain of small islands off the coast of Northwest Africa, are famous for the many different landforms such as echoing valleys and steep cliffs on them. The second smallest island, known as La Gomera, is where visitors often hear loud whistles of differnt volumes and pitches. La Gomera, one of the Canary Islands, is known for its famous whistled language, known as El Silbo, which has been used for communication for around 500 years.&quot;
+    </div>
+
+    <div class="tip-box">
+      <div class="label">WHAT IS MISSING</div>
+      Your intro is engaging &mdash; it names the setting, builds curiosity, and introduces El Silbo. But it never answers <b>how</b> El Silbo <b>connects people</b>. The prompt specifically asks that. A grader reading your intro does not yet know what your essay will prove.
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which sentence would work as a thesis for this essay?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false"
+             data-wrong-feedback="This sentence tells us El Silbo is &lt;b&gt;interesting&lt;/b&gt;, but it does not answer &lt;b&gt;how&lt;/b&gt; it connects people. A thesis needs to preview the specific ways &mdash; not just say &quot;it is special.&quot; Try again."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">A</span>
+          <span>&quot;El Silbo is one of the most interesting languages in the world and has been around for hundreds of years.&quot;</span>
+        </div>
+        <div class="discrim-option" data-correct="true"
+             data-right-feedback="Correct. This thesis names &lt;b&gt;three specific ways&lt;/b&gt; El Silbo connects people: bridging the landscape, preserving heritage through generations, and uniting the community through school programs. A grader now knows exactly what the essay will prove."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">B</span>
+          <span>&quot;El Silbo connects the people of La Gomera by bridging its rugged landscape, preserving heritage across generations, and uniting the community through school programs that keep the language alive.&quot;</span>
+        </div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="discrim-then">
+      <div class="reveal-wrapper">
+        <div class="reveal-cover" onclick="revealBetter(this)">
+          <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></div>
+          <div>
+            <div class="reveal-text">Tap to see your intro with a thesis added</div>
+            <div class="reveal-hint">Same beautiful opening, one sentence added at the end</div>
+          </div>
+        </div>
+        <div class="reveal-content">
+          <div class="better">
+            <div class="label">STRONGER INTRO (YOUR OPENING + A THESIS)</div>
+            &quot;The Canary Islands, a chain of small islands off the coast of Northwest Africa, are famous for their echoing valleys and steep cliffs. The second smallest island, La Gomera, is where visitors often hear loud whistles of different volumes and pitches. This is El Silbo, a whistled language used for communication for around 500 years. <b>El Silbo connects the people of La Gomera by bridging its rugged landscape, preserving heritage across generations, and uniting the community through school programs that keep the language alive.</b>&quot;
+            <br><br>
+            <span style="font-size:9.5pt; color:#555;">The bolded sentence is the thesis. It names three things the body paragraphs will prove. Everything before it is your original setup &mdash; which is genuinely good. You just need one more sentence at the end.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tip-box">
+        <div class="label">THE SAME TRICK FROM G7.2 (USE IT THIS TIME)</div>
+        Before you write your essay, fill in this sentence:<br><br>
+        &bull; <b>&quot;[Topic] connects/helps/improves [people/place] by ____, ____, and ____.&quot;</b><br><br>
+        For this prompt: <em>&quot;El Silbo connects the people of La Gomera by [bridging the landscape], [preserving heritage], and [school programs].&quot;</em><br><br>
+        Write that sentence. Put it at the end of your intro. Now you have a thesis, and your three blanks become your three body paragraphs.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CARD 5: Same Pattern - One Topic per Body Paragraph -->
+<div class="card" data-title="Same Pattern: One Topic per Paragraph">
+  <div class="card-header">
+    <h2>Same Pattern &mdash; One Topic per Body Paragraph</h2>
+    <div class="card-subtitle">Para 4 mixes three ideas into one paragraph</div>
+  </div>
+  <div class="card-body">
+    <div class="pattern-note">
+      <span class="pattern-note-icon">&#128202;</span>
+      <span><b>Same move, different test:</b> On G7.2, Body 2 mixed &quot;safety benefits&quot; with &quot;parking concerns&quot; &mdash; two topics. On G7.3, Paragraph 4 mixes <b>three</b> topics: how El Silbo works (sounds &rarr; pitches), what it was used for (news, warnings), AND the 1980s decline/revival. That is three ideas fighting for space.</span>
+    </div>
+
+    <div class="you-wrote">
+      <div class="label">YOUR PARAGRAPH 4 (THREE TOPICS MIXED)</div>
+      &quot;Every sound in the spanish language is transformed into a different sound or pitch. <span class="highlight">Topic 1: how it works</span> When El Silbo was initially used, it was used for many different kinds of communication, such as new, invitations, and also warnings. <span class="highlight">Topic 2: what it was used for</span> Around the 1980s, very few people knew the language. The government realized that a massive part of the island's culture was in jeapardy, so the decided to start teaching El Silbo Gomero in schools in order to help people learn the language again. <span class="highlight">Topic 3: decline and revival</span>&quot;
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which version keeps one focus per paragraph?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false"
+             data-wrong-feedback="This version still mixes &lt;b&gt;how the sounds work&lt;/b&gt; with &lt;b&gt;what messages were sent&lt;/b&gt; with &lt;b&gt;the 1980s decline&lt;/b&gt;. Three topics in one paragraph. A focused paragraph proves &lt;b&gt;one thing&lt;/b&gt;. Try again."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">A</span>
+          <span>&quot;El Silbo transforms Spanish sounds into whistled pitches, and people used it for news and warnings. By the 1980s very few people spoke the language, so schools began teaching it.&quot;</span>
+        </div>
+        <div class="discrim-option" data-correct="true"
+             data-right-feedback="Correct. This paragraph focuses entirely on &lt;b&gt;one idea: the decline and revival&lt;/b&gt;. How it works and what it was used for belong in earlier paragraphs. Splitting them gives the grader clear organization."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">B</span>
+          <span>&quot;By the 1980s, very few people on La Gomera still knew El Silbo. The government realized that a massive piece of the island's culture was in jeopardy, so they added El Silbo to the school curriculum. Today, children learn the language from veteran speakers, and the number of El Silbo users is rising again.&quot;</span>
+        </div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="discrim-then">
+      <div class="reveal-wrapper">
+        <div class="reveal-cover" onclick="revealBetter(this)">
+          <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></div>
+          <div>
+            <div class="reveal-text">Tap to see how splitting improves your essay</div>
+            <div class="reveal-hint">Same content, better packaging</div>
+          </div>
+        </div>
+        <div class="reveal-content">
+          <div class="better">
+            <div class="label">YOUR CONTENT SPLIT INTO FOCUSED PARAGRAPHS</div>
+            <b>Body 1 &mdash; How El Silbo works:</b> &quot;Every sound in the Spanish language is transformed into a whistled pitch. Speakers use different volumes and lengths to represent vowels and consonants, turning full sentences into melodies that carry across valleys.&quot;<br><br>
+            <b>Body 2 &mdash; How it connected people daily:</b> &quot;For centuries, El Silbo helped locals communicate across the island's massive ravines and cliffs. Whistlers sent news, invitations, and warnings without needing to hike for hours between villages.&quot;<br><br>
+            <b>Body 3 &mdash; Decline and revival:</b> &quot;By the 1980s, very few people still knew El Silbo. The government realized this piece of culture was in jeopardy, so they added it to the school curriculum. Today veteran speakers pass the language to their children, and the number of users is rising.&quot;
+            <br><br>
+            <span style="font-size:9.5pt; color:#555;">Same ideas you already had. Same evidence. Just organized so each paragraph proves one thing. A grader reads this and sees a clear structure instantly.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tip-box">
+        <div class="label">THE ONE-QUESTION TEST</div>
+        Before you write a body paragraph, write down the <b>one question</b> it answers:<br>
+        &bull; Body 1: <em>How does El Silbo work?</em><br>
+        &bull; Body 2: <em>How did El Silbo connect people in daily life?</em><br>
+        &bull; Body 3: <em>What happened when it almost disappeared, and how was it saved?</em><br><br>
+        If a sentence does not answer that paragraph's question, it belongs in a different paragraph. Move it or start a new one.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CARD 6: Essay Review -->
+<div class="card" data-title="Full Essay Review">
+  <div class="card-header">
+    <h2>Question 11 &mdash; Full Essay Review</h2>
+    <div class="card-subtitle">15 out of 20 &mdash; what worked and what cost you points</div>
+  </div>
+  <div class="card-body">
+    <div class="para-map">
+      <span class="para-tag warn">Developing: 15/20</span>
+      <span class="para-tag good">5 paragraphs</span>
+      <span class="para-tag good">Strong vocabulary</span>
+      <span class="para-tag bad">9+ spelling errors</span>
+      <span class="para-tag bad">No thesis</span>
+    </div>
+
+    <div class="essay-excerpt" style="font-size:10pt; line-height:1.7;">
+      <span style="background:#e8edf5; padding:2px 6px; border-radius:3px; font-weight:700; font-size:9pt; color:#1a1a2e;">PARA 1 &mdash; INTRO</span> <span style="font-size:8.5pt; color:#cc6600; font-weight:600;">(good setup, no thesis)</span><br>
+      The Canary Islands, a chain of small islands off the coast of Northwest Africa, are famous for the many different landforms such as echoing valleys and steep cliffs on them. The second smallest island, known as La Gomera, is where visitors often hear loud whistles of <span class="error-mark">differnt</span> volumes and pitches. La Gomera, one of the Canary Islands, is known for its famous whistled language, known as El Silbo, which has been used for communication for around 500 years.
+      <br><br>
+      <span style="background:#e8f5e9; padding:2px 6px; border-radius:3px; font-weight:700; font-size:9pt; color:#2d6a2d;">PARA 2</span> <span style="font-size:8.5pt; color:#2d6a2d; font-weight:600;">(engaging opening, good history)</span><br>
+      No, these <span class="error-mark">wistles</span> are not from some kind of bird or animal, these noises are actually a language called El Silbo Gomero, or in English, The Whistle of Gomera. The approximate date on which El Silbo started remains unsure. Historians infer that it may have begun with the island's earliest inhabitants, and was later used and adopted by <span class="error-mark">Spainish</span> settlers around the 1500s.
+      <br><br>
+      <span style="background:#e8f5e9; padding:2px 6px; border-radius:3px; font-weight:700; font-size:9pt; color:#2d6a2d;">PARA 3</span> <span style="font-size:8.5pt; color:#2d6a2d; font-weight:600;">(strong &mdash; one focus: landscape connection)</span><br>
+      For centuries upon centuries, El Silbo helped locals communicate across the island's massive and rugged landscape. The language carries a long way, far across the deep ravines of La Gomera as well as up and down cliffs of unmeasurable heights, whistles that sound like ridiculous songs, but actually carries lots of meaning.
+      <br><br>
+      <span style="background:#fff3cd; padding:2px 6px; border-radius:3px; font-weight:700; font-size:9pt; color:#996600;">PARA 4</span> <span style="font-size:8.5pt; color:#cc0000; font-weight:600;">(mixes 3 topics: how it works + uses + decline)</span><br>
+      Every sound in the <span class="error-mark">spanish</span> language is transformed into a different sound or pitch. When El Silbo was initially used, it was used for many different kinds of communication, such as <span class="error-mark">new</span>, invitations, and also warnings. Around the 1980s, very few people knew the language. The government realized that a massive part of the island's culture was in <span class="error-mark">jeapardy</span>, so <span class="error-mark">the decided</span> to start teaching El Silbo Gomero in schools in order to help people learn the language again.
+      <br><br>
+      <span style="background:#e8edf5; padding:2px 6px; border-radius:3px; font-weight:700; font-size:9pt; color:#1a1a2e;">PARA 5 &mdash; CONCLUSION</span> <span style="font-size:8.5pt; color:#cc6600; font-weight:600;">(good intent, some confusion)</span><br>
+      Veteran <span class="error-mark">speakers tech the language the</span> their offspring and now the number of El Silbo <span class="error-mark">speaker</span> is rising as the language is making its comeback. Someday if all goes wrong, the locals on the second smallest Canary Island might need to use the <span class="error-mark">langauge</span> again. La Gomera, the world renowned island of the coast of Northwest Africa, needed their little-known way of communication in order to live successfully since the island was inhabited.
+    </div>
+
+    <div class="tip-box">
+      <div class="label">WHAT YOU DID WELL (GENUINELY IMPRESSIVE)</div>
+      &bull; <b>Vocabulary:</b> &quot;unmeasurable heights,&quot; &quot;veteran speakers,&quot; &quot;world renowned,&quot; &quot;ravines&quot; &mdash; these are advanced word choices that show real confidence<br>
+      &bull; <b>Rhetorical opening:</b> &quot;No, these whistles are not from some kind of bird or animal&quot; &mdash; that is a strong hook that grabs a reader<br>
+      &bull; <b>Appositives:</b> &quot;La Gomera, one of the Canary Islands,&quot; and &quot;El Silbo Gomero, or in English, The Whistle of Gomera&quot; &mdash; smooth, professional<br>
+      &bull; <b>Evidence use:</b> You pull specific details from the passage (1500s, 1980s, ravines, school programs)<br>
+      &bull; <b>5 clear paragraphs:</b> Better overall organization than G7.2
+    </div>
+
+    <div class="tip-box">
+      <div class="label">WHAT COST YOU THE 5 POINTS</div>
+      1. <b>Spelling</b> (9 errors) &mdash; same &quot;say it slowly&quot; type as G7.2<br>
+      2. <b>No thesis</b> &mdash; intro never states HOW El Silbo connects people<br>
+      3. <b>Para 4 mixes 3 topics</b> &mdash; how it works + daily uses + decline/revival<br>
+      4. <b>Comma splice</b> in Para 2: &quot;these whistles are not from some kind of bird or animal, these noises are actually a language&quot; &mdash; two full sentences joined by just a comma
+    </div>
+  </div>
+</div>
+
+<!-- CARD 7: Checklist & Practice -->
+<div class="card" data-title="Checklist &amp; Practice">
+  <div class="card-header">
+    <h2>Your Checklist &amp; Practice</h2>
+    <div class="card-subtitle">Three patterns &mdash; lock them in before G7.4</div>
+  </div>
+  <div class="card-body">
+    <div class="checklist-progress-label" id="checkProgressLabel">0 of 6 checked</div>
+    <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
+
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Whisper each word as you type it</b> &mdash; especially words with 3+ syllables. If it sounds wrong when whispered, fix the spelling before moving on.</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Write a thesis before your body paragraphs</b> &mdash; fill in: &quot;[Topic] connects/helps/improves [people] by ____, ____, and ____.&quot; Put that sentence at the end of your intro.</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>One topic per paragraph</b> &mdash; write each paragraph's one-question focus above it as a note. If a sentence does not answer that question, start a new paragraph.</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Proofread by whisper-reading</b> &mdash; after finishing, go back to the start and whisper every sentence. You will hear &quot;the decided&quot; and &quot;new&quot; instead of &quot;news&quot; immediately.</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Check for comma splices</b> &mdash; if you have two complete thoughts joined by just a comma, add &quot;and,&quot; use a period, or use a semicolon.</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Do the recommended practice activities below</b> before the next test</div>
+    </div>
+
+    <div class="practice-recommendations">
+      <div class="practice-recs-title">Recommended Practice</div>
+
+      <div class="practice-tier tier-primary">
+        <div class="tier-header">
+          <span class="tier-label">Start Here</span>
+        </div>
+        <div class="tier-note">These target your three recurring patterns: paragraph focus, thesis writing, and proofreading.</div>
+        <div class="practice-links">
+          <a class="practice-link" href="https://alphawrite.alpha.school/practice/7/2/write-paragraph-from-prompt" target="_blank">Write a Paragraph from Prompt</a>
+          <a class="practice-link" href="https://alphawrite.alpha.school/practice/7/2/writing-spos" target="_blank">Writing Paragraph Outlines</a>
+          <a class="practice-link" href="https://alphawrite.alpha.school/practice/7/2/identify-ts-and-sequence-details" target="_blank">Topic Sentences &amp; Sequencing</a>
+        </div>
+      </div>
+
+      <div class="practice-tier tier-extra">
+        <div class="tier-header">
+          <span class="tier-label">Extra Practice</span>
+        </div>
+        <div class="practice-links">
+          <a class="practice-link" href="https://alphawrite.alpha.school/practice/7/2/elaborate-paragraphs" target="_blank">Elaborate Paragraphs</a>
+          <a class="practice-link" href="https://alphawrite.alpha.school/practice/7/2/eliminate-irrelevant-sentences" target="_blank">Eliminate Irrelevant Sentences</a>
+        </div>
+      </div>
+    </div>
+
+    <button class="print-btn" onclick="printChecklist(this)">
+      <svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+      Print this checklist
+    </button>
+  </div>
+</div>
+
+</div>
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<div class="completion-overlay" id="completionOverlay">
+  <div class="completion-card">
+    <div class="completion-emoji">&#127881;</div>
+    <div class="completion-title">Great work reviewing this, Gavyn!</div>
+    <div class="completion-sub">You went from 77% to 80% to 83% &mdash; your multiple-choice is now perfect. Your essay has the content to score 18+/20. Here are your three goals:</div>
+    <div class="completion-goals">
+      1. <b>Write a thesis</b> at the end of your intro &mdash; name 2-3 ways the topic connects/helps/improves<br>
+      2. <b>One topic per paragraph</b> &mdash; write the paragraph's question first, then answer only that question<br>
+      3. <b>Whisper-read your essay</b> before submitting &mdash; you will catch the missing letters and wrong words
+    </div>
+    <button class="completion-close" onclick="closeCompletion()">Got it!</button>
+  </div>
+</div>
+<canvas id="confettiCanvas"></canvas>
+
+<script>
+var cards = document.querySelectorAll('.card');
+var bar = document.getElementById('progressBar');
+var breadcrumb = document.getElementById('breadcrumb');
+var stickyEl = document.getElementById('stickyIndicator');
+var current = 0;
+var visited = [0];
+
+cards.forEach(function(card, i) {
+  var dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  var tooltip = document.createElement('span');
+  tooltip.className = 'dot-tooltip';
+  tooltip.textContent = card.getAttribute('data-title') || ('Card ' + (i + 1));
+  dot.appendChild(tooltip);
+  dot.addEventListener('click', function() { goTo(i); });
+  bar.appendChild(dot);
+});
+
+function updateBreadcrumb() {
+  var title = cards[current].getAttribute('data-title') || ('Card ' + (current + 1));
+  breadcrumb.innerHTML = 'Card <b>' + (current + 1) + '</b> of ' + cards.length + ' — ' + title;
+  stickyEl.textContent = (current + 1) + ' / ' + cards.length;
+}
+
+function checkSticky() {
+  var barRect = bar.getBoundingClientRect();
+  stickyEl.classList.toggle('visible', barRect.bottom < 0);
+}
+window.addEventListener('scroll', checkSticky);
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  if (visited.indexOf(current) === -1) visited.push(current);
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  visited.forEach(function(v) { if (v !== current) bar.children[v].classList.add('visited'); });
+  var prevBtn = document.getElementById('prevBtn');
+  var nextBtn = document.getElementById('nextBtn');
+  if (prevBtn) {
+    prevBtn.style.visibility = current === 0 ? 'hidden' : 'visible';
+    prevBtn.disabled = current === 0;
+  }
+  if (nextBtn) {
+    nextBtn.textContent = current === cards.length - 1 ? 'Done ✓' : 'Next →';
+    nextBtn.disabled = false;
+  }
+  updateBreadcrumb();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) { showCompletion(); return; }
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+function revealBetter(cover) {
+  var content = cover.nextElementSibling;
+  content.classList.add('shown');
+  cover.classList.add('hidden');
+}
+
+function handleDiscrim(option) {
+  var challenge = option.closest('.discrim-challenge');
+  var feedback = challenge.querySelector('.discrim-feedback');
+  var options = challenge.querySelectorAll('.discrim-option');
+  var isCorrect = option.getAttribute('data-correct') === 'true';
+
+  if (option.classList.contains('correct') || option.classList.contains('locked')) return;
+
+  if (isCorrect) {
+    option.classList.add('correct');
+    options.forEach(function(o) {
+      if (o !== option) o.classList.add('locked');
+    });
+    feedback.innerHTML = option.getAttribute('data-right-feedback') || 'Correct!';
+    feedback.className = 'discrim-feedback shown right-fb';
+    var sibling = challenge.nextElementSibling;
+    while (sibling) {
+      if (sibling.classList && sibling.classList.contains('discrim-then')) {
+        setTimeout(function() { sibling.classList.add('revealed'); }, 600);
+        break;
+      }
+      sibling = sibling.nextElementSibling;
+    }
+  } else {
+    option.classList.add('wrong');
+    feedback.innerHTML = option.getAttribute('data-wrong-feedback') || 'Not quite — think again.';
+    feedback.className = 'discrim-feedback shown wrong-fb';
+    setTimeout(function() {
+      option.classList.remove('wrong');
+      feedback.className = 'discrim-feedback';
+    }, 2000);
+  }
+}
+
+function toggleCheck(item) {
+  item.classList.toggle('checked');
+  updateCheckProgress();
+}
+
+function updateCheckProgress() {
+  var items = document.querySelectorAll('.check-item');
+  var checked = document.querySelectorAll('.check-item.checked').length;
+  var total = items.length;
+  var fill = document.getElementById('checkProgressFill');
+  var lbl = document.getElementById('checkProgressLabel');
+  if (fill) fill.style.width = Math.round((checked / total) * 100) + '%';
+  if (lbl) {
+    lbl.innerHTML = checked === total
+      ? '<b style="color:#2d6a2d;">All done! Nice work.</b>'
+      : checked + ' of ' + total + ' checked';
+  }
+}
+
+function printChecklist(btn) {
+  var card = btn.closest('.card');
+  var checkedItems = card.querySelectorAll('.check-item.checked');
+  checkedItems.forEach(function(item) { item.classList.remove('checked'); });
+  card.classList.add('print-target');
+  window.print();
+  card.classList.remove('print-target');
+  checkedItems.forEach(function(item) { item.classList.add('checked'); });
+}
+
+function showCompletion() {
+  document.getElementById('completionOverlay').classList.add('visible');
+  launchConfetti();
+}
+
+function closeCompletion() {
+  document.getElementById('completionOverlay').classList.remove('visible');
+}
+
+function launchConfetti() {
+  var canvas = document.getElementById('confettiCanvas');
+  var ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  var colors = ['#1a1a2e','#d4552a','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b','#42a5f5'];
+  var particles = [];
+  for (var i = 0; i < 120; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height - canvas.height,
+      w: Math.random() * 10 + 5, h: Math.random() * 6 + 3,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      vx: (Math.random() - 0.5) * 4, vy: Math.random() * 3 + 2,
+      rot: Math.random() * 360, rotV: (Math.random() - 0.5) * 10, life: 1
+    });
+  }
+  var frame = 0;
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    var alive = false;
+    particles.forEach(function(p) {
+      if (p.life <= 0) return;
+      alive = true;
+      p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.rot += p.rotV;
+      if (p.y > canvas.height + 20) { p.life = 0; return; }
+      if (frame > 60) p.life -= 0.01;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot * Math.PI / 180);
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    });
+    frame++;
+    if (alive) requestAnimationFrame(animate);
+    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  animate();
+}
+
+goTo(0);
+
+</script>
+<script src="../tracking.js"></script>
+</body>
+</html>
