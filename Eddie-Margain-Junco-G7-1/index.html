@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eddie's Writing Test Review &mdash; G7.1</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: Calibri, 'Segoe UI', sans-serif;
+  font-size: 12pt;
+  color: #1a1a2e;
+  background: #f0f0f5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.progress-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
+.progress-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: #ccc; transition: background 0.3s, transform 0.2s; cursor: pointer;
+  position: relative;
+}
+.progress-dot.active { background: #1a1a2e; transform: scale(1.25); }
+.progress-dot.visited { background: #7a7a9e; }
+.progress-dot:hover { transform: scale(1.3); }
+.progress-dot .dot-tooltip {
+  position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  background: #1a1a2e; color: #fff; padding: 4px 10px; border-radius: 6px;
+  font-size: 8.5pt; white-space: nowrap; opacity: 0;
+  pointer-events: none; transition: opacity 0.2s; z-index: 100;
+}
+.progress-dot .dot-tooltip::after {
+  content: ''; position: absolute; top: 100%; left: 50%;
+  transform: translateX(-50%); border: 5px solid transparent;
+  border-top-color: #1a1a2e;
+}
+.progress-dot:hover .dot-tooltip { opacity: 1; }
+
+.card-breadcrumb {
+  font-size: 9.5pt; color: #888; margin-bottom: 14px;
+  text-align: center; transition: opacity 0.3s; min-height: 1.2em;
+}
+.card-breadcrumb b { color: #1a1a2e; }
+
+.sticky-indicator {
+  position: fixed; top: 12px; right: 16px;
+  background: #1a1a2e; color: #fff; padding: 5px 14px;
+  border-radius: 20px; font-size: 9pt; font-weight: 700;
+  opacity: 0; transition: opacity 0.3s; z-index: 200;
+  pointer-events: none; letter-spacing: 0.5px;
+}
+.sticky-indicator.visible { opacity: 1; }
+
+.card-container { position: relative; width: 800px; min-height: 420px; }
+
+.card {
+  position: absolute; top: 0; left: 0; width: 100%;
+  background: #fff; border: 2.5px solid #1a1a2e; border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+  opacity: 0; pointer-events: none; transform: translateX(40px);
+  transition: opacity 0.35s, transform 0.35s;
+}
+.card.active {
+  opacity: 1; pointer-events: auto; transform: translateX(0); position: relative;
+}
+
+.card-header {
+  background: #1a1a2e; color: #fff; padding: 14px 20px;
+  border-radius: 11px 11px 0 0;
+}
+.card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+.card-header .card-subtitle { font-size: 9.5pt; color: #aaa; margin-top: 2px; }
+
+.card-body { padding: 18px 22px 22px; line-height: 1.55; }
+.card-body p { margin: 6px 0; }
+.card-body ul { margin: 6px 0 6px 18px; }
+.card-body li { margin: 3px 0; }
+
+.score-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px; margin: 12px 0;
+}
+.score-box {
+  background: #f8f8fc; border: 1.5px solid #e0e0e8;
+  border-radius: 8px; padding: 10px 14px; text-align: center;
+}
+.score-box .big { font-size: 20pt; font-weight: 700; }
+.score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+.score-good .big { color: #2d6a2d; }
+.score-warn .big { color: #cc6600; }
+.score-low .big { color: #cc0000; }
+
+.you-wrote {
+  background: #fff3f3; border-left: 3px solid #cc0000;
+  padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+  font-style: italic; font-size: 10.5pt;
+}
+.you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+.better {
+  background: #e8f5e9; border-left: 3px solid #2d6a2d;
+  padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+  font-size: 10.5pt;
+}
+.better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+.tip-box {
+  background: #e8edf5; border-left: 3px solid #1a1a2e;
+  padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0;
+}
+.tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+.highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+.error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+
+.essay-excerpt {
+  background: #fafafa; border: 1px solid #e0e0e8;
+  border-radius: 6px; padding: 10px 14px; font-size: 10.5pt;
+  margin: 8px 0; line-height: 1.6;
+}
+
+.pattern-note {
+  background: #f5f0ff; border-left: 3px solid #7c4dff;
+  padding: 9px 14px; margin: 0 0 12px; border-radius: 0 6px 6px 0;
+  font-size: 10pt; line-height: 1.45;
+  display: flex; align-items: flex-start; gap: 8px;
+}
+.pattern-note .pattern-note-icon { font-size: 14pt; flex-shrink: 0; line-height: 1; }
+.pattern-note b { color: #5c2dcc; }
+
+.discrim-challenge {
+  background: #f8f5ff; border: 1.5px solid #d4c5ff; border-radius: 8px;
+  padding: 14px; margin: 10px 0;
+}
+.discrim-prompt {
+  font-weight: 700; font-size: 10.5pt; margin-bottom: 10px; color: #5c2dcc;
+}
+.discrim-options { display: flex; flex-direction: column; gap: 8px; }
+.discrim-option {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 14px; border: 2px solid #d4c5ff; border-radius: 8px;
+  cursor: pointer; transition: all 0.2s; font-size: 10.5pt;
+  background: #fff;
+}
+.discrim-option:hover { border-color: #7c4dff; background: #f5f0ff; }
+.discrim-label { font-weight: 800; color: #7c4dff; min-width: 20px; flex-shrink: 0; }
+.discrim-option.correct { border-color: #2d6a2d; background: #e8f5e9; cursor: default; }
+.discrim-option.correct .discrim-label { color: #2d6a2d; }
+.discrim-option.wrong { border-color: #cc0000; background: #fff3f3; }
+.discrim-option.wrong .discrim-label { color: #cc0000; }
+.discrim-option.locked { pointer-events: none; opacity: 0.5; }
+.discrim-feedback {
+  margin-top: 0; font-size: 10pt; line-height: 1.4;
+  max-height: 0; overflow: hidden; opacity: 0;
+  transition: max-height 0.3s, opacity 0.3s, margin 0.3s;
+}
+.discrim-feedback.shown { max-height: 260px; opacity: 1; margin-top: 10px; }
+.discrim-feedback.wrong-fb { color: #cc0000; }
+.discrim-feedback.right-fb { color: #2d6a2d; font-weight: 600; }
+
+.discrim-then {
+  max-height: 0; overflow: hidden; opacity: 0;
+  transition: max-height 0.6s ease, opacity 0.5s ease;
+}
+.discrim-then.revealed { max-height: 6000px; opacity: 1; }
+
+.reveal-wrapper { position: relative; }
+.reveal-cover {
+  background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%);
+  border-left: 3px solid #2d6a2d;
+  padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0;
+  cursor: pointer; user-select: none;
+  display: flex; align-items: center; gap: 10px;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.reveal-cover:hover {
+  box-shadow: 0 2px 8px rgba(45,106,45,0.15);
+  background: linear-gradient(135deg, #d4edda 0%, #c8e6c9 100%);
+}
+.reveal-cover .reveal-icon {
+  width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
+.reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #2d6a2d; }
+.reveal-cover .reveal-hint { font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px; }
+.reveal-content {
+  max-height: 0; overflow: hidden; opacity: 0;
+  transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0;
+}
+.reveal-content.shown { max-height: 900px; opacity: 1; margin: 8px 0; }
+.reveal-cover.hidden { display: none; }
+
+.check-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 10px 8px; cursor: pointer; border-bottom: 1px solid #eee;
+  border-radius: 6px; transition: background 0.15s; user-select: none;
+  font-size: 11pt;
+}
+.check-item:last-child { border-bottom: none; }
+.check-item:hover { background: #f8f8fc; }
+.check-item.checked { background: #f0f8f0; }
+.check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
+.check-item.checked .check-box::after {
+  content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700;
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+}
+.check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
+.check-box {
+  width: 28px; height: 28px; border: 2.5px solid #1a1a2e;
+  border-radius: 6px; flex-shrink: 0; margin-top: 1px;
+  position: relative; transition: background 0.2s, border-color 0.2s;
+}
+.checklist-progress {
+  background: #eee; border-radius: 10px; height: 8px;
+  margin: 12px 0 6px; overflow: hidden;
+}
+.checklist-progress-fill {
+  background: linear-gradient(90deg, #2d6a2d, #4caf50);
+  height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%;
+}
+.checklist-progress-label {
+  font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px;
+}
+
+.practice-recommendations {
+  margin-top: 16px; border-top: 2px solid #e0e0e8; padding-top: 14px;
+}
+.practice-recs-title {
+  font-size: 10pt; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.6px; color: #1a1a2e; margin-bottom: 10px;
+}
+.practice-tier { border-radius: 8px; padding: 12px 14px; margin: 8px 0; }
+.tier-primary { background: #e8f5e9; border: 1.5px solid #a5d6a7; }
+.tier-extra { background: #f8f8fc; border: 1.5px solid #e0e0e8; }
+.tier-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.tier-label {
+  font-size: 8.5pt; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.8px; padding: 2px 10px; border-radius: 10px;
+}
+.tier-primary .tier-label { background: #2d6a2d; color: #fff; }
+.tier-extra .tier-label { background: #888; color: #fff; }
+.tier-note { font-size: 9pt; color: #666; margin-bottom: 6px; line-height: 1.4; }
+.practice-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.practice-link {
+  display: inline-block; padding: 5px 12px; border-radius: 6px;
+  font-size: 9.5pt; font-weight: 600; text-decoration: none;
+  transition: background 0.2s, transform 0.1s;
+}
+.practice-link:hover { transform: translateY(-1px); }
+.tier-primary .practice-link { background: #c8e6c9; color: #1b5e1b; }
+.tier-primary .practice-link:hover { background: #a5d6a7; }
+.tier-extra .practice-link { background: #e8edf5; color: #1a1a2e; }
+.tier-extra .practice-link:hover { background: #d8dff0; }
+
+.nav { display: flex; gap: 12px; margin-top: 16px; }
+.nav button {
+  padding: 8px 28px; border: 2px solid #1a1a2e; border-radius: 8px;
+  background: #fff; color: #1a1a2e; font-family: inherit;
+  font-size: 11pt; font-weight: 600; cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.nav button:hover { background: #1a1a2e; color: #fff; }
+
+.print-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 12px; padding: 8px 20px;
+  border: 2px solid #1a1a2e; border-radius: 8px;
+  background: #fff; color: #1a1a2e; font-family: inherit;
+  font-size: 10.5pt; font-weight: 600; cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.print-btn:hover { background: #1a1a2e; color: #fff; }
+.print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+.completion-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(26,26,46,0.6); z-index: 500;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.4s;
+}
+.completion-overlay.visible { opacity: 1; pointer-events: auto; }
+.completion-card {
+  background: #fff; border-radius: 16px; padding: 40px 48px;
+  text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+  transform: scale(0.8); transition: transform 0.4s ease; max-width: 460px;
+}
+.completion-overlay.visible .completion-card { transform: scale(1); }
+.completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+.completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; }
+.completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+.completion-close {
+  margin-top: 14px; padding: 10px 32px;
+  background: #1a1a2e; color: #fff; border: none; border-radius: 8px;
+  font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer;
+  transition: background 0.2s;
+}
+.completion-close:hover { background: #2d2d4e; }
+#confettiCanvas {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 501;
+}
+
+.score-timeline {
+  display: flex; align-items: flex-end; gap: 0; margin: 12px 0 16px;
+  padding: 0 10px; justify-content: space-between;
+}
+.timeline-item {
+  display: flex; flex-direction: column; align-items: center; flex: 1;
+  position: relative;
+}
+.timeline-score { font-size: 14pt; font-weight: 700; margin-bottom: 4px; }
+.timeline-bar {
+  width: 70%; border-radius: 4px 4px 0 0;
+  transition: height 0.6s ease; min-height: 8px;
+}
+.timeline-label { font-size: 8.5pt; color: #888; margin-top: 6px; font-weight: 600; }
+.score-green { color: #2d6a2d; }
+.score-amber { color: #cc6600; }
+.score-red { color: #cc0000; }
+.bar-green { background: linear-gradient(to top, #c8e6c9, #81c784); }
+.bar-amber { background: linear-gradient(to top, #ffe0b2, #ffb74d); }
+.bar-red { background: linear-gradient(to top, #ffcdd2, #ef9a9a); }
+
+.strength-chips {
+  display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px;
+}
+.strength-chip {
+  padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600;
+  background: #e8f5e9; color: #2d6a2d; border: 1.5px solid #a5d6a7;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.strength-chip .chip-course { font-size: 7.5pt; color: #888; font-weight: 400; }
+
+.journey-section {
+  font-size: 9.5pt; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.7px; margin: 10px 0 4px; padding-bottom: 3px;
+  border-bottom: 1.5px solid; display: flex; align-items: center; gap: 6px;
+}
+.journey-section.strengths-header { color: #2d6a2d; border-color: #c8e6c9; }
+.journey-section.growth-header { color: #cc6600; border-color: #ffe0b2; }
+
+.root-cause-teaser {
+  background: #f5f0ff; border-left: 3px solid #7c4dff;
+  padding: 10px 14px; margin: 12px 0 4px; border-radius: 0 6px 6px 0;
+  font-size: 10.5pt; line-height: 1.5;
+}
+.root-cause-teaser b { color: #5c2dcc; }
+
+.growth-chips {
+  display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0;
+}
+.growth-chip {
+  padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.growth-chip.weak { background: #fff3f3; color: #cc0000; border: 1.5px solid #ffcdd2; }
+.growth-chip.mixed { background: #fff8e8; color: #b35900; border: 1.5px solid #ffe0b2; }
+.growth-chip .chip-avg { font-size: 7.5pt; font-weight: 700; margin-left: 2px; }
+
+.para-map {
+  display: flex; gap: 6px; margin: 10px 0; flex-wrap: wrap;
+}
+.para-tag {
+  padding: 6px 12px; border-radius: 6px; font-size: 10pt; font-weight: 600;
+  border: 1.5px solid;
+}
+.para-tag.good { background: #e8f5e9; border-color: #2d6a2d; color: #2d6a2d; }
+.para-tag.warn { background: #fff3cd; border-color: #e6a800; color: #996600; }
+.para-tag.bad { background: #fff3f3; border-color: #cc0000; color: #cc0000; }
+
+@media print {
+  body { background: #fff; padding: 0; min-height: auto; }
+  .progress-bar, .nav, .print-btn, .card-breadcrumb, .sticky-indicator,
+  .completion-overlay, #confettiCanvas, .reveal-cover,
+  .checklist-progress, .checklist-progress-label, .discrim-challenge { display: none !important; }
+  .card-container { width: 100%; min-height: auto; }
+  .card { display: none !important; }
+  .card.print-target {
+    display: block !important; opacity: 1 !important;
+    pointer-events: auto !important; position: relative !important;
+    transform: none !important; box-shadow: none;
+    border: 2px solid #1a1a2e; page-break-inside: avoid;
+  }
+  .reveal-content, .discrim-then {
+    max-height: none !important; opacity: 1 !important; margin: 8px 0 !important;
+  }
+  .practice-link { border: 1px solid #999; }
+  .check-box, .card-header, .error-mark, .pattern-note, .tip-box,
+  .tier-primary, .tier-extra, .score-timeline, .timeline-bar,
+  .strength-chip, .growth-chip, .root-cause-teaser,
+  .journey-section { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+@media (max-width: 840px) {
+  .card-container { width: 100%; }
+  .score-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<div class="card-breadcrumb" id="breadcrumb"></div>
+<div class="sticky-indicator" id="stickyIndicator"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- Card 1: Score Overview -->
+<div class="card active" data-title="Score Overview">
+  <div class="card-header">
+    <h2>Eddie Margain Junco</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G7.1 &mdash; Solar Panel Project</div>
+  </div>
+  <div class="card-body">
+    <div class="score-grid">
+      <div class="score-box score-warn">
+        <div class="big">70%</div>
+        <div class="label">Overall Score (21/30)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">8/10</div>
+        <div class="label">Questions 1&ndash;10</div>
+      </div>
+      <div class="score-box score-warn">
+        <div class="big">13/20</div>
+        <div class="label">Essay (Question 11)</div>
+      </div>
+    </div>
+
+    <p>Eddie, you scored <b>70%</b> overall on G7.1, which means <b>21 out of 30</b> points. Questions 1 through 10 earned <b>8 out of 10</b>, and the essay on Q11 earned <b>13 out of 20</b>.</p>
+
+    <p>You lost 9 points. On the multiple-choice side, Q5 and Q7 were both incorrect. On the essay side, you need more development. The important thing to notice: <b>the cause-vs-effect confusion on Q7 is the same error you made on G6.2</b>. This review focuses on breaking that pattern and building up your essay.</p>
+
+    <div class="root-cause-teaser">
+      <b>The big idea:</b> Your reading comprehension is solid (8 out of 10). The two questions you missed are about <b>precision</b> &mdash; picking the conjunction that matches the logic, and identifying cause vs. effect correctly. On the essay, the gap is about <b>developing your points</b> with detail + explanation.
+    </div>
+  </div>
+</div>
+
+<!-- Card 2: Writing Journey -->
+<div class="card" data-title="Your Writing Journey">
+  <div class="card-header">
+    <h2>Your Writing Journey</h2>
+    <div class="card-subtitle">G6.2 &rarr; G7.1 &mdash; second card review</div>
+  </div>
+  <div class="card-body">
+    <div class="score-timeline">
+      <div class="timeline-item">
+        <div class="timeline-score score-green">83%</div>
+        <div class="timeline-bar bar-green" style="height:70px;"></div>
+        <div class="timeline-label">G6.2</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-score score-amber">70%</div>
+        <div class="timeline-bar bar-amber" style="height:55px;"></div>
+        <div class="timeline-label">G7.1</div>
+      </div>
+    </div>
+
+    <p>Your score dropped from 83% on G6.2 to 70% on G7.1. That looks like a setback, but keep two things in mind: the <b>grade level went up</b> (G6 to G7 is harder), and your multiple-choice is still strong at 8 out of 10.</p>
+
+    <div class="journey-section strengths-header">What you do well</div>
+    <div class="strength-chips">
+      <span class="strength-chip">Reading Comprehension <span class="chip-course">&middot; 8/10</span></span>
+      <span class="strength-chip">Clear Sentence Writing</span>
+      <span class="strength-chip">Understanding Passages</span>
+    </div>
+
+    <div class="journey-section growth-header">Recurring patterns</div>
+    <div class="growth-chips">
+      <span class="growth-chip weak">Cause vs. Effect confusion <span class="chip-avg">G6.2 + G7.1</span></span>
+      <span class="growth-chip mixed">Wrong conjunction choice <span class="chip-avg">Q5</span></span>
+      <span class="growth-chip mixed">Essay needs more development <span class="chip-avg">Q11</span></span>
+    </div>
+
+    <div class="root-cause-teaser">
+      <b>Recurring pattern alert:</b> On G6.2 you confused cause and effect on a question. On G7.1, you made the <b>same type of error</b> on Q7. This is not a new mistake &mdash; it is the same one showing up again. This review gives you a specific method to catch it.
+    </div>
+  </div>
+</div>
+
+<!-- Card 3: Recurring Error - Cause vs. Effect -->
+<div class="card" data-title="Recurring: Cause vs. Effect">
+  <div class="card-header">
+    <h2>Recurring Error: Cause vs. Effect</h2>
+    <div class="card-subtitle">Q7 &mdash; same pattern as G6.2</div>
+  </div>
+  <div class="card-body">
+
+    <div class="pattern-note">
+      <span class="pattern-note-icon">&#128270;</span>
+      <span><b>Same error, two tests:</b> On G6.2 you mixed up which event was the cause and which was the effect. On G7.1, Q7 asks the same type of question and you made the same swap. This pattern will keep costing you points until you have a method to catch it.</span>
+    </div>
+
+    <p>Eddie, on Q7 the question asked you to identify the <b>effect</b> of a decision in the solar panel passage. You chose the answer that described the <b>cause</b> instead of the effect.</p>
+
+    <div class="you-wrote">
+      <div class="label">Q7 &mdash; YOUR ANSWER (0 out of 2 weighted points &mdash; Incorrect)</div>
+      You selected the option that described what led TO the decision (the cause), instead of what happened BECAUSE OF the decision (the effect).
+    </div>
+
+    <div class="tip-box">
+      <div class="label">THE CAUSE-VS-EFFECT TEST</div>
+      When a question asks "What was the EFFECT of X?" use this test:<br><br>
+      <b>Step 1:</b> Find event X in the passage.<br>
+      <b>Step 2:</b> Ask yourself: "What happened AFTER X? What changed BECAUSE of X?"<br>
+      <b>Step 3:</b> The answer should be something that came AFTER and was CAUSED BY X.<br><br>
+      If your answer describes something that happened BEFORE X or something that CAUSED X to happen, you have picked the cause instead of the effect. Flip it.
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">A school decides to install solar panels. Which answer describes the EFFECT of that decision?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false"
+             data-wrong-feedback="This describes WHY the school made the decision (rising energy costs). That is the CAUSE &mdash; the thing that came BEFORE and led to the decision. The question asks for what happened AFTER the decision."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">A</span>
+          <span>"The school's energy costs had been rising for three years, so administrators looked for alternatives."</span>
+        </div>
+        <div class="discrim-option" data-correct="true"
+             data-right-feedback="Correct. This describes what happened AFTER and BECAUSE OF the decision to install solar panels (electricity bills dropped by 40%). That is the effect. It came after the decision and was caused by it."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">B</span>
+          <span>"After the solar panels were installed, the school's electricity bill dropped by 40% in the first year."</span>
+        </div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="discrim-then">
+      <div class="tip-box">
+        <div class="label">WHY THIS KEEPS HAPPENING</div>
+        Cause-and-effect questions are tricky because both the cause and the effect are mentioned in the passage. Your brain grabs the most memorable detail, but that detail might be the cause, not the effect. The fix: always ask <b>"Did this happen BEFORE the event or AFTER it?"</b> If it happened before, it is the cause. If after, it is the effect.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 4: Wrong Conjunction -->
+<div class="card" data-title="Wrong Conjunction">
+  <div class="card-header">
+    <h2>Error: Wrong Conjunction</h2>
+    <div class="card-subtitle">Q5 &mdash; the joining word did not match the logic</div>
+  </div>
+  <div class="card-body">
+
+    <p>Eddie, on Q5 you chose a conjunction (a joining word like "but," "so," "because," "although") that did not match the relationship between the two ideas in the sentence.</p>
+
+    <div class="you-wrote">
+      <div class="label">Q5 &mdash; YOUR ANSWER (0 out of 2 weighted points &mdash; Incorrect)</div>
+      You selected a conjunction that did not match the logical relationship between the clauses.
+    </div>
+
+    <div class="tip-box">
+      <div class="label">CONJUNCTION LOGIC</div>
+      Each conjunction signals a different relationship:<br><br>
+      &bull; <b>"because" / "since"</b> &rarr; gives a REASON (why something happened)<br>
+      &bull; <b>"so" / "therefore"</b> &rarr; gives a RESULT (what happened next)<br>
+      &bull; <b>"but" / "however" / "although"</b> &rarr; shows a CONTRAST (something unexpected)<br>
+      &bull; <b>"and" / "also"</b> &rarr; adds MORE of the same<br><br>
+      Before choosing, ask: "Are these two ideas a reason, a result, a contrast, or an addition?"
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which conjunction fits? "The solar panels cost a lot of money to install, ____ the school saved thousands of dollars in the long run."</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false"
+             data-wrong-feedback="&ldquo;Because&rdquo; signals a reason. But the second part (saving money) is not the REASON for the first part (costing a lot). These two ideas contrast &mdash; it cost a lot BUT it also saved money. The relationship is contrast, not cause."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">A</span>
+          <span>"because"</span>
+        </div>
+        <div class="discrim-option" data-correct="true"
+             data-right-feedback="Correct. &ldquo;But&rdquo; signals contrast. The first idea (cost a lot) and the second idea (saved money) are opposites. &ldquo;But&rdquo; connects them by showing the unexpected outcome."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">B</span>
+          <span>"but"</span>
+        </div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="discrim-then">
+      <div class="tip-box">
+        <div class="label">THE FIX</div>
+        On conjunction questions, read the sentence with your chosen word plugged in and ask: "Does this sound like the right relationship?" If the two ideas are opposites, use a contrast word. If one idea explains WHY the other happened, use a reason word. If one idea is the RESULT of the other, use a result word.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 5: Essay Development -->
+<div class="card" data-title="Essay Development">
+  <div class="card-header">
+    <h2>Your Essay &mdash; Adding Development</h2>
+    <div class="card-subtitle">13 out of 20 &mdash; ideas are there, development is thin</div>
+  </div>
+  <div class="card-body">
+
+    <p>Eddie, your essay earned <b>13 out of 20</b>. You have ideas and you engage with the passage. The 7 points lost come from <b>not developing your points deeply enough</b>. Each body paragraph needs a detail from the passage followed by an explanation of what it shows.</p>
+
+    <div class="para-map">
+      <span class="para-tag good">Has ideas</span>
+      <span class="para-tag good">Engages with passage</span>
+      <span class="para-tag bad">Points not developed</span>
+      <span class="para-tag bad">Needs Detail + Explanation</span>
+    </div>
+
+    <div class="tip-box">
+      <div class="label">THE DETAIL + EXPLANATION PATTERN FOR ESSAYS</div>
+      Every body paragraph should follow this structure:<br><br>
+      <b>1. Topic sentence:</b> State the point this paragraph will prove.<br>
+      <b>2. Detail from the passage:</b> Name a specific fact, quote, or event from the text.<br>
+      <b>3. Explanation:</b> Explain what that detail shows or why it matters to your argument.<br><br>
+      <b>Example:</b><br>
+      <em>Topic:</em> "Solar panels help schools save money over time."<br>
+      <em>Detail:</em> "The passage states that after installation, the school's energy bill dropped by 40% in one year."<br>
+      <em>Explanation:</em> "This shows that even though panels are expensive upfront, they pay for themselves quickly by cutting ongoing costs."
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which body paragraph uses the Detail + Explanation pattern?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false"
+             data-wrong-feedback="This gives an opinion (solar panels are good) and a general statement (they help the environment) but never names a SPECIFIC detail from the passage and never explains what that detail SHOWS. It stays too general."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">A</span>
+          <span>"Solar panels are good for schools. They help the environment and save money. Schools should use them because they are helpful."</span>
+        </div>
+        <div class="discrim-option" data-correct="true"
+             data-right-feedback="Correct. This names a specific detail from the passage (bill dropped by 40% after one year), then explains what it shows (panels pay for themselves by cutting ongoing costs). That is the D+E pattern that earns full points."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">B</span>
+          <span>"Solar panels help schools save money over time. The passage states that after installation, the school's energy bill dropped by 40% in one year. This shows that panels pay for themselves by cutting ongoing costs, even though they are expensive to install."</span>
+        </div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="discrim-then">
+      <div class="tip-box">
+        <div class="label">YOUR NEXT LEVEL ON Q11</div>
+        You already have ideas and engagement with the passage. To move from 13 to 17+, make sure <b>every body paragraph</b> has at least one specific detail from the passage followed by a sentence explaining what it shows. Two well-developed paragraphs score higher than four undeveloped ones.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 6: Putting It Together -->
+<div class="card" data-title="Putting It Together">
+  <div class="card-header">
+    <h2>Putting It All Together</h2>
+    <div class="card-subtitle">From 70% to 90%+ &mdash; three focused fixes</div>
+  </div>
+  <div class="card-body">
+
+    <p>Eddie, the distance between 70% and 90% is <b>6 more points</b>. Here is the focused path:</p>
+
+    <div class="tip-box">
+      <div class="label">FIX 1: CAUSE VS. EFFECT (RECURRING)</div>
+      When a question asks for an effect, find the event in the passage and ask: "What happened AFTER this? What changed BECAUSE of this?" If your answer describes something that happened BEFORE, you have picked the cause. Flip it.
+    </div>
+
+    <div class="tip-box">
+      <div class="label">FIX 2: CONJUNCTION LOGIC</div>
+      Before choosing a conjunction, name the relationship: reason, result, contrast, or addition. Then pick the word that matches that relationship.
+    </div>
+
+    <div class="tip-box">
+      <div class="label">FIX 3: DEVELOP YOUR ESSAY WITH D+E</div>
+      Every body paragraph needs: topic sentence, detail from the passage, explanation of what it shows. Do not move to the next paragraph until you have all three parts in the current one.
+    </div>
+
+    <div class="root-cause-teaser">
+      <b>The bottom line:</b> Your reading comprehension is strong. The multiple-choice errors are about precision (cause vs. effect, conjunction logic), and the essay gap is about development (detail + explanation). These are fixable with practice. On your next test, focus on these three things and aim for 90%+.
+    </div>
+  </div>
+</div>
+
+<!-- Card 7: Checklist & Practice -->
+<div class="card" data-title="Checklist &amp; Practice">
+  <div class="card-header">
+    <h2>Your Checklist</h2>
+    <div class="card-subtitle">Track your progress before the next test</div>
+  </div>
+  <div class="card-body">
+    <div class="checklist-progress-label" id="checkProgressLabel">0 of 5 checked</div>
+    <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
+
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div>On cause/effect questions: ask <b>"Did this happen BEFORE or AFTER the event?"</b></div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div>On conjunction questions: name the relationship first (reason, result, contrast, addition), then pick the word</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div>In my essay, every body paragraph has a <b>specific detail from the passage</b></div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div>After every detail, I write a sentence explaining <b>what it shows or why it matters</b></div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div>I do not move to the next paragraph until the current one has all three parts (topic, detail, explanation)</div>
+    </div>
+
+    <div class="practice-recommendations">
+      <div class="practice-recs-title">Recommended Practice</div>
+
+      <div class="practice-tier tier-primary">
+        <div class="tier-header">
+          <span class="tier-label">Start Here</span>
+        </div>
+        <div class="tier-note">These target your recurring cause-vs-effect pattern and essay development.</div>
+        <div class="practice-links">
+          <a class="practice-link" href="https://alphawrite.alpha.school/practice/7/2/cause-and-effect" target="_blank">Cause and Effect</a>
+          <a class="practice-link" href="https://alphawrite.alpha.school/practice/7/2/detail-and-explanation" target="_blank">Detail + Explanation Practice</a>
+        </div>
+      </div>
+
+      <div class="practice-tier tier-extra">
+        <div class="tier-header">
+          <span class="tier-label">Extra Practice</span>
+        </div>
+        <div class="practice-links">
+          <a class="practice-link" href="https://alphawrite.alpha.school/practice/7/2/conjunctions" target="_blank">Conjunction Logic</a>
+          <a class="practice-link" href="https://alphawrite.alpha.school/practice/7/2/elaborate-paragraphs" target="_blank">Elaborate Paragraphs</a>
+        </div>
+      </div>
+    </div>
+
+    <button class="print-btn" onclick="printChecklist(this)">
+      <svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+      Print Checklist
+    </button>
+  </div>
+</div>
+
+</div>
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<div class="completion-overlay" id="completionOverlay">
+  <div class="completion-card">
+    <div class="completion-emoji">&#127881;</div>
+    <div class="completion-title">Great work reviewing this, Eddie!</div>
+    <div class="completion-sub">You scored 70% on G7.1. The path to 90% is clear: fix the recurring cause-vs-effect confusion, nail conjunction logic, and develop your essay with Detail + Explanation in every body paragraph. Your reading skills are strong. Now build on them.</div>
+    <button class="completion-close" onclick="closeCompletion()">Got it!</button>
+  </div>
+</div>
+<canvas id="confettiCanvas"></canvas>
+
+<script>
+var cards = document.querySelectorAll('.card');
+var bar = document.getElementById('progressBar');
+var breadcrumb = document.getElementById('breadcrumb');
+var stickyEl = document.getElementById('stickyIndicator');
+var current = 0;
+var visited = [0];
+
+cards.forEach(function(card, i) {
+  var dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  var tooltip = document.createElement('span');
+  tooltip.className = 'dot-tooltip';
+  tooltip.textContent = card.getAttribute('data-title') || ('Card ' + (i + 1));
+  dot.appendChild(tooltip);
+  dot.addEventListener('click', function() { goTo(i); });
+  bar.appendChild(dot);
+});
+
+function updateBreadcrumb() {
+  var title = cards[current].getAttribute('data-title') || ('Card ' + (current + 1));
+  breadcrumb.innerHTML = 'Card <b>' + (current + 1) + '</b> of ' + cards.length + ' — ' + title;
+  stickyEl.textContent = (current + 1) + ' / ' + cards.length;
+}
+
+function checkSticky() {
+  var barRect = bar.getBoundingClientRect();
+  stickyEl.classList.toggle('visible', barRect.bottom < 0);
+}
+window.addEventListener('scroll', checkSticky);
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  if (visited.indexOf(current) === -1) visited.push(current);
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  visited.forEach(function(v) { if (v !== current) bar.children[v].classList.add('visited'); });
+  var prevBtn = document.getElementById('prevBtn');
+  var nextBtn = document.getElementById('nextBtn');
+  if (prevBtn) {
+    prevBtn.style.visibility = current === 0 ? 'hidden' : 'visible';
+    prevBtn.disabled = current === 0;
+  }
+  if (nextBtn) {
+    nextBtn.textContent = current === cards.length - 1 ? 'Done ✓' : 'Next →';
+    nextBtn.disabled = false;
+  }
+  updateBreadcrumb();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) { showCompletion(); return; }
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+function revealBetter(cover) {
+  var content = cover.nextElementSibling;
+  content.classList.add('shown');
+  cover.classList.add('hidden');
+}
+
+function handleDiscrim(option) {
+  var challenge = option.closest('.discrim-challenge');
+  var feedback = challenge.querySelector('.discrim-feedback');
+  var options = challenge.querySelectorAll('.discrim-option');
+  var isCorrect = option.getAttribute('data-correct') === 'true';
+
+  if (option.classList.contains('correct') || option.classList.contains('locked')) return;
+
+  if (isCorrect) {
+    option.classList.add('correct');
+    options.forEach(function(o) {
+      if (o !== option) o.classList.add('locked');
+    });
+    feedback.innerHTML = option.getAttribute('data-right-feedback') || 'Correct!';
+    feedback.className = 'discrim-feedback shown right-fb';
+    var sibling = challenge.nextElementSibling;
+    while (sibling) {
+      if (sibling.classList && sibling.classList.contains('discrim-then')) {
+        setTimeout(function() { sibling.classList.add('revealed'); }, 600);
+        break;
+      }
+      sibling = sibling.nextElementSibling;
+    }
+  } else {
+    option.classList.add('wrong');
+    feedback.innerHTML = option.getAttribute('data-wrong-feedback') || 'Not quite — think again.';
+    feedback.className = 'discrim-feedback shown wrong-fb';
+    setTimeout(function() {
+      option.classList.remove('wrong');
+      feedback.className = 'discrim-feedback';
+    }, 2000);
+  }
+}
+
+function toggleCheck(item) {
+  item.classList.toggle('checked');
+  updateCheckProgress();
+}
+
+function updateCheckProgress() {
+  var items = document.querySelectorAll('.check-item');
+  var checked = document.querySelectorAll('.check-item.checked').length;
+  var total = items.length;
+  var fill = document.getElementById('checkProgressFill');
+  var lbl = document.getElementById('checkProgressLabel');
+  if (fill) fill.style.width = Math.round((checked / total) * 100) + '%';
+  if (lbl) {
+    lbl.innerHTML = checked === total
+      ? '<b style="color:#2d6a2d;">All done! Nice work.</b>'
+      : checked + ' of ' + total + ' checked';
+  }
+}
+
+function printChecklist(btn) {
+  var card = btn.closest('.card');
+  var checkedItems = card.querySelectorAll('.check-item.checked');
+  checkedItems.forEach(function(item) { item.classList.remove('checked'); });
+  card.classList.add('print-target');
+  window.print();
+  card.classList.remove('print-target');
+  checkedItems.forEach(function(item) { item.classList.add('checked'); });
+}
+
+function showCompletion() {
+  document.getElementById('completionOverlay').classList.add('visible');
+  launchConfetti();
+}
+
+function closeCompletion() {
+  document.getElementById('completionOverlay').classList.remove('visible');
+}
+
+function launchConfetti() {
+  var canvas = document.getElementById('confettiCanvas');
+  var ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  var colors = ['#1a1a2e','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b','#42a5f5'];
+  var particles = [];
+  for (var i = 0; i < 120; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height - canvas.height,
+      w: Math.random() * 10 + 5, h: Math.random() * 6 + 3,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      vx: (Math.random() - 0.5) * 4, vy: Math.random() * 3 + 2,
+      rot: Math.random() * 360, rotV: (Math.random() - 0.5) * 10, life: 1
+    });
+  }
+  var frame = 0;
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    var alive = false;
+    particles.forEach(function(p) {
+      if (p.life <= 0) return;
+      alive = true;
+      p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.rot += p.rotV;
+      if (p.y > canvas.height + 20) { p.life = 0; return; }
+      if (frame > 60) p.life -= 0.01;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot * Math.PI / 180);
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    });
+    frame++;
+    if (alive) requestAnimationFrame(animate);
+    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  animate();
+}
+
+goTo(0);
+</script>
+<script src="../tracking.js"></script>
+</body>
+</html>
