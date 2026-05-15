@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tyson's Writing Test Review &mdash; G7.1</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Calibri, 'Segoe UI', sans-serif; font-size: 12pt; color: #1a1a2e; background: #f0f0f5; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; padding: 20px; }
+
+.progress-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
+.progress-dot { width: 12px; height: 12px; border-radius: 50%; background: #ccc; transition: background 0.3s, transform 0.2s; cursor: pointer; position: relative; }
+.progress-dot.active { background: #1a1a2e; transform: scale(1.25); }
+.progress-dot.visited { background: #7a7a9e; }
+.progress-dot:hover { transform: scale(1.3); }
+.progress-dot .dot-tooltip { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1a1a2e; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 8.5pt; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 100; }
+.progress-dot .dot-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #1a1a2e; }
+.progress-dot:hover .dot-tooltip { opacity: 1; }
+
+.card-breadcrumb { font-size: 9.5pt; color: #888; margin-bottom: 14px; text-align: center; transition: opacity 0.3s; min-height: 1.2em; }
+.card-breadcrumb b { color: #1a1a2e; }
+.sticky-indicator { position: fixed; top: 12px; right: 16px; background: #1a1a2e; color: #fff; padding: 5px 14px; border-radius: 20px; font-size: 9pt; font-weight: 700; opacity: 0; transition: opacity 0.3s; z-index: 200; pointer-events: none; letter-spacing: 0.5px; }
+.sticky-indicator.visible { opacity: 1; }
+
+.card-container { position: relative; width: 800px; min-height: 420px; }
+.card { position: absolute; top: 0; left: 0; width: 100%; background: #fff; border: 2.5px solid #1a1a2e; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.10); opacity: 0; pointer-events: none; transform: translateX(40px); transition: opacity 0.35s, transform 0.35s; }
+.card.active { opacity: 1; pointer-events: auto; transform: translateX(0); position: relative; }
+.card-header { background: #1a1a2e; color: #fff; padding: 14px 20px; border-radius: 11px 11px 0 0; }
+.card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+.card-header .card-subtitle { font-size: 9.5pt; color: #aaa; margin-top: 2px; }
+
+.card-body { padding: 18px 22px 22px; line-height: 1.55; }
+.card-body p { margin: 6px 0; }
+.card-body ul { margin: 6px 0 6px 18px; }
+.card-body li { margin: 3px 0; }
+
+.score-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; }
+.score-box { background: #f8f8fc; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 10px 14px; text-align: center; }
+.score-box .big { font-size: 20pt; font-weight: 700; }
+.score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+.score-good .big { color: #2d6a2d; }
+.score-warn .big { color: #cc6600; }
+.score-low .big { color: #cc0000; }
+
+.you-wrote { background: #fff3f3; border-left: 3px solid #cc0000; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-style: italic; font-size: 10.5pt; }
+.you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+.better { background: #e8f5e9; border-left: 3px solid #2d6a2d; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+.tip-box { background: #e8edf5; border-left: 3px solid #1a1a2e; padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0; }
+.tip-box .label { font-weight: 700; font-size: 9.5pt; color: #1a1a2e; margin-bottom: 3px; }
+
+.highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+.error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+.discrim-option .error-mark { background: transparent; text-decoration: none; padding: 0; border-radius: 0; }
+
+.essay-excerpt { background: #fafafa; border: 1px solid #e0e0e8; border-radius: 6px; padding: 10px 14px; font-size: 10.5pt; margin: 8px 0; line-height: 1.6; }
+
+.pattern-note { background: #f5f0ff; border-left: 3px solid #7c4dff; padding: 9px 14px; margin: 0 0 12px; border-radius: 0 6px 6px 0; font-size: 10pt; line-height: 1.45; display: flex; align-items: flex-start; gap: 8px; }
+.pattern-note .pattern-note-icon { font-size: 14pt; flex-shrink: 0; line-height: 1; }
+.pattern-note b { color: #5c2dcc; }
+
+.discrim-challenge { background: #f8f5ff; border: 1.5px solid #d4c5ff; border-radius: 8px; padding: 14px; margin: 10px 0; }
+.discrim-prompt { font-weight: 700; font-size: 10.5pt; margin-bottom: 10px; color: #5c2dcc; }
+.discrim-options { display: flex; flex-direction: column; gap: 8px; }
+.discrim-option { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border: 2px solid #d4c5ff; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 10.5pt; background: #fff; }
+.discrim-option:hover { border-color: #7c4dff; background: #f5f0ff; }
+.discrim-label { font-weight: 800; color: #7c4dff; min-width: 20px; flex-shrink: 0; }
+.discrim-option.correct { border-color: #2d6a2d; background: #e8f5e9; cursor: default; }
+.discrim-option.correct .discrim-label { color: #2d6a2d; }
+.discrim-option.wrong { border-color: #cc0000; background: #fff3f3; }
+.discrim-option.wrong .discrim-label { color: #cc0000; }
+.discrim-option.locked { pointer-events: none; opacity: 0.5; }
+.discrim-feedback { margin-top: 0; font-size: 10pt; line-height: 1.4; max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.3s, opacity 0.3s, margin 0.3s; }
+.discrim-feedback.shown { max-height: 260px; opacity: 1; margin-top: 10px; }
+.discrim-feedback.wrong-fb { color: #cc0000; }
+.discrim-feedback.right-fb { color: #2d6a2d; font-weight: 600; }
+
+.discrim-then { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.6s ease, opacity 0.5s ease; }
+.discrim-then.revealed { max-height: 6000px; opacity: 1; }
+
+.reveal-wrapper { position: relative; }
+.reveal-cover { background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%); border-left: 3px solid #2d6a2d; padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 10px; transition: background 0.2s, box-shadow 0.2s; }
+.reveal-cover:hover { box-shadow: 0 2px 8px rgba(45,106,45,0.15); background: linear-gradient(135deg, #d4edda 0%, #c8e6c9 100%); }
+.reveal-cover .reveal-icon { width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
+.reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #2d6a2d; }
+.reveal-cover .reveal-hint { font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px; }
+.reveal-content { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0; }
+.reveal-content.shown { max-height: 900px; opacity: 1; margin: 8px 0; }
+.reveal-cover.hidden { display: none; }
+
+.check-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 8px; cursor: pointer; border-bottom: 1px solid #eee; border-radius: 6px; transition: background 0.15s; user-select: none; font-size: 11pt; }
+.check-item:last-child { border-bottom: none; }
+.check-item:hover { background: #f8f8fc; }
+.check-item.checked { background: #f0f8f0; }
+.check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
+.check-item.checked .check-box::after { content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
+.check-box { width: 28px; height: 28px; border: 2.5px solid #1a1a2e; border-radius: 6px; flex-shrink: 0; margin-top: 1px; position: relative; transition: background 0.2s, border-color 0.2s; }
+.checklist-progress { background: #eee; border-radius: 10px; height: 8px; margin: 12px 0 6px; overflow: hidden; }
+.checklist-progress-fill { background: linear-gradient(90deg, #2d6a2d, #4caf50); height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%; }
+.checklist-progress-label { font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px; }
+
+.practice-recommendations { margin-top: 16px; border-top: 2px solid #e0e0e8; padding-top: 14px; }
+.practice-recs-title { font-size: 10pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #1a1a2e; margin-bottom: 10px; }
+.practice-tier { border-radius: 8px; padding: 12px 14px; margin: 8px 0; }
+.tier-primary { background: #e8f5e9; border: 1.5px solid #a5d6a7; }
+.tier-extra { background: #f8f8fc; border: 1.5px solid #e0e0e8; }
+.tier-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.tier-label { font-size: 8.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 2px 10px; border-radius: 10px; }
+.tier-primary .tier-label { background: #2d6a2d; color: #fff; }
+.tier-extra .tier-label { background: #888; color: #fff; }
+.tier-note { font-size: 9pt; color: #666; margin-bottom: 6px; line-height: 1.4; }
+.practice-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.practice-link { display: inline-block; padding: 5px 12px; border-radius: 6px; font-size: 9.5pt; font-weight: 600; text-decoration: none; transition: background 0.2s, transform 0.1s; }
+.practice-link:hover { transform: translateY(-1px); }
+.tier-primary .practice-link { background: #c8e6c9; color: #1b5e1b; }
+.tier-primary .practice-link:hover { background: #a5d6a7; }
+.tier-extra .practice-link { background: #e8edf5; color: #1a1a2e; }
+.tier-extra .practice-link:hover { background: #d8dff0; }
+
+.nav { display: flex; gap: 12px; margin-top: 16px; }
+.nav button { padding: 8px 28px; border: 2px solid #1a1a2e; border-radius: 8px; background: #fff; color: #1a1a2e; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; transition: background 0.2s, color 0.2s; }
+.nav button:hover { background: #1a1a2e; color: #fff; }
+
+.print-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 8px 20px; border: 2px solid #1a1a2e; border-radius: 8px; background: #fff; color: #1a1a2e; font-family: inherit; font-size: 10.5pt; font-weight: 600; cursor: pointer; transition: background 0.2s, color 0.2s; }
+.print-btn:hover { background: #1a1a2e; color: #fff; }
+.print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+.completion-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(26,26,46,0.6); z-index: 500; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s; }
+.completion-overlay.visible { opacity: 1; pointer-events: auto; }
+.completion-card { background: #fff; border-radius: 16px; padding: 40px 48px; text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2); transform: scale(0.8); transition: transform 0.4s ease; max-width: 460px; }
+.completion-overlay.visible .completion-card { transform: scale(1); }
+.completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+.completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; }
+.completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+.completion-close { margin-top: 14px; padding: 10px 32px; background: #1a1a2e; color: #fff; border: none; border-radius: 8px; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+.completion-close:hover { background: #2d2d4e; }
+#confettiCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 501; }
+
+.step-box { background: #f0f0f5; border: 1.5px solid #d0d0e0; border-radius: 8px; padding: 12px 16px; margin: 10px 0; }
+.step-box .step-label { font-weight: 800; font-size: 9pt; color: #1a1a2e; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.step-list { list-style: none; padding: 0; margin: 0; }
+.step-list li { padding: 5px 0; font-size: 10.5pt; border-bottom: 1px dashed #d0d0e0; }
+.step-list li:last-child { border-bottom: none; }
+.step-list li b { color: #1a1a2e; }
+
+@media print {
+  body { background: #fff; padding: 0; min-height: auto; }
+  .progress-bar, .nav, .print-btn, .card-breadcrumb, .sticky-indicator, .completion-overlay, #confettiCanvas, .reveal-cover, .checklist-progress, .checklist-progress-label, .discrim-challenge { display: none !important; }
+  .card-container { width: 100%; min-height: auto; }
+  .card { display: none !important; }
+  .card.print-target { display: block !important; opacity: 1 !important; pointer-events: auto !important; position: relative !important; transform: none !important; box-shadow: none; border: 2px solid #1a1a2e; page-break-inside: avoid; }
+  .reveal-content, .discrim-then { max-height: none !important; opacity: 1 !important; margin: 8px 0 !important; }
+}
+@media (max-width: 840px) { .card-container { width: 100%; } .score-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<div class="card-breadcrumb" id="breadcrumb"></div>
+<div class="sticky-indicator" id="stickyIndicator"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- CARD 1: Score Overview -->
+<div class="card active" data-title="Score Overview">
+  <div class="card-header">
+    <h2>Tyson Karp</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G7.1 &mdash; Solar Panel Project</div>
+  </div>
+  <div class="card-body">
+    <div class="score-grid">
+      <div class="score-box score-warn"><div class="big">73%</div><div class="label">Overall Score (22/30)</div></div>
+      <div class="score-box score-good"><div class="big">8/10</div><div class="label">Questions 1&ndash;10</div></div>
+      <div class="score-box score-warn"><div class="big">14/20</div><div class="label">Essay (Question 11)</div></div>
+    </div>
+    <p>Tyson, here is the honest picture. You scored <b>73%</b> on G7.1, which means <b>22 out of 30</b> total points. Questions 1 through 10 earned <b>8 out of 10</b>, and your essay earned <b>14 out of 20</b>.</p>
+    <p>You lost 8 points. On the multiple choice, Q3 (conjunction logic) and Q7 (topic sentence matching) each cost you 1 point. On the essay, you need more development and explanation depth. This review shows exactly where those points went and how to bring them back.</p>
+    <div class="root-cause-teaser">
+      <b>The big idea:</b> You have the writing ability to score 90%+. The gap is about <b>reading questions more carefully</b> (Steps 1 and 2) and <b>developing your essay ideas with more depth</b> (Step 4).
+    </div>
+  </div>
+</div>
+
+<!-- CARD 2: Writing Journey -->
+<div class="card" data-title="Your Writing Journey">
+  <div class="card-header">
+    <h2>Your Writing Journey</h2>
+    <div class="card-subtitle">G7.1 &mdash; first test at this level</div>
+  </div>
+  <div class="card-body">
+    <p>This is your first G7 writing test. A score of 73% gives us a clear baseline. The goal is <b>90%+</b> on your next test.</p>
+
+    <div class="journey-section strengths-header">Skills you do well</div>
+    <div class="strength-chips">
+      <span class="strength-chip">8/10 on multiple choice</span>
+      <span class="strength-chip">Essay engagement</span>
+      <span class="strength-chip">Good ideas and content</span>
+    </div>
+
+    <div class="journey-section growth-header">Areas to work on</div>
+    <div class="growth-chips">
+      <span class="growth-chip weak">Conjunction logic <span style="font-size:7.5pt; font-weight:700; margin-left:2px;">Q3</span></span>
+      <span class="growth-chip weak">Topic sentence matching <span style="font-size:7.5pt; font-weight:700; margin-left:2px;">Q7</span></span>
+      <span class="growth-chip mixed">Essay D+E depth <span style="font-size:7.5pt; font-weight:700; margin-left:2px;">Q11</span></span>
+    </div>
+
+    <div class="root-cause-teaser">
+      <b>Pattern:</b> On the multiple choice, you picked answers that sound related but do not match the <b>specific logic</b> the question tests. On the essay, your ideas are present but need <b>more sentences of development</b> after each piece of evidence.
+    </div>
+  </div>
+</div>
+
+<!-- CARD 3: The 6-Step Test-Taking Process -->
+<div class="card" data-title="Your 6-Step Process">
+  <div class="card-header">
+    <h2>Your 6-Step Test-Taking Process</h2>
+    <div class="card-subtitle">Use this on every question, every test</div>
+  </div>
+  <div class="card-body">
+    <p>Tyson, both of your multiple choice errors (Q3 and Q7) happened because the questions tested something specific that you did not identify before answering. Here is the process:</p>
+
+    <div class="step-box">
+      <div class="step-label">The 6 Steps</div>
+      <ol class="step-list">
+        <li><b>Step 1:</b> Read the question carefully (read it twice)</li>
+        <li><b>Step 2:</b> Identify the skill &mdash; ask yourself: "What skill is this question asking me to use?"</li>
+        <li><b>Step 3:</b> Plan your response</li>
+        <li><b>Step 4:</b> Write your response</li>
+        <li><b>Step 5:</b> Proofread using the rubric (check one category at a time)</li>
+        <li><b>Step 6:</b> For the essay, use the AlphaTest scratchpad with the Single Paragraph Outline: T.S. / S.D. / S.D. / C.S.</li>
+      </ol>
+    </div>
+
+    <p>On Q3, <b>Step 2</b> would have saved you. The skill is conjunction logic: which part is the cause and which is the effect? On Q7, <b>Step 1</b> (reading twice) would have helped you distinguish between an <b>enabler</b> (what made something possible) and the <b>result</b> (what actually happened). The question asked for the result, not the enabler.</p>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">You finish writing your answer. What is the next step?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false"
+             data-wrong-feedback="Submitting immediately skips Step 5. Before you move on, proofread using the rubric. Check one category at a time: does it answer the question? Is spelling correct? Are sentences complete?"
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">A</span>
+          <span>Submit and move to the next question.</span>
+        </div>
+        <div class="discrim-option" data-correct="true"
+             data-right-feedback="Correct. Step 5 is to proofread using the rubric, checking one category at a time. This catches errors and makes sure your answer addresses exactly what the question asked."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">B</span>
+          <span>Use the rubric to check your answer, one category at a time.</span>
+        </div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="discrim-then">
+      <div class="tip-box">
+        <div class="label">WHY THIS PROCESS MATTERS FOR YOU</div>
+        Both Q3 and Q7 are not knowledge gaps. You know how conjunctions work. You can identify topic sentences. The errors happened because you picked the answer that <b>sounded related</b> without checking if it matched the <b>specific logic</b> the question tested. Steps 1 and 2 fix this.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CARD 4: Error #1 - Conjunction Logic -->
+<div class="card" data-title="Error: Conjunction Logic">
+  <div class="card-header">
+    <h2>Step 2 Error: Conjunction Logic (Q3)</h2>
+    <div class="card-subtitle">Cause-vs-effect order matters</div>
+  </div>
+  <div class="card-body">
+    <p>Tyson, on Q3 you chose the wrong conjunction because you confused which clause is the cause and which is the effect. This is the same error pattern as other students on this test, and it comes down to one thing: <b>label the parts before choosing</b>.</p>
+
+    <div class="pattern-note">
+      <span class="pattern-note-icon">&#128270;</span>
+      <span><b>How conjunction logic works:</b> "Because" introduces the <b>cause</b> (the reason). "So" introduces the <b>effect</b> (the result). If you pick the wrong one, the logic of the sentence flips and does not make sense.</span>
+    </div>
+
+    <div class="tip-box">
+      <div class="label">THE FIX: LABEL CAUSE AND EFFECT FIRST</div>
+      Before choosing a conjunction, label the two halves:<br><br>
+      &bull; Which half is the <b>reason</b> (why something happened)?<br>
+      &bull; Which half is the <b>result</b> (what happened because of it)?<br><br>
+      Then match:<br>
+      &bull; <b>"because"</b> &rarr; what follows is the CAUSE<br>
+      &bull; <b>"so"</b> &rarr; what follows is the EFFECT<br>
+      &bull; <b>"since"</b> &rarr; what follows is the CAUSE
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">The school's electricity bill dropped. Why? Because the solar panels generated clean energy. Which sentence shows correct cause-effect logic?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false"
+             data-wrong-feedback="This says the panels generated energy BECAUSE the bill dropped. That is backwards. The bill dropping is the EFFECT, not the cause. The solar panels generating energy is what CAUSED the bill to drop."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">A</span>
+          <span>The solar panels generated clean energy because the electricity bill dropped significantly.</span>
+        </div>
+        <div class="discrim-option" data-correct="true"
+             data-right-feedback="Correct. The solar panels generating energy is the CAUSE. The bill dropping is the EFFECT. &ldquo;Because&rdquo; correctly introduces the cause (solar panels generated energy), and the main clause states the effect (bill dropped)."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">B</span>
+          <span>The electricity bill dropped because the solar panels generated clean energy throughout the summer.</span>
+        </div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="discrim-then">
+      <div class="tip-box">
+        <div class="label">THE FIVE-SECOND CHECK</div>
+        After picking a conjunction, read the sentence out loud and ask: "Does this make logical sense? Is the reason actually the reason?" If the sentence sounds backwards, you have the cause and effect swapped. Switch the conjunction.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CARD 5: Error #2 - Topic Sentence Matching -->
+<div class="card" data-title="Error: Topic Sentences">
+  <div class="card-header">
+    <h2>Step 1 Error: Topic Sentence (Q7)</h2>
+    <div class="card-subtitle">You picked the enabler, not the result</div>
+  </div>
+  <div class="card-body">
+    <p>Tyson, on Q7 you were asked to identify the topic sentence that best matches a paragraph. You picked the sentence that described <b>what made something possible</b> (the enabler), not <b>what actually happened as a result</b>. The question wanted the result.</p>
+
+    <div class="pattern-note">
+      <span class="pattern-note-icon">&#128270;</span>
+      <span><b>Enabler vs Result:</b> An enabler is what <b>allows</b> something to happen ("The school installed solar panels"). A result is what <b>actually happened because of it</b> ("The electricity bill dropped by 40%"). Topic sentences usually state the main result or claim that the paragraph proves.</span>
+    </div>
+
+    <div class="tip-box">
+      <div class="label">HOW TO PICK THE RIGHT TOPIC SENTENCE</div>
+      When a question asks "Which is the best topic sentence for this paragraph?" look at what the paragraph is <b>mostly about</b>:<br><br>
+      &bull; If the paragraph gives examples of <b>results</b> (savings, improvements, benefits), the topic sentence should state the result.<br>
+      &bull; If the paragraph explains <b>how something works</b>, the topic sentence should name what it does.<br><br>
+      The enabler (what made it possible) is usually mentioned IN the paragraph, but it is not the MAIN POINT.
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">A paragraph discusses how the school saved money, bought new equipment, and hired a science tutor after installing solar panels. Which is the best topic sentence?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false"
+             data-wrong-feedback="This describes the enabler (installing panels), not the result. The paragraph is about what happened AFTER the panels were installed: savings, equipment, tutor. The topic sentence should focus on those results."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">A</span>
+          <span>The school installed solar panels on the roof of the gymnasium last spring.</span>
+        </div>
+        <div class="discrim-option" data-correct="true"
+             data-right-feedback="Correct. This names the main result (transformed the school's budget) which is what all the examples in the paragraph support. The solar panel installation is mentioned as the cause, but the paragraph is about the RESULTS."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">B</span>
+          <span>The solar panel project transformed the school's budget and created new opportunities for students.</span>
+        </div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="discrim-then">
+      <div class="tip-box">
+        <div class="label">STEP 1 IN ACTION</div>
+        Reading the paragraph twice before choosing reveals what it is <b>mostly about</b>. If every sentence gives an example of a result or benefit, the topic sentence should name that result. The enabler is supporting information, not the main point.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CARD 6: Essay Development -->
+<div class="card" data-title="Essay: More D+E">
+  <div class="card-header">
+    <h2>Your Essay Needs More Development</h2>
+    <div class="card-subtitle">14/20 &rarr; 18+ means more explanation after every piece of evidence</div>
+  </div>
+  <div class="card-body">
+    <p>Tyson, your essay earned 14 out of 20. It engages with the Solar Panel Project passage and has clear ideas. But it stays at 14 because you present evidence without fully explaining <b>what it means</b> and <b>why it matters</b>.</p>
+
+    <div class="tip-box">
+      <div class="label">THE D+E PATTERN</div>
+      After you state a fact or piece of evidence, add:<br><br>
+      <b>D (Development):</b> Explain what the evidence means in your own words.<br>
+      <b>E (Explanation):</b> Connect it back to the essay's main argument.<br><br>
+      <b>Without D+E:</b> "The school's electricity bill dropped by 40%." (states a fact, stops)<br>
+      <b>With D+E:</b> "The school's electricity bill dropped by 40%. This means thousands of dollars were freed up for educational materials. In other words, the solar panels did not just help the environment; they directly improved student learning."
+    </div>
+
+    <div class="reveal-wrapper">
+      <div class="reveal-cover" onclick="revealBetter(this)">
+        <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></div>
+        <div>
+          <div class="reveal-text">Tap to see a body paragraph with strong D+E</div>
+          <div class="reveal-hint">Same topic, fully developed</div>
+        </div>
+      </div>
+      <div class="reveal-content">
+        <div class="better">
+          <div class="label">BODY PARAGRAPH WITH D+E (18&ndash;20/20 LEVEL)</div>
+          <p style="margin:4px 0; font-size:10.5pt;">
+            One of the most significant benefits of the solar panel project is the financial savings it created for the school. According to the passage, the electricity bill dropped by nearly forty percent in the first year. <b>This means that the school saved thousands of dollars that would have been spent on energy from the traditional power grid.</b> <b>As a result, those funds could be redirected toward resources that directly benefit students, such as updated technology and new science equipment.</b> This example demonstrates that investing in renewable energy does not just protect the environment; it creates practical, measurable improvements in education.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <div class="label">YOUR NEXT LEVEL ON Q11</div>
+      You have 90 minutes on this test. After writing each body paragraph, pause and ask: "Did I explain what my evidence means and why it matters?" If you only stated the fact, add 1 to 2 more sentences of development. That is the difference between 14 and 18+.
+    </div>
+  </div>
+</div>
+
+<!-- CARD 7: Proofread + Process Card -->
+<div class="card" data-title="Proofread Your Essay">
+  <div class="card-header">
+    <h2>Step 5: Proofread Your Essay</h2>
+    <div class="card-subtitle">Use your remaining time to check one category at a time</div>
+  </div>
+  <div class="card-body">
+    <p>Tyson, you have 90 minutes on this test. That is plenty of time to write and then proofread. After finishing your essay, go back to the start and check:</p>
+
+    <div class="tip-box">
+      <div class="label">PROOFREAD PASS 1: COMPLETE SENTENCES</div>
+      Read each sentence. Does it have a subject AND a verb AND express a complete thought? If a sentence trails off or runs into the next one, fix it.
+    </div>
+
+    <div class="tip-box">
+      <div class="label">PROOFREAD PASS 2: D+E CHECK</div>
+      After each piece of evidence, is there at least one sentence that says "This means..." or "This shows..." or "In other words..."? If not, add one.
+    </div>
+
+    <div class="tip-box">
+      <div class="label">PROOFREAD PASS 3: SPELLING</div>
+      Read each word. If anything looks strange, say it slowly in your head. Fix anything that does not match how the word sounds.
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">You wrote a body paragraph and it ends with: "The bill dropped by 40%." Your Step 5 check reveals a problem. What is it?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="true"
+             data-right-feedback="Correct. The paragraph ends with a fact but no development. Step 5 Pass 2 (D+E check) catches this: you need to explain what the 40% drop means and why it matters to the school."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">A</span>
+          <span>The paragraph ends with evidence but no explanation of what it means or why it matters.</span>
+        </div>
+        <div class="discrim-option" data-correct="false"
+             data-wrong-feedback="The percentage is not the issue. The problem is that the paragraph ends with a fact and never explains what that fact means. You need a &ldquo;This means...&rdquo; or &ldquo;In other words...&rdquo; sentence after it."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">B</span>
+          <span>The percentage should be written as a word instead of a number.</span>
+        </div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="discrim-then">
+      <div class="tip-box">
+        <div class="label">THE PAYOFF</div>
+        A 5-minute proofread after finishing your essay catches incomplete development, spelling issues, and sentence fragments. On this test, that proofread would have moved your essay from 14 to 16+ just by adding D+E sentences where they are missing.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CARD 8: Checklist & Practice -->
+<div class="card" data-title="Checklist &amp; Practice">
+  <div class="card-header">
+    <h2>Your Checklist</h2>
+    <div class="card-subtitle">6 steps to 90%+ on your next test</div>
+  </div>
+  <div class="card-body">
+    <div class="checklist-progress-label" id="checkProgressLabel">0 of 6 checked</div>
+    <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
+
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Step 1:</b> Read every question <b>twice</b> before selecting or writing an answer</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Step 2:</b> For conjunctions, label which clause is the CAUSE and which is the EFFECT before choosing</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Step 2:</b> For topic sentences, ask: "What is this paragraph MOSTLY about?" Pick the result, not the enabler</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Step 4:</b> After every piece of evidence in your essay, add 1&ndash;2 sentences of D+E (what it means + why it matters)</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Step 5:</b> Proofread your essay: Pass 1 (complete sentences), Pass 2 (D+E after evidence), Pass 3 (spelling)</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div><b>Step 6:</b> Use the Single Paragraph Outline (T.S. / S.D. / S.D. / C.S.) in the AlphaTest scratchpad before writing each body paragraph</div>
+    </div>
+
+    <div class="practice-recommendations">
+      <div class="practice-recs-title">Recommended Practice</div>
+      <div class="practice-tier tier-primary">
+        <div class="tier-header"><span class="tier-label">Start Here</span></div>
+        <div class="tier-note">These target your specific errors: conjunction logic, topic sentences, and essay development.</div>
+        <div class="practice-links">
+          <a class="practice-link" href="https://alphawrite.alpha.school/practice/7/2/conjunctions-and-connectors" target="_blank">Conjunctions &amp; Connectors</a>
+          <a class="practice-link" href="https://alphawrite.alpha.school/practice/7/2/identify-ts-and-sequence-details" target="_blank">Topic Sentences</a>
+          <a class="practice-link" href="https://alphawrite.alpha.school/practice/7/2/elaborate-paragraphs" target="_blank">Elaborate Paragraphs</a>
+        </div>
+      </div>
+      <div class="practice-tier tier-extra">
+        <div class="tier-header"><span class="tier-label">Extra Practice</span></div>
+        <div class="practice-links">
+          <a class="practice-link" href="https://alphawrite.alpha.school/practice/7/2/write-paragraph-from-prompt" target="_blank">Write a Paragraph from Prompt</a>
+        </div>
+      </div>
+    </div>
+
+    <button class="print-btn" onclick="printChecklist(this)">
+      <svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+      Print Checklist
+    </button>
+  </div>
+</div>
+
+</div>
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<div class="completion-overlay" id="completionOverlay">
+  <div class="completion-card">
+    <div class="completion-emoji">&#127881;</div>
+    <div class="completion-title">Great work reviewing this, Tyson!</div>
+    <div class="completion-sub">You scored 73% on G7.1 and the path to 90% is clear. Follow the 6-step process: label cause and effect before choosing conjunctions, pick the result not the enabler for topic sentences, and add D+E after every piece of evidence in your essay. You have the ability. Now use the process.</div>
+    <button class="completion-close" onclick="closeCompletion()">Got it!</button>
+  </div>
+</div>
+<canvas id="confettiCanvas"></canvas>
+
+<script>
+var cards=document.querySelectorAll('.card'),bar=document.getElementById('progressBar'),breadcrumb=document.getElementById('breadcrumb'),stickyEl=document.getElementById('stickyIndicator'),current=0,visited=[0];
+cards.forEach(function(card,i){var dot=document.createElement('div');dot.className='progress-dot'+(i===0?' active':'');var tooltip=document.createElement('span');tooltip.className='dot-tooltip';tooltip.textContent=card.getAttribute('data-title')||('Card '+(i+1));dot.appendChild(tooltip);dot.addEventListener('click',function(){goTo(i);});bar.appendChild(dot);});
+function updateBreadcrumb(){var title=cards[current].getAttribute('data-title')||('Card '+(current+1));breadcrumb.innerHTML='Card <b>'+(current+1)+'</b> of '+cards.length+' — '+title;stickyEl.textContent=(current+1)+' / '+cards.length;}
+function checkSticky(){var barRect=bar.getBoundingClientRect();stickyEl.classList.toggle('visible',barRect.bottom<0);}window.addEventListener('scroll',checkSticky);
+function goTo(idx){if(idx<0||idx>=cards.length)return;cards[current].classList.remove('active');bar.children[current].classList.remove('active');current=idx;if(visited.indexOf(current)===-1)visited.push(current);cards[current].classList.add('active');bar.children[current].classList.add('active');visited.forEach(function(v){if(v!==current)bar.children[v].classList.add('visited');});var prevBtn=document.getElementById('prevBtn');var nextBtn=document.getElementById('nextBtn');if(prevBtn){prevBtn.style.visibility=current===0?'hidden':'visible';prevBtn.disabled=current===0;}if(nextBtn){nextBtn.textContent=current===cards.length-1?'Done ✓':'Next →';nextBtn.disabled=false;}updateBreadcrumb();window.scrollTo({top:0,behavior:'smooth'});}
+function navigate(dir){if(dir===1&&current===cards.length-1){showCompletion();return;}goTo(current+dir);}
+document.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key==='ArrowDown')navigate(1);if(e.key==='ArrowLeft'||e.key==='ArrowUp')navigate(-1);});
+function revealBetter(cover){var content=cover.nextElementSibling;content.classList.add('shown');cover.classList.add('hidden');}
+function handleDiscrim(option){var challenge=option.closest('.discrim-challenge');var feedback=challenge.querySelector('.discrim-feedback');var options=challenge.querySelectorAll('.discrim-option');var isCorrect=option.getAttribute('data-correct')==='true';if(option.classList.contains('correct')||option.classList.contains('locked'))return;if(isCorrect){option.classList.add('correct');options.forEach(function(o){if(o!==option)o.classList.add('locked');});feedback.innerHTML=option.getAttribute('data-right-feedback')||'Correct!';feedback.className='discrim-feedback shown right-fb';var sibling=challenge.nextElementSibling;while(sibling){if(sibling.classList&&sibling.classList.contains('discrim-then')){setTimeout(function(){sibling.classList.add('revealed');},600);break;}sibling=sibling.nextElementSibling;}}else{option.classList.add('wrong');feedback.innerHTML=option.getAttribute('data-wrong-feedback')||'Not quite — think again.';feedback.className='discrim-feedback shown wrong-fb';setTimeout(function(){option.classList.remove('wrong');feedback.className='discrim-feedback';},2000);}}
+function toggleCheck(item){item.classList.toggle('checked');updateCheckProgress();}
+function updateCheckProgress(){var items=document.querySelectorAll('.check-item');var checked=document.querySelectorAll('.check-item.checked').length;var total=items.length;var fill=document.getElementById('checkProgressFill');var lbl=document.getElementById('checkProgressLabel');if(fill)fill.style.width=Math.round((checked/total)*100)+'%';if(lbl){lbl.innerHTML=checked===total?'<b style="color:#2d6a2d;">All done! Nice work.</b>':checked+' of '+total+' checked';}}
+function printChecklist(btn){var card=btn.closest('.card');var ci=card.querySelectorAll('.check-item.checked');ci.forEach(function(i){i.classList.remove('checked');});card.classList.add('print-target');window.print();card.classList.remove('print-target');ci.forEach(function(i){i.classList.add('checked');});}
+function showCompletion(){document.getElementById('completionOverlay').classList.add('visible');launchConfetti();}
+function closeCompletion(){document.getElementById('completionOverlay').classList.remove('visible');}
+function launchConfetti(){var canvas=document.getElementById('confettiCanvas');var ctx=canvas.getContext('2d');canvas.width=window.innerWidth;canvas.height=window.innerHeight;var colors=['#1a1a2e','#d4552a','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b','#42a5f5'];var particles=[];for(var i=0;i<120;i++){particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height-canvas.height,w:Math.random()*10+5,h:Math.random()*6+3,color:colors[Math.floor(Math.random()*colors.length)],vx:(Math.random()-0.5)*4,vy:Math.random()*3+2,rot:Math.random()*360,rotV:(Math.random()-0.5)*10,life:1});}var frame=0;function animate(){ctx.clearRect(0,0,canvas.width,canvas.height);var alive=false;particles.forEach(function(p){if(p.life<=0)return;alive=true;p.x+=p.vx;p.y+=p.vy;p.vy+=0.05;p.rot+=p.rotV;if(p.y>canvas.height+20){p.life=0;return;}if(frame>60)p.life-=0.01;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();});frame++;if(alive)requestAnimationFrame(animate);else ctx.clearRect(0,0,canvas.width,canvas.height);}animate();}
+goTo(0);
+</script>
+<script src="../tracking.js"></script>
+</body>
+</html>
