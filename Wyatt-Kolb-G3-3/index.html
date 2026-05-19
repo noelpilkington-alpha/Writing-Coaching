@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wyatt's Writing Test Review &mdash; G3.3</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Calibri, 'Segoe UI', sans-serif; font-size: 12pt; color: #1a1a2e; background: #f0f0f5; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; padding: 20px; }
+.progress-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
+.progress-dot { width: 12px; height: 12px; border-radius: 50%; background: #ccc; transition: background 0.3s, transform 0.2s; cursor: pointer; position: relative; }
+.progress-dot.active { background: #457b9d; transform: scale(1.25); }
+.progress-dot.visited { background: #8aabc0; }
+.progress-dot:hover { transform: scale(1.3); }
+.progress-dot .dot-tooltip { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: #457b9d; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 8.5pt; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 100; }
+.progress-dot .dot-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #457b9d; }
+.progress-dot:hover .dot-tooltip { opacity: 1; }
+.card-breadcrumb { font-size: 9.5pt; color: #888; margin-bottom: 14px; text-align: center; transition: opacity 0.3s; min-height: 1.2em; }
+.card-breadcrumb b { color: #457b9d; }
+.sticky-indicator { position: fixed; top: 12px; right: 16px; background: #457b9d; color: #fff; padding: 5px 14px; border-radius: 20px; font-size: 9pt; font-weight: 700; opacity: 0; transition: opacity 0.3s; z-index: 200; pointer-events: none; letter-spacing: 0.5px; }
+.sticky-indicator.visible { opacity: 1; }
+.card-container { position: relative; width: 640px; min-height: 420px; }
+.card { position: absolute; top: 0; left: 0; width: 100%; background: #fff; border: 2.5px solid #457b9d; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.10); opacity: 0; pointer-events: none; transform: translateX(40px); transition: opacity 0.35s, transform 0.35s; }
+.card.active { opacity: 1; pointer-events: auto; transform: translateX(0); position: relative; }
+.card-header { background: #457b9d; color: #fff; padding: 14px 20px; border-radius: 11px 11px 0 0; }
+.card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+.card-header .card-subtitle { font-size: 9.5pt; color: #d4e3ec; margin-top: 2px; }
+.card-body { padding: 18px 22px 22px; line-height: 1.55; }
+.card-body p { margin: 6px 0; }
+.card-body ul { margin: 6px 0 6px 18px; }
+.card-body li { margin: 3px 0; }
+.score-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; }
+.score-box { background: #f8f8fc; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 10px 14px; text-align: center; }
+.score-box .big { font-size: 20pt; font-weight: 700; }
+.score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+.score-good .big { color: #2d6a2d; }
+.score-warn .big { color: #cc6600; }
+.score-low .big { color: #cc0000; }
+.you-wrote { background: #fff3f3; border-left: 3px solid #cc0000; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-style: italic; font-size: 10.5pt; }
+.you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+.better { background: #e8f5e9; border-left: 3px solid #2d6a2d; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+.tip-box { background: #e8edf5; border-left: 3px solid #457b9d; padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0; }
+.tip-box .label { font-weight: 700; font-size: 9.5pt; color: #457b9d; margin-bottom: 3px; }
+.error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+.discrim-option .error-mark { background: transparent; text-decoration: none; padding: 0; border-radius: 0; }
+.outline-box { background: #f8f8fc; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 12px 16px; margin: 8px 0; font-size: 10.5pt; }
+.outline-box .outline-label { font-weight: 700; font-size: 9pt; color: #457b9d; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.outline-row { display: flex; gap: 10px; padding: 5px 0; border-bottom: 1px dashed #ddd; }
+.outline-row:last-child { border-bottom: none; }
+.outline-tag { font-weight: 700; font-size: 9pt; color: #fff; background: #457b9d; border-radius: 4px; padding: 2px 8px; min-width: 50px; text-align: center; flex-shrink: 0; line-height: 1.6; }
+.discrim-challenge { background: #f8f5ff; border: 1.5px solid #d4c5ff; border-radius: 8px; padding: 14px; margin: 10px 0; }
+.discrim-prompt { font-weight: 700; font-size: 10.5pt; margin-bottom: 10px; color: #5c2dcc; }
+.discrim-options { display: flex; flex-direction: column; gap: 8px; }
+.discrim-option { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border: 2px solid #d4c5ff; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 10.5pt; background: #fff; }
+.discrim-option:hover { border-color: #7c4dff; background: #f5f0ff; }
+.discrim-label { font-weight: 800; color: #7c4dff; min-width: 20px; flex-shrink: 0; }
+.discrim-option.correct { border-color: #2d6a2d; background: #e8f5e9; cursor: default; }
+.discrim-option.correct .discrim-label { color: #2d6a2d; }
+.discrim-option.wrong { border-color: #cc0000; background: #fff3f3; }
+.discrim-option.wrong .discrim-label { color: #cc0000; }
+.discrim-option.locked { pointer-events: none; opacity: 0.5; }
+.discrim-feedback { margin-top: 0; font-size: 10pt; line-height: 1.4; max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.3s, opacity 0.3s, margin 0.3s; }
+.discrim-feedback.shown { max-height: 200px; opacity: 1; margin-top: 10px; }
+.discrim-feedback.wrong-fb { color: #cc0000; }
+.discrim-feedback.right-fb { color: #2d6a2d; font-weight: 600; }
+.discrim-then { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.6s ease, opacity 0.5s ease; }
+.discrim-then.revealed { max-height: 5000px; opacity: 1; }
+.reveal-wrapper { position: relative; }
+.reveal-cover { background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%); border-left: 3px solid #2d6a2d; padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 10px; transition: background 0.2s, box-shadow 0.2s; }
+.reveal-cover:hover { box-shadow: 0 2px 8px rgba(45,106,45,0.15); background: linear-gradient(135deg, #d4edda 0%, #c8e6c9 100%); }
+.reveal-cover .reveal-icon { width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
+.reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #2d6a2d; }
+.reveal-cover .reveal-hint { font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px; }
+.reveal-content { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0; }
+.reveal-content.shown { max-height: 800px; opacity: 1; margin: 8px 0; }
+.reveal-cover.hidden { display: none; }
+.check-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 8px; cursor: pointer; border-bottom: 1px solid #eee; border-radius: 6px; transition: background 0.15s; user-select: none; font-size: 11pt; }
+.check-item:last-child { border-bottom: none; }
+.check-item:hover { background: #f8f8fc; }
+.check-item.checked { background: #f0f8f0; }
+.check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
+.check-item.checked .check-box::after { content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
+.check-box { width: 28px; height: 28px; border: 2.5px solid #457b9d; border-radius: 6px; flex-shrink: 0; margin-top: 1px; position: relative; transition: background 0.2s, border-color 0.2s; }
+.checklist-progress { background: #eee; border-radius: 10px; height: 8px; margin: 12px 0 6px; overflow: hidden; }
+.checklist-progress-fill { background: linear-gradient(90deg, #2d6a2d, #4caf50); height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%; }
+.checklist-progress-label { font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px; }
+.practice-recommendations { margin-top: 16px; border-top: 2px solid #e0e0e8; padding-top: 14px; }
+.practice-recs-title { font-size: 10pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #457b9d; margin-bottom: 10px; }
+.practice-tier { border-radius: 8px; padding: 12px 14px; margin: 8px 0; }
+.tier-primary { background: #e8f5e9; border: 1.5px solid #a5d6a7; }
+.tier-extra { background: #f8f8fc; border: 1.5px solid #e0e0e8; }
+.tier-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.tier-label { font-size: 8.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 2px 10px; border-radius: 10px; }
+.tier-primary .tier-label { background: #2d6a2d; color: #fff; }
+.tier-extra .tier-label { background: #888; color: #fff; }
+.tier-note { font-size: 9pt; color: #666; margin-bottom: 6px; line-height: 1.4; }
+.practice-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.practice-link { display: inline-block; padding: 5px 12px; border-radius: 6px; font-size: 9.5pt; font-weight: 600; text-decoration: none; transition: background 0.2s, transform 0.1s; }
+.practice-link:hover { transform: translateY(-1px); }
+.tier-primary .practice-link { background: #c8e6c9; color: #1b5e1b; }
+.tier-primary .practice-link:hover { background: #a5d6a7; }
+.tier-extra .practice-link { background: #e8edf5; color: #457b9d; }
+.tier-extra .practice-link:hover { background: #d8dff0; }
+.nav { display: flex; gap: 12px; margin-top: 16px; }
+.nav button { padding: 8px 28px; border: 2px solid #457b9d; border-radius: 8px; background: #fff; color: #457b9d; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; transition: background 0.2s, color 0.2s; }
+.nav button:hover { background: #457b9d; color: #fff; }
+.print-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 8px 20px; border: 2px solid #457b9d; border-radius: 8px; background: #fff; color: #457b9d; font-family: inherit; font-size: 10.5pt; font-weight: 600; cursor: pointer; transition: background 0.2s, color 0.2s; }
+.print-btn:hover { background: #457b9d; color: #fff; }
+.print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+.completion-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(69,123,157,0.6); z-index: 500; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s; }
+.completion-overlay.visible { opacity: 1; pointer-events: auto; }
+.completion-card { background: #fff; border-radius: 16px; padding: 40px 48px; text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2); transform: scale(0.8); transition: transform 0.4s ease; max-width: 420px; }
+.completion-overlay.visible .completion-card { transform: scale(1); }
+.completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+.completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; color: #457b9d; }
+.completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+.completion-close { margin-top: 20px; padding: 10px 32px; background: #457b9d; color: #fff; border: none; border-radius: 8px; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+.completion-close:hover { background: #355f7c; }
+#confettiCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 501; }
+.score-timeline { display: flex; align-items: flex-end; gap: 0; margin: 12px 0 16px; padding: 0 10px; justify-content: space-between; }
+.timeline-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.timeline-score { font-size: 14pt; font-weight: 700; margin-bottom: 4px; }
+.timeline-bar { width: 70%; border-radius: 4px 4px 0 0; min-height: 8px; }
+.timeline-label { font-size: 8.5pt; color: #888; margin-top: 6px; font-weight: 600; }
+.score-red { color: #cc0000; }
+.score-amber { color: #cc6600; }
+.bar-red { background: linear-gradient(to top, #ffcdd2, #ef9a9a); }
+.bar-amber { background: linear-gradient(to top, #ffe0b2, #ffb74d); }
+.root-cause-teaser { background: #f5f0ff; border-left: 3px solid #7c4dff; padding: 10px 14px; margin: 12px 0 4px; border-radius: 0 6px 6px 0; font-size: 10.5pt; line-height: 1.5; }
+.root-cause-teaser b { color: #5c2dcc; }
+.big-text { font-size: 16pt; font-weight: 700; color: #457b9d; text-align: center; margin: 12px 0; }
+.sub-text { font-size: 11pt; color: #666; text-align: center; margin-bottom: 8px; }
+@media print { body { background: #fff; padding: 0; min-height: auto; } .progress-bar, .nav, .print-btn, .card-breadcrumb, .sticky-indicator, .completion-overlay, #confettiCanvas, .reveal-cover, .checklist-progress, .checklist-progress-label, .discrim-challenge { display: none !important; } .card-container { width: 100%; min-height: auto; } .card { display: none !important; } .card.print-target { display: block !important; opacity: 1 !important; pointer-events: auto !important; position: relative !important; transform: none !important; box-shadow: none; border: 2px solid #457b9d; page-break-inside: avoid; } .reveal-content, .discrim-then { max-height: none !important; opacity: 1 !important; margin: 8px 0 !important; } }
+@media (max-width: 720px) { .card-container { width: 100%; } .score-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progressBar"></div>
+<div class="card-breadcrumb" id="breadcrumb"></div>
+<div class="sticky-indicator" id="stickyIndicator"></div>
+<div class="card-container" id="cardContainer">
+
+<!-- Card 1 -->
+<div class="card active" data-title="Score Overview">
+  <div class="card-header"><h2>Wyatt Kolb</h2><div class="card-subtitle">Alpha Standardized Writing G3.3 &mdash; May 2026</div></div>
+  <div class="card-body">
+    <div class="score-grid">
+      <div class="score-box score-low"><div class="big">16%</div><div class="label">Overall Score</div></div>
+      <div class="score-box score-low"><div class="big">7/25</div><div class="label">Questions 1&ndash;10</div></div>
+      <div class="score-box score-low"><div class="big">0/20</div><div class="label">Paragraph (Question 11)</div></div>
+    </div>
+    <p>Wyatt, here is the honest picture. You scored <b>16%</b> on G3.3, earning <b>7 out of 45</b> points. Most of your answers were fragments, single words, or copies from the passage without answering what was asked. Question 11 was blank.</p>
+    <p>But here is what matters: <b>you were there. You typed answers.</b> That means you can earn more points. The next cards show you exactly how little it takes to start earning real points on every question.</p>
+    <div class="root-cause-teaser"><b>The honest truth:</b> Right now, most answers are not answering the question being asked. They are fragments or copies from the passage. The fix is simple: read the question, think about what it is asking, and write <b>one real sentence</b> that answers it.</div>
+  </div>
+</div>
+
+<!-- Card 2 -->
+<div class="card" data-title="Your Writing Journey">
+  <div class="card-header"><h2>Your Writing Journey</h2><div class="card-subtitle">3 tests &mdash; time to start building</div></div>
+  <div class="card-body">
+    <div class="score-timeline">
+      <div class="timeline-item"><div class="timeline-score score-red">34%</div><div class="timeline-bar bar-red" style="height:28px;"></div><div class="timeline-label">G3.1</div></div>
+      <div class="timeline-item"><div class="timeline-score score-red">34%</div><div class="timeline-bar bar-red" style="height:28px;"></div><div class="timeline-label">G3.2</div></div>
+      <div class="timeline-item"><div class="timeline-score score-red">16%</div><div class="timeline-bar bar-red" style="height:14px;"></div><div class="timeline-label">G3.3</div></div>
+    </div>
+    <p>Wyatt, your scores have been low across three tests. That is not because you cannot do this work. It is because right now, you are not giving the questions what they ask for. Most of your answers are fragments that do not make complete sentences.</p>
+    <div class="big-text">You can earn more points than this.</div>
+    <div class="sub-text">The next cards show you the Echo Trick and how one real sentence changes everything.</div>
+  </div>
+</div>
+
+<!-- Card 3 -->
+<div class="card" data-title="Your 6-Step Process">
+  <div class="card-header"><h2>Your 6-Step Process</h2><div class="card-subtitle">Start with Steps 1 and 4 &mdash; read, then write one real sentence</div></div>
+  <div class="card-body">
+    <p>Wyatt, you do not need to do all 6 steps perfectly right now. Start with the two that matter most: <b>read the passage</b> and <b>write one real sentence</b> for each question.</p>
+    <div class="outline-box">
+      <div class="outline-label">Your 6 Steps (Start with 1 and 4)</div>
+      <div class="outline-row"><span class="outline-tag">Step 1</span><span><b>Read the passage twice.</b> Read it once. Then read it again. Find something you understand.</span></div>
+      <div class="outline-row"><span class="outline-tag">Step 2</span><span><b>Identify the skill.</b> What is this question asking? (Just read it carefully.)</span></div>
+      <div class="outline-row"><span class="outline-tag">Step 3</span><span><b>Plan your answer.</b> Think: What detail from the passage answers this?</span></div>
+      <div class="outline-row"><span class="outline-tag">Step 4</span><span><b>Write ONE real sentence.</b> Use the Echo Trick: start by echoing the question.</span></div>
+      <div class="outline-row"><span class="outline-tag">Step 5</span><span><b>Proofread using the rubric.</b> Read it back. Does it make sense as a sentence?</span></div>
+      <div class="outline-row"><span class="outline-tag">Step 6</span><span><b>Single Paragraph Outline for Q11.</b> Write at least 3 sentences about the topic.</span></div>
+    </div>
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">You finish writing your answer. What do you do next?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="If you submit without checking, you might miss that your answer is a fragment instead of a real sentence. Read it back and ask: does this make sense?" onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Submit and move to the next question.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="Correct. Reading your answer back helps you catch fragments and make sure you wrote a complete thought. If it does not make sense when you read it, fix it before moving on." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Use the rubric to check: Does my answer make sense as a complete sentence?</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-then"><div class="tip-box"><div class="label">YOUR FIRST GOAL</div>Forget about 90% for now. Your goal on the next test: write <b>one real sentence</b> for every question, and write <b>at least 3 sentences</b> on Q11. That alone will more than double your score.</div></div>
+  </div>
+</div>
+
+<!-- Card 4 -->
+<div class="card" data-title="The Echo Trick">
+  <div class="card-header"><h2>Step 4: The Echo Trick</h2><div class="card-subtitle">Turn fragments into real answers</div></div>
+  <div class="card-body">
+    <p>Wyatt, here is what your answers look like right now versus what earns points:</p>
+    <div class="you-wrote"><div class="label">Q1 &mdash; YOUR ANSWER (0 points)</div>"and will"</div>
+    <div class="you-wrote"><div class="label">Q2 &mdash; YOUR ANSWER (0 points)</div>"Dad going to the pup."</div>
+    <div class="you-wrote"><div class="label">Q3 &mdash; YOUR ANSWER (0 points)</div>"Sally swa to the other seals."</div>
+    <p>These do not earn points because they are fragments or just copied words. They do not answer what the question asked. Here is the trick that fixes this:</p>
+    <div class="tip-box">
+      <div class="label">THE ECHO TRICK</div>
+      <b>Step 1:</b> Read the question.<br>
+      <b>Step 2:</b> Start your answer by echoing (repeating) the question as a sentence.<br>
+      <b>Step 3:</b> Finish the sentence with something from the passage.<br><br>
+      <b>Example:</b><br>
+      Question: "Why did Sally swim to the other side?"<br>
+      Echo start: "Sally swam to the other side because..."<br>
+      Finish: "...she wanted to find food for her family."<br><br>
+      Full answer: <b>"Sally swam to the other side because she wanted to find food for her family."</b>
+    </div>
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">The question asks: "Why did the seal go to the beach?" Which answer uses the Echo Trick?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="This is a fragment. It does not answer why. It does not start with the echo of the question. Try again." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>"the beach and seal"</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="Correct. This echoes the question (&ldquo;The seal went to the beach because...&rdquo;) and then gives a reason from the passage. That is a real answer that earns points." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>"The seal went to the beach because it was looking for a safe place to rest."</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-then"><div class="tip-box"><div class="label">THIS IS ALL IT TAKES</div>One real sentence that echoes the question and gives a reason. That is the difference between 0 points and 2 points on every single question. Ten questions at 2 points each = 20 points. From 7 to 20+ points just by using the Echo Trick.</div></div>
+  </div>
+</div>
+
+<!-- Card 5 -->
+<div class="card" data-title="The Paragraph">
+  <div class="card-header"><h2>Step 6: The Paragraph Is Worth 20 Points</h2><div class="card-subtitle">You left Q11 blank &mdash; even 3 sentences earns major points</div></div>
+  <div class="card-body">
+    <p>Wyatt, Question 11 is worth <b>20 out of 45 total points</b>. That is almost half your grade. You left it blank, which means you gave away 20 points. Even writing 3 simple sentences earns 6 to 10 points.</p>
+    <div class="outline-box">
+      <div class="outline-label">What Different Effort Gets You on Q11</div>
+      <div class="outline-row"><span class="outline-tag" style="background:#cc0000;">0 pts</span><span>Blank (what you did)</span></div>
+      <div class="outline-row"><span class="outline-tag" style="background:#cc6600;">6&ndash;8 pts</span><span>3 sentences about the topic</span></div>
+      <div class="outline-row"><span class="outline-tag" style="background:#e6a800;">10&ndash;14 pts</span><span>4-5 sentences with a detail and explanation</span></div>
+      <div class="outline-row"><span class="outline-tag" style="background:#2d6a2d;">16&ndash;20 pts</span><span>A full paragraph with topic, details, explanations, conclusion</span></div>
+    </div>
+    <p><b>Your goal:</b> Write at least 3 sentences on Q11. Use the Echo Trick: start by echoing the prompt, then add two more sentences about the topic.</p>
+    <div class="reveal-wrapper">
+      <div class="reveal-cover" onclick="revealBetter(this)">
+        <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></div>
+        <div><div class="reveal-text">Tap to see a simple 3-sentence paragraph</div><div class="reveal-hint">This alone earns 6-8 points</div></div>
+      </div>
+      <div class="reveal-content">
+        <div class="better"><div class="label">SIMPLE PARAGRAPH (6-8 POINTS)</div>"Seals are interesting animals. They can swim very fast and hold their breath for a long time. This is why seals are good at finding food in the ocean."</div>
+        <p style="margin-top:8px; font-size:10pt; color:#666;">That is it. Three sentences. That alone earns 6-8 points, which would have taken your total score from 16% to around 30%.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 6 -->
+<div class="card" data-title="Your Goal">
+  <div class="card-header"><h2>Your Goal for Next Time</h2><div class="card-subtitle">From 16% to 50%+ is possible in one test</div></div>
+  <div class="card-body">
+    <p>Wyatt, here is the math. If you do these two things on your next test, your score will more than triple:</p>
+    <div class="outline-box">
+      <div class="outline-label">Your Two Goals</div>
+      <div class="outline-row"><span class="outline-tag">Goal 1</span><span>Write <b>one real sentence</b> for every question (Q1-Q10) using the Echo Trick</span></div>
+      <div class="outline-row"><span class="outline-tag">Goal 2</span><span>Write <b>at least 3 sentences</b> on Q11 about the topic</span></div>
+    </div>
+    <div class="tip-box">
+      <div class="label">THE MATH</div>
+      <b>Right now:</b> 7 points out of 45 = 16%<br><br>
+      <b>With Goal 1 (real sentences on Q1-Q10):</b> Even earning 1.5 points average per question = 15 points from Q1-Q10<br>
+      <b>With Goal 2 (3 sentences on Q11):</b> 6-8 points<br><br>
+      <b>Total:</b> 21-23 points = <b>47% to 51%</b><br><br>
+      That is tripling your score by doing two simple things: echo the question and write 3 sentences on Q11.
+    </div>
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">The question asks: "What did the seal do at the beach?" Which is a real answer?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="This is a fragment. It does not answer the question. Try echoing the question to start your sentence." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>"beach seal and sand"</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="Correct. This echoes the question (&ldquo;The seal...&rdquo;) and tells what it did (&ldquo;rested on the warm sand and then went back into the water to find fish&rdquo;). Complete sentence, answers the question. That earns points." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>"The seal rested on the warm sand and then went back into the water to find fish."</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-then"><div class="tip-box"><div class="label">YOU CAN DO THIS</div>You do not need perfect answers. You do not need long answers. You need <b>complete sentences that answer what the question asks</b>. The Echo Trick gets you there every time. Echo the question, finish the sentence.</div></div>
+  </div>
+</div>
+
+<!-- Card 7 -->
+<div class="card" data-title="Checklist &amp; Practice">
+  <div class="card-header"><h2>Your Checklist</h2><div class="card-subtitle">Two goals for next time</div></div>
+  <div class="card-body">
+    <div class="checklist-progress-label" id="checkProgressLabel">0 of 4 checked</div>
+    <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div>Read the passage <b>twice</b> before answering any questions</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div>Use the <b>Echo Trick</b>: start my answer by echoing the question as a sentence</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div>Write a <b>complete sentence</b> for every question (not a fragment or single word)</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div>On Q11: write at least <b>3 sentences</b> about the topic (do NOT leave it blank)</div></div>
+    <div class="practice-recommendations">
+      <div class="practice-recs-title">Recommended Practice</div>
+      <div class="practice-tier tier-primary"><div class="tier-header"><span class="tier-label">Start Here</span></div><div class="tier-note">Build the habit of writing real sentences.</div><div class="practice-links"><a class="practice-link" href="https://alphawrite.alpha.school/practice/3/2/echo-trick" target="_blank">The Echo Trick</a><a class="practice-link" href="https://alphawrite.alpha.school/practice/3/2/complete-sentences" target="_blank">Writing Complete Sentences</a></div></div>
+      <div class="practice-tier tier-extra"><div class="tier-header"><span class="tier-label">Extra Practice</span></div><div class="practice-links"><a class="practice-link" href="https://alphawrite.alpha.school/practice/3/2/answer-the-question" target="_blank">Answering What Is Asked</a><a class="practice-link" href="https://alphawrite.alpha.school/practice/3/2/simple-paragraphs" target="_blank">Writing Simple Paragraphs</a></div></div>
+    </div>
+    <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>Print Checklist</button>
+  </div>
+</div>
+
+</div>
+<div class="nav"><button id="prevBtn" onclick="navigate(-1)">&larr; Back</button><button id="nextBtn" onclick="navigate(1)">Next &rarr;</button></div>
+<div class="completion-overlay" id="completionOverlay"><div class="completion-card"><div class="completion-emoji">&#127881;</div><div class="completion-title">Let us build from here, Wyatt.</div><div class="completion-sub">Your score is 16% right now, but you can change that on the next test. Two things: use the Echo Trick (echo the question to start your answer) and write at least 3 sentences on Q11. That alone can triple your score. You showed up for this test. Now show what you know by writing real sentences.</div><button class="completion-close" onclick="closeCompletion()">Got it!</button></div></div>
+<canvas id="confettiCanvas"></canvas>
+<script>
+var cards=document.querySelectorAll('.card'),bar=document.getElementById('progressBar'),breadcrumb=document.getElementById('breadcrumb'),stickyEl=document.getElementById('stickyIndicator'),current=0,visited=[0];cards.forEach(function(card,i){var dot=document.createElement('div');dot.className='progress-dot'+(i===0?' active':'');var tooltip=document.createElement('span');tooltip.className='dot-tooltip';tooltip.textContent=card.getAttribute('data-title')||('Card '+(i+1));dot.appendChild(tooltip);dot.addEventListener('click',function(){goTo(i);});bar.appendChild(dot);});function updateBreadcrumb(){var title=cards[current].getAttribute('data-title')||('Card '+(current+1));breadcrumb.innerHTML='Card <b>'+(current+1)+'</b> of '+cards.length+' &mdash; '+title;stickyEl.textContent=(current+1)+' / '+cards.length;}function checkSticky(){var barRect=bar.getBoundingClientRect();stickyEl.classList.toggle('visible',barRect.bottom<0);}window.addEventListener('scroll',checkSticky);function goTo(idx){if(idx<0||idx>=cards.length)return;cards[current].classList.remove('active');bar.children[current].classList.remove('active');current=idx;if(visited.indexOf(current)===-1)visited.push(current);cards[current].classList.add('active');bar.children[current].classList.add('active');visited.forEach(function(v){if(v!==current)bar.children[v].classList.add('visited');});var prevBtn=document.getElementById('prevBtn');var nextBtn=document.getElementById('nextBtn');if(prevBtn){prevBtn.style.visibility=current===0?'hidden':'visible';prevBtn.disabled=current===0;}if(nextBtn){nextBtn.textContent=current===cards.length-1?'Done ✓':'Next →';nextBtn.disabled=false;}updateBreadcrumb();window.scrollTo({top:0,behavior:'smooth'});}function navigate(dir){if(dir===1&&current===cards.length-1){showCompletion();return;}goTo(current+dir);}document.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key==='ArrowDown')navigate(1);if(e.key==='ArrowLeft'||e.key==='ArrowUp')navigate(-1);});function revealBetter(cover){var content=cover.nextElementSibling;content.classList.add('shown');cover.classList.add('hidden');}function handleDiscrim(option){var challenge=option.closest('.discrim-challenge');var feedback=challenge.querySelector('.discrim-feedback');var options=challenge.querySelectorAll('.discrim-option');var isCorrect=option.getAttribute('data-correct')==='true';if(option.classList.contains('correct')||option.classList.contains('locked'))return;if(isCorrect){option.classList.add('correct');options.forEach(function(o){if(o!==option)o.classList.add('locked');});feedback.innerHTML=option.getAttribute('data-right-feedback')||'Correct!';feedback.className='discrim-feedback shown right-fb';var sibling=challenge.nextElementSibling;while(sibling){if(sibling.classList&&sibling.classList.contains('discrim-then')){setTimeout(function(){sibling.classList.add('revealed');},600);break;}sibling=sibling.nextElementSibling;}}else{option.classList.add('wrong');feedback.innerHTML=option.getAttribute('data-wrong-feedback')||'Not quite — think again.';feedback.className='discrim-feedback shown wrong-fb';setTimeout(function(){option.classList.remove('wrong');feedback.className='discrim-feedback';},2000);}}function toggleCheck(item){item.classList.toggle('checked');updateCheckProgress();}function updateCheckProgress(){var items=document.querySelectorAll('.check-item');var checked=document.querySelectorAll('.check-item.checked').length;var total=items.length;var fill=document.getElementById('checkProgressFill');var lbl=document.getElementById('checkProgressLabel');if(fill)fill.style.width=Math.round((checked/total)*100)+'%';if(lbl){lbl.innerHTML=checked===total?'<b style="color:#2d6a2d;">All done! Nice work.</b>':checked+' of '+total+' checked';}}function printChecklist(btn){var card=btn.closest('.card');var checkedItems=card.querySelectorAll('.check-item.checked');checkedItems.forEach(function(item){item.classList.remove('checked');});card.classList.add('print-target');window.print();card.classList.remove('print-target');checkedItems.forEach(function(item){item.classList.add('checked');});}function showCompletion(){document.getElementById('completionOverlay').classList.add('visible');launchConfetti();}function closeCompletion(){document.getElementById('completionOverlay').classList.remove('visible');}function launchConfetti(){var canvas=document.getElementById('confettiCanvas');var ctx=canvas.getContext('2d');canvas.width=window.innerWidth;canvas.height=window.innerHeight;var colors=['#457b9d','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b','#42a5f5'];var particles=[];for(var i=0;i<120;i++){particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height-canvas.height,w:Math.random()*10+5,h:Math.random()*6+3,color:colors[Math.floor(Math.random()*colors.length)],vx:(Math.random()-0.5)*4,vy:Math.random()*3+2,rot:Math.random()*360,rotV:(Math.random()-0.5)*10,life:1});}var frame=0;function animate(){ctx.clearRect(0,0,canvas.width,canvas.height);var alive=false;particles.forEach(function(p){if(p.life<=0)return;alive=true;p.x+=p.vx;p.y+=p.vy;p.vy+=0.05;p.rot+=p.rotV;if(p.y>canvas.height+20){p.life=0;return;}if(frame>60)p.life-=0.01;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();});frame++;if(alive)requestAnimationFrame(animate);else ctx.clearRect(0,0,canvas.width,canvas.height);}animate();}goTo(0);
+</script>
+<script src="../tracking.js"></script>
+</body>
+</html>
