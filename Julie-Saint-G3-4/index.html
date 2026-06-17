@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Julie's Writing Test Review &mdash; G3.4</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Calibri, 'Segoe UI', sans-serif; font-size: 12pt; color: #1a1a2e; background: #fdf5f2; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; padding: 20px; }
+.progress-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
+.progress-dot { width: 12px; height: 12px; border-radius: 50%; background: #ccc; transition: background 0.3s, transform 0.2s; cursor: pointer; position: relative; }
+.progress-dot.active { background: #d4552a; transform: scale(1.25); }
+.progress-dot.visited { background: #e39478; }
+.progress-dot:hover { transform: scale(1.3); }
+.progress-dot .dot-tooltip { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: #d4552a; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 8.5pt; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 100; }
+.progress-dot .dot-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #d4552a; }
+.progress-dot:hover .dot-tooltip { opacity: 1; }
+.card-breadcrumb { font-size: 9.5pt; color: #888; margin-bottom: 14px; text-align: center; min-height: 1.2em; }
+.card-breadcrumb b { color: #d4552a; }
+.sticky-indicator { position: fixed; top: 12px; right: 16px; background: #d4552a; color: #fff; padding: 5px 14px; border-radius: 20px; font-size: 9pt; font-weight: 700; opacity: 0; transition: opacity 0.3s; z-index: 200; pointer-events: none; }
+.sticky-indicator.visible { opacity: 1; }
+.card-container { position: relative; width: 640px; min-height: 420px; }
+.card { position: absolute; top: 0; left: 0; width: 100%; background: #fff; border: 2.5px solid #d4552a; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.10); opacity: 0; pointer-events: none; transform: translateX(40px); transition: opacity 0.35s, transform 0.35s; }
+.card.active { opacity: 1; pointer-events: auto; transform: translateX(0); position: relative; }
+.card-header { background: #d4552a; color: #fff; padding: 14px 20px; border-radius: 11px 11px 0 0; }
+.card-header h2 { font-size: 15pt; font-weight: 700; }
+.card-header .card-subtitle { font-size: 9.5pt; color: #fce4d6; margin-top: 2px; }
+.card-body { padding: 18px 22px 22px; line-height: 1.55; }
+.card-body p { margin: 6px 0; }
+.card-body ul { margin: 6px 0 6px 18px; }
+.card-body li { margin: 3px 0; }
+.score-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; }
+.score-box { background: #fdf9f6; border: 1.5px solid #ead9ce; border-radius: 8px; padding: 10px 14px; text-align: center; }
+.score-box .big { font-size: 20pt; font-weight: 700; }
+.score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+.score-good .big { color: #2d6a2d; }
+.score-warn .big { color: #cc6600; }
+.you-wrote { background: #fff3f3; border-left: 3px solid #cc0000; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-style: italic; font-size: 10.5pt; }
+.you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+.better { background: #e8f5e9; border-left: 3px solid #2d6a2d; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.better .label { font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+.tip-box { background: #fbeee4; border-left: 3px solid #d4552a; padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0; }
+.tip-box .label { font-weight: 700; font-size: 9.5pt; color: #d4552a; margin-bottom: 3px; }
+.error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+.discrim-option .error-mark { background: transparent; text-decoration: none; padding: 0; border-radius: 0; }
+.delete-mark { background: #ffe0e0; color: #cc0000; text-decoration: line-through; padding: 0 2px; border-radius: 2px; }
+.keep-mark { background: #d7f0d8; color: #1b5e1b; padding: 0 2px; border-radius: 2px; font-weight: 600; }
+.outline-box { background: #fdf9f6; border: 1.5px solid #ead9ce; border-radius: 8px; padding: 12px 16px; margin: 8px 0; font-size: 10.5pt; }
+.outline-box .outline-label { font-weight: 700; font-size: 9pt; color: #d4552a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.outline-row { display: flex; gap: 10px; padding: 5px 0; border-bottom: 1px dashed #ddd; }
+.outline-row:last-child { border-bottom: none; }
+.outline-tag { font-weight: 700; font-size: 9pt; color: #fff; background: #d4552a; border-radius: 4px; padding: 2px 8px; min-width: 50px; text-align: center; flex-shrink: 0; line-height: 1.6; }
+.pattern-note { background: #f5f0ff; border-left: 3px solid #7c4dff; padding: 9px 14px; margin: 0 0 12px; border-radius: 0 6px 6px 0; font-size: 10pt; line-height: 1.45; display: flex; align-items: flex-start; gap: 8px; }
+.pattern-note b { color: #5c2dcc; }
+.root-cause-teaser { background: #f5f0ff; border-left: 3px solid #7c4dff; padding: 10px 14px; margin: 12px 0 4px; border-radius: 0 6px 6px 0; font-size: 10.5pt; line-height: 1.5; }
+.root-cause-teaser b { color: #5c2dcc; }
+.essay-excerpt { background: #fdf9f6; border: 1.5px solid #ead9ce; border-radius: 8px; padding: 12px 16px; margin: 10px 0; font-size: 10.5pt; line-height: 1.6; }
+.essay-excerpt .excerpt-label { font-weight: 700; font-size: 9pt; color: #d4552a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.para-map { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+.para-tag { padding: 4px 10px; border-radius: 12px; font-size: 8.5pt; font-weight: 600; }
+.para-tag.good { background: #e8f5e9; color: #2d6a2d; border: 1.5px solid #a5d6a7; }
+.para-tag.watch { background: #fff8e8; color: #b35900; border: 1.5px solid #ffe0b2; }
+.reveal-wrapper { margin: 10px 0; }
+.reveal-toggle { background: #f8f5ff; border: 1.5px dashed #d4c5ff; border-radius: 8px; padding: 10px 14px; cursor: pointer; font-weight: 600; color: #5c2dcc; font-size: 10.5pt; text-align: center; transition: background 0.2s; }
+.reveal-toggle:hover { background: #f0e8ff; }
+.reveal-content { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.5s ease, opacity 0.4s ease; }
+.reveal-content.shown { max-height: 1200px; opacity: 1; margin-top: 8px; }
+.discrim-challenge { background: #f8f5ff; border: 1.5px solid #d4c5ff; border-radius: 8px; padding: 14px; margin: 10px 0; }
+.discrim-prompt { font-weight: 700; font-size: 10.5pt; margin-bottom: 10px; color: #5c2dcc; }
+.discrim-options { display: flex; flex-direction: column; gap: 8px; }
+.discrim-option { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border: 2px solid #d4c5ff; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 10.5pt; background: #fff; }
+.discrim-option:hover { border-color: #7c4dff; background: #f5f0ff; }
+.discrim-label { font-weight: 800; color: #7c4dff; min-width: 20px; flex-shrink: 0; }
+.discrim-option.correct { border-color: #2d6a2d; background: #e8f5e9; cursor: default; }
+.discrim-option.correct .discrim-label { color: #2d6a2d; }
+.discrim-option.wrong { border-color: #cc0000; background: #fff3f3; }
+.discrim-option.wrong .discrim-label { color: #cc0000; }
+.discrim-option.locked { pointer-events: none; opacity: 0.5; }
+.discrim-feedback { margin-top: 0; font-size: 10pt; line-height: 1.4; max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.3s, opacity 0.3s, margin 0.3s; }
+.discrim-feedback.shown { max-height: 200px; opacity: 1; margin-top: 10px; }
+.discrim-feedback.wrong-fb { color: #cc0000; }
+.discrim-feedback.right-fb { color: #2d6a2d; font-weight: 600; }
+.discrim-then { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.6s ease, opacity 0.5s ease; }
+.discrim-then.revealed { max-height: 5000px; opacity: 1; }
+.check-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 8px; cursor: pointer; border-bottom: 1px solid #eee; border-radius: 6px; transition: background 0.15s; user-select: none; font-size: 11pt; }
+.check-item:last-child { border-bottom: none; }
+.check-item:hover { background: #fdf9f6; }
+.check-item.checked { background: #f0f8f0; }
+.check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
+.check-item.checked .check-box::after { content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
+.check-box { width: 28px; height: 28px; border: 2.5px solid #d4552a; border-radius: 6px; flex-shrink: 0; margin-top: 1px; position: relative; }
+.checklist-progress { background: #eee; border-radius: 10px; height: 8px; margin: 12px 0 6px; overflow: hidden; }
+.checklist-progress-fill { background: linear-gradient(90deg, #2d6a2d, #4caf50); height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%; }
+.checklist-progress-label { font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px; }
+.practice-recommendations { margin-top: 16px; border-top: 2px solid #ead9ce; padding-top: 14px; }
+.practice-recs-title { font-size: 10pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #d4552a; margin-bottom: 10px; }
+.practice-tier { border-radius: 8px; padding: 12px 14px; margin: 8px 0; }
+.tier-primary { background: #e8f5e9; border: 1.5px solid #a5d6a7; }
+.tier-extra { background: #fdf9f6; border: 1.5px solid #ead9ce; }
+.tier-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.tier-label { font-size: 8.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 2px 10px; border-radius: 10px; }
+.tier-primary .tier-label { background: #2d6a2d; color: #fff; }
+.tier-extra .tier-label { background: #888; color: #fff; }
+.practice-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.practice-link { display: inline-block; padding: 5px 12px; border-radius: 6px; font-size: 9.5pt; font-weight: 600; text-decoration: none; }
+.tier-primary .practice-link { background: #c8e6c9; color: #1b5e1b; }
+.tier-extra .practice-link { background: #fbeee4; color: #a13d15; }
+.nav { display: flex; gap: 12px; margin-top: 16px; }
+.nav button { padding: 8px 28px; border: 2px solid #d4552a; border-radius: 8px; background: #fff; color: #d4552a; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; transition: background 0.2s, color 0.2s; }
+.nav button:hover { background: #d4552a; color: #fff; }
+.print-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 8px 20px; border: 2px solid #d4552a; border-radius: 8px; background: #fff; color: #d4552a; font-family: inherit; font-size: 10.5pt; font-weight: 600; cursor: pointer; }
+.print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+.completion-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(212,85,42,0.6); z-index: 500; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s; }
+.completion-overlay.visible { opacity: 1; pointer-events: auto; }
+.completion-card { background: #fff; border-radius: 16px; padding: 40px 48px; text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2); transform: scale(0.8); transition: transform 0.4s ease; max-width: 420px; }
+.completion-overlay.visible .completion-card { transform: scale(1); }
+.completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+.completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; color: #d4552a; }
+.completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+.completion-close { margin-top: 20px; padding: 10px 32px; background: #d4552a; color: #fff; border: none; border-radius: 8px; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; }
+#confettiCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 501; }
+.score-timeline { display: flex; align-items: flex-end; gap: 0; margin: 12px 0 16px; padding: 0 10px; justify-content: space-between; }
+.timeline-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.timeline-score { font-size: 14pt; font-weight: 700; margin-bottom: 4px; }
+.timeline-bar { width: 70%; border-radius: 4px 4px 0 0; min-height: 8px; }
+.timeline-label { font-size: 8.5pt; color: #888; margin-top: 6px; font-weight: 600; }
+.score-green { color: #2d6a2d; }
+.score-amber { color: #cc6600; }
+.bar-green { background: linear-gradient(to top, #c8e6c9, #81c784); }
+.bar-amber { background: linear-gradient(to top, #ffe0b2, #ffb74d); }
+.bar-star { background: linear-gradient(to top, #a5d6a7, #2d6a2d); box-shadow: 0 0 0 2px #ffd700, 0 0 8px rgba(255,215,0,0.6); }
+.strength-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; }
+.strength-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; background: #e8f5e9; color: #2d6a2d; border: 1.5px solid #a5d6a7; }
+.journey-section { font-size: 9.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; margin: 10px 0 4px; padding-bottom: 3px; border-bottom: 1.5px solid; }
+.journey-section.strengths-header { color: #2d6a2d; border-color: #c8e6c9; }
+.journey-section.growth-header { color: #cc6600; border-color: #ffe0b2; }
+.growth-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.growth-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; }
+.growth-chip.weak { background: #fff3f3; color: #cc0000; border: 1.5px solid #ffcdd2; }
+.growth-chip.mixed { background: #fff8e8; color: #b35900; border: 1.5px solid #ffe0b2; }
+@media print { body { background: #fff; padding: 0; } .progress-bar, .nav, .print-btn, .card-breadcrumb, .sticky-indicator, .completion-overlay, #confettiCanvas, .discrim-challenge { display: none !important; } .card-container { width: 100%; } .card { display: none !important; } .card.print-target { display: block !important; opacity: 1 !important; position: relative !important; transform: none !important; } .discrim-then { max-height: none !important; opacity: 1 !important; } .reveal-content { max-height: none !important; opacity: 1 !important; } }
+@media (max-width: 720px) { .card-container { width: 100%; } .score-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progressBar"></div>
+<div class="card-breadcrumb" id="breadcrumb"></div>
+<div class="sticky-indicator" id="stickyIndicator"></div>
+<div class="card-container" id="cardContainer">
+
+<div class="card active" data-title="Score Overview">
+  <div class="card-header"><h2>Julie Saint</h2><div class="card-subtitle">Alpha Standardized Writing G3.4 &mdash; June 2026 &middot; Alpha School Miami &middot; Guide: Chris Hayes &middot; Passage: Layla / Sports and Society</div></div>
+  <div class="card-body">
+    <div class="score-grid"><div class="score-box score-warn"><div class="big">76%</div><div class="label">Overall Score</div></div><div class="score-box score-warn"><div class="big">16/25</div><div class="label">Questions 1&ndash;10</div></div><div class="score-box score-good"><div class="big">18/20</div><div class="label">Paragraph (Question 11)</div></div></div>
+    <p>Julie, you scored <b>76%</b> on G3.4, which is <b>34 out of 45</b> points. Here is the good news first: your paragraph earned <b>18 out of 20</b> &mdash; that is excellent, and it proves you can clearly write.</p>
+    <p>Almost all of the lost points came from the short answers (Q1&ndash;Q10 earned <b>16 out of 25</b>), and they slipped for <b>one fixable reason</b>. You wrote a correct answer to each question, then added an extra sentence explaining and restating the question. That extra part is what cost the points.</p>
+    <div class="root-cause-teaser"><b>The big idea:</b> Your paragraph scored 18/20 &mdash; you can clearly write. The short answers lost points for ONE fixable reason, and fixing it bounces your score right back up. Just answer the question, then stop.</div>
+  </div>
+</div>
+
+<div class="card" data-title="Your Writing Journey">
+  <div class="card-header"><h2>Your Writing Journey</h2><div class="card-subtitle">4 tests &mdash; a capable writer with a small, fixable dip</div></div>
+  <div class="card-body">
+    <div class="score-timeline">
+      <div class="timeline-item"><div class="timeline-score score-green">82%</div><div class="timeline-bar bar-green" style="height:70px;"></div><div class="timeline-label">G3.1</div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">87%</div><div class="timeline-bar bar-star" style="height:74px;"></div><div class="timeline-label">G3.2 &#11088;</div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">80%</div><div class="timeline-bar bar-green" style="height:68px;"></div><div class="timeline-label">G3.3</div></div>
+      <div class="timeline-item"><div class="timeline-score score-amber">76%</div><div class="timeline-bar bar-amber" style="height:64px;"></div><div class="timeline-label">G3.4</div></div>
+    </div>
+    <p>You went 82% &rarr; 87% &rarr; 80% &rarr; 76%. Your <b>G3.2 peak of 87%</b> shows the writer you already are. The slip to 76% is small, and it has a very clear, fixable cause. Once you fix it, your score bounces right back up &mdash; this is one of the most fixable patterns we see.</p>
+    <div class="journey-section strengths-header">Skills you do well</div>
+    <div class="strength-chips"><span class="strength-chip">Writing a strong paragraph (18/20)</span><span class="strength-chip">Answering with a reason</span><span class="strength-chip">Using transitions</span></div>
+    <div class="journey-section growth-header">Areas to work on</div>
+    <div class="growth-chips"><span class="growth-chip weak">Answer, then stop &mdash; cut the justification</span><span class="growth-chip mixed">Clean sentence boundaries</span><span class="growth-chip mixed">Proofread spelling</span></div>
+    <div class="root-cause-teaser"><b>The #1 thing holding your score back:</b> adding "I support this answer because..." to every short answer. Your answers are good &mdash; just stop sooner.</div>
+  </div>
+</div>
+
+<div class="card" data-title="The #1 Unlock: Answer, Then Stop">
+  <div class="card-header"><h2>The #1 Unlock: Answer the Question, Then Stop</h2><div class="card-subtitle">This one change is the whole story of G3.4</div></div>
+  <div class="card-body">
+    <div class="pattern-note"><span style="font-size:14pt;">&#128161;</span><div><b>What happened on Q1&ndash;Q10:</b> On every short answer, you wrote a correct answer and then added a sentence like <i>"I support this answer because it said to... and I did what that said."</i> The grader scores your <b>answer</b> &mdash; that extra part restates the question instead of answering it, and it adds errors (run-on sentences and comma splices). Your actual answers were good. The padding is what cost the points.</div></div>
+    <p>Look at three of your real answers below. The <span class="keep-mark">green part</span> is your good answer. The <span class="delete-mark">struck-out part</span> is what to delete.</p>
+    <div class="you-wrote"><div class="label">Q1 &mdash; make the verb stronger (1 out of 2 points)</div><span class="keep-mark">Layla glanced at the flower.</span> <span class="delete-mark">I support this answer because it the question said to make the verb action stornger or make it descriptive and I did what that said.</span></div>
+    <div class="you-wrote"><div class="label">Q2 &mdash; combine the sentences with "since" (1 out of 2 points)</div><span class="keep-mark">Since Layla saw a butterfly, she took out her camera.</span> <span class="delete-mark">I support this answer because it said to combine the sentences with since and I did what that said.</span></div>
+    <div class="you-wrote"><div class="label">Q9 &mdash; how nature helped Layla decide (1 out of 3 points)</div><span class="keep-mark">Layla loved the outdoors and she didn't want to hurt nature, so she decided to help it instead by taking it to the guide.</span> <span class="delete-mark">I support this answer because it said to write a sentence describing how nature helped Layla make a decision and I did what that said.</span></div>
+    <div class="better"><div class="label">THE CLEAN VERSION</div>Keep only the green part. For Q2 that is simply: <b>"Since Layla saw a butterfly, she took out her camera."</b> That is the whole answer. No "I support this answer because..." sentence needed.</div>
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">The question asks you to combine two sentences with "since." Which is the stronger answer?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="true" data-right-feedback="Correct. This answers the question completely and stops. The grader can see exactly what you did. Clean and done." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Since Layla saw a butterfly, she took out her camera.</span></div>
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="This restates the question instead of answering it, and the comma before &ldquo;I support&rdquo; joins two complete sentences into a comma splice. The grader scores the answer &mdash; the extra part only adds errors." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Since Layla saw a butterfly, she took out her camera, I support this answer because it said to combine the sentences with since and I did what that said.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-then"><div class="tip-box"><div class="label">THE RULE</div>Write your answer. Then stop. Do not explain why your answer is right or repeat the question back. The grader already knows the question &mdash; you just need to show your answer.</div></div>
+  </div>
+</div>
+
+<div class="card" data-title="Clean Sentence Boundaries">
+  <div class="card-header"><h2>Give Each Idea a Clean Boundary</h2><div class="card-subtitle">The extra sentences created comma splices</div></div>
+  <div class="card-body">
+    <div class="pattern-note"><span style="font-size:14pt;">&#128269;</span><div><b>What happened:</b> When you tacked an extra sentence onto your answer, you joined two complete ideas with only a comma. That is a comma splice. It happened on Q1 (<span class="error-mark">...glanced at the flower, I support...</span>) and Q9 (<span class="error-mark">...taking it to the guide, I support...</span>). You also have one inside a real answer on Q4 (<span class="error-mark">Layla wanted to keep the geode but, she remeberd...</span>).</div></div>
+    <p>Each complete idea needs a clean boundary. You have two good ways to do that:</p>
+    <ul>
+      <li><b>End the sentence with a period</b> and start a new one.</li>
+      <li><b>Join with a connecting word</b> &mdash; because, so, but, and, since.</li>
+    </ul>
+    <div class="better"><div class="label">THE FIX (Q4)</div>Your answer: "Layla wanted to keep the geode <b>but,</b> she remeberd the guide's rule." Move the comma and put it before the connecting word: <b>"Layla wanted to keep the geode, but she remembered the guide's rule."</b> One clean idea, one clean boundary.</div>
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which sentence gives each idea a clean boundary?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="true" data-right-feedback="Correct. The comma sits before the connecting word &ldquo;but,&rdquo; and the two ideas are joined cleanly into one sentence." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Layla wanted to keep the geode, but she remembered the guide's rule.</span></div>
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="The comma after &ldquo;but&rdquo; splits the connecting word from its idea, and the two sentences are joined with only a comma. Put the comma before &ldquo;but&rdquo; to join the ideas cleanly." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Layla wanted to keep the geode but, she remembered the guide's rule.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-then"><div class="tip-box"><div class="label">QUICK CHECK</div>Before a comma, ask: "Is the next part a whole new sentence on its own?" If yes, either use a period and start fresh, or add a connecting word (because / so / but / and) right after the comma.</div></div>
+  </div>
+</div>
+
+<div class="card" data-title="Proofread Before You Submit">
+  <div class="card-header"><h2>Proofread Before You Submit</h2><div class="card-subtitle">A quick read-back catches small spelling slips</div></div>
+  <div class="card-body">
+    <p>Your spelling is mostly strong, but a few words slipped through on G3.4. Reading your answer back to yourself one time catches almost all of these.</p>
+    <div class="you-wrote"><div class="label">SPELLING SLIPS ON G3.4</div><span class="error-mark">stornger</span> &rarr; stronger &middot; <span class="error-mark">remeberd</span> &rarr; remembered &middot; <span class="error-mark">becuase</span> &rarr; because &middot; <span class="error-mark">stoped</span> &rarr; stopped &middot; <span class="error-mark">athlets</span> &rarr; athletes &middot; <span class="error-mark">to</span> &rarr; too</div>
+    <div class="better"><div class="label">THE HABIT</div>After you write an answer, read it back once before moving on. Your ears catch what your eyes skip &mdash; "stoped" sounds like "stopt," which reminds you it needs the double p: stopped.</div>
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which sentence is spelled correctly?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="true" data-right-feedback="Correct. &ldquo;Because&rdquo; and &ldquo;stopped&rdquo; are both spelled right here. A quick read-back is what catches the difference." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>People wrote down the rules, so people stopped fighting because everyone knew them.</span></div>
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="&ldquo;Becuase&rdquo; should be &ldquo;because&rdquo; and &ldquo;stoped&rdquo; should be &ldquo;stopped&rdquo; (double p). Reading the sentence back once catches both." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>People wrote down the rules, so people stoped fighting becuase everyone knew them.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-then"><div class="tip-box"><div class="label">WHY THIS MATTERS</div>Your ideas are already clear. A one-time read-back turns "almost right" spelling into clean, polished answers &mdash; with no extra ideas needed.</div></div>
+  </div>
+</div>
+
+<div class="card" data-title="Paragraph Review">
+  <div class="card-header"><h2>Your G3.4 Paragraph</h2><div class="card-subtitle">18 out of 20 &mdash; this is your strength</div></div>
+  <div class="card-body">
+    <p>Julie, your paragraph earned <b>18 out of 20</b> &mdash; excellent work. Notice it has NO "I support this answer" padding. You just wrote, and it scored high. Here it is:</p>
+    <div class="essay-excerpt">
+      <div class="excerpt-label">Your paragraph (Q11) &mdash; "How modern sports developed and became popular"</div>
+      Do you want to know how modern sports started? Well It started in Britain in the 1700s. Games like golf and cricket were first played by rich people <span class="error-mark">becuase</span> they had enough free time to play sports. Later middle-class people started playing sports <span class="error-mark">to</span>. Rules were the first big change. People wrote down the rules, so people <span class="error-mark">stoped</span> fighting about what the rules were. After the rules were set, sports groups began. A league is a group of teams that play each other. Leagues and rules got us closer to modern sports. Modern sports also use scores and records. Records show the best results for all sports. Records let <span class="error-mark">athlets</span> compete with others now and from the past. Sports became about progress and winning. That is how we got modern sports.
+    </div>
+    <div class="para-map">
+      <span class="para-tag good">Hook question &#10003;</span>
+      <span class="para-tag good">Clear sequence: Britain 1700s &rarr; rules &rarr; leagues &rarr; records &#10003;</span>
+      <span class="para-tag good">Transitions: Later, After, also &#10003;</span>
+      <span class="para-tag good">Strong closing &#10003;</span>
+      <span class="para-tag watch">Minor spelling slips</span>
+    </div>
+    <div class="reveal-wrapper">
+      <div class="reveal-toggle" onclick="toggleReveal(this)">&#128064; Tap to see your paragraph, lightly polished</div>
+      <div class="reveal-content">
+        <div class="essay-excerpt">
+          <div class="excerpt-label">Same paragraph &mdash; spelling cleaned up (already nearly perfect)</div>
+          Do you want to know how modern sports started? Well it started in Britain in the 1700s. Games like golf and cricket were first played by rich people <b>because</b> they had enough free time to play sports. Later middle-class people started playing sports <b>too</b>. Rules were the first big change. People wrote down the rules, so people <b>stopped</b> fighting about what the rules were. After the rules were set, sports groups began. A league is a group of teams that play each other. Leagues and rules got us closer to modern sports. Modern sports also use scores and records. Records show the best results for all sports. Records let <b>athletes</b> compete with others now and from the past. Sports became about progress and winning. That is how we got modern sports.
+        </div>
+        <p>That is it &mdash; the only changes are four spelling fixes. The ideas, order, and transitions were already strong.</p>
+      </div>
+    </div>
+    <div class="tip-box"><div class="label">SO WHAT?</div>This paragraph proves the point &mdash; when you just write your answer without the extra justification, you score 18/20. Do that on the short answers too.</div>
+  </div>
+</div>
+
+<div class="card" data-title="Checklist &amp; Practice">
+  <div class="card-header"><h2>Your Checklist</h2><div class="card-subtitle">Goal: bounce back up on G3.5</div></div>
+  <div class="card-body">
+    <div class="checklist-progress-label" id="checkProgressLabel">0 of 6 checked</div>
+    <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Answer the question, then stop.</b> No "I support this answer because..." &mdash; just the answer.</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div>Give each idea a clean boundary &mdash; a period, or a connecting word (because / so / but / and).</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div>For Q6&ndash;Q10, write one complete sentence that answers the question and includes a reason.</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div>Read each answer back once to catch spelling slips (because, stopped, athletes, too).</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div>Keep writing strong paragraphs like this one &mdash; hook, clear sequence, transitions, strong close.</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div>Remember: your answers are already good. The goal is to stop sooner, not write more.</div></div>
+    <div class="practice-recommendations">
+      <div class="practice-recs-title">Recommended Practice</div>
+      <div class="practice-tier tier-primary"><div class="tier-header"><span class="tier-label">Start Here</span></div><div class="practice-links"><a class="practice-link" href="https://alphawrite.alpha.school/practice/3/2/write-sentence-from-prompt" target="_blank">Answer Cleanly from a Prompt</a><a class="practice-link" href="https://alphawrite.alpha.school/practice/3/2/combine-sentences" target="_blank">Combine Sentences</a></div></div>
+      <div class="practice-tier tier-extra"><div class="tier-header"><span class="tier-label">Extra</span></div><div class="practice-links"><a class="practice-link" href="https://alphawrite.alpha.school/practice/3/2/write-cs-from-details" target="_blank">Write a Sentence from Details</a><a class="practice-link" href="https://alphawrite.alpha.school/practice/3/2/write-paragraph-from-prompt" target="_blank">Write a Paragraph from Prompt</a></div></div>
+    </div>
+    <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg> Print Checklist</button>
+  </div>
+</div>
+
+</div>
+<div class="nav"><button id="prevBtn" onclick="navigate(-1)">&larr; Back</button><button id="nextBtn" onclick="navigate(1)">Next &rarr;</button></div>
+<div class="completion-overlay" id="completionOverlay"><div class="completion-card"><div class="completion-emoji">&#127881;</div><div class="completion-title">You got this, Julie!</div><div class="completion-sub">Your paragraph scored 18/20 &mdash; you can clearly write. On the short answers, just answer the question and stop. Cut the "I support this answer because..." part, give each idea a clean boundary, and read it back once. Your answers are already good. You peaked at 87% &mdash; this fix bounces you right back up.</div><button class="completion-close" onclick="closeCompletion()">Got it!</button></div></div>
+<canvas id="confettiCanvas"></canvas>
+<script>
+var cards=document.querySelectorAll('.card'),bar=document.getElementById('progressBar'),breadcrumb=document.getElementById('breadcrumb'),stickyEl=document.getElementById('stickyIndicator'),current=0,visited=[0];cards.forEach(function(card,i){var dot=document.createElement('div');dot.className='progress-dot'+(i===0?' active':'');var tooltip=document.createElement('span');tooltip.className='dot-tooltip';tooltip.textContent=card.getAttribute('data-title')||('Card '+(i+1));dot.appendChild(tooltip);dot.addEventListener('click',function(){goTo(i);});bar.appendChild(dot);});function updateBreadcrumb(){var title=cards[current].getAttribute('data-title')||('Card '+(current+1));breadcrumb.innerHTML='Card <b>'+(current+1)+'</b> of '+cards.length+' — '+title;stickyEl.textContent=(current+1)+' / '+cards.length;}function checkSticky(){var barRect=bar.getBoundingClientRect();stickyEl.classList.toggle('visible',barRect.bottom<0);}window.addEventListener('scroll',checkSticky);function goTo(idx){if(idx<0||idx>=cards.length)return;cards[current].classList.remove('active');bar.children[current].classList.remove('active');current=idx;if(visited.indexOf(current)===-1)visited.push(current);cards[current].classList.add('active');bar.children[current].classList.add('active');visited.forEach(function(v){if(v!==current)bar.children[v].classList.add('visited');});var prevBtn=document.getElementById('prevBtn'),nextBtn=document.getElementById('nextBtn');if(prevBtn){prevBtn.style.visibility=current===0?'hidden':'visible';prevBtn.disabled=current===0;}if(nextBtn){nextBtn.textContent=current===cards.length-1?'Done ✓':'Next →';nextBtn.disabled=false;}updateBreadcrumb();window.scrollTo({top:0,behavior:'smooth'});}function navigate(dir){if(dir===1&&current===cards.length-1){showCompletion();return;}goTo(current+dir);}document.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key==='ArrowDown')navigate(1);if(e.key==='ArrowLeft'||e.key==='ArrowUp')navigate(-1);});function handleDiscrim(option){var challenge=option.closest('.discrim-challenge'),feedback=challenge.querySelector('.discrim-feedback'),options=challenge.querySelectorAll('.discrim-option'),isCorrect=option.getAttribute('data-correct')==='true';if(option.classList.contains('correct')||option.classList.contains('locked'))return;if(isCorrect){option.classList.add('correct');options.forEach(function(o){if(o!==option)o.classList.add('locked');});feedback.innerHTML=option.getAttribute('data-right-feedback')||'Correct!';feedback.className='discrim-feedback shown right-fb';var sibling=challenge.nextElementSibling;while(sibling){if(sibling.classList&&sibling.classList.contains('discrim-then')){setTimeout(function(){sibling.classList.add('revealed');},600);break;}sibling=sibling.nextElementSibling;}}else{option.classList.add('wrong');feedback.innerHTML=option.getAttribute('data-wrong-feedback')||'Not quite — think again.';feedback.className='discrim-feedback shown wrong-fb';setTimeout(function(){option.classList.remove('wrong');feedback.className='discrim-feedback';},2000);}}function toggleReveal(toggle){var content=toggle.nextElementSibling;content.classList.toggle('shown');}function toggleCheck(item){item.classList.toggle('checked');updateCheckProgress();}function updateCheckProgress(){var items=document.querySelectorAll('.check-item'),checked=document.querySelectorAll('.check-item.checked').length,total=items.length,fill=document.getElementById('checkProgressFill'),lbl=document.getElementById('checkProgressLabel');if(fill)fill.style.width=Math.round((checked/total)*100)+'%';if(lbl){lbl.innerHTML=checked===total?'<b style="color:#2d6a2d;">All done!</b>':checked+' of '+total+' checked';}}function printChecklist(btn){var card=btn.closest('.card');card.classList.add('print-target');window.print();card.classList.remove('print-target');}function showCompletion(){document.getElementById('completionOverlay').classList.add('visible');launchConfetti();}function closeCompletion(){document.getElementById('completionOverlay').classList.remove('visible');}function launchConfetti(){var canvas=document.getElementById('confettiCanvas'),ctx=canvas.getContext('2d');canvas.width=window.innerWidth;canvas.height=window.innerHeight;var colors=['#d4552a','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b'];var particles=[];for(var i=0;i<120;i++){particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height-canvas.height,w:Math.random()*10+5,h:Math.random()*6+3,color:colors[Math.floor(Math.random()*colors.length)],vx:(Math.random()-0.5)*4,vy:Math.random()*3+2,rot:Math.random()*360,rotV:(Math.random()-0.5)*10,life:1});}var frame=0;function animate(){ctx.clearRect(0,0,canvas.width,canvas.height);var alive=false;particles.forEach(function(p){if(p.life<=0)return;alive=true;p.x+=p.vx;p.y+=p.vy;p.vy+=0.05;p.rot+=p.rotV;if(p.y>canvas.height+20){p.life=0;return;}if(frame>60)p.life-=0.01;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();});frame++;if(alive)requestAnimationFrame(animate);else ctx.clearRect(0,0,canvas.width,canvas.height);}animate();}goTo(0);
+</script>
+<script src="../tracking.js"></script>
+</body>
+</html>
