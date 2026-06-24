@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alyan's Writing Test Review &mdash; G3.6</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: Calibri, 'Segoe UI', sans-serif;
+  font-size: 12pt;
+  color: #1a1a2e;
+  background: #f0f0f5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.progress-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
+.progress-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: #ccc; transition: background 0.3s, transform 0.2s; cursor: pointer;
+  position: relative;
+}
+.progress-dot.active { background: #6a2dc8; transform: scale(1.25); }
+.progress-dot.visited { background: #a77de0; }
+.progress-dot:hover { transform: scale(1.3); }
+.progress-dot .dot-tooltip {
+  position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  background: #6a2dc8; color: #fff; padding: 4px 10px; border-radius: 6px;
+  font-size: 8.5pt; white-space: nowrap; opacity: 0;
+  pointer-events: none; transition: opacity 0.2s; z-index: 100;
+}
+.progress-dot .dot-tooltip::after {
+  content: ''; position: absolute; top: 100%; left: 50%;
+  transform: translateX(-50%); border: 5px solid transparent;
+  border-top-color: #6a2dc8;
+}
+.progress-dot:hover .dot-tooltip { opacity: 1; }
+
+.card-breadcrumb {
+  font-size: 9.5pt; color: #888; margin-bottom: 14px;
+  text-align: center; transition: opacity 0.3s; min-height: 1.2em;
+}
+.card-breadcrumb b { color: #6a2dc8; }
+
+.sticky-indicator {
+  position: fixed; top: 12px; right: 16px;
+  background: #6a2dc8; color: #fff; padding: 5px 14px;
+  border-radius: 20px; font-size: 9pt; font-weight: 700;
+  opacity: 0; transition: opacity 0.3s; z-index: 200;
+  pointer-events: none; letter-spacing: 0.5px;
+}
+.sticky-indicator.visible { opacity: 1; }
+
+.card-container { position: relative; width: 640px; min-height: 420px; }
+
+.card {
+  position: absolute; top: 0; left: 0; width: 100%;
+  background: #fff; border: 2.5px solid #6a2dc8; border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+  opacity: 0; pointer-events: none; transform: translateX(40px);
+  transition: opacity 0.35s, transform 0.35s;
+}
+.card.active {
+  opacity: 1; pointer-events: auto; transform: translateX(0); position: relative;
+}
+
+.card-header {
+  background: #6a2dc8; color: #fff; padding: 14px 20px;
+  border-radius: 11px 11px 0 0;
+}
+.card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+.card-header .card-subtitle { font-size: 9.5pt; color: #c8a8f0; margin-top: 2px; }
+
+.card-body { padding: 18px 22px 22px; line-height: 1.55; }
+.card-body p { margin: 6px 0; }
+.card-body ul { margin: 6px 0 6px 18px; }
+.card-body li { margin: 3px 0; }
+
+.score-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px; margin: 12px 0;
+}
+.score-box {
+  background: #f8f8fc; border: 1.5px solid #e0e0e8;
+  border-radius: 8px; padding: 10px 14px; text-align: center;
+}
+.score-box .big { font-size: 20pt; font-weight: 700; }
+.score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+.score-good .big { color: #2d6a2d; }
+.score-warn .big { color: #cc6600; }
+.score-low .big { color: #cc0000; }
+
+.you-wrote {
+  background: #fff3f3; border-left: 3px solid #cc0000;
+  padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+  font-style: italic; font-size: 10.5pt;
+}
+.you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+
+.better {
+  background: #e8f5e9; border-left: 3px solid #2d6a2d;
+  padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0;
+  font-size: 10.5pt;
+}
+.better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+
+.tip-box {
+  background: #e8edf5; border-left: 3px solid #6a2dc8;
+  padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0;
+}
+.tip-box .label { font-weight: 700; font-size: 9.5pt; color: #6a2dc8; margin-bottom: 3px; }
+
+.highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+.error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+.discrim-option .error-mark { background: transparent; text-decoration: none; padding: 0; border-radius: 0; }
+
+.essay-excerpt {
+  background: #fafafa; border: 1px solid #e0e0e8;
+  border-radius: 6px; padding: 10px 14px; font-size: 10.5pt;
+  margin: 8px 0; line-height: 1.6;
+}
+
+.pattern-note {
+  background: #f5f0ff; border-left: 3px solid #7c4dff;
+  padding: 9px 14px; margin: 0 0 12px; border-radius: 0 6px 6px 0;
+  font-size: 10pt; line-height: 1.45;
+  display: flex; align-items: flex-start; gap: 8px;
+}
+.pattern-note .pattern-note-icon { font-size: 14pt; flex-shrink: 0; line-height: 1; }
+.pattern-note b { color: #5c2dcc; }
+
+.discrim-challenge {
+  background: #f8f5ff; border: 1.5px solid #d4c5ff; border-radius: 8px;
+  padding: 14px; margin: 10px 0;
+}
+.discrim-prompt {
+  font-weight: 700; font-size: 10.5pt; margin-bottom: 10px; color: #5c2dcc;
+}
+.discrim-options { display: flex; flex-direction: column; gap: 8px; }
+.discrim-option {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 14px; border: 2px solid #d4c5ff; border-radius: 8px;
+  cursor: pointer; transition: all 0.2s; font-size: 10.5pt;
+  background: #fff;
+}
+.discrim-option:hover { border-color: #7c4dff; background: #f5f0ff; }
+.discrim-label { font-weight: 800; color: #7c4dff; min-width: 20px; flex-shrink: 0; }
+.discrim-option.correct { border-color: #2d6a2d; background: #e8f5e9; cursor: default; }
+.discrim-option.correct .discrim-label { color: #2d6a2d; }
+.discrim-option.wrong { border-color: #cc0000; background: #fff3f3; }
+.discrim-option.wrong .discrim-label { color: #cc0000; }
+.discrim-option.locked { pointer-events: none; opacity: 0.5; }
+.discrim-feedback {
+  margin-top: 0; font-size: 10pt; line-height: 1.4;
+  max-height: 0; overflow: hidden; opacity: 0;
+  transition: max-height 0.3s, opacity 0.3s, margin 0.3s;
+}
+.discrim-feedback.shown { max-height: 200px; opacity: 1; margin-top: 10px; }
+.discrim-feedback.wrong-fb { color: #cc0000; }
+.discrim-feedback.right-fb { color: #2d6a2d; font-weight: 600; }
+
+.discrim-then {
+  max-height: 0; overflow: hidden; opacity: 0;
+  transition: max-height 0.6s ease, opacity 0.5s ease;
+}
+.discrim-then.revealed { max-height: 5000px; opacity: 1; }
+
+.reveal-wrapper { position: relative; }
+.reveal-cover {
+  background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%);
+  border-left: 3px solid #2d6a2d;
+  padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0;
+  cursor: pointer; user-select: none;
+  display: flex; align-items: center; gap: 10px;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.reveal-cover:hover {
+  box-shadow: 0 2px 8px rgba(45,106,45,0.15);
+  background: linear-gradient(135deg, #d4edda 0%, #c8e6c9 100%);
+}
+.reveal-cover .reveal-icon {
+  width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
+.reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #2d6a2d; }
+.reveal-cover .reveal-hint { font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px; }
+.reveal-content {
+  max-height: 0; overflow: hidden; opacity: 0;
+  transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0;
+}
+.reveal-content.shown { max-height: 800px; opacity: 1; margin: 8px 0; }
+.reveal-cover.hidden { display: none; }
+
+.check-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 10px 8px; cursor: pointer; border-bottom: 1px solid #eee;
+  border-radius: 6px; transition: background 0.15s; user-select: none;
+  font-size: 11pt;
+}
+.check-item:last-child { border-bottom: none; }
+.check-item:hover { background: #f8f8fc; }
+.check-item.checked { background: #f0f8f0; }
+.check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
+.check-item.checked .check-box::after {
+  content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700;
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+}
+.check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
+.check-box {
+  width: 28px; height: 28px; border: 2.5px solid #6a2dc8;
+  border-radius: 6px; flex-shrink: 0; margin-top: 1px;
+  position: relative; transition: background 0.2s, border-color 0.2s;
+}
+.checklist-progress {
+  background: #eee; border-radius: 10px; height: 8px;
+  margin: 12px 0 6px; overflow: hidden;
+}
+.checklist-progress-fill {
+  background: linear-gradient(90deg, #2d6a2d, #4caf50);
+  height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%;
+}
+.checklist-progress-label {
+  font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px;
+}
+
+.practice-recommendations {
+  margin-top: 16px; border-top: 2px solid #e0e0e8; padding-top: 14px;
+}
+.practice-recs-title {
+  font-size: 10pt; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.6px; color: #6a2dc8; margin-bottom: 10px;
+}
+.practice-tier { border-radius: 8px; padding: 12px 14px; margin: 8px 0; }
+.tier-primary { background: #e8f5e9; border: 1.5px solid #a5d6a7; }
+.tier-extra { background: #f8f8fc; border: 1.5px solid #e0e0e8; }
+.tier-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.tier-label {
+  font-size: 8.5pt; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.8px; padding: 2px 10px; border-radius: 10px;
+}
+.tier-primary .tier-label { background: #2d6a2d; color: #fff; }
+.tier-extra .tier-label { background: #888; color: #fff; }
+.tier-note { font-size: 9pt; color: #666; margin-bottom: 6px; line-height: 1.4; }
+.practice-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.practice-link {
+  display: inline-block; padding: 5px 12px; border-radius: 6px;
+  font-size: 9.5pt; font-weight: 600; text-decoration: none;
+  transition: background 0.2s, transform 0.1s;
+}
+.practice-link:hover { transform: translateY(-1px); }
+.tier-primary .practice-link { background: #c8e6c9; color: #1b5e1b; }
+.tier-primary .practice-link:hover { background: #a5d6a7; }
+.tier-extra .practice-link { background: #e8edf5; color: #6a2dc8; }
+.tier-extra .practice-link:hover { background: #d8dff0; }
+
+.nav { display: flex; gap: 12px; margin-top: 16px; }
+.nav button {
+  padding: 8px 28px; border: 2px solid #6a2dc8; border-radius: 8px;
+  background: #fff; color: #6a2dc8; font-family: inherit;
+  font-size: 11pt; font-weight: 600; cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.nav button:hover { background: #6a2dc8; color: #fff; }
+
+.print-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 12px; padding: 8px 20px;
+  border: 2px solid #6a2dc8; border-radius: 8px;
+  background: #fff; color: #6a2dc8; font-family: inherit;
+  font-size: 10.5pt; font-weight: 600; cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.print-btn:hover { background: #6a2dc8; color: #fff; }
+.print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+.completion-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(106,45,200,0.6); z-index: 500;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.4s;
+}
+.completion-overlay.visible { opacity: 1; pointer-events: auto; }
+.completion-card {
+  background: #fff; border-radius: 16px; padding: 40px 48px;
+  text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+  transform: scale(0.8); transition: transform 0.4s ease; max-width: 420px;
+}
+.completion-overlay.visible .completion-card { transform: scale(1); }
+.completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+.completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; color: #6a2dc8; }
+.completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+.completion-close {
+  margin-top: 20px; padding: 10px 32px;
+  background: #6a2dc8; color: #fff; border: none; border-radius: 8px;
+  font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer;
+  transition: background 0.2s;
+}
+.completion-close:hover { background: #5220a0; }
+#confettiCanvas {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 501;
+}
+
+.para-map { display: flex; gap: 6px; margin: 10px 0; flex-wrap: wrap; }
+.para-tag {
+  padding: 6px 12px; border-radius: 6px; font-size: 10pt; font-weight: 600; border: 1.5px solid;
+}
+.para-tag.good { background: #e8f5e9; border-color: #2d6a2d; color: #2d6a2d; }
+.para-tag.warn { background: #fff3cd; border-color: #e6a800; color: #996600; }
+.para-tag.bad { background: #fff3f3; border-color: #cc0000; color: #cc0000; }
+
+.score-timeline {
+  display: flex; align-items: flex-end; gap: 0; margin: 12px 0 16px;
+  padding: 0 10px; justify-content: space-between;
+}
+.timeline-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.timeline-score { font-size: 13pt; font-weight: 700; margin-bottom: 4px; }
+.timeline-bar { width: 70%; border-radius: 4px 4px 0 0; transition: height 0.6s ease; min-height: 8px; }
+.timeline-label { font-size: 8.5pt; color: #888; margin-top: 6px; font-weight: 600; }
+.score-green { color: #2d6a2d; }
+.score-amber { color: #cc6600; }
+.score-red { color: #cc0000; }
+.bar-green { background: linear-gradient(to top, #c8e6c9, #81c784); }
+.bar-amber { background: linear-gradient(to top, #ffe0b2, #ffb74d); }
+.bar-red { background: linear-gradient(to top, #ffcdd2, #e57373); }
+
+.strength-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; }
+.strength-chip {
+  padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600;
+  background: #e8f5e9; color: #2d6a2d; border: 1.5px solid #a5d6a7;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+
+.journey-section {
+  font-size: 9.5pt; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.7px; margin: 10px 0 4px; padding-bottom: 3px;
+  border-bottom: 1.5px solid; display: flex; align-items: center; gap: 6px;
+}
+.journey-section.strengths-header { color: #2d6a2d; border-color: #c8e6c9; }
+.journey-section.growth-header { color: #cc6600; border-color: #ffe0b2; }
+
+.root-cause-teaser {
+  background: #f5f0ff; border-left: 3px solid #7c4dff;
+  padding: 10px 14px; margin: 12px 0 4px; border-radius: 0 6px 6px 0;
+  font-size: 10.5pt; line-height: 1.5;
+}
+.root-cause-teaser b { color: #5c2dcc; }
+
+.growth-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.growth-chip {
+  padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.growth-chip.weak { background: #fff3f3; color: #cc0000; border: 1.5px solid #ffcdd2; }
+.growth-chip.mixed { background: #fff8e8; color: #b35900; border: 1.5px solid #ffe0b2; }
+
+.process-steps {
+  counter-reset: step-counter;
+  list-style: none; margin: 10px 0; padding: 0;
+}
+.process-steps li {
+  counter-increment: step-counter;
+  padding: 8px 12px 8px 42px; margin: 6px 0;
+  background: #f8f8fc; border-radius: 6px; position: relative;
+  font-size: 10.5pt; line-height: 1.45;
+}
+.process-steps li::before {
+  content: counter(step-counter);
+  position: absolute; left: 10px; top: 8px;
+  width: 24px; height: 24px; background: #6a2dc8; color: #fff;
+  border-radius: 50%; font-size: 10pt; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+
+@media print {
+  body { background: #fff; padding: 0; min-height: auto; }
+  .progress-bar, .nav, .print-btn, .card-breadcrumb, .sticky-indicator,
+  .completion-overlay, #confettiCanvas, .reveal-cover,
+  .checklist-progress, .checklist-progress-label, .discrim-challenge { display: none !important; }
+  .card-container { width: 100%; min-height: auto; }
+  .card { display: none !important; }
+  .card.print-target {
+    display: block !important; opacity: 1 !important;
+    pointer-events: auto !important; position: relative !important;
+    transform: none !important; box-shadow: none;
+    border: 2px solid #6a2dc8; page-break-inside: avoid;
+  }
+  .reveal-content, .discrim-then { max-height: none !important; opacity: 1 !important; margin: 8px 0 !important; }
+  .practice-link { border: 1px solid #999; }
+}
+
+@media (max-width: 720px) {
+  .card-container { width: 100%; }
+  .score-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<div class="card-breadcrumb" id="breadcrumb"></div>
+<div class="sticky-indicator" id="stickyIndicator"></div>
+
+<div class="card-container" id="cardContainer">
+
+<!-- Card 1: Score Overview -->
+<div class="card active" data-title="Score Overview">
+  <div class="card-header">
+    <h2>Alyan Slizza</h2>
+    <div class="card-subtitle">Alpha Standardized Writing G3.6 &mdash; Passage: "The Life of a Porcupine" &middot; Alpha School Austin (L2) &middot; Guide: Emma Simon</div>
+  </div>
+  <div class="card-body">
+    <div class="score-grid">
+      <div class="score-box score-good">
+        <div class="big">87%</div>
+        <div class="label">Overall Score (39/45 weighted pts)</div>
+      </div>
+      <div class="score-box score-good">
+        <div class="big">23/25</div>
+        <div class="label">Questions 1&ndash;10</div>
+      </div>
+      <div class="score-box score-warn">
+        <div class="big">16/20</div>
+        <div class="label">Paragraph (Q11)</div>
+      </div>
+    </div>
+
+    <p>Alyan, this is a strong all-around test &mdash; you scored <b>87%</b> and earned <b>39 out of 45</b> weighted points. You are back up after a small dip on G3.5, and your foundation is really showing. Questions 1 through 10 earned <b>23 out of 25</b>, and your paragraph earned a solid <b>16 out of 20</b>.</p>
+
+    <p>You answered almost everything well. The last few points come from two precise fixes: using a <b>true appositive</b> on Q3 (you joined two ideas with "and" instead), and matching your <b>subjects with their verbs</b> on Q6 ("a porcupine lift" should be "a porcupine lifts"). This review walks through both, plus a quick proofread habit to catch small slips.</p>
+
+    <div class="root-cause-teaser">
+      <b>The big idea:</b> You are already a strong, organized writer. The gap between 87% and 90% is two precision skills &mdash; <b>true appositives</b> and <b>subject-verb agreement</b> &mdash; plus a final proofread for small spelling slips. Lock those in and the last points come back.
+    </div>
+  </div>
+</div>
+
+<!-- Card 2: Writing Journey -->
+<div class="card" data-title="Your Writing Journey">
+  <div class="card-header">
+    <h2>Your Writing Journey</h2>
+    <div class="card-subtitle">G3.6 &mdash; a steady climber, back up to 87%</div>
+  </div>
+  <div class="card-body">
+    <div class="score-timeline">
+      <div class="timeline-item">
+        <div class="timeline-score score-red">62%</div>
+        <div class="timeline-bar bar-red" style="height:55px;"></div>
+        <div class="timeline-label">G3.1</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-score score-amber">82%</div>
+        <div class="timeline-bar bar-amber" style="height:73px;"></div>
+        <div class="timeline-label">G3.2</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-score score-green">89%</div>
+        <div class="timeline-bar bar-green" style="height:80px;"></div>
+        <div class="timeline-label">G3.3</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-score score-green">87%</div>
+        <div class="timeline-bar bar-green" style="height:78px;"></div>
+        <div class="timeline-label">G3.4</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-score score-amber">84%</div>
+        <div class="timeline-bar bar-amber" style="height:75px;"></div>
+        <div class="timeline-label">G3.5</div>
+      </div>
+      <div class="timeline-item current">
+        <div class="timeline-score score-green">87%</div>
+        <div class="timeline-bar bar-green" style="height:78px;"></div>
+        <div class="timeline-label">G3.6</div>
+      </div>
+    </div>
+
+    <p>Look at this climb, Alyan. You started at <b>62%</b> on G3.1 and you have lived in the <b>80s ever since</b> &mdash; 82, 89, 87, 84, and now back up to <b>87%</b> on G3.6. That is a steady, confident improver. The small dip on G3.5 is already behind you.</p>
+
+    <p>At 87% you are in the <b>Consolidation</b> tier. You have the core skills locked in; now it is about tightening two precise patterns to push past 90%.</p>
+
+    <div class="journey-section strengths-header">Skills you do well</div>
+    <div class="strength-chips">
+      <span class="strength-chip">Rewriting &amp; combining sentences</span>
+      <span class="strength-chip">Answering with a reason</span>
+      <span class="strength-chip">Strong paragraph structure</span>
+    </div>
+
+    <div class="journey-section growth-header">Areas to consolidate</div>
+    <div class="growth-chips">
+      <span class="growth-chip mixed">True appositives (Q3)</span>
+      <span class="growth-chip mixed">Subject-verb agreement (Q6)</span>
+      <span class="growth-chip mixed">Proofreading for small slips</span>
+    </div>
+
+    <div class="root-cause-teaser">
+      <b>Pattern:</b> Your lost points are not about ideas &mdash; your ideas are good. They come from two grammar patterns: a <b>true appositive</b> renames a noun with a phrase set off by commas (not "and"), and a <b>subject must match its verb</b> (a porcupine lifts; porcupines lift). Lock these two in and you are over 90%.
+    </div>
+  </div>
+</div>
+
+<!-- Card 3: Proofread Before You Submit -->
+<div class="card" data-title="Proofread Before You Submit">
+  <div class="card-header">
+    <h2>Proofread Before You Submit</h2>
+    <div class="card-subtitle">You are strong &mdash; a quick read-back catches the last small slips</div>
+  </div>
+  <div class="card-body">
+    <p>Alyan, your answers were strong this time &mdash; you do not need to rush or write more. What earns you the last points is a quick <b>read-back</b> before you submit each answer, to catch small spelling and word slips that sneak in.</p>
+
+    <p>Here are real slips from your G3.6 answers. None of them changed your meaning, but each one is an easy point to protect:</p>
+
+    <div class="you-wrote">
+      <div class="label">SMALL SLIPS TO CATCH</div>
+      Q8: "If another animal <span class="error-mark">ignorews</span> a porcupine's warning&hellip;" &rarr; <b>ignores</b><br>
+      Q11: "When a porcupine feels <span class="error-mark">threated</span>&hellip;" &rarr; <b>threatened</b><br>
+      Q11: "If <span class="error-mark">a animal</span> gets <span class="error-mark">to</span> close&hellip;" &rarr; <b>an animal</b> &middot; <b>too close</b><br>
+      Q9: "they can protect <span class="error-mark">themself</span> well." &rarr; <b>themselves</b>
+    </div>
+
+    <p><b>The habit:</b> After you finish an answer, read it back slowly &mdash; one sentence at a time &mdash; and ask, "Is every word spelled right, and does each word fit?" Words like <b>too / to</b> and <b>a / an</b> are the ones to watch.</p>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which sentence is ready to submit (no spelling slip)?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false"
+             data-wrong-feedback="&ldquo;Threated&rdquo; is not a word &mdash; it should be &ldquo;threatened.&rdquo; A quick read-back catches this before you submit."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">A</span>
+          <span>"When the porcupine feels <span class="error-mark">threated</span>, it raises its quills."</span>
+        </div>
+        <div class="discrim-option" data-correct="true"
+             data-right-feedback="Correct. &ldquo;Threatened&rdquo; is spelled right, and every word fits. This one is ready to submit."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">B</span>
+          <span>"When the porcupine feels threatened, it raises its quills."</span>
+        </div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="discrim-then">
+      <div class="tip-box">
+        <div class="label">WHY THIS MATTERS</div>
+        Your ideas are already strong, so the proofread is just protecting points you have basically already earned. A slow read-back of each answer catches "ignorews," "threated," "a animal," and "to close" before they ever count against you.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 4: Error #1 - What a True Appositive Is -->
+<div class="card" data-title="Error: True Appositives">
+  <div class="card-header">
+    <h2>Error #1: What a True Appositive Is</h2>
+    <div class="card-subtitle">Q3 asked for an appositive &mdash; you joined with "and" instead</div>
+  </div>
+  <div class="card-body">
+    <p>Alyan, Q3 asked you to combine two sentences using an <b>appositive</b>. You combined them with the word "and," which makes a fine sentence &mdash; but it is not an appositive, so the question could not give full credit.</p>
+
+    <div class="you-wrote">
+      <div class="label">Q3 &mdash; YOUR ANSWER (1 out of 2 weighted points)</div>
+      "Porcupines are rodents, <b>and</b> they are slow movers of the forest."
+    </div>
+
+    <p><b>The problem:</b> Joining with "and" creates a compound sentence &mdash; two separate ideas linked together. An appositive does something different: it <b>renames</b> the noun with a noun phrase, set off by commas, right next to the noun.</p>
+
+    <div class="better">
+      <div class="label">CORRECT APPOSITIVE</div>
+      "Porcupines, <b>the slow movers of the forest</b>, are rodents."
+    </div>
+
+    <p>Now "the slow movers of the forest" renames "Porcupines." It sits right after the noun, between two commas, and tells the reader more about what porcupines are &mdash; no "and" needed.</p>
+
+    <div class="tip-box">
+      <div class="label">THE APPOSITIVE PATTERN</div>
+      <b>Noun, [renaming phrase], rest of sentence.</b><br><br>
+      The renaming phrase is a noun phrase that names the same thing again. It comes right after the noun, between two commas. If you reach for "and," stop &mdash; that joins two ideas; it does not rename one.
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which sentence uses a true appositive?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false"
+             data-wrong-feedback="This joins two ideas with &ldquo;and,&rdquo; so it is a compound sentence, not an appositive. An appositive renames the noun with a phrase set off by commas."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">A</span>
+          <span>"The porcupine is a rodent, and it has sharp quills."</span>
+        </div>
+        <div class="discrim-option" data-correct="true"
+             data-right-feedback="Correct. &ldquo;A sharp-quilled rodent&rdquo; comes right after &ldquo;The porcupine,&rdquo; set off by commas, and renames it. That is a true appositive."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">B</span>
+          <span>"The porcupine, a sharp-quilled rodent, climbs trees at night."</span>
+        </div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="discrim-then">
+      <div class="tip-box">
+        <div class="label">WHY THIS MATTERS</div>
+        When a question says "combine using an appositive," it is testing this exact pattern: Noun, [renaming phrase], rest of sentence. Spot the word "appositive," reach for commas instead of "and," and this point is yours.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 5: Error #2 - Subject-Verb & Pronoun Agreement -->
+<div class="card" data-title="Error: Agreement">
+  <div class="card-header">
+    <h2>Error #2: Subject-Verb &amp; Pronoun Agreement</h2>
+    <div class="card-subtitle">Q6 &mdash; the subject and verb need to match</div>
+  </div>
+  <div class="card-body">
+    <p>Alyan, on Q6 your idea was right, but the subject and verb did not match. When the subject is singular ("a porcupine"), the verb needs the <b>-s</b> ending ("lifts," "feels"), and the pronoun has to match too.</p>
+
+    <div class="you-wrote">
+      <div class="label">Q6 &mdash; YOUR ANSWER (2 out of 3 weighted points)</div>
+      "A porcupine <span class="error-mark">lift</span> its quills when it <span class="error-mark">feel</span> scared because it is scared and wants to protect <span class="error-mark">themself</span>."
+    </div>
+
+    <p><b>The problem:</b> "A porcupine" is one porcupine, so the verbs need to be "lifts" and "feels," and the pronoun should be "itself" (one porcupine = itself). Also, "scared because it is scared" repeats the same idea &mdash; the second half can name a real reason instead.</p>
+
+    <div class="better">
+      <div class="label">CORRECT AGREEMENT</div>
+      "A porcupine <b>lifts</b> its quills when it <b>feels</b> scared because the sharp quills protect <b>itself</b> from danger."
+    </div>
+
+    <div class="tip-box">
+      <div class="label">THE AGREEMENT RULE</div>
+      <b>One subject takes the -s verb. A plural subject takes a plural pronoun.</b><br><br>
+      &bull; One porcupine &rarr; "A porcupine <b>lifts</b>&hellip; it <b>feels</b>&hellip; it protects <b>itself</b>."<br>
+      &bull; Many porcupines &rarr; "Porcupines <b>lift</b>&hellip; they <b>feel</b>&hellip; they protect <b>themselves</b>."<br><br>
+      Before submitting, find the subject, then check the verb matches it.
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which sentence has matching subject and verb?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false"
+             data-wrong-feedback="The subject &ldquo;A porcupine&rdquo; is singular, so the verb must be &ldquo;lifts,&rdquo; not &ldquo;lift.&rdquo; The subject and verb do not match."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">A</span>
+          <span>"A porcupine lift its quills when it feel scared."</span>
+        </div>
+        <div class="discrim-option" data-correct="true"
+             data-right-feedback="Correct. &ldquo;A porcupine&rdquo; is singular, so &ldquo;lifts&rdquo; and &ldquo;feels&rdquo; both match. The subject and verb agree."
+             onclick="handleDiscrim(this)">
+          <span class="discrim-label">B</span>
+          <span>"A porcupine lifts its quills when it feels scared."</span>
+        </div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="discrim-then">
+      <div class="tip-box">
+        <div class="label">WHY THIS MATTERS</div>
+        This same pattern showed up in your paragraph opener too ("Porcupines are amazing&hellip; the way it protects itself"). Find the subject, match the verb and the pronoun, and you protect points across the whole test.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 6: Paragraph Review -->
+<div class="card" data-title="Paragraph Review">
+  <div class="card-header">
+    <h2>Your G3.6 Paragraph</h2>
+    <div class="card-subtitle">16 out of 20 &mdash; strong structure, a couple of precision fixes</div>
+  </div>
+  <div class="card-body">
+    <p>Alyan, your paragraph earned a strong <b>16 out of 20</b>. The prompt asked you to explain how the porcupine's body helps it stay safe. You built a clear, organized paragraph with a topic sentence and a real conclusion &mdash; that is the hardest part, and you nailed it.</p>
+
+    <div class="essay-excerpt">
+      "Porcupines are amazing creatures because of the way it protects itself. Porcupines like to gather their food in trees. When a porcupine feels threated, the porcupine moves its tail. If a animal gets to close to the porcupine, they will get stabbed with quills. In conclusion porcupines are amazing creatures that may seem harmless, but can really deal some damage."
+    </div>
+
+    <div class="para-map">
+      <span class="para-tag good">Clear topic sentence</span>
+      <span class="para-tag good">Organized order</span>
+      <span class="para-tag good">Has a conclusion</span>
+      <span class="para-tag warn">Agreement in opener</span>
+      <span class="para-tag warn">One off-topic detail</span>
+      <span class="para-tag warn">Proofread slips</span>
+    </div>
+
+    <p><b>What you did well:</b> You open with a topic sentence, move through your details in order, and close with a real concluding sentence. The structure is genuinely strong.</p>
+
+    <p><b>What would lift the score:</b> Three small fixes &mdash; (1) match the subject and verb in your opener ("they protect themselves"), (2) keep every detail on the <b>safety</b> topic (gathering food in trees does not show how the body stays safe), and (3) proofread "threated," "a animal," and "to close."</p>
+
+    <div class="reveal-wrapper">
+      <div class="reveal-cover" onclick="revealBetter(this)">
+        <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></div>
+        <div>
+          <div class="reveal-text">Tap to see your paragraph, lightly polished</div>
+          <div class="reveal-hint">Same ideas and structure &mdash; agreement fixed, every detail on safety</div>
+        </div>
+      </div>
+      <div class="reveal-content">
+        <div class="better">
+          <div class="label">YOUR PARAGRAPH, POLISHED</div>
+          <p style="margin:4px 0; font-size:10.5pt;">
+            "Porcupines are amazing creatures because of the way <b>they protect themselves</b>. A porcupine's sharp quills keep it safe from predators. When a porcupine feels <b>threatened</b>, it moves its tail to warn other animals away. If <b>an animal</b> gets <b>too close</b> to the porcupine, it will get stabbed with quills. In conclusion, porcupines may seem harmless, but their bodies can really deal some damage."
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <div class="label">SO WHAT?</div>
+      At 16 out of 20 you are close. The structure is already there. Fixing the agreement in your opener and keeping every detail tied to the question's topic (here, <b>staying safe</b>) is what closes the gap to 18+.
+    </div>
+  </div>
+</div>
+
+<!-- Card 7: Checklist & Practice -->
+<div class="card" data-title="Checklist &amp; Practice">
+  <div class="card-header">
+    <h2>Your Checklist</h2>
+    <div class="card-subtitle">Personalized to your G3.6 results</div>
+  </div>
+  <div class="card-body">
+    <div class="checklist-progress-label" id="checkProgressLabel">0 of 6 checked</div>
+    <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
+
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div>For an appositive, <b>rename the noun</b> with a phrase set off by commas (not "and")</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div>Match my subjects and verbs: <b>a porcupine lifts</b>, <b>porcupines lift</b></div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div>Match my pronouns: one thing &rarr; <b>itself</b>; many things &rarr; <b>themselves</b></div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div>Read back for spelling and word slips (<b>threatened</b>, <b>an animal</b>, <b>too close</b>)</div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div>Keep every paragraph detail on the <b>question's topic</b></div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div>Keep writing <b>strong, organized paragraphs</b> with a topic sentence and a conclusion</div>
+    </div>
+
+    <div class="practice-recommendations">
+      <div class="practice-recs-title">Recommended Practice</div>
+
+      <div class="practice-tier tier-primary">
+        <div class="tier-header"><span class="tier-label">Start Here</span></div>
+        <div class="tier-note">These target true appositives and sentence strength &mdash; your two precision fixes.</div>
+        <div class="practice-links">
+          <a class="practice-link" href="https://alphawrite.alpha.school/practice/3/2/write-appositives" target="_blank">Write Appositives</a>
+          <a class="practice-link" href="https://alphawrite.alpha.school/practice/3/2/write-sentence-type" target="_blank">Strong Sentences</a>
+        </div>
+      </div>
+
+      <div class="practice-tier tier-extra">
+        <div class="tier-header"><span class="tier-label">Extra Practice</span></div>
+        <div class="practice-links">
+          <a class="practice-link" href="https://alphawrite.alpha.school/practice/3/2/write-paragraph-from-prompt" target="_blank">Write a Paragraph</a>
+          <a class="practice-link" href="https://alphawrite.alpha.school/practice/3/2/elaborate-paragraphs" target="_blank">Elaborate Paragraphs</a>
+        </div>
+      </div>
+    </div>
+
+    <button class="print-btn" onclick="printChecklist(this)">
+      <svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+      Print Checklist
+    </button>
+  </div>
+</div>
+
+</div>
+
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&larr; Back</button>
+  <button id="nextBtn" onclick="navigate(1)">Next &rarr;</button>
+</div>
+
+<div class="completion-overlay" id="completionOverlay">
+  <div class="completion-card">
+    <div class="completion-emoji">&#127881;</div>
+    <div class="completion-title">Great work, Alyan!</div>
+    <div class="completion-sub">You scored 87% on G3.6 and you are back up after a small dip. You have lived in the 80s ever since G3.1 &mdash; that is a real climb. The path past 90% is two precision fixes: use a true appositive (rename the noun with commas, not "and"), and match your subjects with their verbs (a porcupine lifts, porcupines lift). Keep writing those strong, organized paragraphs. You have got this.</div>
+    <button class="completion-close" onclick="closeCompletion()">Got it!</button>
+  </div>
+</div>
+<canvas id="confettiCanvas"></canvas>
+
+<script>
+var cards = document.querySelectorAll('.card');
+var bar = document.getElementById('progressBar');
+var breadcrumb = document.getElementById('breadcrumb');
+var stickyEl = document.getElementById('stickyIndicator');
+var current = 0;
+var visited = [0];
+
+cards.forEach(function(card, i) {
+  var dot = document.createElement('div');
+  dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+  var tooltip = document.createElement('span');
+  tooltip.className = 'dot-tooltip';
+  tooltip.textContent = card.getAttribute('data-title') || ('Card ' + (i + 1));
+  dot.appendChild(tooltip);
+  dot.addEventListener('click', function() { goTo(i); });
+  bar.appendChild(dot);
+});
+
+function updateBreadcrumb() {
+  var title = cards[current].getAttribute('data-title') || ('Card ' + (current + 1));
+  breadcrumb.innerHTML = 'Card <b>' + (current + 1) + '</b> of ' + cards.length + ' — ' + title;
+  stickyEl.textContent = (current + 1) + ' / ' + cards.length;
+}
+
+function checkSticky() {
+  var barRect = bar.getBoundingClientRect();
+  stickyEl.classList.toggle('visible', barRect.bottom < 0);
+}
+window.addEventListener('scroll', checkSticky);
+
+function goTo(idx) {
+  if (idx < 0 || idx >= cards.length) return;
+  cards[current].classList.remove('active');
+  bar.children[current].classList.remove('active');
+  current = idx;
+  if (visited.indexOf(current) === -1) visited.push(current);
+  cards[current].classList.add('active');
+  bar.children[current].classList.add('active');
+  visited.forEach(function(v) { if (v !== current) bar.children[v].classList.add('visited'); });
+  document.getElementById('prevBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').textContent = current === cards.length - 1 ? 'Done ✓' : 'Next →';
+  updateBreadcrumb();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === cards.length - 1) { showCompletion(); return; }
+  goTo(current + dir);
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+function revealBetter(cover) {
+  cover.nextElementSibling.classList.add('shown');
+  cover.classList.add('hidden');
+}
+
+function handleDiscrim(option) {
+  var challenge = option.closest('.discrim-challenge');
+  var feedback = challenge.querySelector('.discrim-feedback');
+  var options = challenge.querySelectorAll('.discrim-option');
+  var isCorrect = option.getAttribute('data-correct') === 'true';
+  if (option.classList.contains('correct') || option.classList.contains('locked')) return;
+  if (isCorrect) {
+    option.classList.add('correct');
+    options.forEach(function(o) { if (o !== option) o.classList.add('locked'); });
+    feedback.innerHTML = option.getAttribute('data-right-feedback') || 'Correct!';
+    feedback.className = 'discrim-feedback shown right-fb';
+    var sibling = challenge.nextElementSibling;
+    while (sibling) {
+      if (sibling.classList && sibling.classList.contains('discrim-then')) {
+        setTimeout(function() { sibling.classList.add('revealed'); }, 600);
+        break;
+      }
+      sibling = sibling.nextElementSibling;
+    }
+  } else {
+    option.classList.add('wrong');
+    feedback.innerHTML = option.getAttribute('data-wrong-feedback') || 'Not quite — think again.';
+    feedback.className = 'discrim-feedback shown wrong-fb';
+    setTimeout(function() { option.classList.remove('wrong'); feedback.className = 'discrim-feedback'; }, 2000);
+  }
+}
+
+function toggleCheck(item) { item.classList.toggle('checked'); updateCheckProgress(); }
+
+function updateCheckProgress() {
+  var items = document.querySelectorAll('.check-item');
+  var checked = document.querySelectorAll('.check-item.checked').length;
+  var total = items.length;
+  var fill = document.getElementById('checkProgressFill');
+  var lbl = document.getElementById('checkProgressLabel');
+  if (fill) fill.style.width = Math.round((checked / total) * 100) + '%';
+  if (lbl) lbl.innerHTML = checked === total ? '<b style="color:#2d6a2d;">All done! Nice work.</b>' : checked + ' of ' + total + ' checked';
+}
+
+function printChecklist(btn) {
+  var card = btn.closest('.card');
+  card.classList.add('print-target');
+  window.print();
+  card.classList.remove('print-target');
+}
+
+function showCompletion() { document.getElementById('completionOverlay').classList.add('visible'); launchConfetti(); }
+function closeCompletion() { document.getElementById('completionOverlay').classList.remove('visible'); }
+
+function launchConfetti() {
+  var canvas = document.getElementById('confettiCanvas');
+  var ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  var colors = ['#6a2dc8','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b','#42a5f5'];
+  var particles = [];
+  for (var i = 0; i < 120; i++) {
+    particles.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height-canvas.height, w: Math.random()*10+5, h: Math.random()*6+3, color: colors[Math.floor(Math.random()*colors.length)], vx: (Math.random()-0.5)*4, vy: Math.random()*3+2, rot: Math.random()*360, rotV: (Math.random()-0.5)*10, life: 1 });
+  }
+  var frame = 0;
+  function animate() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    var alive = false;
+    particles.forEach(function(p) {
+      if (p.life<=0) return; alive=true;
+      p.x+=p.vx; p.y+=p.vy; p.vy+=0.05; p.rot+=p.rotV;
+      if (p.y>canvas.height+20){p.life=0;return;}
+      if (frame>60) p.life-=0.01;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot*Math.PI/180);
+      ctx.globalAlpha=Math.max(0,p.life); ctx.fillStyle=p.color;
+      ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore();
+    });
+    frame++;
+    if (alive) requestAnimationFrame(animate);
+    else ctx.clearRect(0,0,canvas.width,canvas.height);
+  }
+  animate();
+}
+
+goTo(0);
+</script>
+<script src="../tracking.js"></script>
+</body>
+</html>
