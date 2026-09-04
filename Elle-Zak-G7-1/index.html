@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elle's Writing Test Review &mdash; G7.1</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Calibri, 'Segoe UI', sans-serif; font-size: 12pt; color: #1a1a2e; background: #f0f0f5; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; padding: 20px; }
+.progress-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
+.progress-dot { width: 12px; height: 12px; border-radius: 50%; background: #ccc; transition: background 0.3s, transform 0.2s; cursor: pointer; position: relative; }
+.progress-dot.active { background: #d4552a; transform: scale(1.25); }
+.progress-dot.visited { background: #e8947a; }
+.progress-dot:hover { transform: scale(1.3); }
+.progress-dot .dot-tooltip { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: #d4552a; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 8.5pt; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 100; }
+.progress-dot .dot-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #d4552a; }
+.progress-dot:hover .dot-tooltip { opacity: 1; }
+.card-breadcrumb { font-size: 9.5pt; color: #888; margin-bottom: 14px; text-align: center; transition: opacity 0.3s; min-height: 1.2em; }
+.card-breadcrumb b { color: #d4552a; }
+.sticky-indicator { position: fixed; top: 12px; right: 16px; background: #d4552a; color: #fff; padding: 5px 14px; border-radius: 20px; font-size: 9pt; font-weight: 700; opacity: 0; transition: opacity 0.3s; z-index: 200; pointer-events: none; letter-spacing: 0.5px; }
+.sticky-indicator.visible { opacity: 1; }
+.card-container { position: relative; width: 640px; min-height: 420px; }
+.card { position: absolute; top: 0; left: 0; width: 100%; background: #fff; border: 2.5px solid #d4552a; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.10); opacity: 0; pointer-events: none; transform: translateX(40px); transition: opacity 0.35s, transform 0.35s; }
+.card.active { opacity: 1; pointer-events: auto; transform: translateX(0); position: relative; }
+.card-header { background: #d4552a; color: #fff; padding: 14px 20px; border-radius: 11px 11px 0 0; }
+.card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+.card-header .card-subtitle { font-size: 9.5pt; color: #f5cfc4; margin-top: 2px; }
+.card-body { padding: 18px 22px 22px; line-height: 1.55; }
+.card-body p { margin: 6px 0; }
+.card-body ul { margin: 6px 0 6px 18px; }
+.card-body li { margin: 3px 0; }
+.score-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; }
+.score-box { background: #f8f8fc; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 10px 14px; text-align: center; }
+.score-box .big { font-size: 20pt; font-weight: 700; }
+.score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+.score-good .big { color: #2d6a2d; }
+.score-warn .big { color: #cc6600; }
+.score-low .big { color: #cc0000; }
+.you-wrote { background: #fff3f3; border-left: 3px solid #cc0000; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-style: italic; font-size: 10.5pt; }
+.you-wrote .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+.better { background: #e8f5e9; border-left: 3px solid #2d6a2d; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.better .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+.tip-box { background: #e8edf5; border-left: 3px solid #d4552a; padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0; }
+.tip-box .label { font-weight: 700; font-size: 9.5pt; color: #d4552a; margin-bottom: 3px; }
+.highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+.error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+.discrim-option .error-mark { background: transparent; text-decoration: none; padding: 0; border-radius: 0; }
+.essay-excerpt { background: #fafafa; border: 1px solid #e0e0e8; border-radius: 6px; padding: 10px 14px; font-size: 10.5pt; margin: 8px 0; line-height: 1.6; }
+.outline-box { background: #f8f8fc; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 12px 16px; margin: 8px 0; font-size: 10.5pt; }
+.outline-box .outline-label { font-weight: 700; font-size: 9pt; color: #d4552a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.outline-row { display: flex; gap: 10px; padding: 5px 0; border-bottom: 1px dashed #ddd; }
+.outline-row:last-child { border-bottom: none; }
+.outline-tag { font-weight: 700; font-size: 9pt; color: #fff; background: #d4552a; border-radius: 4px; padding: 2px 8px; min-width: 50px; text-align: center; flex-shrink: 0; line-height: 1.6; }
+.discrim-challenge { background: #f8f5ff; border: 1.5px solid #d4c5ff; border-radius: 8px; padding: 14px; margin: 10px 0; }
+.discrim-prompt { font-weight: 700; font-size: 10.5pt; margin-bottom: 10px; color: #5c2dcc; }
+.discrim-options { display: flex; flex-direction: column; gap: 8px; }
+.discrim-option { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border: 2px solid #d4c5ff; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 10.5pt; background: #fff; }
+.discrim-option:hover { border-color: #7c4dff; background: #f5f0ff; }
+.discrim-label { font-weight: 800; color: #7c4dff; min-width: 20px; flex-shrink: 0; }
+.discrim-option.correct { border-color: #2d6a2d; background: #e8f5e9; cursor: default; }
+.discrim-option.correct .discrim-label { color: #2d6a2d; }
+.discrim-option.wrong { border-color: #cc0000; background: #fff3f3; }
+.discrim-option.wrong .discrim-label { color: #cc0000; }
+.discrim-option.locked { pointer-events: none; opacity: 0.5; }
+.discrim-feedback { margin-top: 0; font-size: 10pt; line-height: 1.4; max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.3s, opacity 0.3s, margin 0.3s; }
+.discrim-feedback.shown { max-height: 200px; opacity: 1; margin-top: 10px; }
+.discrim-feedback.wrong-fb { color: #cc0000; }
+.discrim-feedback.right-fb { color: #2d6a2d; font-weight: 600; }
+.discrim-then { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.6s ease, opacity 0.5s ease; }
+.discrim-then.revealed { max-height: 5000px; opacity: 1; }
+.reveal-wrapper { position: relative; }
+.reveal-cover { background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%); border-left: 3px solid #2d6a2d; padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 10px; transition: background 0.2s, box-shadow 0.2s; }
+.reveal-cover:hover { box-shadow: 0 2px 8px rgba(45,106,45,0.15); background: linear-gradient(135deg, #d4edda 0%, #c8e6c9 100%); }
+.reveal-cover .reveal-icon { width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
+.reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #2d6a2d; }
+.reveal-cover .reveal-hint { font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px; }
+.reveal-content { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0; }
+.reveal-content.shown { max-height: 800px; opacity: 1; margin: 8px 0; }
+.reveal-cover.hidden { display: none; }
+.check-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 8px; cursor: pointer; border-bottom: 1px solid #eee; border-radius: 6px; transition: background 0.15s; user-select: none; font-size: 11pt; }
+.check-item:last-child { border-bottom: none; }
+.check-item:hover { background: #f8f8fc; }
+.check-item.checked { background: #f0f8f0; }
+.check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
+.check-item.checked .check-box::after { content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
+.check-box { width: 28px; height: 28px; border: 2.5px solid #d4552a; border-radius: 6px; flex-shrink: 0; margin-top: 1px; position: relative; transition: background 0.2s, border-color 0.2s; }
+.checklist-progress { background: #eee; border-radius: 10px; height: 8px; margin: 12px 0 6px; overflow: hidden; }
+.checklist-progress-fill { background: linear-gradient(90deg, #2d6a2d, #4caf50); height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%; }
+.checklist-progress-label { font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px; }
+.practice-recommendations { margin-top: 16px; border-top: 2px solid #e0e0e8; padding-top: 14px; }
+.practice-recs-title { font-size: 10pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #d4552a; margin-bottom: 10px; }
+.practice-tier { border-radius: 8px; padding: 12px 14px; margin: 8px 0; }
+.tier-primary { background: #e8f5e9; border: 1.5px solid #a5d6a7; }
+.tier-extra { background: #f8f8fc; border: 1.5px solid #e0e0e8; }
+.tier-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.tier-label { font-size: 8.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 2px 10px; border-radius: 10px; }
+.tier-primary .tier-label { background: #2d6a2d; color: #fff; }
+.tier-extra .tier-label { background: #888; color: #fff; }
+.tier-note { font-size: 9pt; color: #666; margin-bottom: 6px; line-height: 1.4; }
+.practice-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.practice-link { display: inline-block; padding: 5px 12px; border-radius: 6px; font-size: 9.5pt; font-weight: 600; text-decoration: none; transition: background 0.2s, transform 0.1s; }
+.practice-link:hover { transform: translateY(-1px); }
+.tier-primary .practice-link { background: #c8e6c9; color: #1b5e1b; }
+.tier-primary .practice-link:hover { background: #a5d6a7; }
+.tier-extra .practice-link { background: #e8edf5; color: #d4552a; }
+.tier-extra .practice-link:hover { background: #d8dff0; }
+.nav { display: flex; gap: 12px; margin-top: 16px; }
+.nav button { padding: 8px 28px; border: 2px solid #d4552a; border-radius: 8px; background: #fff; color: #d4552a; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; transition: background 0.2s, color 0.2s; }
+.nav button:hover { background: #d4552a; color: #fff; }
+.print-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 8px 20px; border: 2px solid #d4552a; border-radius: 8px; background: #fff; color: #d4552a; font-family: inherit; font-size: 10.5pt; font-weight: 600; cursor: pointer; transition: background 0.2s, color 0.2s; }
+.print-btn:hover { background: #d4552a; color: #fff; }
+.print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+.completion-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(212,85,42,0.6); z-index: 500; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s; }
+.completion-overlay.visible { opacity: 1; pointer-events: auto; }
+.completion-card { background: #fff; border-radius: 16px; padding: 40px 48px; text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2); transform: scale(0.8); transition: transform 0.4s ease; max-width: 420px; }
+.completion-overlay.visible .completion-card { transform: scale(1); }
+.completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+.completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; color: #d4552a; }
+.completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+.completion-close { margin-top: 20px; padding: 10px 32px; background: #d4552a; color: #fff; border: none; border-radius: 8px; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+.completion-close:hover { background: #b5441f; }
+#confettiCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 501; }
+.para-map { display: flex; gap: 6px; margin: 10px 0; flex-wrap: wrap; }
+.para-tag { padding: 6px 12px; border-radius: 6px; font-size: 10pt; font-weight: 600; border: 1.5px solid; }
+.para-tag.good { background: #e8f5e9; border-color: #2d6a2d; color: #2d6a2d; }
+.para-tag.warn { background: #fff3cd; border-color: #e6a800; color: #996600; }
+.score-timeline { display: flex; align-items: flex-end; gap: 0; margin: 12px 0 16px; padding: 0 10px; justify-content: space-between; }
+.timeline-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.timeline-score { font-size: 14pt; font-weight: 700; margin-bottom: 4px; }
+.timeline-bar { width: 70%; border-radius: 4px 4px 0 0; min-height: 8px; }
+.timeline-label { font-size: 8.5pt; color: #888; margin-top: 6px; font-weight: 600; }
+.score-green { color: #2d6a2d; }
+.score-amber { color: #cc6600; }
+.score-red { color: #cc0000; }
+.bar-green { background: linear-gradient(to top, #c8e6c9, #81c784); }
+.bar-amber { background: linear-gradient(to top, #ffe0b2, #ffb74d); }
+.bar-red { background: linear-gradient(to top, #ffcdd2, #ef9a9a); }
+.strength-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; }
+.strength-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; background: #e8f5e9; color: #2d6a2d; border: 1.5px solid #a5d6a7; display: inline-flex; align-items: center; gap: 4px; }
+.strength-chip .chip-course { font-size: 7.5pt; color: #888; font-weight: 400; }
+.journey-section { font-size: 9.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; margin: 10px 0 4px; padding-bottom: 3px; border-bottom: 1.5px solid; display: flex; align-items: center; gap: 6px; }
+.journey-section.strengths-header { color: #2d6a2d; border-color: #c8e6c9; }
+.journey-section.growth-header { color: #cc6600; border-color: #ffe0b2; }
+.root-cause-teaser { background: #f5f0ff; border-left: 3px solid #7c4dff; padding: 10px 14px; margin: 12px 0 4px; border-radius: 0 6px 6px 0; font-size: 10.5pt; line-height: 1.5; }
+.root-cause-teaser b { color: #5c2dcc; }
+.growth-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.growth-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+.growth-chip.mixed { background: #fff8e8; color: #b35900; border: 1.5px solid #ffe0b2; }
+.growth-chip.weak { background: #fff3f3; color: #cc0000; border: 1.5px solid #ffcdd2; }
+.growth-chip .chip-avg { font-size: 7.5pt; font-weight: 700; margin-left: 2px; }
+@media print { body { background: #fff; padding: 0; min-height: auto; } .progress-bar, .nav, .print-btn, .card-breadcrumb, .sticky-indicator, .completion-overlay, #confettiCanvas, .reveal-cover, .checklist-progress, .checklist-progress-label, .discrim-challenge { display: none !important; } .card-container { width: 100%; min-height: auto; } .card { display: none !important; } .card.print-target { display: block !important; opacity: 1 !important; pointer-events: auto !important; position: relative !important; transform: none !important; box-shadow: none; border: 2px solid #d4552a; page-break-inside: avoid; } .reveal-content, .discrim-then { max-height: none !important; opacity: 1 !important; margin: 8px 0 !important; } }
+@media (max-width: 720px) { .card-container { width: 100%; } .score-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progressBar"></div>
+<div class="card-breadcrumb" id="breadcrumb"></div>
+<div class="sticky-indicator" id="stickyIndicator"></div>
+<div class="card-container" id="cardContainer">
+<!-- Card 1: Score Overview -->
+<div class="card active" data-title="Score Overview">
+  <div class="card-header"><h2>Elle Zak</h2><div class="card-subtitle">Alpha Standardized Writing G7.1 &mdash; September 2026 &mdash; Passage: &ldquo;The Story of the Solar-Powered Village&rdquo;</div></div>
+  <div class="card-body">
+    <div class="score-grid">
+      <div class="score-box score-good"><div class="big">87%</div><div class="label">Overall Score</div></div>
+      <div class="score-box score-good"><div class="big">8/10</div><div class="label">Multiple Choice (Q1&ndash;10)</div></div>
+      <div class="score-box score-good"><div class="big">18/20</div><div class="label">Essay (Question 11)</div></div>
+    </div>
+
+    <p>Elle, this is <b>87%</b> &mdash; <b>26 out of 30</b> &mdash; on your first grade-7 test, and here is the arithmetic that matters: <b>27 out of 30 is 90%</b>. You are <b>one multiple-choice question</b> from a pass. Not one skill. One question.</p>
+
+    <p>The essay is the strongest thing on the test: <b>18 out of 20</b>, five real paragraphs, a thesis that previews all three points, and a conclusion that actually concludes &mdash; <i>&ldquo;a model and example of what can happen when an innovation comes to help.&rdquo;</i> You wrote it, along with the ten multiple-choice questions, in <b>15 minutes of a 90-minute window</b>. Most students need an hour to produce an essay this complete.</p>
+
+    <p>The two multiple-choice misses, Q3 and Q7, are not two different problems. In both, the question contained <b>one word that decided the answer</b> &mdash; <i>logically</i> in Q3, <i>benefits</i> in Q7 &mdash; and in both, the option you picked was true, sensible, and the wrong answer to <b>that</b> word.</p>
+
+    <div class="root-cause-teaser">
+      <b>The big idea:</b> at your speed, the multiple-choice questions are where the points leak, and they leak in a specific way: you answer the question you expected instead of the one on the page. A five-second habit &mdash; find the key word before you pick &mdash; is worth exactly the point you need.
+    </div>
+  </div>
+</div>
+
+<!-- Card 2: Writing Journey -->
+<div class="card" data-title="Your Writing Journey">
+  <div class="card-header"><h2>Your Writing Journey</h2><div class="card-subtitle">Twelve tests, four grade levels, four passes &mdash; and now grade 7</div></div>
+  <div class="card-body">
+    <div class="score-timeline">
+      <div class="timeline-item"><div class="timeline-score score-green">80%</div><div class="timeline-bar bar-green" style="height:72px;"></div><div class="timeline-label">G3.1<br><span style="font-weight:400;color:#aaa;">16m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-amber">76%</div><div class="timeline-bar bar-amber" style="height:68px;"></div><div class="timeline-label">G3.2<br><span style="font-weight:400;color:#aaa;">15m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">91%</div><div class="timeline-bar bar-green" style="height:82px;"></div><div class="timeline-label">G3.3 &#11088;<br><span style="font-weight:400;color:#aaa;">28m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">90%</div><div class="timeline-bar bar-green" style="height:81px;"></div><div class="timeline-label">G4.1 &#11088;<br><span style="font-weight:400;color:#aaa;">25m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">87%</div><div class="timeline-bar bar-green" style="height:78px;"></div><div class="timeline-label">G5.1<br><span style="font-weight:400;color:#aaa;">30m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">93%</div><div class="timeline-bar bar-green" style="height:84px;"></div><div class="timeline-label">G5.2 &#11088;<br><span style="font-weight:400;color:#aaa;">15m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">87%</div><div class="timeline-bar bar-green" style="height:78px;"></div><div class="timeline-label">G6.1<br><span style="font-weight:400;color:#aaa;">17m &#9888;</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">80%</div><div class="timeline-bar bar-green" style="height:72px;"></div><div class="timeline-label">G6.2<br><span style="font-weight:400;color:#aaa;">20m &#9888;</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">87%</div><div class="timeline-bar bar-green" style="height:78px;"></div><div class="timeline-label">G6.3<br><span style="font-weight:400;color:#aaa;">21m &#9888;</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">80%</div><div class="timeline-bar bar-green" style="height:72px;"></div><div class="timeline-label">G6.4<br><span style="font-weight:400;color:#aaa;">14m &#9888;</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">93%</div><div class="timeline-bar bar-green" style="height:84px;"></div><div class="timeline-label">G6.5 &#11088;<br><span style="font-weight:400;color:#aaa;">26m &#9888;</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">87%</div><div class="timeline-bar bar-green" style="height:78px;"></div><div class="timeline-label">G7.1<br><span style="font-weight:400;color:#aaa;">15m &#9888;</span></div></div>
+    </div>
+
+    <p>Twelve tests in a year, from G3.1 to G7.1, with passes at <b>91, 90, 93 and 93</b>. Eleven of the twelve are 80 or better. Grade 6 took five tests to clear &mdash; 87, 80, 87, 80, then <b>93</b> &mdash; and every one of those 87s and 80s was a multiple-choice miss or two on top of a strong essay. Grade 7 has opened the same way.</p>
+
+    <p>About the warning marks: the grade-6 and grade-7 tests are 90 minutes long, and none of yours has gone past 26. That is not a problem for your essays &mdash; two of those fast tests were passes. It is a problem for the multiple choice, where the misses are the kind a second read of the question catches. The next card is about that second read, not about slowing down your writing.</p>
+
+    <div class="journey-section strengths-header">Skills you do well</div>
+    <div class="strength-chips">
+      <span class="strength-chip">Essay architecture <span class="chip-course">&middot; five paragraphs, thesis previewing all three points, a conclusion that synthesizes &mdash; 18/20</span></span>
+      <span class="strength-chip">Explaining the mechanism <span class="chip-course">&middot; every body paragraph says how the panels produce the change, not just that they do</span></span>
+      <span class="strength-chip">Sentence-level multiple choice <span class="chip-course">&middot; fragments, sentence types, appositives, conjunctions, transitions &mdash; all correct</span></span>
+      <span class="strength-chip">Paragraph logic <span class="chip-course">&middot; Q6, Q8, Q10 &mdash; topic sentence, elaboration, and the sentence that does not belong</span></span>
+    </div>
+
+    <div class="journey-section growth-header">What to work on</div>
+    <div class="growth-chips">
+      <span class="growth-chip mixed">Answering the key word in the question <span class="chip-avg">Q3 &ldquo;logically&rdquo; &middot; Q7 &ldquo;benefits&rdquo;</span></span>
+      <span class="growth-chip mixed">Capital letters on common nouns <span class="chip-avg">&ldquo;Solar Panels&rdquo; &times;9</span></span>
+      <span class="growth-chip mixed">Formal register in the essay <span class="chip-avg">fragments as topic sentences &middot; &ldquo;suck up&rdquo;</span></span>
+    </div>
+
+    <div class="root-cause-teaser">
+      <b>The whole gap in one line:</b> one more correct multiple-choice answer is 90%. Q3 and Q7 were both decided by a single word in the question, and card 4 shows you how to find it.
+    </div>
+  </div>
+</div>
+
+<!-- Card 3: Proofread -->
+<div class="card" data-title="Fifteen of Ninety Minutes">
+  <div class="card-header"><h2>Fifteen of Ninety Minutes</h2><div class="card-subtitle">Not a card about slowing down &mdash; a card about what five more minutes buys</div></div>
+  <div class="card-body">
+    <p>Let&rsquo;s be precise about the speed, because it is genuinely a strength. Fifteen minutes produced a 450-word, five-paragraph essay that scored 18 out of 20. Nobody should tell you to write slower. But a 90-minute window with 75 minutes unused means one thing was skipped entirely: <b>the read-back</b>. And on this test the read-back had a very short, very specific list waiting for it.</p>
+
+    <div class="you-wrote">
+      <div class="label">THE SAME SLIP, NINE TIMES</div>
+      &ldquo;<span class="error-mark">Solar Panels</span> help with all of this.&rdquo; &nbsp; &ldquo;<span class="error-mark">Solar Panels</span> suck up light from the sun&hellip;&rdquo; &nbsp; &ldquo;Similar to how <span class="error-mark">Solar Panels</span> work for houses&hellip;&rdquo; &nbsp; &ldquo;Now that <span class="error-mark">Solar Panels</span> have arrived&hellip;&rdquo;<br>
+      <span style="font-size:9.5pt;color:#555;">Nine times in the essay, <b>solar panels</b> gets capital letters. It is a common noun, like <i>light bulbs</i> or <i>rooftops</i> &mdash; no capitals unless it starts a sentence. You wrote it correctly in your very first sentence, so this is a habit that crept in after the introduction and never got checked. The rubric&rsquo;s editing line is worth three points, and this is the kind of thing it counts.</span>
+    </div>
+
+    <div class="outline-box">
+      <div class="outline-label">The rest of the read-back list &mdash; all from the essay</div>
+      <div class="outline-row"><span class="outline-tag">Body 1</span><span><span class="error-mark">fatique</span> &rarr; <b>fatigue</b> &mdash; the ending is <b>-gue</b>, like <i>league</i></span></div>
+      <div class="outline-row"><span class="outline-tag">Body 2</span><span><span class="error-mark">inhibts</span> &rarr; <b>inhibits</b> &mdash; a dropped letter in a word you clearly know</span></div>
+      <div class="outline-row"><span class="outline-tag">Body 3</span><span>&ldquo;if there wasn&rsquo;t <span class="error-mark">electric</span> or air conditioning&rdquo; &rarr; <b>electricity</b></span></div>
+      <div class="outline-row"><span class="outline-tag">Body 1</span><span>&ldquo;<span class="error-mark">First, the children.</span>&rdquo; &mdash; a topic sentence with no verb; more on this on card 5</span></div>
+    </div>
+
+    <div class="tip-box">
+      <div class="label">HOW TO SPEND THE FIVE MINUTES</div>
+      Write at your speed. Then, before submitting, do two passes. <b>Pass one, multiple choice:</b> re-read each question and underline the key word in your head &mdash; <i>logically</i>, <i>benefits</i>, <i>best</i>, <i>NOT</i> &mdash; and confirm your pick answers that word. <b>Pass two, essay:</b> read it once as if a stranger wrote it, looking only for capitals and spelling. On this test, those two passes were worth a point on the multiple choice and very likely a point on the essay. That is the pass.
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which sentence is ready to submit?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" onclick="handleDiscrim(this)" data-wrong-feedback="Two spelling slips &mdash; fatigue ends in -gue, and inhibits has lost a letter &mdash; plus capital letters on a common noun. A read-back catches all three."><span class="discrim-label">A</span><span>Eye strain can cause headaches and even fatique, which inhibts studying, but Solar Panels fix that.</span></div>
+        <div class="discrim-option" data-correct="true" onclick="handleDiscrim(this)" data-right-feedback="Correct. Fatigue and inhibits are spelled right, and solar panels stays lowercase because it is a common noun."><span class="discrim-label">B</span><span>Eye strain can cause headaches and even fatigue, which inhibits studying, but solar panels fix that.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 4: #1 Fix -->
+<div class="card" data-title="The Key Word in the Question">
+  <div class="card-header"><h2>#1 Fix: The Key Word in the Question</h2><div class="card-subtitle">Q3 and Q7 &mdash; two true answers to two questions that were not asked</div></div>
+  <div class="card-body">
+    <p>Both of your multiple-choice misses have the same shape. The option you chose was <b>correct English and a true statement</b>. It just was not the answer to the word the question turned on. Tap through:</p>
+
+    <div class="reveal-wrapper">
+      <div class="reveal-cover" onclick="revealBetter(this)">
+        <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></div>
+        <div><div class="reveal-text">Tap: Question 3</div><div class="reveal-hint">The key word was &ldquo;logically&rdquo;</div></div>
+      </div>
+      <div class="reveal-content">
+        <div class="you-wrote"><div class="label">Q3 &mdash; &ldquo;WHICH SENTENCE COMBINES THE IDEAS <u>LOGICALLY</u>?&rdquo;</div>
+        Idea 1: Children could study in the evenings. &nbsp; Idea 2: They could see better.<br><br>
+        You chose: &ldquo;Children could study in the evenings<span class="error-mark">;</span> they could see better.&rdquo;<br>
+        <span style="font-size:9.5pt;color:#555;">That sentence is grammatically perfect &mdash; a semicolon can join two complete sentences. But a semicolon says <b>nothing about how the ideas relate</b>. It just sets them side by side. The question asked for the <b>logical</b> combination, and these two ideas have a logic: one causes the other. Seeing better is <i>why</i> they could study. The correct option names that: &ldquo;<b>Because</b> they could see better, children could study in the evenings.&rdquo; Same two ideas, plus the relationship between them.</span></div>
+      </div>
+    </div>
+
+    <div class="reveal-wrapper">
+      <div class="reveal-cover" onclick="revealBetter(this)">
+        <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></div>
+        <div><div class="reveal-text">Tap: Question 7</div><div class="reveal-hint">The key word was &ldquo;benefits&rdquo;</div></div>
+      </div>
+      <div class="reveal-content">
+        <div class="you-wrote"><div class="label">Q7 &mdash; &ldquo;WHICH SENTENCE BEST MATCHES THE TOPIC: <u>BENEFITS</u> FOR LOCAL BUSINESSES&hellip;?&rdquo;</div>
+        You chose: &ldquo;Businesses could stay open for longer.&rdquo;<br>
+        Correct: &ldquo;The extra hours gave customers more time to shop.&rdquo;<br>
+        <span style="font-size:9.5pt;color:#555;">Your pick is true, and it is in the passage. But staying open longer is the <b>change</b> &mdash; the thing that became possible. The topic asked for the <b>benefit</b>: what the change <i>produced</i>. Longer hours only help a business if customers use them, and the correct option says exactly that. You know this distinction cold &mdash; your own essay says shops &ldquo;can stay open later <b>and bring in more money</b>.&rdquo; The essay named the benefit. The multiple choice picked the step before it.</span></div>
+      </div>
+    </div>
+
+    <p style="margin-top:10px;">Here is what those two have in common. In each case, one word in the question &mdash; <i>logically</i>, <i>benefits</i> &mdash; was doing all the work, and the tempting wrong option is the one that is <b>true but does not answer that word</b>. Multiple-choice writers build the distractors this way on purpose. At speed, the true-sounding option wins.</p>
+
+    <div class="tip-box">
+      <div class="label">THE FIVE-SECOND HABIT</div>
+      Before you look at the options, find the word in the question that a wrong answer would ignore. <i>Logically</i>. <i>Benefits</i>. <i>Best introduces</i>. <i>Does NOT belong</i>. Say it to yourself. Then pick the option that answers <b>that word</b>, not the option that is merely true. You already do this on Q6, Q8 and Q10, which you got right &mdash; each of those hinges on a word like <i>best</i> or <i>NOT</i>. Do it on all ten.
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which sentence combines these ideas <b>logically</b>? Idea 1: The clinic could store vaccines overnight. Idea 2: The clinic had power after dark.</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" onclick="handleDiscrim(this)" data-wrong-feedback="Grammatically fine &mdash; but the semicolon states no relationship between the ideas. The question asked for the logical link, and this sentence does not name one."><span class="discrim-label">A</span><span>The clinic had power after dark; it could store vaccines overnight.</span></div>
+        <div class="discrim-option" data-correct="true" onclick="handleDiscrim(this)" data-right-feedback="Correct. &ldquo;Because&rdquo; names the relationship: the power is the reason the vaccines could be stored. That is what combining ideas logically means."><span class="discrim-label">B</span><span>Because the clinic had power after dark, it could store vaccines overnight.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 5: #2 Fix -->
+<div class="card" data-title="Formal Sentences, Passage Facts">
+  <div class="card-header"><h2>#2 Fix: Formal Sentences, Passage Facts</h2><div class="card-subtitle">Where the essay&rsquo;s last two points most likely live</div></div>
+  <div class="card-body">
+    <p>An 18 out of 20 essay does not have a weakness so much as a finish. The rubric has two lines your essay brushes against: <b>&ldquo;use clear, formal language&rdquo;</b> and <b>&ldquo;support each point with facts from the passage.&rdquo;</b></p>
+
+    <p><b>Formal language first.</b> Look at how three sections of your essay open:</p>
+
+    <div class="you-wrote">
+      <div class="label">YOUR TOPIC SENTENCES</div>
+      &ldquo;<span class="error-mark">First, the children.</span>&rdquo; &nbsp; &ldquo;<span class="error-mark">What about shops?</span>&rdquo; &nbsp; &ldquo;<span class="error-mark">Finally, the medical clinic.</span>&rdquo;<br>
+      <span style="font-size:9.5pt;color:#555;">Two of these have no verb, and one is a question. They are punchy, and in a magazine they would work. On an expository essay graded for formal language, a topic sentence is expected to be a complete statement that makes a claim: &ldquo;<b>First, the panels changed what the village&rsquo;s children could do after dark.</b>&rdquo; Same energy, full sentence. The same goes for &ldquo;solar panels <b>suck up</b> light&rdquo; (<i>absorb</i>) and &ldquo;bitten by <b>a poisonous thing</b>&rdquo; (<i>a venomous snake</i>).</span>
+    </div>
+
+    <p><b>Now the facts.</b> Your first body paragraph explains eye strain in real detail &mdash; retinas, headaches, lower back and shoulder pain, fatigue. That is interesting, and none of it is in the passage. Meanwhile the passage handed you specifics you left unused:</p>
+
+    <div class="outline-box">
+      <div class="outline-label">Facts from the passage that did not make it into the essay</div>
+      <div class="outline-row"><span class="outline-tag">Clinic</span><span>&ldquo;The clinic now stores vaccines safely overnight&rdquo; &mdash; you reasoned your way toward this, but the passage states it</span></div>
+      <div class="outline-row"><span class="outline-tag">Shops</span><span>&ldquo;The extra hours gave customers more time to shop&rdquo; &mdash; the benefit, in the passage&rsquo;s own words</span></div>
+      <div class="outline-row"><span class="outline-tag">Trust</span><span>Residents worried about maintenance costs, so project leaders ran workshops on panel care &mdash; a whole fourth way life improved</span></div>
+    </div>
+
+    <div class="tip-box">
+      <div class="label">THE RULE FOR THE LAST TWO POINTS</div>
+      Outside knowledge is a bonus <b>after</b> the passage&rsquo;s facts are in, never instead of them. For each body paragraph: one specific fact <b>quoted or closely paraphrased from the text</b>, then your explanation of what it shows. And every topic sentence a complete, formal statement. That is the difference between 18 and 20 &mdash; and with the multiple choice fixed, between 87 and the mid-nineties.
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which works as the topic sentence of a body paragraph in a formal expository essay?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" onclick="handleDiscrim(this)" data-wrong-feedback="This has no verb &mdash; it is a fragment, not a sentence. It signals the topic but makes no claim about it."><span class="discrim-label">A</span><span>Finally, the medical clinic.</span></div>
+        <div class="discrim-option" data-correct="true" onclick="handleDiscrim(this)" data-right-feedback="Correct. A complete sentence that names the topic and makes a claim the rest of the section can then support."><span class="discrim-label">B</span><span>Finally, the medical clinic gained the ability to care for patients at any hour.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 6: Essay Review -->
+<div class="card" data-title="Essay Review">
+  <div class="card-header"><h2>Your Essay: 18 out of 20</h2><div class="card-subtitle">Five paragraphs in fifteen minutes &mdash; and what the twenty-point version looks like</div></div>
+  <div class="card-body">
+    <p>The prompt: <i>explain how the solar panel project improved life in the village, describing at least three ways, with details from the text.</i> Here is your essay:</p>
+
+    <div class="essay-excerpt" style="font-size:9.5pt;">
+      <b style="color:#888;">INTRODUCTION</b><br>
+      Solar panels are a wonderful alternative to electricity. In the passage, the small village once went without electricity. Children strained their eyes studying, shops closed earlier before it got dark, and a small medical clinic operated until sunset. Solar panels can help with all of this.<br><br>
+      <b style="color:#888;">BODY 1</b><br>
+      First, the children. Many children don&rsquo;t get home or don&rsquo;t have time to study until late at night. If children study when it&rsquo;s dark, they can strain their eyes. This can be very bad for them. When you strain your eyes, you temporarily damage your retinas. This can cause headaches, lower back and shoulder pain, difficulty concentrating, and even fatique. Solar Panels help with all of this. Solar Panels suck up light from the sun during the day, store it, and then have fresh energy for nighttime. This way, students don&rsquo;t have to strain their eyes to study.<br><br>
+      <b style="color:#888;">BODY 2</b><br>
+      What about shops? If shops have to close at sundown, they can&rsquo;t make as much money. This inhibts their ability to be able to pay rent and stay open. Similar to how Solar Panels work for houses, they get light during the day so shops can run throughout most of the night and bring in more money. Now that Solar Panels have arrived in this rural town, shops can make more money and stay open later without worrying about lamps or candles.<br><br>
+      <b style="color:#888;">BODY 3</b><br>
+      Finally, the medical clinic. People need around the clock medical care. What if someone was bitten by a poisonous thing in their house? If there wasn&rsquo;t electric or air conditioning to house the vaccines and antivenom, then how could that person get help? Solar Panels help here too. The same way they work for houses and shops, Solar Panels suck up energy and light when the sun is out and then store it so it can be used during the night when there is no light. This means that now people can get around the clock care at the medical clinic without having to worry about what time it is.<br><br>
+      <b style="color:#888;">CONCLUSION</b><br>
+      Today, the village is a model and example of what can happen when an innovation comes to help. Students don&rsquo;t have to strain their eyes to study, shops can stay open past dark and make more money, and the medical clinic can help everyone no matter what time it is. This shift from candles and lamps to Solar Panels not only improved the daily aspect, but the overall community in this town.
+    </div>
+
+    <div class="para-map">
+      <span class="para-tag good">Five paragraphs, all present</span>
+      <span class="para-tag good">Thesis previews the three areas</span>
+      <span class="para-tag good">Every body explains the mechanism</span>
+      <span class="para-tag good">Conclusion synthesizes, not repeats</span>
+      <span class="para-tag warn">Outside facts instead of passage facts</span>
+      <span class="para-tag warn">Fragment topic sentences &middot; informal verbs</span>
+      <span class="para-tag warn">&ldquo;Solar Panels&rdquo; &times;9 &middot; fatique &middot; inhibts</span>
+    </div>
+
+    <p><b>What earned the 18.</b> The introduction names the three problems in one sentence, and the three body paragraphs take them in that exact order. Each body says <i>how</i> the panels change things &mdash; store energy by day, use it by night &mdash; instead of just asserting that they help. And the conclusion does the hardest thing: it steps back and says what the whole story means. That is an essay with a spine, written faster than most people outline.</p>
+
+    <p><b>The last two points</b> are the ones cards 3 and 5 named. The evidence is mostly your own reasoning rather than the passage&rsquo;s facts. Three topic sentences are not sentences. The editing line takes a hit from nine stray capitals and two misspellings. None of that is structural. All of it is a read-back.</p>
+
+    <div class="reveal-wrapper">
+      <div class="reveal-cover" onclick="revealBetter(this)">
+        <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></div>
+        <div><div class="reveal-text">Tap to see Body 3 at full marks</div><div class="reveal-hint">Your structure and your point &mdash; a formal topic sentence and the passage&rsquo;s own fact</div></div>
+      </div>
+      <div class="reveal-content">
+        <div class="better"><div class="label">BODY 3, POLISHED</div><p style="margin:4px 0; font-size:10.5pt;">&ldquo;<b>Finally, the medical clinic gained the ability to care for patients at any hour.</b> Before the panels, the clinic operated only until sunset, which meant an emergency at night &mdash; <b>a venomous snakebite, for example</b> &mdash; had nowhere to go. <b>The passage notes that the clinic now stores vaccines safely overnight</b>, something that was impossible without reliable power. <b>Solar panels absorb</b> energy while the sun is out and store it for use after dark, so the medicine stays cold and the doors stay open. <b>This means the village no longer has to hope that illness keeps daytime hours.</b>&rdquo;</p></div>
+      </div>
+    </div>
+
+    <p style="margin-top:10px;">Same section, same argument, same place in the essay. What changed: the topic sentence became a sentence, the passage&rsquo;s own fact about the vaccines took the place of a rhetorical question, <i>suck up</i> became <i>absorb</i>, and the capitals came off. That is the finish the rubric is paying for.</p>
+
+    <div class="tip-box">
+      <div class="label">SO WHAT?</div>
+      You are one multiple-choice answer from 90 and two essay points from the mid-nineties, and both fixes are the same five minutes at the end of the test. Your writing is already there. The last step is looking at it once before you let it go.
+    </div>
+  </div>
+</div>
+
+<!-- Card 7: Checklist & Practice -->
+<div class="card" data-title="Checklist &amp; Practice">
+  <div class="card-header"><h2>Your Checklist</h2><div class="card-subtitle">87% &mdash; one multiple-choice answer from a pass on your first grade-7 test</div></div>
+  <div class="card-body">
+    <div class="checklist-progress-label" id="checkProgressLabel">0 of 6 checked</div>
+    <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div>Before looking at the options, find the <b>key word in the question</b> &mdash; <i>logically</i>, <i>benefits</i>, <i>best</i>, <i>NOT</i> &mdash; and answer that word, not the option that is merely true</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div>&ldquo;Combines logically&rdquo; means the sentence <b>names the relationship</b> &mdash; because, so, although &mdash; not just joins the parts</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div>Every topic sentence is a <b>complete, formal statement</b> that makes a claim &mdash; no fragments, no questions</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div>Each body paragraph carries <b>one fact from the passage</b> before any outside knowledge</div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div>Read-back pass: common nouns stay lowercase (<b>solar panels</b>), and check <b>fatigue, inhibits, electricity</b></div></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div>Two passes before submitting &mdash; one for the multiple-choice key words, one for the essay&rsquo;s capitals and spelling</div></div>
+    <div class="practice-recommendations">
+      <div class="practice-recs-title">Recommended Practice</div>
+      <div class="practice-tier tier-primary"><div class="tier-header"><span class="tier-label">Start Here</span></div><div class="tier-note">Both misses were multiple choice. The first trains the because / so / although links Q3 asked for; the second is the topic-matching judgment behind Q7.</div><div class="practice-links"><a class="practice-link" href="https://alphawrite.alpha.school/practice/7/2/subordinating-conjunctions" target="_blank">Subordinating Conjunctions</a><a class="practice-link" href="https://alphawrite.alpha.school/practice/7/2/identify-topic-sentence" target="_blank">Identify Topic Sentence</a></div></div>
+      <div class="practice-tier tier-extra"><div class="tier-header"><span class="tier-label">Then This</span></div><div class="tier-note">For the essay&rsquo;s last two points &mdash; developing each point with the text&rsquo;s own evidence.</div><div class="practice-links"><a class="practice-link" href="https://alphawrite.alpha.school/practice/7/2/elaborate-paragraphs" target="_blank">Elaborate Paragraphs</a></div></div>
+    </div>
+    <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>Print Checklist</button>
+  </div>
+</div>
+</div>
+<div class="nav"><button id="prevBtn" onclick="navigate(-1)">&larr; Back</button><button id="nextBtn" onclick="navigate(1)">Next &rarr;</button></div>
+<div class="completion-overlay" id="completionOverlay"><div class="completion-card"><div class="completion-emoji">&#127881;</div><div class="completion-title">One question, Elle!</div><div class="completion-sub">87% on your first grade-7 test, with an 18-out-of-20 essay written in fifteen minutes &mdash; and 27 out of 30 is 90%. One more multiple-choice answer is the pass. Both misses turned on a single word in the question, <b>logically</b> and <b>benefits</b>, so find that word before you look at the options. Then give the essay one read-back for stray capitals and spelling, make every topic sentence a full sentence, and put one fact from the passage in each body paragraph. Same writer. Mid-nineties.</div><button class="completion-close" onclick="closeCompletion()">Got it!</button></div></div>
+<canvas id="confettiCanvas"></canvas>
+<script>
+var cards=document.querySelectorAll('.card'),bar=document.getElementById('progressBar'),breadcrumb=document.getElementById('breadcrumb'),stickyEl=document.getElementById('stickyIndicator'),current=0,visited=[0];cards.forEach(function(card,i){var dot=document.createElement('div');dot.className='progress-dot'+(i===0?' active':'');var tooltip=document.createElement('span');tooltip.className='dot-tooltip';tooltip.textContent=card.getAttribute('data-title')||('Card '+(i+1));dot.appendChild(tooltip);dot.addEventListener('click',function(){goTo(i);});bar.appendChild(dot);});function updateBreadcrumb(){var title=cards[current].getAttribute('data-title')||('Card '+(current+1));breadcrumb.innerHTML='Card <b>'+(current+1)+'</b> of '+cards.length+' &mdash; '+title;stickyEl.textContent=(current+1)+' / '+cards.length;}function checkSticky(){var barRect=bar.getBoundingClientRect();stickyEl.classList.toggle('visible',barRect.bottom<0);}window.addEventListener('scroll',checkSticky);function goTo(idx){if(idx<0||idx>=cards.length)return;cards[current].classList.remove('active');bar.children[current].classList.remove('active');current=idx;if(visited.indexOf(current)===-1)visited.push(current);cards[current].classList.add('active');bar.children[current].classList.add('active');visited.forEach(function(v){if(v!==current)bar.children[v].classList.add('visited');});var prevBtn=document.getElementById('prevBtn');var nextBtn=document.getElementById('nextBtn');if(prevBtn){prevBtn.style.visibility=current===0?'hidden':'visible';prevBtn.disabled=current===0;}if(nextBtn){nextBtn.textContent=current===cards.length-1?'Done ✓':'Next →';nextBtn.disabled=false;}updateBreadcrumb();window.scrollTo({top:0,behavior:'smooth'});}function navigate(dir){if(dir===1&&current===cards.length-1){showCompletion();return;}goTo(current+dir);}document.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key==='ArrowDown')navigate(1);if(e.key==='ArrowLeft'||e.key==='ArrowUp')navigate(-1);});function revealBetter(cover){var content=cover.nextElementSibling;content.classList.add('shown');cover.classList.add('hidden');}function handleDiscrim(option){var challenge=option.closest('.discrim-challenge');var feedback=challenge.querySelector('.discrim-feedback');var options=challenge.querySelectorAll('.discrim-option');var isCorrect=option.getAttribute('data-correct')==='true';if(option.classList.contains('correct')||option.classList.contains('locked'))return;if(isCorrect){option.classList.add('correct');options.forEach(function(o){if(o!==option)o.classList.add('locked');});feedback.innerHTML=option.getAttribute('data-right-feedback')||'Correct!';feedback.className='discrim-feedback shown right-fb';var sibling=challenge.nextElementSibling;while(sibling){if(sibling.classList&&sibling.classList.contains('discrim-then')){setTimeout(function(){sibling.classList.add('revealed');},600);break;}sibling=sibling.nextElementSibling;}}else{option.classList.add('wrong');feedback.innerHTML=option.getAttribute('data-wrong-feedback')||'Not quite — think again.';feedback.className='discrim-feedback shown wrong-fb';setTimeout(function(){option.classList.remove('wrong');feedback.className='discrim-feedback';},2000);}}function toggleCheck(item){item.classList.toggle('checked');updateCheckProgress();}function updateCheckProgress(){var items=document.querySelectorAll('.check-item');var checked=document.querySelectorAll('.check-item.checked').length;var total=items.length;var fill=document.getElementById('checkProgressFill');var lbl=document.getElementById('checkProgressLabel');if(fill)fill.style.width=Math.round((checked/total)*100)+'%';if(lbl){lbl.innerHTML=checked===total?'<b style="color:#2d6a2d;">All done! Nice work.</b>':checked+' of '+total+' checked';}}function printChecklist(btn){var card=btn.closest('.card');var checkedItems=card.querySelectorAll('.check-item.checked');checkedItems.forEach(function(item){item.classList.remove('checked');});card.classList.add('print-target');window.print();card.classList.remove('print-target');checkedItems.forEach(function(item){item.classList.add('checked');});}function showCompletion(){document.getElementById('completionOverlay').classList.add('visible');launchConfetti();}function closeCompletion(){document.getElementById('completionOverlay').classList.remove('visible');}function launchConfetti(){var canvas=document.getElementById('confettiCanvas');var ctx=canvas.getContext('2d');canvas.width=window.innerWidth;canvas.height=window.innerHeight;var colors=['#d4552a','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b','#42a5f5'];var particles=[];for(var i=0;i<120;i++){particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height-canvas.height,w:Math.random()*10+5,h:Math.random()*6+3,color:colors[Math.floor(Math.random()*colors.length)],vx:(Math.random()-0.5)*4,vy:Math.random()*3+2,rot:Math.random()*360,rotV:(Math.random()-0.5)*10,life:1});}var frame=0;function animate(){ctx.clearRect(0,0,canvas.width,canvas.height);var alive=false;particles.forEach(function(p){if(p.life<=0)return;alive=true;p.x+=p.vx;p.y+=p.vy;p.vy+=0.05;p.rot+=p.rotV;if(p.y>canvas.height+20){p.life=0;return;}if(frame>60)p.life-=0.01;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();});frame++;if(alive)requestAnimationFrame(animate);else ctx.clearRect(0,0,canvas.width,canvas.height);}animate();}goTo(0);
+</script>
+<script src="../tracking.js"></script>
+</body>
+</html>
