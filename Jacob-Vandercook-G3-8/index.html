@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jacob's Writing Test Review: G3.8</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Calibri, 'Segoe UI', sans-serif; font-size: 12pt; color: #1a1a2e; background: #f0f0f5; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; padding: 20px; }
+.progress-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
+.progress-dot { width: 12px; height: 12px; border-radius: 50%; background: #ccc; transition: background 0.3s, transform 0.2s; cursor: pointer; position: relative; }
+.progress-dot.active { background: #b8860b; transform: scale(1.25); }
+.progress-dot.visited { background: #d9b56a; }
+.progress-dot:hover { transform: scale(1.3); }
+.progress-dot .dot-tooltip { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: #b8860b; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 8.5pt; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 100; }
+.progress-dot .dot-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #b8860b; }
+.progress-dot:hover .dot-tooltip { opacity: 1; }
+.card-breadcrumb { font-size: 9.5pt; color: #888; margin-bottom: 14px; text-align: center; transition: opacity 0.3s; min-height: 1.2em; }
+.card-breadcrumb b { color: #b8860b; }
+.sticky-indicator { position: fixed; top: 12px; right: 16px; background: #b8860b; color: #fff; padding: 5px 14px; border-radius: 20px; font-size: 9pt; font-weight: 700; opacity: 0; transition: opacity 0.3s; z-index: 200; pointer-events: none; letter-spacing: 0.5px; }
+.sticky-indicator.visible { opacity: 1; }
+.card-container { position: relative; width: 640px; min-height: 420px; }
+.card { position: absolute; top: 0; left: 0; width: 100%; background: #fff; border: 2.5px solid #b8860b; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.10); opacity: 0; pointer-events: none; transform: translateX(40px); transition: opacity 0.35s, transform 0.35s; }
+.card.active { opacity: 1; pointer-events: auto; transform: translateX(0); position: relative; }
+.card-header { background: #b8860b; color: #fff; padding: 14px 20px; border-radius: 11px 11px 0 0; }
+.card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+.card-header .card-subtitle { font-size: 9.5pt; color: #f0e2bd; margin-top: 2px; }
+.card-body { padding: 18px 22px 22px; line-height: 1.55; }
+.card-body p { margin: 6px 0; }
+.score-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; }
+.score-box { background: #f8f8fc; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 10px 14px; text-align: center; }
+.score-box .big { font-size: 20pt; font-weight: 700; }
+.score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+.score-good .big { color: #2d6a2d; }
+.score-warn .big { color: #cc6600; }
+.score-low .big { color: #cc0000; }
+.you-wrote { background: #fff3f3; border-left: 3px solid #cc0000; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.you-wrote .label { font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+.better, .model-box { background: #e8f5e9; border-left: 3px solid #2d6a2d; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.better .label, .model-box .label { font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+.tip-box { background: #e8edf5; border-left: 3px solid #b8860b; padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0; }
+.tip-box .label { font-weight: 700; font-size: 9.5pt; color: #b8860b; margin-bottom: 3px; }
+.rule-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 10px 14px; margin: 10px 0; font-size: 11pt; }
+.rule-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 3px; }
+.lbl { display: inline-block; font-size: 7.5pt; font-weight: 800; letter-spacing: 0.5px; padding: 1px 6px; border-radius: 4px; margin: 0 4px 0 0; vertical-align: middle; color: #fff; line-height: 1.5; }
+.lbl-say, .lbl-echo { background: #5c2dcc; } .lbl-show, .lbl-because { background: #2d6a2d; } .lbl-sowhat { background: #cc6600; } .lbl-close { background: #457b9d; } .lbl-miss { background: #cc0000; } .lbl-reason { background: #888; }
+.ex-list { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+.ex { padding: 8px 12px; border-radius: 6px; font-size: 10.5pt; border-left: 3px solid; }
+.ex.pos { background: #e8f5e9; border-color: #2d6a2d; } .ex.neg { background: #fff3f3; border-color: #cc0000; }
+.ex .tag { font-weight: 800; font-size: 8.5pt; margin-right: 6px; } .ex.pos .tag { color: #2d6a2d; } .ex.neg .tag { color: #cc0000; }
+.think { background: #f8f8fc; border-left: 3px solid #888; padding: 8px 14px; margin: 8px 0; font-size: 10.5pt; font-style: italic; color: #444; }
+.think .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #666; margin-bottom: 2px; }
+.highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+.error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+.discrim-option .error-mark { background: transparent; text-decoration: none; padding: 0; border-radius: 0; }
+.essay-excerpt { background: #fafafa; border: 1px solid #e0e0e8; border-radius: 6px; padding: 10px 14px; font-size: 10.5pt; margin: 8px 0; line-height: 1.8; }
+.discrim-challenge { background: #f8f5ff; border: 1.5px solid #d4c5ff; border-radius: 8px; padding: 14px; margin: 10px 0; }
+.discrim-prompt { font-weight: 700; font-size: 10.5pt; margin-bottom: 10px; color: #5c2dcc; }
+.discrim-options { display: flex; flex-direction: column; gap: 8px; }
+.discrim-option { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border: 2px solid #d4c5ff; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 10.5pt; background: #fff; }
+.discrim-option:hover { border-color: #7c4dff; background: #f5f0ff; }
+.discrim-label { font-weight: 800; color: #7c4dff; min-width: 20px; flex-shrink: 0; }
+.discrim-option.correct, .discrim-option.model { border-color: #2d6a2d; background: #e8f5e9; cursor: default; }
+.discrim-option.correct .discrim-label, .discrim-option.model .discrim-label { color: #2d6a2d; }
+.discrim-option.wrong { border-color: #cc0000; background: #fff3f3; cursor: default; }
+.discrim-option.wrong .discrim-label { color: #cc0000; }
+.discrim-option.locked { pointer-events: none; opacity: 0.5; }
+.discrim-challenge.done .discrim-option { cursor: default; }
+.discrim-feedback { margin-top: 0; font-size: 10pt; line-height: 1.45; max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.3s, opacity 0.3s, margin 0.3s; }
+.discrim-feedback.shown { max-height: 400px; opacity: 1; margin-top: 10px; }
+.discrim-feedback.right-fb { color: #2d6a2d; font-weight: 600; }
+.discrim-parallel { display: none; }
+.discrim-parallel.shown { display: block; }
+.discrim-parallel .discrim-prompt::before { content: 'One more like it. '; color: #888; font-weight: 600; }
+.reveal-wrapper { position: relative; }
+.reveal-cover { background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%); border-left: 3px solid #2d6a2d; padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 10px; transition: background 0.2s, box-shadow 0.2s; }
+.reveal-cover:hover { box-shadow: 0 2px 8px rgba(45,106,45,0.15); }
+.reveal-cover .reveal-icon { width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
+.reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #2d6a2d; }
+.reveal-cover .reveal-hint { font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px; }
+.reveal-content { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0; }
+.reveal-content.shown { max-height: 1200px; opacity: 1; margin: 8px 0; }
+.reveal-cover.hidden { display: none; }
+.your-turn { background: #f8f8fc; border: 1.5px dashed #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.your-turn .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.your-turn textarea { width: 100%; min-height: 64px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; margin: 4px 0; }
+.frame-row { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0; font-size: 10.5pt; }
+.frame-row .lbl { margin-top: 4px; }
+.frame-row .given { background: #fff; border: 1.5px solid #e0e0e8; border-radius: 6px; padding: 8px; flex: 1; color: #555; }
+.frame-row textarea { flex: 1; min-height: 48px; margin: 0; }
+.yt-btn { margin-top: 8px; padding: 7px 16px; border: 2px solid #2d6a2d; background: #fff; color: #2d6a2d; border-radius: 8px; font-family: inherit; font-weight: 600; font-size: 10pt; cursor: pointer; }
+.yt-btn:hover { background: #2d6a2d; color: #fff; }
+.yt-btn:disabled { opacity: 0.6; cursor: default; }
+.yt-model { display: none; margin-top: 10px; }
+.assembled { display: none; margin-top: 8px; }
+.assembled.shown { display: block; }
+.xp-link { display: inline-block; margin: 8px 6px 0 0; padding: 6px 14px; border-radius: 6px; background: #2d6a2d; color: #fff; font-weight: 700; font-size: 10pt; text-decoration: none; }
+.xp-link:hover { background: #1b5e1b; }
+.yt-model.shown { display: block; }
+.self-check .check-item { font-size: 10pt; padding: 6px 8px; }
+.check-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 8px; cursor: pointer; border-bottom: 1px solid #eee; border-radius: 6px; transition: background 0.15s; user-select: none; font-size: 11pt; }
+.check-item:last-child { border-bottom: none; }
+.check-item:hover { background: #f8f8fc; }
+.check-item.checked { background: #f0f8f0; }
+.check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
+.check-item.checked .check-box::after { content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
+.check-box { width: 28px; height: 28px; border: 2.5px solid #b8860b; border-radius: 6px; flex-shrink: 0; margin-top: 1px; position: relative; transition: background 0.2s, border-color 0.2s; }
+.self-check .check-box { width: 22px; height: 22px; }
+.checklist-progress { background: #eee; border-radius: 10px; height: 8px; margin: 12px 0 6px; overflow: hidden; }
+.checklist-progress-fill { background: linear-gradient(90deg, #2d6a2d, #4caf50); height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%; }
+.checklist-progress-label { font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px; }
+.quick-check { background: #f8f5ff; border: 2px solid #7c4dff; border-radius: 10px; padding: 12px 14px; margin: 10px 0; }
+.quick-check .qc-title { font-weight: 800; color: #5c2dcc; font-size: 10.5pt; margin-bottom: 4px; }
+.quick-check .qc-sub { font-size: 9.5pt; color: #666; margin-bottom: 6px; }
+.quick-check .discrim-challenge { background: #fff; margin: 8px 0; padding: 10px 12px; }
+.qc-result { display: none; font-weight: 700; margin-top: 8px; font-size: 10.5pt; color: #5c2dcc; }
+.recall-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.recall-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.recall-box textarea { width: 100%; min-height: 56px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; }
+.checklist-wrap { display: none; }
+.checklist-wrap.shown { display: block; }
+.time-toggle { font-size: 9pt; color: #b8860b; cursor: pointer; text-decoration: underline; display: inline-block; margin: 0 0 6px; }
+.tl-time { display: none; font-weight: 400; color: #aaa; }
+.show-times .tl-time { display: inline; }
+.guide-block { margin-top: 16px; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 8px 12px; background: #fafafa; font-size: 10pt; }
+.guide-block summary { cursor: pointer; font-weight: 700; color: #666; font-size: 9.5pt; }
+.guide-block ul { margin: 6px 0 4px 18px; }
+.guide-block li { margin: 4px 0; }
+.practice-recommendations { margin-top: 16px; border-top: 2px solid #e0e0e8; padding-top: 14px; }
+.practice-recs-title { font-size: 10pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #b8860b; margin-bottom: 10px; }
+.practice-tier { border-radius: 8px; padding: 12px 14px; margin: 8px 0; }
+.tier-primary { background: #e8f5e9; border: 1.5px solid #a5d6a7; }
+.tier-extra { background: #f8f8fc; border: 1.5px solid #e0e0e8; }
+.tier-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.tier-label { font-size: 8.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 2px 10px; border-radius: 10px; }
+.tier-primary .tier-label { background: #2d6a2d; color: #fff; }
+.tier-extra .tier-label { background: #888; color: #fff; }
+.tier-note { font-size: 9pt; color: #666; margin-bottom: 6px; line-height: 1.4; }
+.practice-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.practice-link { display: inline-block; padding: 5px 12px; border-radius: 6px; font-size: 9.5pt; font-weight: 600; text-decoration: none; transition: background 0.2s, transform 0.1s; }
+.tier-primary .practice-link { background: #c8e6c9; color: #1b5e1b; }
+.tier-extra .practice-link { background: #e8edf5; color: #b8860b; }
+.nav { display: flex; gap: 12px; margin-top: 16px; }
+.nav button { padding: 8px 28px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; transition: background 0.2s, color 0.2s; }
+.nav button:hover { background: #b8860b; color: #fff; }
+.print-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 8px 20px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 10.5pt; font-weight: 600; cursor: pointer; }
+.print-btn:hover { background: #b8860b; color: #fff; }
+.print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+.completion-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(184,134,11,0.6); z-index: 500; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s; }
+.completion-overlay.visible { opacity: 1; pointer-events: auto; }
+.completion-card { background: #fff; border-radius: 16px; padding: 40px 48px; text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2); transform: scale(0.8); transition: transform 0.4s ease; max-width: 420px; }
+.completion-overlay.visible .completion-card { transform: scale(1); }
+.completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+.completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; color: #b8860b; }
+.completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+.completion-close { margin-top: 20px; padding: 10px 32px; background: #b8860b; color: #fff; border: none; border-radius: 8px; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; }
+#confettiCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 501; }
+.score-timeline { display: flex; align-items: flex-end; gap: 0; margin: 12px 0 10px; padding: 0 2px; justify-content: space-between; }
+.timeline-item { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 0; }
+.timeline-score { font-size: 9.5pt; font-weight: 700; margin-bottom: 4px; }
+.timeline-bar { width: 66%; border-radius: 4px 4px 0 0; min-height: 8px; }
+.timeline-label { font-size: 7.5pt; color: #888; margin-top: 6px; font-weight: 600; text-align: center; line-height: 1.3; }
+.score-green { color: #2d6a2d; } .score-amber { color: #cc6600; } .score-red { color: #cc0000; }
+.bar-green { background: linear-gradient(to top, #c8e6c9, #81c784); } .bar-amber { background: linear-gradient(to top, #ffe0b2, #ffb74d); } .bar-red { background: linear-gradient(to top, #ffcdd2, #ef9a9a); }
+.strength-chips, .growth-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; }
+.strength-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; background: #e8f5e9; color: #2d6a2d; border: 1.5px solid #a5d6a7; display: inline-flex; align-items: center; gap: 4px; }
+.strength-chip .chip-course, .growth-chip .chip-avg { font-size: 7.5pt; color: #888; font-weight: 400; }
+.journey-section { font-size: 9.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; margin: 10px 0 4px; padding-bottom: 3px; border-bottom: 1.5px solid; }
+.journey-section.strengths-header { color: #2d6a2d; border-color: #c8e6c9; }
+.journey-section.growth-header { color: #cc6600; border-color: #ffe0b2; }
+.root-cause-teaser { background: #f5f0ff; border-left: 3px solid #7c4dff; padding: 10px 14px; margin: 12px 0 4px; border-radius: 0 6px 6px 0; font-size: 10.5pt; line-height: 1.5; }
+.root-cause-teaser b { color: #5c2dcc; }
+.growth-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+.growth-chip.mixed { background: #fff8e8; color: #b35900; border: 1.5px solid #ffe0b2; }
+.growth-chip.weak { background: #fff3f3; color: #cc0000; border: 1.5px solid #ffcdd2; }
+@media print { body { background: #fff; padding: 0; min-height: auto; } .progress-bar, .nav, .print-btn, .card-breadcrumb, .sticky-indicator, .completion-overlay, #confettiCanvas, .reveal-cover, .checklist-progress, .checklist-progress-label, .discrim-challenge, .discrim-parallel, .quick-check, .recall-box, .yt-btn, .guide-block { display: none !important; } .card-container { width: 100%; min-height: auto; } .card { display: none !important; } .card.print-target { display: block !important; opacity: 1 !important; pointer-events: auto !important; position: relative !important; transform: none !important; box-shadow: none; border: 2px solid #b8860b; page-break-inside: avoid; } .reveal-content, .yt-model, .checklist-wrap { display: block !important; max-height: none !important; opacity: 1 !important; margin: 8px 0 !important; } }
+@media (max-width: 720px) { .card-container { width: 100%; } .score-grid { grid-template-columns: 1fr; } .timeline-score { font-size: 7.5pt; } .timeline-label { font-size: 6.5pt; } }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progressBar"></div>
+<div class="card-breadcrumb" id="breadcrumb"></div>
+<div class="sticky-indicator" id="stickyIndicator"></div>
+<div class="card-container" id="cardContainer">
+
+<!-- Card 1: Score Overview -->
+<div class="card active" data-title="Score Overview">
+  <div class="card-header"><h2>Jacob Vandercook</h2><div class="card-subtitle">Alpha Standardized Writing G3.8. September 2026. Passages: &ldquo;The Library Helper&rdquo; / &ldquo;Why People Build Gardens Together&rdquo;</div></div>
+  <div class="card-body">
+    <div class="score-grid">
+      <div class="score-box score-good"><div class="big">84%</div><div class="label">Overall Score</div></div>
+      <div class="score-box score-good"><div class="big">23/25</div><div class="label">Questions 1&ndash;10</div></div>
+      <div class="score-box score-warn"><div class="big">15/20</div><div class="label">Paragraph (Question 11)</div></div>
+    </div>
+    <p>Jacob, this is your best grade-3 score in almost a year, and <b>three points from a pass</b>. Questions 6 to 10 were strong: your G3.7 review asked for the reason inside every explain sentence, and this time four of the five carried one.</p>
+    <p>Now the paragraph. It has a clear main idea and three reasons, and not one fact from the passage. The prompt said <i>&ldquo;Use facts from the passage,&rdquo;</i> and that line is worth the five points you are missing.</p>
+    <div class="root-cause-teaser"><b>The one skill:</b> after each reason, one fact from the passage, then a sentence that starts <i>This shows</i>. Card 3 builds it on your own sentences.</div>
+  </div>
+</div>
+
+<!-- Card 2: Writing Journey -->
+<div class="card" data-title="Your Writing Journey">
+  <div class="card-header"><h2>Your Writing Journey</h2><div class="card-subtitle">Thirteen tests. G3.8 is the best grade-3 score in almost a year</div></div>
+  <div class="card-body">
+    <div class="score-timeline">
+      <div class="timeline-item"><div class="timeline-score score-red">33</div><div class="timeline-bar bar-red" style="height:30px;"></div><div class="timeline-label">G3.1<br><span class="tl-time">&ndash;</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">93</div><div class="timeline-bar bar-green" style="height:84px;"></div><div class="timeline-label">G3.2<br><span class="tl-time">&ndash;</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">91</div><div class="timeline-bar bar-green" style="height:82px;"></div><div class="timeline-label">G4.1<br><span class="tl-time">&ndash;</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">91</div><div class="timeline-bar bar-green" style="height:82px;"></div><div class="timeline-label">G5.1<br><span class="tl-time">&ndash;</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-red">67</div><div class="timeline-bar bar-red" style="height:60px;"></div><div class="timeline-label">G6.1<br><span class="tl-time">&ndash;</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">96</div><div class="timeline-bar bar-green" style="height:86px;"></div><div class="timeline-label">G5.2<br><span class="tl-time">&ndash;</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-amber">76</div><div class="timeline-bar bar-amber" style="height:68px;"></div><div class="timeline-label">G3.3<br><span class="tl-time">26m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-red">62</div><div class="timeline-bar bar-red" style="height:56px;"></div><div class="timeline-label">G3.4<br><span class="tl-time">22m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">82</div><div class="timeline-bar bar-green" style="height:74px;"></div><div class="timeline-label">G3.5<br><span class="tl-time">16m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-red">67</div><div class="timeline-bar bar-red" style="height:60px;"></div><div class="timeline-label">G3.6<br><span class="tl-time">13m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-amber">78</div><div class="timeline-bar bar-amber" style="height:70px;"></div><div class="timeline-label">G3.2<br><span class="tl-time">19m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-amber">73</div><div class="timeline-bar bar-amber" style="height:66px;"></div><div class="timeline-label">G3.7<br><span class="tl-time">23m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">84</div><div class="timeline-bar bar-green" style="height:76px;"></div><div class="timeline-label">G3.8<br><span class="tl-time">19m</span></div></div>
+    </div>
+    <span class="time-toggle" onclick="toggleTimes(this)">Show how long each test took</span>
+    <p>Last fall you passed four tests in two weeks, two of them at grade 5. Since then you have been on grade-3 forms, and this is the top of that range. You finished G3.8 in 19 minutes. The facts the paragraph is missing were sitting in a passage you had plenty of time to read again.</p>
+    <div class="journey-section strengths-header">Skills you do well</div>
+    <div class="strength-chips">
+      <span class="strength-chip">Appositive with commas <span class="chip-course">&middot; Q1</span></span>
+      <span class="strength-chip">Fragment fixed <span class="chip-course">&middot; Q3</span></span>
+      <span class="strength-chip">Answer plus a reason <span class="chip-course">&middot; Q6, Q7, Q9, Q10</span></span>
+    </div>
+    <div class="journey-section growth-header">What to work on</div>
+    <div class="growth-chips">
+      <span class="growth-chip weak">Paragraph with no passage facts <span class="chip-avg">Q11, 15 of 20</span></span>
+      <span class="growth-chip mixed">A question rewrite that changed the meaning <span class="chip-avg">Q4</span></span>
+    </div>
+    <div class="root-cause-teaser"><b>Same skill, two sizes:</b> Q8 (2 of 3) is one sentence with no specific fact in it. The paragraph is three of them in a row.</div>
+  </div>
+</div>
+
+<!-- Card 3: Fix 1, Show then So What -->
+<div class="card" data-title="Fix 1: Show, then So What">
+  <div class="card-header"><h2>Fix 1: Show, then So What</h2><div class="card-subtitle">After every reason: a fact you could point to, then what it proves</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: SHOW, THEN SO WHAT</div>After every reason, add one <b>fact from the passage</b>, a thing you could point to in the text. Then one sentence that starts <b><i>This shows</i></b>. <b>The check:</b> could a reader find your fact in the passage? If not, it is not a fact yet.</div>
+
+    <p>Your paragraph, the first reason:</p>
+    <div class="you-wrote"><div class="label">YOU WROTE</div><span class="lbl lbl-reason">REASON</span>&ldquo;First, you can socialize and meet new people.&rdquo;<br><span style="font-size:9.5pt;color:#666;">True, and it is the passage's own idea. But nothing here could be pointed to in the text.</span></div>
+    <div class="model-box"><div class="label">THE SAME REASON, WITH SHOW AND SO WHAT</div><span class="lbl lbl-reason">REASON</span>First, a garden helps people meet. <span class="lbl lbl-show">SHOW</span>The passage says neighbors talk and joke as they water plants or pull weeds. <span class="lbl lbl-sowhat">SO WHAT</span>This shows that a garden gives people a reason to spend time together.</div>
+
+    <p>The same move at sentence size. Q8 asked for the lesson about kindness:</p>
+    <div class="you-wrote"><div class="label">YOU WROTE (2 OUT OF 3)</div>&ldquo;Helping others is a good thing to do as it can <span class="error-mark">bring more to you or the story</span>.&rdquo;<br><span style="font-size:9.5pt;color:#666;">&ldquo;Bring more&rdquo; points at nothing in the story.</span></div>
+    <div class="model-box"><div class="label">WITH A FACT FROM THE STORY</div>Helping others is kind <span class="lbl lbl-show">SHOW</span>because when Jordan picked up the books, Ms. Bright smiled and his classmates started helping too.</div>
+
+    <p style="margin-top:10px;"><b>Three more SHOW and SO WHAT pairs</b>, each from a different part of the passage:</p>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">FACT</span><span class="lbl lbl-show">SHOW</span>Some homes have no room for plants, so a shared garden gives people a spot to grow tomatoes or beans. <span class="lbl lbl-sowhat">SO WHAT</span>This shows that a garden feeds people who could not grow food alone.</div>
+      <div class="ex pos"><span class="tag">FACT</span><span class="lbl lbl-show">SHOW</span>Children can see bugs, soil and roots up close. <span class="lbl lbl-sowhat">SO WHAT</span>This shows that a garden is a classroom outside.</div>
+      <div class="ex pos"><span class="tag">FACT</span><span class="lbl lbl-show">SHOW</span>People enjoy seeing bright flowers and neat paths and feel proud of the place they built. <span class="lbl lbl-sowhat">SO WHAT</span>This shows that a garden changes how a town feels about itself.</div>
+      <div class="ex neg"><span class="tag">NOT A FACT</span>Gardens help people learn about plants.<br><span style="font-size:9.5pt;color:#666;">The reason again in new words. Nothing to point to.</span></div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which sentence SHOWS a fact you could point to in the passage?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="A reason in new words. Nothing in it can be found in the text." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Gardens are a good way to eat healthier.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;Share extra food with others&rdquo; is in the passage, almost word for word." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Many gardens share extra food with others so everyone has fresh meals.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which one is a fact from the passage?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Plant a row, check the ground. You could point to it." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Adults can show children how to plant a row or check the ground.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A reason, not a fact. Nothing to point to." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Gardens are good for learning.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which one is a SO WHAT sentence?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="true" data-right-feedback="It starts with &ldquo;This shows&rdquo; and says what the fact proves." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>This shows that working side by side makes neighbors feel at ease with each other.</span></div>
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="That is a fact, a SHOW. A SO WHAT tells what the fact proves and starts with &ldquo;This shows.&rdquo;" onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Neighbors may share stories or joke while they work.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which one is a SO WHAT?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A fact from the passage, so a SHOW." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>A garden can be in a school yard or an empty lot.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;This shows&rdquo; plus what it proves." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>This shows that almost any town has space for one.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Q8 again: <i>the lesson the story teaches about kindness</i>. Which sentence carries a fact from the story?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="&ldquo;Helps people&rdquo; and &ldquo;makes things better&rdquo; cannot be pointed to in the story." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Kindness is good because it helps people and makes things better.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="Jordan helped, then his classmates helped. Both are in the story." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Kindness spreads because after Jordan helped Ms. Bright, his classmates started helping too.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Q7-style: <i>how Ms. Bright felt, and why</i>. Which one has a fact from the story?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Straight from the last line of the story." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Ms. Bright felt pleased because her new helpers filled the room with kindness.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="&ldquo;A good day&rdquo; is not in the story." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Ms. Bright felt happy because it was a good day.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Every paragraph plan: for each reason, one fact you could point to in the passage. Every paragraph: after each fact, a <i>This shows</i> sentence.</div>
+
+  </div>
+</div>
+
+<!-- Card 4: Fix 2, Keep the Meaning -->
+<div class="card" data-title="Fix 2: Keep the Meaning">
+  <div class="card-header"><h2>Fix 2: A Question Keeps the Meaning</h2><div class="card-subtitle">Q4. Move the helping verb to the front, keep every idea</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: REWRITE AS A QUESTION</div>Move the helping verb (<i>did, was, can</i>) to the front and keep every idea. <b>The check:</b> the answer to your question should be the original sentence.</div>
+
+    <p>Q4: <i>Change sentence 17 into a question: Jordan asked his classmates to help organize the shelves.</i></p>
+    <div class="you-wrote"><div class="label">YOU WROTE (1 OUT OF 2)</div>&ldquo;<span class="error-mark">How did</span> Jordan ask his classmates to organize the shelves?&rdquo;<br><span style="font-size:9.5pt;color:#666;"><i>How</i> asks something new, and <i>help</i> went missing. The answer to your question is not sentence 17.</span></div>
+    <div class="model-box"><div class="label">KEEPS THE MEANING</div>Did Jordan ask his classmates to help organize the shelves?<br><span style="font-size:9.5pt;color:#666;">Answer: yes, sentence 17.</span></div>
+
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">KEEPS IT</span>The bin slipped from her hands. &rarr; Did the bin slip from her hands?</div>
+      <div class="ex pos"><span class="tag">KEEPS IT</span>Ms. Bright was carrying too many books. &rarr; Was Ms. Bright carrying too many books?</div>
+      <div class="ex pos"><span class="tag">KEEPS IT</span>Jordan can help. &rarr; Can Jordan help?</div>
+      <div class="ex neg"><span class="tag">CHANGES IT</span>The bin slipped from her hands. &rarr; Why did the bin slip from her hands?<br><span style="font-size:9.5pt;color:#666;">A new idea. The answer is not the original sentence.</span></div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Sentence: <i>Jordan placed the bin on the table.</i> Which question keeps the meaning?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="true" data-right-feedback="Did moved to the front. Every idea kept. Answer: yes, the sentence." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Did Jordan place the bin on the table?</span></div>
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="&ldquo;Where&rdquo; asks something new, and &ldquo;on the table&rdquo; disappeared." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Where did Jordan place the bin?</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Sentence: <i>The library buzzed with cheerful voices.</i></div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="&ldquo;Why&rdquo; is a new idea, and &ldquo;cheerful voices&rdquo; is gone." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Why did the library buzz?</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Did in front, every idea kept." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Did the library buzz with cheerful voices?</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Sentence: <i>Jordan hurried toward the library.</i> Which one is a real question?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="A statement with a question mark stuck on. The verb never moved." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Jordan hurried toward the library?</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="Did in front, hurry loses its -ed, every idea kept." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Did Jordan hurry toward the library?</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Sentence: <i>Ms. Bright thanked Jordan.</i></div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Did in front, thank loses its -ed." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Did Ms. Bright thank Jordan?</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A question mark on a statement. Nothing moved." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Ms. Bright thanked Jordan?</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Every sentence you turn into a question: before you submit, ask whether the answer to your question is the original sentence.</div>
+
+  </div>
+</div>
+
+<!-- Card 5: Paragraph Review -->
+<div class="card" data-title="Paragraph Review">
+  <div class="card-header"><h2>Your Paragraph: 15 out of 20</h2><div class="card-subtitle">A clear main idea, three reasons, zero facts</div></div>
+  <div class="card-body">
+    <p>The question: <i>Explain why shared gardens are helpful to towns. Use facts from the passage.</i> Here is yours, labelled:</p>
+    <div class="essay-excerpt">
+      <span class="lbl lbl-say">SAY</span>Shared gardens are helpful to towns for many reasons. <span class="lbl lbl-reason">REASON, NO FACT</span>First, you can socialize and meet new people. <span class="lbl lbl-reason">REASON, NO FACT</span>Second, <span class="error-mark">It</span> is a way to grow fresh foods and eat healthier. <span class="lbl lbl-reason">REASON, NO FACT</span>Third, you can learn about the plants and the process it goes through. <span class="lbl lbl-close">CLOSE</span>So, these are a few ways to get kids and friends out of <span class="error-mark">threir</span> houses and the great reason for a garden.
+    </div>
+    <p>The skeleton is right: main idea, three reasons in order, a closing. Every reason is one the passage makes. What the grading looked for and did not find: a single thing it could point to in the text, and a sentence saying what it proves.</p>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Decide first: your paragraph has three reasons. How many SHOW facts does it have?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="&ldquo;Fresh foods&rdquo; is the reason in new words. The passage's fact is tomatoes or beans, and homes with no room to grow them." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>One. The fresh foods.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="None. Three reasons, nothing a reader could find in the text. That is the five points." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>None.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="reveal-wrapper">
+      <div class="reveal-cover" onclick="revealBetter(this)">
+        <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></div>
+        <div><div class="reveal-text">Tap to see your paragraph with the passage in it</div><div class="reveal-hint">Your main idea, your three reasons, your order</div></div>
+      </div>
+      <div class="reveal-content">
+        <div class="better"><div class="label">YOUR PARAGRAPH, WITH SHOW AND SO WHAT</div>
+          <span class="lbl lbl-say">SAY</span>Shared gardens are helpful to towns for many reasons. <span class="lbl lbl-reason">REASON</span>First, they help people meet. <span class="lbl lbl-show">SHOW</span>The passage says neighbors talk and joke as they water plants or pull weeds. <span class="lbl lbl-sowhat">SO WHAT</span>This shows that a garden gives people a reason to spend time together. <span class="lbl lbl-reason">REASON</span>Second, they grow fresh food. <span class="lbl lbl-show">SHOW</span>Homes with no room for plants get a spot to grow tomatoes or beans, and gardens share extra food. <span class="lbl lbl-sowhat">SO WHAT</span>This shows that a garden helps everyone eat fresh meals, not only the gardeners. <span class="lbl lbl-reason">REASON</span>Third, they are a place to learn. <span class="lbl lbl-show">SHOW</span>Children watch seeds grow and see bugs, soil and roots up close. <span class="lbl lbl-sowhat">SO WHAT</span>This shows that a garden is a classroom outside. <span class="lbl lbl-close">CLOSE</span>That is why a shared garden gives a town food, friends and lessons in one small space.
+        </div>
+      </div>
+    </div>
+    <p style="font-size:10.5pt;">Each reason got one fact and one <i>This shows</i>. Nothing of yours was removed. Also for the read-back: <i>it</i> after a comma is lowercase; their, because, library, around, from, too many.</p>
+  </div>
+</div>
+
+<!-- Card 6: Quick Check, Checklist, Practice -->
+<div class="card" data-title="Quick Check &amp; Practice">
+  <div class="card-header"><h2>Quick Check</h2><div class="card-subtitle">Six new ones. Then your checklist</div></div>
+  <div class="card-body">
+    <div class="quick-check" data-back="card 3 or card 4">
+      <div class="qc-title">Two moves, six questions</div>
+      <div class="qc-sub">All new sentences. Answer each one once.</div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which SHOWS a fact from the gardens passage?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A reason. Nothing to point to." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Gardens make a town nicer.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Bright flowers, neat paths. In the passage." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>A cared-for garden brings bright flowers and neat paths to a town.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which one is a SO WHAT?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;This shows&rdquo; plus what the fact proves." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>This shows that people take care of what they helped build.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A fact from the passage, so a SHOW." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>They feel proud of the place they helped build.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Sentence: <i>Soon, the library buzzed with cheerful voices.</i> Which question keeps the meaning?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Did in front, every idea kept." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Did the library soon buzz with cheerful voices?</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="&ldquo;What&rdquo; asks something new and drops the cheerful voices." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>What buzzed in the library?</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which SHOWS a fact from the library story?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="An opinion about Jordan. Nothing to point to." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Jordan was a helpful kid.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Picked up the books, placed the bin. Sentences 13 and 14." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Jordan picked up the books and placed the bin on the table.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Sentence: <i>She smiled at Jordan.</i> Which one is a real question?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Did in front, smile loses its -ed." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Did she smile at Jordan?</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A statement with a question mark. Nothing moved." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>She smiled at Jordan?</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Q10 again: <i>why the library is an important place</i>. Which sentence carries a fact from the story?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="&ldquo;A place to learn&rdquo; is not something in the story you could point to." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>The library is important because it is a place to learn.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Discovering new books each week is in the story." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The library is important because it is where Jordan discovers new books each week.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="qc-result"></div>
+    </div>
+
+    <div class="checklist-wrap shown">
+      <div id="mainChecklist">
+        <div class="checklist-progress-label" id="checkProgressLabel">0 of 5 checked</div>
+        <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Show, then So What.</b> After every reason: one fact I could point to in the passage, then a sentence that starts <i>This shows</i>.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div>Questions 6 to 10: the words after <i>because</i> name a person, thing or event from the story, not &ldquo;things&rdquo; or &ldquo;more.&rdquo;</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Rewrite as a question:</b> helping verb to the front, keep every idea. The answer to my question is the original sentence.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div>Plan in the box: type SAY and three reasons, then go back into the passage for one fact each before writing. Aim to spend at least ten minutes on the paragraph.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div>Read-back: because, library, around, from, their, too many, lowercase after a comma.</div></div>
+      </div>
+      <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>Print Checklist</button>
+    </div>
+  </div>
+</div>
+
+</div>
+<div class="nav"><button id="prevBtn" onclick="navigate(-1)">&larr; Back</button><button id="nextBtn" onclick="navigate(1)">Next &rarr;</button></div>
+<div class="completion-overlay" id="completionOverlay"><div class="completion-card"><div class="completion-emoji">&#9997;</div><div class="completion-title">Show, then So What.</div><div class="completion-sub">After every reason: one fact from the passage, then &ldquo;This shows.&rdquo; Three reasons, three facts, three &ldquo;This shows&rdquo; lines. That is the five points, and the pass.</div><button class="completion-close" onclick="closeCompletion()">Got it</button></div></div>
+<canvas id="confettiCanvas"></canvas>
+<script>
+var cards=document.querySelectorAll('.card'),bar=document.getElementById('progressBar'),breadcrumb=document.getElementById('breadcrumb'),stickyEl=document.getElementById('stickyIndicator'),current=0,visited=[0];
+cards.forEach(function(card,i){var dot=document.createElement('div');dot.className='progress-dot'+(i===0?' active':'');var tooltip=document.createElement('span');tooltip.className='dot-tooltip';tooltip.textContent=card.getAttribute('data-title')||('Card '+(i+1));dot.appendChild(tooltip);dot.addEventListener('click',function(){goTo(i);});bar.appendChild(dot);});
+function updateBreadcrumb(){var title=cards[current].getAttribute('data-title')||('Card '+(current+1));breadcrumb.innerHTML='Card <b>'+(current+1)+'</b> of '+cards.length+' &mdash; '+title;stickyEl.textContent=(current+1)+' / '+cards.length;}
+function checkSticky(){var r=bar.getBoundingClientRect();stickyEl.classList.toggle('visible',r.bottom<0);}
+window.addEventListener('scroll',checkSticky);
+function goTo(idx){if(idx<0||idx>=cards.length)return;cards[current].classList.remove('active');bar.children[current].classList.remove('active');current=idx;if(visited.indexOf(current)===-1)visited.push(current);cards[current].classList.add('active');bar.children[current].classList.add('active');visited.forEach(function(v){if(v!==current)bar.children[v].classList.add('visited');});var p=document.getElementById('prevBtn'),n=document.getElementById('nextBtn');if(p){p.style.visibility=current===0?'hidden':'visible';p.disabled=current===0;}if(n){n.textContent=current===cards.length-1?'Done ✓':'Next →';}updateBreadcrumb();window.scrollTo({top:0,behavior:'smooth'});}
+function navigate(dir){if(dir===1&&current===cards.length-1){showCompletion();return;}goTo(current+dir);}
+document.addEventListener('keydown',function(e){if(e.target&&e.target.tagName==='TEXTAREA')return;if(e.key==='ArrowRight'||e.key==='ArrowDown')navigate(1);if(e.key==='ArrowLeft'||e.key==='ArrowUp')navigate(-1);});
+function revealBetter(cover){cover.nextElementSibling.classList.add('shown');cover.classList.add('hidden');}
+function shuffleOptions(){document.querySelectorAll('.discrim-options').forEach(function(box){var opts=Array.prototype.slice.call(box.querySelectorAll('.discrim-option'));for(var i=opts.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=opts[i];opts[i]=opts[j];opts[j]=t;}opts.forEach(function(o,i){box.appendChild(o);var l=o.querySelector('.discrim-label');if(l)l.textContent=String.fromCharCode(65+i);});});}
+function handleDiscrim(option){var ch=option.closest('.discrim-challenge');if(ch.classList.contains('done'))return;var fb=ch.querySelector('.discrim-feedback');var opts=ch.querySelectorAll('.discrim-option');var ok=option.getAttribute('data-correct')==='true';ch.classList.add('done');
+if(ok){option.classList.add('correct');opts.forEach(function(o){if(o!==option)o.classList.add('locked');});fb.innerHTML=option.getAttribute('data-right-feedback')||'Correct.';fb.className='discrim-feedback shown right-fb';ch.setAttribute('data-first-try','1');}
+else{option.classList.add('wrong');var right=ch.querySelector('.discrim-option[data-correct="true"]');right.classList.add('model');opts.forEach(function(o){if(o!==option&&o!==right)o.classList.add('locked');});var rl=right.querySelector('.discrim-label');fb.innerHTML='<span style="color:#cc0000"><b>Not this one.</b> '+(option.getAttribute('data-wrong-feedback')||'')+'</span><br><span style="color:#2d6a2d"><b>The answer is '+(rl?rl.textContent:'')+'.</b> '+(right.getAttribute('data-right-feedback')||'')+'</span>';fb.className='discrim-feedback shown';ch.setAttribute('data-first-try','0');var par=ch.nextElementSibling;if(par&&par.classList.contains('discrim-parallel')){fb.innerHTML+=' <b style="color:#5c2dcc">Try one more like it below.</b>';setTimeout(function(){par.classList.add('shown');},600);}}
+var bf=ch.closest('.build-frame');if(bf){var all=bf.querySelectorAll('.discrim-challenge'),dn=0;all.forEach(function(c){if(c.classList.contains('done'))dn++;});if(dn===all.length){var a=bf.querySelector('.assembled');if(a)setTimeout(function(){a.classList.add('shown');},500);}}
+var qc=ch.closest('.quick-check');if(qc)updateQC(qc);}
+function updateQC(qc){var items=qc.querySelectorAll('.discrim-challenge');var done=0,first=0;items.forEach(function(c){if(c.classList.contains('done')){done++;if(c.getAttribute('data-first-try')==='1')first++;}});if(done<items.length)return;var r=qc.querySelector('.qc-result');r.textContent=first+' of '+items.length+' right first time. '+(first>=items.length-1?'The moves are in your head. Now the checklist.':'Look back at '+qc.getAttribute('data-back')+' for the ones you missed, then come back to the checklist.');r.style.display='block';launchConfetti();}
+function toggleTimes(el){var body=el.closest('.card-body');body.classList.toggle('show-times');el.textContent=body.classList.contains('show-times')?'Hide test times':'Show how long each test took';}
+function toggleCheck(item){item.classList.toggle('checked');updateCheckProgress();}
+function updateCheckProgress(){var items=document.querySelectorAll('#mainChecklist .check-item');if(!items.length)return;var checked=document.querySelectorAll('#mainChecklist .check-item.checked').length;var fill=document.getElementById('checkProgressFill'),lbl=document.getElementById('checkProgressLabel');if(fill)fill.style.width=Math.round((checked/items.length)*100)+'%';if(lbl)lbl.innerHTML=checked===items.length?'<b style="color:#2d6a2d;">All done.</b>':checked+' of '+items.length+' checked';}
+function printChecklist(btn){var card=btn.closest('.card');var ci=card.querySelectorAll('.check-item.checked');ci.forEach(function(i){i.classList.remove('checked');});card.classList.add('print-target');window.print();card.classList.remove('print-target');ci.forEach(function(i){i.classList.add('checked');});}
+function showCompletion(){document.getElementById('completionOverlay').classList.add('visible');}
+function closeCompletion(){document.getElementById('completionOverlay').classList.remove('visible');}
+function launchConfetti(){var canvas=document.getElementById('confettiCanvas');var ctx=canvas.getContext('2d');canvas.width=window.innerWidth;canvas.height=window.innerHeight;var colors=['#b8860b','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b','#42a5f5'];var particles=[];for(var i=0;i<120;i++){particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height-canvas.height,w:Math.random()*10+5,h:Math.random()*6+3,color:colors[Math.floor(Math.random()*colors.length)],vx:(Math.random()-0.5)*4,vy:Math.random()*3+2,rot:Math.random()*360,rotV:(Math.random()-0.5)*10,life:1});}var frame=0;function animate(){ctx.clearRect(0,0,canvas.width,canvas.height);var alive=false;particles.forEach(function(p){if(p.life<=0)return;alive=true;p.x+=p.vx;p.y+=p.vy;p.vy+=0.05;p.rot+=p.rotV;if(p.y>canvas.height+20){p.life=0;return;}if(frame>60)p.life-=0.01;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();});frame++;if(alive)requestAnimationFrame(animate);else ctx.clearRect(0,0,canvas.width,canvas.height);}animate();}
+shuffleOptions();goTo(0);
+</script>
+<script src="../tracking.js"></script>
+</body>
+</html>
