@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Savyan's Writing Test Review: G3.2</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Calibri, 'Segoe UI', sans-serif; font-size: 12pt; color: #1a1a2e; background: #f0f0f5; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; padding: 20px; }
+.progress-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
+.progress-dot { width: 12px; height: 12px; border-radius: 50%; background: #ccc; transition: background 0.3s, transform 0.2s; cursor: pointer; position: relative; }
+.progress-dot.active { background: #b8860b; transform: scale(1.25); }
+.progress-dot.visited { background: #d9b56a; }
+.progress-dot:hover { transform: scale(1.3); }
+.progress-dot .dot-tooltip { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: #b8860b; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 8.5pt; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 100; }
+.progress-dot .dot-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #b8860b; }
+.progress-dot:hover .dot-tooltip { opacity: 1; }
+.card-breadcrumb { font-size: 9.5pt; color: #888; margin-bottom: 14px; text-align: center; transition: opacity 0.3s; min-height: 1.2em; }
+.card-breadcrumb b { color: #b8860b; }
+.sticky-indicator { position: fixed; top: 12px; right: 16px; background: #b8860b; color: #fff; padding: 5px 14px; border-radius: 20px; font-size: 9pt; font-weight: 700; opacity: 0; transition: opacity 0.3s; z-index: 200; pointer-events: none; letter-spacing: 0.5px; }
+.sticky-indicator.visible { opacity: 1; }
+.card-container { position: relative; width: 640px; min-height: 420px; }
+.card { position: absolute; top: 0; left: 0; width: 100%; background: #fff; border: 2.5px solid #b8860b; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.10); opacity: 0; pointer-events: none; transform: translateX(40px); transition: opacity 0.35s, transform 0.35s; }
+.card.active { opacity: 1; pointer-events: auto; transform: translateX(0); position: relative; }
+.card-header { background: #b8860b; color: #fff; padding: 14px 20px; border-radius: 11px 11px 0 0; }
+.card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+.card-header .card-subtitle { font-size: 9.5pt; color: #f0e2bd; margin-top: 2px; }
+.card-body { padding: 18px 22px 22px; line-height: 1.55; }
+.card-body p { margin: 6px 0; }
+.score-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; }
+.score-box { background: #f8f8fc; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 10px 14px; text-align: center; }
+.score-box .big { font-size: 20pt; font-weight: 700; }
+.score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+.score-good .big { color: #2d6a2d; }
+.score-warn .big { color: #cc6600; }
+.score-low .big { color: #cc0000; }
+.you-wrote { background: #fff3f3; border-left: 3px solid #cc0000; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.you-wrote .label { font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+.better, .model-box { background: #e8f5e9; border-left: 3px solid #2d6a2d; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.better .label, .model-box .label { font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+.tip-box { background: #e8edf5; border-left: 3px solid #b8860b; padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0; }
+.tip-box .label { font-weight: 700; font-size: 9.5pt; color: #b8860b; margin-bottom: 3px; }
+.rule-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 10px 14px; margin: 10px 0; font-size: 11pt; }
+.rule-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 3px; }
+.lbl { display: inline-block; font-size: 7.5pt; font-weight: 800; letter-spacing: 0.5px; padding: 1px 6px; border-radius: 4px; margin: 0 4px 0 0; vertical-align: middle; color: #fff; line-height: 1.5; }
+.lbl-say, .lbl-echo { background: #5c2dcc; } .lbl-show, .lbl-because { background: #2d6a2d; } .lbl-sowhat { background: #cc6600; } .lbl-close { background: #457b9d; } .lbl-miss { background: #cc0000; } .lbl-reason { background: #888; }
+.ex-list { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+.ex { padding: 8px 12px; border-radius: 6px; font-size: 10.5pt; border-left: 3px solid; }
+.ex.pos { background: #e8f5e9; border-color: #2d6a2d; } .ex.neg { background: #fff3f3; border-color: #cc0000; }
+.ex .tag { font-weight: 800; font-size: 8.5pt; margin-right: 6px; } .ex.pos .tag { color: #2d6a2d; } .ex.neg .tag { color: #cc0000; }
+.think { background: #f8f8fc; border-left: 3px solid #888; padding: 8px 14px; margin: 8px 0; font-size: 10.5pt; font-style: italic; color: #444; }
+.think .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #666; margin-bottom: 2px; }
+.highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+.error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+.discrim-option .error-mark { background: transparent; text-decoration: none; padding: 0; border-radius: 0; }
+.essay-excerpt { background: #fafafa; border: 1px solid #e0e0e8; border-radius: 6px; padding: 10px 14px; font-size: 10.5pt; margin: 8px 0; line-height: 1.7; }
+.discrim-challenge { background: #f8f5ff; border: 1.5px solid #d4c5ff; border-radius: 8px; padding: 14px; margin: 10px 0; }
+.discrim-prompt { font-weight: 700; font-size: 10.5pt; margin-bottom: 10px; color: #5c2dcc; }
+.discrim-options { display: flex; flex-direction: column; gap: 8px; }
+.discrim-option { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border: 2px solid #d4c5ff; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 10.5pt; background: #fff; }
+.discrim-option:hover { border-color: #7c4dff; background: #f5f0ff; }
+.discrim-label { font-weight: 800; color: #7c4dff; min-width: 20px; flex-shrink: 0; }
+.discrim-option.correct, .discrim-option.model { border-color: #2d6a2d; background: #e8f5e9; cursor: default; }
+.discrim-option.correct .discrim-label, .discrim-option.model .discrim-label { color: #2d6a2d; }
+.discrim-option.wrong { border-color: #cc0000; background: #fff3f3; cursor: default; }
+.discrim-option.wrong .discrim-label { color: #cc0000; }
+.discrim-option.locked { pointer-events: none; opacity: 0.5; }
+.discrim-challenge.done .discrim-option { cursor: default; }
+.discrim-feedback { margin-top: 0; font-size: 10pt; line-height: 1.45; max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.3s, opacity 0.3s, margin 0.3s; }
+.discrim-feedback.shown { max-height: 400px; opacity: 1; margin-top: 10px; }
+.discrim-feedback.right-fb { color: #2d6a2d; font-weight: 600; }
+.discrim-parallel { display: none; }
+.discrim-parallel.shown { display: block; }
+.discrim-parallel .discrim-prompt::before { content: 'One more like it. '; color: #888; font-weight: 600; }
+.reveal-wrapper { position: relative; }
+.reveal-cover { background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%); border-left: 3px solid #2d6a2d; padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 10px; transition: background 0.2s, box-shadow 0.2s; }
+.reveal-cover:hover { box-shadow: 0 2px 8px rgba(45,106,45,0.15); }
+.reveal-cover .reveal-icon { width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
+.reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #2d6a2d; }
+.reveal-cover .reveal-hint { font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px; }
+.reveal-content { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0; }
+.reveal-content.shown { max-height: 1200px; opacity: 1; margin: 8px 0; }
+.reveal-cover.hidden { display: none; }
+.your-turn { background: #f8f8fc; border: 1.5px dashed #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.your-turn .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.your-turn textarea { width: 100%; min-height: 64px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; margin: 4px 0; }
+.frame-row { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0; font-size: 10.5pt; }
+.frame-row .lbl { margin-top: 4px; }
+.frame-row .given { background: #fff; border: 1.5px solid #e0e0e8; border-radius: 6px; padding: 8px; flex: 1; color: #555; }
+.frame-row textarea { flex: 1; min-height: 48px; margin: 0; }
+.yt-btn { margin-top: 8px; padding: 7px 16px; border: 2px solid #2d6a2d; background: #fff; color: #2d6a2d; border-radius: 8px; font-family: inherit; font-weight: 600; font-size: 10pt; cursor: pointer; }
+.yt-btn:hover { background: #2d6a2d; color: #fff; }
+.yt-btn:disabled { opacity: 0.6; cursor: default; }
+.yt-model { display: none; margin-top: 10px; }
+.assembled { display: none; margin-top: 8px; }
+.assembled.shown { display: block; }
+.xp-link { display: inline-block; margin: 8px 6px 0 0; padding: 6px 14px; border-radius: 6px; background: #2d6a2d; color: #fff; font-weight: 700; font-size: 10pt; text-decoration: none; }
+.xp-link:hover { background: #1b5e1b; }
+.yt-model.shown { display: block; }
+.self-check .check-item { font-size: 10pt; padding: 6px 8px; }
+.check-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 8px; cursor: pointer; border-bottom: 1px solid #eee; border-radius: 6px; transition: background 0.15s; user-select: none; font-size: 11pt; }
+.check-item:last-child { border-bottom: none; }
+.check-item:hover { background: #f8f8fc; }
+.check-item.checked { background: #f0f8f0; }
+.check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
+.check-item.checked .check-box::after { content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
+.check-box { width: 28px; height: 28px; border: 2.5px solid #b8860b; border-radius: 6px; flex-shrink: 0; margin-top: 1px; position: relative; transition: background 0.2s, border-color 0.2s; }
+.self-check .check-box { width: 22px; height: 22px; }
+.checklist-progress { background: #eee; border-radius: 10px; height: 8px; margin: 12px 0 6px; overflow: hidden; }
+.checklist-progress-fill { background: linear-gradient(90deg, #2d6a2d, #4caf50); height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%; }
+.checklist-progress-label { font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px; }
+.quick-check { background: #f8f5ff; border: 2px solid #7c4dff; border-radius: 10px; padding: 12px 14px; margin: 10px 0; }
+.quick-check .qc-title { font-weight: 800; color: #5c2dcc; font-size: 10.5pt; margin-bottom: 4px; }
+.quick-check .qc-sub { font-size: 9.5pt; color: #666; margin-bottom: 6px; }
+.quick-check .discrim-challenge { background: #fff; margin: 8px 0; padding: 10px 12px; }
+.qc-result { display: none; font-weight: 700; margin-top: 8px; font-size: 10.5pt; color: #5c2dcc; }
+.recall-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.recall-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.recall-box textarea { width: 100%; min-height: 56px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; }
+.checklist-wrap { display: none; }
+.checklist-wrap.shown { display: block; }
+.time-toggle { font-size: 9pt; color: #b8860b; cursor: pointer; text-decoration: underline; display: inline-block; margin: 0 0 6px; }
+.tl-time { display: none; font-weight: 400; color: #aaa; }
+.show-times .tl-time { display: inline; }
+.guide-block { margin-top: 16px; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 8px 12px; background: #fafafa; font-size: 10pt; }
+.guide-block summary { cursor: pointer; font-weight: 700; color: #666; font-size: 9.5pt; }
+.guide-block ul { margin: 6px 0 4px 18px; }
+.guide-block li { margin: 4px 0; }
+.practice-recommendations { margin-top: 16px; border-top: 2px solid #e0e0e8; padding-top: 14px; }
+.practice-recs-title { font-size: 10pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #b8860b; margin-bottom: 10px; }
+.practice-tier { border-radius: 8px; padding: 12px 14px; margin: 8px 0; }
+.tier-primary { background: #e8f5e9; border: 1.5px solid #a5d6a7; }
+.tier-extra { background: #f8f8fc; border: 1.5px solid #e0e0e8; }
+.tier-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.tier-label { font-size: 8.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 2px 10px; border-radius: 10px; }
+.tier-primary .tier-label { background: #2d6a2d; color: #fff; }
+.tier-extra .tier-label { background: #888; color: #fff; }
+.tier-note { font-size: 9pt; color: #666; margin-bottom: 6px; line-height: 1.4; }
+.practice-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.practice-link { display: inline-block; padding: 5px 12px; border-radius: 6px; font-size: 9.5pt; font-weight: 600; text-decoration: none; transition: background 0.2s, transform 0.1s; }
+.tier-primary .practice-link { background: #c8e6c9; color: #1b5e1b; }
+.tier-extra .practice-link { background: #e8edf5; color: #b8860b; }
+.nav { display: flex; gap: 12px; margin-top: 16px; }
+.nav button { padding: 8px 28px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; transition: background 0.2s, color 0.2s; }
+.nav button:hover { background: #b8860b; color: #fff; }
+.print-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 8px 20px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 10.5pt; font-weight: 600; cursor: pointer; }
+.print-btn:hover { background: #b8860b; color: #fff; }
+.print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+.completion-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(184,134,11,0.6); z-index: 500; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s; }
+.completion-overlay.visible { opacity: 1; pointer-events: auto; }
+.completion-card { background: #fff; border-radius: 16px; padding: 40px 48px; text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2); transform: scale(0.8); transition: transform 0.4s ease; max-width: 420px; }
+.completion-overlay.visible .completion-card { transform: scale(1); }
+.completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+.completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; color: #b8860b; }
+.completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+.completion-close { margin-top: 20px; padding: 10px 32px; background: #b8860b; color: #fff; border: none; border-radius: 8px; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; }
+#confettiCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 501; }
+.score-timeline { display: flex; align-items: flex-end; gap: 0; margin: 12px 0 10px; padding: 0 6px; justify-content: space-between; }
+.timeline-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.timeline-score { font-size: 13pt; font-weight: 700; margin-bottom: 4px; }
+.timeline-bar { width: 70%; border-radius: 4px 4px 0 0; min-height: 8px; }
+.timeline-label { font-size: 8.5pt; color: #888; margin-top: 6px; font-weight: 600; text-align: center; }
+.score-green { color: #2d6a2d; } .score-amber { color: #cc6600; } .score-red { color: #cc0000; }
+.bar-green { background: linear-gradient(to top, #c8e6c9, #81c784); } .bar-amber { background: linear-gradient(to top, #ffe0b2, #ffb74d); } .bar-red { background: linear-gradient(to top, #ffcdd2, #ef9a9a); }
+.strength-chips, .growth-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; }
+.strength-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; background: #e8f5e9; color: #2d6a2d; border: 1.5px solid #a5d6a7; display: inline-flex; align-items: center; gap: 4px; }
+.strength-chip .chip-course, .growth-chip .chip-avg { font-size: 7.5pt; color: #888; font-weight: 400; }
+.journey-section { font-size: 9.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; margin: 10px 0 4px; padding-bottom: 3px; border-bottom: 1.5px solid; }
+.journey-section.strengths-header { color: #2d6a2d; border-color: #c8e6c9; }
+.journey-section.growth-header { color: #cc6600; border-color: #ffe0b2; }
+.root-cause-teaser { background: #f5f0ff; border-left: 3px solid #7c4dff; padding: 10px 14px; margin: 12px 0 4px; border-radius: 0 6px 6px 0; font-size: 10.5pt; line-height: 1.5; }
+.root-cause-teaser b { color: #5c2dcc; }
+.growth-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+.growth-chip.mixed { background: #fff8e8; color: #b35900; border: 1.5px solid #ffe0b2; }
+.growth-chip.weak { background: #fff3f3; color: #cc0000; border: 1.5px solid #ffcdd2; }
+@media print { body { background: #fff; padding: 0; min-height: auto; } .progress-bar, .nav, .print-btn, .card-breadcrumb, .sticky-indicator, .completion-overlay, #confettiCanvas, .reveal-cover, .checklist-progress, .checklist-progress-label, .discrim-challenge, .discrim-parallel, .quick-check, .recall-box, .yt-btn, .guide-block { display: none !important; } .card-container { width: 100%; min-height: auto; } .card { display: none !important; } .card.print-target { display: block !important; opacity: 1 !important; pointer-events: auto !important; position: relative !important; transform: none !important; box-shadow: none; border: 2px solid #b8860b; page-break-inside: avoid; } .reveal-content, .yt-model, .checklist-wrap { display: block !important; max-height: none !important; opacity: 1 !important; margin: 8px 0 !important; } }
+@media (max-width: 720px) { .card-container { width: 100%; } .score-grid { grid-template-columns: 1fr; } .timeline-score { font-size: 10pt; } }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progressBar"></div>
+<div class="card-breadcrumb" id="breadcrumb"></div>
+<div class="sticky-indicator" id="stickyIndicator"></div>
+<div class="card-container" id="cardContainer">
+
+<!-- Card 1: Score Overview -->
+<div class="card active" data-title="Score Overview">
+  <div class="card-header"><h2>Savyan Reyes</h2><div class="card-subtitle">Alpha Standardized Writing G3.2. September 2026. Passages: &ldquo;A Shower of Teddy Bears&rdquo; / &ldquo;One Book, One Camel&rdquo;</div></div>
+  <div class="card-body">
+    <div class="score-grid">
+      <div class="score-box score-good"><div class="big">80%</div><div class="label">Overall Score</div></div>
+      <div class="score-box score-warn"><div class="big">19/25</div><div class="label">Questions 1&ndash;10</div></div>
+      <div class="score-box score-good"><div class="big">17/20</div><div class="label">Paragraph (Question 11)</div></div>
+    </div>
+    <p>Savyan, this is 80%, up from your first test, and <b>five points from a pass</b>. The paragraph is the strongest thing here again: a clear main idea, real facts from the article, and a closing.</p>
+    <p>The short answers are where the points went. Q6, Q7 and Q8 each answer the question and then stop. None of them gives a reason, and the reason is worth a point on every one of those questions.</p>
+    <div class="root-cause-teaser"><b>The one skill:</b> Echo the Question, then because. Say the answer as a full sentence, then give the reason. You did exactly that on Q9 and earned all three points. Card 3 makes it the habit on every short answer.</div>
+  </div>
+</div>
+
+<!-- Card 2: Writing Journey -->
+<div class="card" data-title="Your Writing Journey">
+  <div class="card-header"><h2>Your Writing Journey</h2><div class="card-subtitle">Two tests, three weeks apart, and the second beat the first</div></div>
+  <div class="card-body">
+    <div class="score-timeline" style="justify-content:center;gap:60px;">
+      <div class="timeline-item" style="flex:0 0 120px;"><div class="timeline-score score-amber">78%</div><div class="timeline-bar bar-amber" style="height:70px;"></div><div class="timeline-label">G3.1 (Aug)<br><span class="tl-time">14m</span></div></div>
+      <div class="timeline-item" style="flex:0 0 120px;"><div class="timeline-score score-green">80%</div><div class="timeline-bar bar-green" style="height:72px;"></div><div class="timeline-label">G3.2 (Sep)<br><span class="tl-time">&ndash;</span></div></div>
+    </div>
+    <span class="time-toggle" onclick="toggleTimes(this)">Show how long each test took</span>
+    <p>Your G3.1 took 14 minutes and left Question 1 blank. This time every box has an answer in it, and the score moved up. The next move is inside the short answers, not the paragraph.</p>
+    <div class="journey-section strengths-header">Skills you do well</div>
+    <div class="strength-chips">
+      <span class="strength-chip">A paragraph with a main idea and facts <span class="chip-course">&middot; Q11, 18 then 17 of 20</span></span>
+      <span class="strength-chip">Joining sentences with so and because <span class="chip-course">&middot; Q2, Q10</span></span>
+      <span class="strength-chip">Answer plus a reason <span class="chip-course">&middot; Q9, full marks</span></span>
+    </div>
+    <div class="journey-section growth-header">What to work on</div>
+    <div class="growth-chips">
+      <span class="growth-chip weak">Answers that stop before the reason <span class="chip-avg">Q6, Q7, Q8</span></span>
+      <span class="growth-chip mixed">A comma before and, because or to <span class="chip-avg">Q2, Q5, Q7</span></span>
+    </div>
+    <div class="root-cause-teaser"><b>Worth knowing:</b> the comma habit is the same one your G3.1 review named. It has not cost a point on the short answers yet, but it is in the paragraph too, and the paragraph's conventions points are where 17 becomes 20.</div>
+  </div>
+</div>
+
+<!-- Card 3: Fix 1, Echo the Question then Because -->
+<div class="card" data-title="Fix 1: Echo, then Because">
+  <div class="card-header"><h2>Fix 1: Echo the Question, then Because</h2><div class="card-subtitle">Q6, Q7, Q8. The answer is there. The reason is not</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: ECHO THE QUESTION, THEN BECAUSE</div>Turn the question into a full sentence that gives your answer. Then add <b>because</b> and the reason. <b>Two checks:</b> cover the <i>Yes</i> or <i>No</i> at the start. What is left must still be a complete sentence. Then find the because. No because, no reason, and a point is gone.</div>
+
+    <p>Q6 asked: <i>Why do you think the Teddy Bear Toss is popular with fans?</i></p>
+    <div class="you-wrote"><div class="label">YOU WROTE (1 OUT OF 3)</div><span class="lbl lbl-miss">NO ECHO</span>&ldquo;Yes, because of the statement, &lsquo;This fun event sells out every year&rsquo;.&rdquo;<br><span style="font-size:9.5pt;color:#666;">Cover <i>Yes</i>: &ldquo;because of the statement...&rdquo; is not a sentence. And a why question cannot be answered with yes.</span></div>
+    <p>Q8 asked: <i>Would you like to attend a Teddy Bear Toss game?</i></p>
+    <div class="you-wrote"><div class="label">YOU WROTE (2 OUT OF 3)</div><span class="lbl lbl-echo">ECHO</span>&ldquo;Yes, I would like to attend a Teddy Bear Toss game.&rdquo; <span class="lbl lbl-miss">NO BECAUSE</span><br><span style="font-size:9.5pt;color:#666;">Cover <i>Yes</i>: a full sentence. But it stops there. No because, so no reason, so one point gone.</span></div>
+    <div class="model-box"><div class="label">YOUR Q9, SAME TEST (3 OUT OF 3)</div><span class="lbl lbl-echo">ECHO</span>Yes, it is a way <span class="lbl lbl-because">REASON</span>to bring the community together and give to those that are in need.<br><span style="font-size:9.5pt;color:#666;">The answer and the reason in one sentence. The reason does not need the word because, but it must be there.</span></div>
+    <div class="model-box"><div class="label">Q6 AND Q8, IN THAT SHAPE</div><span class="lbl lbl-echo">ECHO</span>The Teddy Bear Toss is popular with fans <span class="lbl lbl-because">BECAUSE</span>because they get to throw thousands of bears onto the ice and help children at the same time.<br><span class="lbl lbl-echo">ECHO</span>I would like to attend a Teddy Bear Toss game <span class="lbl lbl-because">BECAUSE</span>because I want to see the ice covered like a blanket.</div>
+
+    <p style="margin-top:10px;"><b>Three more that pass both checks</b>, from different questions:</p>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">PASSES</span><span class="lbl lbl-echo">ECHO</span>Workers needed over 30 minutes to clear the ice <span class="lbl lbl-because">BECAUSE</span>because thousands of bears were covering it.</div>
+      <div class="ex pos"><span class="tag">PASSES</span><span class="lbl lbl-echo">ECHO</span>The event helps children <span class="lbl lbl-because">BECAUSE</span>because every bear is donated to local charities.</div>
+      <div class="ex pos"><span class="tag">PASSES</span><span class="lbl lbl-echo">ECHO</span>I would keep the event once a year <span class="lbl lbl-because">BECAUSE</span>because waiting for it is part of the fun.</div>
+      <div class="ex neg"><span class="tag">FAILS</span>Yes, because every bear is donated to local charities.<br><span style="font-size:9.5pt;color:#666;">Same reason as above. Cover <i>Yes</i> and no echo is left.</span></div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Question: <i>Why did workers need more than 30 minutes?</i> Which answer earns all three points?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Cover Yes and nothing echoes the question. And a why question is not a yes-or-no question." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Yes, because the bears covered the ice.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="A full sentence that echoes the question, then because and the reason." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Workers needed more than 30 minutes because thousands of bears covered the ice.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Question: <i>Would you bring a teddy bear to the game?</i></div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Echo, then because. Both checks pass." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>I would bring a teddy bear because it would be donated to a child who needs one.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A full sentence, but it stops. No because, so no reason." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Yes, I would bring a teddy bear.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Question: <i>Do you think the record will be broken next year?</i> Which answer earns all three points?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="A full sentence, but it stops. No because, so no reason." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Yes, I think the record will be broken next year.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="The echo, then because, then a reason from the passage." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>I think the record will be broken next year because the game sells out every year and more fans keep coming.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Question: <i>What does the event show about the players?</i></div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="An answer with nothing behind it. Where is the because?" onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>It shows they enjoy it.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="The answer, then because, then a fact from the passage." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>It shows the players enjoy it because some of them posed for photos among the bears.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Question: <i>Why do some fans bring clear trash bags?</i> Which answer is a complete sentence?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;Some fans bring clear trash bags&rdquo; echoes the question and stands alone." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Some fans bring clear trash bags because they want to carry as many bears as they can.</span></div>
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Cover because and after: nothing is left. No echo." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Because they want to carry as many bears as they can.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Question: <i>Why did the ice look like a blanket?</i></div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Starts with because. Cover it and after, and nothing is left." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Because thousands of bears landed at once.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Echo first, then because." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The ice looked like a blanket because thousands of bears landed on it at once.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Every sentence you write from a prompt: echo the question, then because. Cover the <i>Yes</i> and check what is left before you submit.</div>
+  </div>
+</div>
+
+<!-- Card 4: Fix 2, The Comma Test -->
+<div class="card" data-title="Fix 2: The Comma Test">
+  <div class="card-header"><h2>Fix 2: The Comma Test</h2><div class="card-subtitle">Q2, Q5, Q7, and your G3.1 review. The same comma, four times</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: THE COMMA TEST</div>Before you put a comma in front of <b>and, because, so</b> or <b>to</b>, cover everything before the comma. If the words after it could stand alone as a sentence, keep the comma. If they cannot, delete it.</div>
+
+    <div class="model-box"><div class="label">YOUR Q10 (3 OUT OF 3). THIS COMMA BELONGS</div>The ice was covered in teddy bears, <span class="highlight">so the players skated among the bears.</span><br><span style="font-size:9.5pt;color:#666;">Cover before the comma: &ldquo;the players skated among the bears&rdquo; is a sentence on its own. Keep it.</span></div>
+    <div class="you-wrote"><div class="label">YOUR Q2. THIS ONE DOES NOT</div>Fans tossed bears onto the ice<span class="error-mark">,</span> because the Bears scored a goal.<br><span style="font-size:9.5pt;color:#666;">After the comma: &ldquo;because the Bears scored a goal&rdquo; cannot stand alone. Delete it.</span></div>
+    <div class="you-wrote"><div class="label">YOUR Q5 AND Q7. SAME COMMA</div>It shows that they care about their community<span class="error-mark">,</span> and take this tradition very seriously every year.<br>I would change it from only being once a year<span class="error-mark">,</span> to spread out through their calendar.<br><span style="font-size:9.5pt;color:#666;">&ldquo;take this tradition very seriously&rdquo; has no one doing the taking. &ldquo;to spread out through their calendar&rdquo; is not a sentence. Both commas go. Your G3.1 review found the same habit: &ldquo;is to, play catch.&rdquo;</span></div>
+
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">KEEP</span>Fans tossed the bears, and the players skated around them.</div>
+      <div class="ex pos"><span class="tag">KEEP</span>The Bears scored, so thousands of bears rained down.</div>
+      <div class="ex pos"><span class="tag">KEEP</span>The workers cleared the ice, but it took more than 30 minutes.</div>
+      <div class="ex neg"><span class="tag">DELETE</span>The workers cleared the ice, and posed for photos.<br><span style="font-size:9.5pt;color:#666;">&ldquo;posed for photos&rdquo; cannot stand alone.</span></div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which sentence passes the comma test?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Cover before the comma: &ldquo;because it happens once a year&rdquo; cannot stand alone. Delete the comma." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Fans look forward to it, because it happens once a year.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="No comma before because. Correct." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Fans look forward to it because it happens once a year.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence passes the comma test?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;the herders unload the boxes&rdquo; stands alone. Keep the comma." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>The camels kneel, and the herders unload the boxes.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="&ldquo;unload the boxes&rdquo; has no one doing the unloading. Delete the comma." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The camels kneel, and unload the boxes.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which one keeps its comma?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;some pack clear trash bags full&rdquo; stands alone. Keep it." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Fans bring as many bears as they want, and some pack clear trash bags full.</span></div>
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="&ldquo;pack clear trash bags full&rdquo; has no one doing the packing. Delete the comma." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Fans bring as many bears as they want, and pack clear trash bags full.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which one keeps its comma?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="&ldquo;use the books too&rdquo; has no one doing the using." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>People trust the camels, so use the books too.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;they use the books too&rdquo; stands alone. Keep it." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>People trust the camels, so they use the books too.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which sentence is punctuated correctly?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="&ldquo;when a lion scares Gellow&rdquo; cannot stand alone. No comma." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>The children save the books, when a lion scares Gellow.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="No comma needed. Correct." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The children save the books when a lion scares Gellow.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence is punctuated correctly?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="No comma before to. Correct." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>I would change the event to happen twice a year.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="&ldquo;to happen twice a year&rdquo; cannot stand alone. Delete the comma." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>I would change the event, to happen twice a year.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Every time you combine sentences: before you type a comma in front of and, because, so or to, cover everything before it and ask whether the rest could stand alone.</div>
+  </div>
+</div>
+
+<!-- Card 5: Paragraph Review -->
+<div class="card" data-title="Paragraph Review">
+  <div class="card-header"><h2>Your Paragraph: 17 out of 20</h2><div class="card-subtitle">A clear main idea, five facts, and three points sitting in the read-back</div></div>
+  <div class="card-body">
+    <p>The question: <i>Explain how the Camel Mobile Library has affected the people of Garissa.</i> Here is yours, labelled:</p>
+    <div class="essay-excerpt">
+      <span class="lbl lbl-say">SAY</span>The Camel Mobile Library has affected the people of Garissa in a positive way. <span class="lbl lbl-show">SHOW</span>Due to the people of Garissa moving a lot, there are no readily <span class="error-mark">accesible</span> libraries nearby. This is where the Camel Mobile Library comes into play. <span class="lbl lbl-show">SHOW</span>This way the books come to the people, via camel, and they don't have to travel far for books or <span class="error-mark">librarys</span>. <span class="lbl lbl-sowhat">SO WHAT</span>This can help the children learn new things and <span class="error-mark">storys</span>. <span class="lbl lbl-show">SHOW</span>The parents are also quite fond of the Camel Mobile Library<span class="error-mark">,</span> because they are used to and comfortable with the camels. <span class="lbl lbl-miss">NOT A SENTENCE</span><span class="error-mark">As well as, appreciating the story telling to the children of their people.</span> <span class="lbl lbl-close">CLOSE</span>Overall, the Camel Mobile Library has helped many children learn new things through the power of books.
+    </div>
+    <p>This is a real paragraph: a main idea, facts a reader could point to in the article, a sentence saying what it means for the children, and a closing. That is why it scored 17 and not 12. The three points are in the conventions line: three spellings, one comma from card 4, and one sentence that is not a sentence.</p>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Decide first: which of these is a complete sentence?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Nobody in this sentence is doing the appreciating. It is the tail of the sentence before it." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>As well as, appreciating the story telling to the children of their people.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="The parents appreciate. Someone is doing something. That is a sentence." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The parents also appreciate the storytelling for their children.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="reveal-wrapper">
+      <div class="reveal-cover" onclick="revealBetter(this)">
+        <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></div>
+        <div><div class="reveal-text">Tap to see the 20-point version</div><div class="reveal-hint">Your ideas and your order. Three spellings, one comma, one join</div></div>
+      </div>
+      <div class="reveal-content">
+        <div class="better"><div class="label">YOUR PARAGRAPH, READ BACK</div>
+          <span class="lbl lbl-say">SAY</span>The Camel Mobile Library has affected the people of Garissa in a positive way. <span class="lbl lbl-show">SHOW</span>Because the people of Garissa move a lot, there are no <b>accessible</b> libraries nearby. This is where the Camel Mobile Library comes into play. <span class="lbl lbl-show">SHOW</span>The books come to the people by camel, so they do not have to travel far for books or <b>libraries</b>. <span class="lbl lbl-sowhat">SO WHAT</span>This shows that the library fits the way the people already live, and it helps the children learn new things and <b>stories</b>. <span class="lbl lbl-show">SHOW</span>The parents are also fond of the Camel Mobile Library because they are used to the camels<b>, and they appreciate the storytelling for their children.</b> <span class="lbl lbl-close">CLOSE</span>Overall, the Camel Mobile Library has helped many children learn new things through the power of books.
+        </div>
+      </div>
+    </div>
+    <p style="font-size:10.5pt;">Nothing of yours was removed. The tail sentence was joined to the one before it with a comma that passes the test, because &ldquo;they appreciate the storytelling&rdquo; can stand alone.</p>
+  </div>
+</div>
+
+<!-- Card 6: Quick Check, Checklist -->
+<div class="card" data-title="Quick Check &amp; Checklist">
+  <div class="card-header"><h2>Quick Check</h2><div class="card-subtitle">Six new ones. Then your checklist</div></div>
+  <div class="card-body">
+    <div class="quick-check" data-back="card 3 or card 4">
+      <div class="qc-title">Two moves, six questions</div>
+      <div class="qc-sub">All new sentences. Answer each one once.</div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Question: <i>Do you think the Teddy Bear Toss helps the community?</i> Which answer earns all three points?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A full sentence, but it stops. No because." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Yes, it helps the community.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Echo, then because, then a fact from the passage." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The Teddy Bear Toss helps the community because every bear goes to a local charity.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence passes the comma test?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;the children loved it&rdquo; stands alone. Keep the comma." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Alfred wrote a story about a camel, and the children loved it.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="&ldquo;hoped children would read for life&rdquo; has no one doing the hoping. Delete the comma." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Alfred wrote a story about a camel, and hoped children would read for life.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Question: <i>Why do camels carry the books instead of trucks?</i> Which answer is complete?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Starts with because. Cover it and after, and nothing is left." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Because trucks cannot cross the rough land.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Echo first, then because." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Camels carry the books because trucks cannot cross the rough land of Garissa.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which one is a complete sentence?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Nobody is doing the carrying. It is a tail with no sentence in front." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>As well as carrying food and medicine.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="The camels carry. Someone is doing something, and the comma passes the test." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The camels carry food and medicine, and now they carry books too.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence passes the comma test?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="&ldquo;wait&rdquo; on its own has no one doing the waiting. Delete the comma." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>The camels kneel at the school, and wait.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;a tent goes up&rdquo; stands alone. Keep the comma." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The camels kneel at the school, and a tent goes up.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Question: <i>Would you like to ride a camel to the library?</i> Which answer earns all three points?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Echo, then because." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>I would like to ride a camel to the library because the trip would be part of the adventure.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A full sentence, but it stops. No because." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Yes, I would like to ride a camel to the library.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="qc-result"></div>
+    </div>
+
+    <div class="checklist-wrap shown">
+      <div id="mainChecklist">
+        <div class="checklist-progress-label" id="checkProgressLabel">0 of 5 checked</div>
+        <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Echo the Question, then because.</b> Cover the <i>Yes</i>: a full sentence must be left, and it must carry a reason.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>The comma test.</b> Before a comma in front of and, because, so or to, cover everything before it. If the rest cannot stand alone, delete the comma.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div>Every sentence in the paragraph has someone doing something. A tail like &ldquo;As well as...&rdquo; joins the sentence before it.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div>Give the test the time it needs. G3.1 took 14 minutes. Read every answer back once before submitting, and aim to spend at least ten minutes on the paragraph.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div>Read-back: accessible, libraries, stories, throughout, calendar, previous, event. A repeated phrase like &ldquo;that day ... that day&rdquo; gets deleted. A plain statement with a period is declarative, not exclamatory.</div></div>
+      </div>
+      <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>Print Checklist</button>
+    </div>
+  </div>
+</div>
+
+</div>
+<div class="nav"><button id="prevBtn" onclick="navigate(-1)">&larr; Back</button><button id="nextBtn" onclick="navigate(1)">Next &rarr;</button></div>
+<div class="completion-overlay" id="completionOverlay"><div class="completion-card"><div class="completion-emoji">&#9997;</div><div class="completion-title">Echo, then because.</div><div class="completion-sub">Every short answer: a full sentence that echoes the question, then because and the reason. Before any comma in front of and, because, so or to, check that the rest could stand alone. Then read every answer back once.</div><button class="completion-close" onclick="closeCompletion()">Got it</button></div></div>
+<canvas id="confettiCanvas"></canvas>
+<script>
+var cards=document.querySelectorAll('.card'),bar=document.getElementById('progressBar'),breadcrumb=document.getElementById('breadcrumb'),stickyEl=document.getElementById('stickyIndicator'),current=0,visited=[0];
+cards.forEach(function(card,i){var dot=document.createElement('div');dot.className='progress-dot'+(i===0?' active':'');var tooltip=document.createElement('span');tooltip.className='dot-tooltip';tooltip.textContent=card.getAttribute('data-title')||('Card '+(i+1));dot.appendChild(tooltip);dot.addEventListener('click',function(){goTo(i);});bar.appendChild(dot);});
+function updateBreadcrumb(){var title=cards[current].getAttribute('data-title')||('Card '+(current+1));breadcrumb.innerHTML='Card <b>'+(current+1)+'</b> of '+cards.length+' &mdash; '+title;stickyEl.textContent=(current+1)+' / '+cards.length;}
+function checkSticky(){var r=bar.getBoundingClientRect();stickyEl.classList.toggle('visible',r.bottom<0);}
+window.addEventListener('scroll',checkSticky);
+function goTo(idx){if(idx<0||idx>=cards.length)return;cards[current].classList.remove('active');bar.children[current].classList.remove('active');current=idx;if(visited.indexOf(current)===-1)visited.push(current);cards[current].classList.add('active');bar.children[current].classList.add('active');visited.forEach(function(v){if(v!==current)bar.children[v].classList.add('visited');});var p=document.getElementById('prevBtn'),n=document.getElementById('nextBtn');if(p){p.style.visibility=current===0?'hidden':'visible';p.disabled=current===0;}if(n){n.textContent=current===cards.length-1?'Done ✓':'Next →';}updateBreadcrumb();window.scrollTo({top:0,behavior:'smooth'});}
+function navigate(dir){if(dir===1&&current===cards.length-1){showCompletion();return;}goTo(current+dir);}
+document.addEventListener('keydown',function(e){if(e.target&&e.target.tagName==='TEXTAREA')return;if(e.key==='ArrowRight'||e.key==='ArrowDown')navigate(1);if(e.key==='ArrowLeft'||e.key==='ArrowUp')navigate(-1);});
+function revealBetter(cover){cover.nextElementSibling.classList.add('shown');cover.classList.add('hidden');}
+function shuffleOptions(){document.querySelectorAll('.discrim-options').forEach(function(box){var opts=Array.prototype.slice.call(box.querySelectorAll('.discrim-option'));for(var i=opts.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=opts[i];opts[i]=opts[j];opts[j]=t;}opts.forEach(function(o,i){box.appendChild(o);var l=o.querySelector('.discrim-label');if(l)l.textContent=String.fromCharCode(65+i);});});}
+function handleDiscrim(option){var ch=option.closest('.discrim-challenge');if(ch.classList.contains('done'))return;var fb=ch.querySelector('.discrim-feedback');var opts=ch.querySelectorAll('.discrim-option');var ok=option.getAttribute('data-correct')==='true';ch.classList.add('done');
+if(ok){option.classList.add('correct');opts.forEach(function(o){if(o!==option)o.classList.add('locked');});fb.innerHTML=option.getAttribute('data-right-feedback')||'Correct.';fb.className='discrim-feedback shown right-fb';ch.setAttribute('data-first-try','1');}
+else{option.classList.add('wrong');var right=ch.querySelector('.discrim-option[data-correct="true"]');right.classList.add('model');opts.forEach(function(o){if(o!==option&&o!==right)o.classList.add('locked');});var rl=right.querySelector('.discrim-label');fb.innerHTML='<span style="color:#cc0000"><b>Not this one.</b> '+(option.getAttribute('data-wrong-feedback')||'')+'</span><br><span style="color:#2d6a2d"><b>The answer is '+(rl?rl.textContent:'')+'.</b> '+(right.getAttribute('data-right-feedback')||'')+'</span>';fb.className='discrim-feedback shown';ch.setAttribute('data-first-try','0');var par=ch.nextElementSibling;if(par&&par.classList.contains('discrim-parallel')){fb.innerHTML+=' <b style="color:#5c2dcc">Try one more like it below.</b>';setTimeout(function(){par.classList.add('shown');},600);}}
+var bf=ch.closest('.build-frame');if(bf){var all=bf.querySelectorAll('.discrim-challenge'),dn=0;all.forEach(function(c){if(c.classList.contains('done'))dn++;});if(dn===all.length){var a=bf.querySelector('.assembled');if(a)setTimeout(function(){a.classList.add('shown');},500);}}
+var qc=ch.closest('.quick-check');if(qc)updateQC(qc);}
+function updateQC(qc){var items=qc.querySelectorAll('.discrim-challenge');var done=0,first=0;items.forEach(function(c){if(c.classList.contains('done')){done++;if(c.getAttribute('data-first-try')==='1')first++;}});if(done<items.length)return;var r=qc.querySelector('.qc-result');r.textContent=first+' of '+items.length+' right first time. '+(first>=items.length-1?'The moves are in your head. Now the checklist.':'Look back at '+qc.getAttribute('data-back')+' for the ones you missed, then come back to the checklist.');r.style.display='block';launchConfetti();}
+function toggleTimes(el){var body=el.closest('.card-body');body.classList.toggle('show-times');el.textContent=body.classList.contains('show-times')?'Hide test times':'Show how long each test took';}
+function toggleCheck(item){item.classList.toggle('checked');updateCheckProgress();}
+function updateCheckProgress(){var items=document.querySelectorAll('#mainChecklist .check-item');if(!items.length)return;var checked=document.querySelectorAll('#mainChecklist .check-item.checked').length;var fill=document.getElementById('checkProgressFill'),lbl=document.getElementById('checkProgressLabel');if(fill)fill.style.width=Math.round((checked/items.length)*100)+'%';if(lbl)lbl.innerHTML=checked===items.length?'<b style="color:#2d6a2d;">All done.</b>':checked+' of '+items.length+' checked';}
+function printChecklist(btn){var card=btn.closest('.card');var ci=card.querySelectorAll('.check-item.checked');ci.forEach(function(i){i.classList.remove('checked');});card.classList.add('print-target');window.print();card.classList.remove('print-target');ci.forEach(function(i){i.classList.add('checked');});}
+function showCompletion(){document.getElementById('completionOverlay').classList.add('visible');}
+function closeCompletion(){document.getElementById('completionOverlay').classList.remove('visible');}
+function launchConfetti(){var canvas=document.getElementById('confettiCanvas');var ctx=canvas.getContext('2d');canvas.width=window.innerWidth;canvas.height=window.innerHeight;var colors=['#b8860b','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b','#42a5f5'];var particles=[];for(var i=0;i<120;i++){particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height-canvas.height,w:Math.random()*10+5,h:Math.random()*6+3,color:colors[Math.floor(Math.random()*colors.length)],vx:(Math.random()-0.5)*4,vy:Math.random()*3+2,rot:Math.random()*360,rotV:(Math.random()-0.5)*10,life:1});}var frame=0;function animate(){ctx.clearRect(0,0,canvas.width,canvas.height);var alive=false;particles.forEach(function(p){if(p.life<=0)return;alive=true;p.x+=p.vx;p.y+=p.vy;p.vy+=0.05;p.rot+=p.rotV;if(p.y>canvas.height+20){p.life=0;return;}if(frame>60)p.life-=0.01;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();});frame++;if(alive)requestAnimationFrame(animate);else ctx.clearRect(0,0,canvas.width,canvas.height);}animate();}
+shuffleOptions();goTo(0);
+</script>
+<script src="../tracking.js"></script>
+</body>
+</html>
