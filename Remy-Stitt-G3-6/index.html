@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Remy's Writing Test Review: G3.6</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Calibri, 'Segoe UI', sans-serif; font-size: 12pt; color: #1a1a2e; background: #f0f0f5; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; padding: 20px; }
+.progress-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
+.progress-dot { width: 12px; height: 12px; border-radius: 50%; background: #ccc; transition: background 0.3s, transform 0.2s; cursor: pointer; position: relative; }
+.progress-dot.active { background: #b8860b; transform: scale(1.25); }
+.progress-dot.visited { background: #d9b56a; }
+.progress-dot:hover { transform: scale(1.3); }
+.progress-dot .dot-tooltip { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: #b8860b; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 8.5pt; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 100; }
+.progress-dot .dot-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #b8860b; }
+.progress-dot:hover .dot-tooltip { opacity: 1; }
+.card-breadcrumb { font-size: 9.5pt; color: #888; margin-bottom: 14px; text-align: center; transition: opacity 0.3s; min-height: 1.2em; }
+.card-breadcrumb b { color: #b8860b; }
+.sticky-indicator { position: fixed; top: 12px; right: 16px; background: #b8860b; color: #fff; padding: 5px 14px; border-radius: 20px; font-size: 9pt; font-weight: 700; opacity: 0; transition: opacity 0.3s; z-index: 200; pointer-events: none; letter-spacing: 0.5px; }
+.sticky-indicator.visible { opacity: 1; }
+.card-container { position: relative; width: 640px; min-height: 420px; }
+.card { position: absolute; top: 0; left: 0; width: 100%; background: #fff; border: 2.5px solid #b8860b; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.10); opacity: 0; pointer-events: none; transform: translateX(40px); transition: opacity 0.35s, transform 0.35s; }
+.card.active { opacity: 1; pointer-events: auto; transform: translateX(0); position: relative; }
+.card-header { background: #b8860b; color: #fff; padding: 14px 20px; border-radius: 11px 11px 0 0; }
+.card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+.card-header .card-subtitle { font-size: 9.5pt; color: #f0e2bd; margin-top: 2px; }
+.card-body { padding: 18px 22px 22px; line-height: 1.55; }
+.card-body p { margin: 6px 0; }
+.score-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; }
+.score-box { background: #f8f8fc; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 10px 14px; text-align: center; }
+.score-box .big { font-size: 20pt; font-weight: 700; }
+.score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+.score-good .big { color: #2d6a2d; }
+.score-warn .big { color: #cc6600; }
+.score-low .big { color: #cc0000; }
+.you-wrote { background: #fff3f3; border-left: 3px solid #cc0000; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.you-wrote .label { font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+.better, .model-box { background: #e8f5e9; border-left: 3px solid #2d6a2d; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.better .label, .model-box .label { font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+.tip-box { background: #e8edf5; border-left: 3px solid #b8860b; padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0; }
+.tip-box .label { font-weight: 700; font-size: 9.5pt; color: #b8860b; margin-bottom: 3px; }
+.rule-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 10px 14px; margin: 10px 0; font-size: 11pt; }
+.rule-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 3px; }
+.lbl { display: inline-block; font-size: 7.5pt; font-weight: 800; letter-spacing: 0.5px; padding: 1px 6px; border-radius: 4px; margin: 0 4px 0 0; vertical-align: middle; color: #fff; line-height: 1.5; }
+.lbl-say, .lbl-echo { background: #5c2dcc; } .lbl-show, .lbl-because { background: #2d6a2d; } .lbl-sowhat { background: #cc6600; } .lbl-close { background: #457b9d; } .lbl-miss { background: #cc0000; } .lbl-reason { background: #888; }
+.ex-list { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+.ex { padding: 8px 12px; border-radius: 6px; font-size: 10.5pt; border-left: 3px solid; }
+.ex.pos { background: #e8f5e9; border-color: #2d6a2d; } .ex.neg { background: #fff3f3; border-color: #cc0000; }
+.ex .tag { font-weight: 800; font-size: 8.5pt; margin-right: 6px; } .ex.pos .tag { color: #2d6a2d; } .ex.neg .tag { color: #cc0000; }
+.think { background: #f8f8fc; border-left: 3px solid #888; padding: 8px 14px; margin: 8px 0; font-size: 10.5pt; font-style: italic; color: #444; }
+.think .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #666; margin-bottom: 2px; }
+.highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+.error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+.discrim-option .error-mark { background: transparent; text-decoration: none; padding: 0; border-radius: 0; }
+.essay-excerpt { background: #fafafa; border: 1px solid #e0e0e8; border-radius: 6px; padding: 10px 14px; font-size: 10.5pt; margin: 8px 0; line-height: 1.7; }
+.discrim-challenge { background: #f8f5ff; border: 1.5px solid #d4c5ff; border-radius: 8px; padding: 14px; margin: 10px 0; }
+.discrim-prompt { font-weight: 700; font-size: 10.5pt; margin-bottom: 10px; color: #5c2dcc; }
+.discrim-options { display: flex; flex-direction: column; gap: 8px; }
+.discrim-option { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border: 2px solid #d4c5ff; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 10.5pt; background: #fff; }
+.discrim-option:hover { border-color: #7c4dff; background: #f5f0ff; }
+.discrim-label { font-weight: 800; color: #7c4dff; min-width: 20px; flex-shrink: 0; }
+.discrim-option.correct, .discrim-option.model { border-color: #2d6a2d; background: #e8f5e9; cursor: default; }
+.discrim-option.correct .discrim-label, .discrim-option.model .discrim-label { color: #2d6a2d; }
+.discrim-option.wrong { border-color: #cc0000; background: #fff3f3; cursor: default; }
+.discrim-option.wrong .discrim-label { color: #cc0000; }
+.discrim-option.locked { pointer-events: none; opacity: 0.5; }
+.discrim-challenge.done .discrim-option { cursor: default; }
+.discrim-feedback { margin-top: 0; font-size: 10pt; line-height: 1.45; max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.3s, opacity 0.3s, margin 0.3s; }
+.discrim-feedback.shown { max-height: 400px; opacity: 1; margin-top: 10px; }
+.discrim-feedback.right-fb { color: #2d6a2d; font-weight: 600; }
+.discrim-parallel { display: none; }
+.discrim-parallel.shown { display: block; }
+.discrim-parallel .discrim-prompt::before { content: 'One more like it. '; color: #888; font-weight: 600; }
+.reveal-wrapper { position: relative; }
+.reveal-cover { background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%); border-left: 3px solid #2d6a2d; padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 10px; transition: background 0.2s, box-shadow 0.2s; }
+.reveal-cover:hover { box-shadow: 0 2px 8px rgba(45,106,45,0.15); }
+.reveal-cover .reveal-icon { width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
+.reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #2d6a2d; }
+.reveal-cover .reveal-hint { font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px; }
+.reveal-content { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0; }
+.reveal-content.shown { max-height: 1200px; opacity: 1; margin: 8px 0; }
+.reveal-cover.hidden { display: none; }
+.your-turn { background: #f8f8fc; border: 1.5px dashed #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.your-turn .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.your-turn textarea { width: 100%; min-height: 64px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; margin: 4px 0; }
+.frame-row { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0; font-size: 10.5pt; }
+.frame-row .lbl { margin-top: 4px; }
+.frame-row .given { background: #fff; border: 1.5px solid #e0e0e8; border-radius: 6px; padding: 8px; flex: 1; color: #555; }
+.frame-row textarea { flex: 1; min-height: 48px; margin: 0; }
+.yt-btn { margin-top: 8px; padding: 7px 16px; border: 2px solid #2d6a2d; background: #fff; color: #2d6a2d; border-radius: 8px; font-family: inherit; font-weight: 600; font-size: 10pt; cursor: pointer; }
+.yt-btn:hover { background: #2d6a2d; color: #fff; }
+.yt-btn:disabled { opacity: 0.6; cursor: default; }
+.yt-model { display: none; margin-top: 10px; }
+.assembled { display: none; margin-top: 8px; }
+.assembled.shown { display: block; }
+.xp-link { display: inline-block; margin: 8px 6px 0 0; padding: 6px 14px; border-radius: 6px; background: #2d6a2d; color: #fff; font-weight: 700; font-size: 10pt; text-decoration: none; }
+.xp-link:hover { background: #1b5e1b; }
+.yt-model.shown { display: block; }
+.self-check .check-item { font-size: 10pt; padding: 6px 8px; }
+.check-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 8px; cursor: pointer; border-bottom: 1px solid #eee; border-radius: 6px; transition: background 0.15s; user-select: none; font-size: 11pt; }
+.check-item:last-child { border-bottom: none; }
+.check-item:hover { background: #f8f8fc; }
+.check-item.checked { background: #f0f8f0; }
+.check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
+.check-item.checked .check-box::after { content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
+.check-box { width: 28px; height: 28px; border: 2.5px solid #b8860b; border-radius: 6px; flex-shrink: 0; margin-top: 1px; position: relative; transition: background 0.2s, border-color 0.2s; }
+.self-check .check-box { width: 22px; height: 22px; }
+.checklist-progress { background: #eee; border-radius: 10px; height: 8px; margin: 12px 0 6px; overflow: hidden; }
+.checklist-progress-fill { background: linear-gradient(90deg, #2d6a2d, #4caf50); height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%; }
+.checklist-progress-label { font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px; }
+.quick-check { background: #f8f5ff; border: 2px solid #7c4dff; border-radius: 10px; padding: 12px 14px; margin: 10px 0; }
+.quick-check .qc-title { font-weight: 800; color: #5c2dcc; font-size: 10.5pt; margin-bottom: 4px; }
+.quick-check .qc-sub { font-size: 9.5pt; color: #666; margin-bottom: 6px; }
+.quick-check .discrim-challenge { background: #fff; margin: 8px 0; padding: 10px 12px; }
+.qc-result { display: none; font-weight: 700; margin-top: 8px; font-size: 10.5pt; color: #5c2dcc; }
+.recall-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.recall-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.recall-box textarea { width: 100%; min-height: 56px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; }
+.checklist-wrap { display: none; }
+.checklist-wrap.shown { display: block; }
+.time-toggle { font-size: 9pt; color: #b8860b; cursor: pointer; text-decoration: underline; display: inline-block; margin: 0 0 6px; }
+.tl-time { display: none; font-weight: 400; color: #aaa; }
+.show-times .tl-time { display: inline; }
+.guide-block { margin-top: 16px; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 8px 12px; background: #fafafa; font-size: 10pt; }
+.guide-block summary { cursor: pointer; font-weight: 700; color: #666; font-size: 9.5pt; }
+.guide-block ul { margin: 6px 0 4px 18px; }
+.guide-block li { margin: 4px 0; }
+.practice-recommendations { margin-top: 16px; border-top: 2px solid #e0e0e8; padding-top: 14px; }
+.practice-recs-title { font-size: 10pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #b8860b; margin-bottom: 10px; }
+.practice-tier { border-radius: 8px; padding: 12px 14px; margin: 8px 0; }
+.tier-primary { background: #e8f5e9; border: 1.5px solid #a5d6a7; }
+.tier-extra { background: #f8f8fc; border: 1.5px solid #e0e0e8; }
+.tier-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.tier-label { font-size: 8.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 2px 10px; border-radius: 10px; }
+.tier-primary .tier-label { background: #2d6a2d; color: #fff; }
+.tier-extra .tier-label { background: #888; color: #fff; }
+.tier-note { font-size: 9pt; color: #666; margin-bottom: 6px; line-height: 1.4; }
+.practice-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.practice-link { display: inline-block; padding: 5px 12px; border-radius: 6px; font-size: 9.5pt; font-weight: 600; text-decoration: none; transition: background 0.2s, transform 0.1s; }
+.tier-primary .practice-link { background: #c8e6c9; color: #1b5e1b; }
+.tier-extra .practice-link { background: #e8edf5; color: #b8860b; }
+.nav { display: flex; gap: 12px; margin-top: 16px; }
+.nav button { padding: 8px 28px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; transition: background 0.2s, color 0.2s; }
+.nav button:hover { background: #b8860b; color: #fff; }
+.print-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 8px 20px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 10.5pt; font-weight: 600; cursor: pointer; }
+.print-btn:hover { background: #b8860b; color: #fff; }
+.print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+.completion-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(184,134,11,0.6); z-index: 500; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s; }
+.completion-overlay.visible { opacity: 1; pointer-events: auto; }
+.completion-card { background: #fff; border-radius: 16px; padding: 40px 48px; text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2); transform: scale(0.8); transition: transform 0.4s ease; max-width: 420px; }
+.completion-overlay.visible .completion-card { transform: scale(1); }
+.completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+.completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; color: #b8860b; }
+.completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+.completion-close { margin-top: 20px; padding: 10px 32px; background: #b8860b; color: #fff; border: none; border-radius: 8px; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; }
+#confettiCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 501; }
+.score-timeline { display: flex; align-items: flex-end; gap: 0; margin: 12px 0 10px; padding: 0 6px; justify-content: space-between; }
+.timeline-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.timeline-score { font-size: 13pt; font-weight: 700; margin-bottom: 4px; }
+.timeline-bar { width: 70%; border-radius: 4px 4px 0 0; min-height: 8px; }
+.timeline-label { font-size: 8.5pt; color: #888; margin-top: 6px; font-weight: 600; text-align: center; }
+.score-green { color: #2d6a2d; } .score-amber { color: #cc6600; } .score-red { color: #cc0000; }
+.bar-green { background: linear-gradient(to top, #c8e6c9, #81c784); } .bar-amber { background: linear-gradient(to top, #ffe0b2, #ffb74d); } .bar-red { background: linear-gradient(to top, #ffcdd2, #ef9a9a); }
+.strength-chips, .growth-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; }
+.strength-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; background: #e8f5e9; color: #2d6a2d; border: 1.5px solid #a5d6a7; display: inline-flex; align-items: center; gap: 4px; }
+.strength-chip .chip-course, .growth-chip .chip-avg { font-size: 7.5pt; color: #888; font-weight: 400; }
+.journey-section { font-size: 9.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; margin: 10px 0 4px; padding-bottom: 3px; border-bottom: 1.5px solid; }
+.journey-section.strengths-header { color: #2d6a2d; border-color: #c8e6c9; }
+.journey-section.growth-header { color: #cc6600; border-color: #ffe0b2; }
+.root-cause-teaser { background: #f5f0ff; border-left: 3px solid #7c4dff; padding: 10px 14px; margin: 12px 0 4px; border-radius: 0 6px 6px 0; font-size: 10.5pt; line-height: 1.5; }
+.root-cause-teaser b { color: #5c2dcc; }
+.growth-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+.growth-chip.mixed { background: #fff8e8; color: #b35900; border: 1.5px solid #ffe0b2; }
+.growth-chip.weak { background: #fff3f3; color: #cc0000; border: 1.5px solid #ffcdd2; }
+@media print { body { background: #fff; padding: 0; min-height: auto; } .progress-bar, .nav, .print-btn, .card-breadcrumb, .sticky-indicator, .completion-overlay, #confettiCanvas, .reveal-cover, .checklist-progress, .checklist-progress-label, .discrim-challenge, .discrim-parallel, .quick-check, .recall-box, .yt-btn, .guide-block { display: none !important; } .card-container { width: 100%; min-height: auto; } .card { display: none !important; } .card.print-target { display: block !important; opacity: 1 !important; pointer-events: auto !important; position: relative !important; transform: none !important; box-shadow: none; border: 2px solid #b8860b; page-break-inside: avoid; } .reveal-content, .yt-model, .checklist-wrap { display: block !important; max-height: none !important; opacity: 1 !important; margin: 8px 0 !important; } }
+@media (max-width: 720px) { .card-container { width: 100%; } .score-grid { grid-template-columns: 1fr; } .timeline-score { font-size: 10pt; } }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progressBar"></div>
+<div class="card-breadcrumb" id="breadcrumb"></div>
+<div class="sticky-indicator" id="stickyIndicator"></div>
+<div class="card-container" id="cardContainer">
+
+<!-- Card 1: Score Overview -->
+<div class="card active" data-title="Score Overview">
+  <div class="card-header"><h2>Remy Stitt</h2><div class="card-subtitle">Alpha Standardized Writing G3.6. September 2026. Passages: &ldquo;Porcupines in Danger&rdquo; / &ldquo;The Life of a Porcupine&rdquo;</div></div>
+  <div class="card-body">
+    <div class="score-grid">
+      <div class="score-box score-good"><div class="big">89%</div><div class="label">Overall Score</div></div>
+      <div class="score-box score-good"><div class="big">25/25</div><div class="label">Questions 1&ndash;10</div></div>
+      <div class="score-box score-warn"><div class="big">15/20</div><div class="label">Paragraph (Question 11)</div></div>
+    </div>
+    <p>Remy, this is 89%, your best test yet, and <b>one point from a pass</b>. Questions 1 to 10 were perfect. Five days ago that section lost three points to a fused sentence and an adjective posing as an appositive. Both are fixed.</p>
+    <p>The paragraph earned 15 of 20, and it lost the points the same way the G3.5 paragraph did. It has the right idea and two real reasons, the climbing and the quills. It has no fact from the passage behind either one, and no sentence saying what the fact proves.</p>
+    <div class="root-cause-teaser"><b>The one skill, for the second test running:</b> Show, then So What. After each reason, one fact from the passage, then a sentence that starts <i>This shows</i>. Card 3 builds it on your own two reasons.</div>
+  </div>
+</div>
+
+<!-- Card 2: Writing Journey -->
+<div class="card" data-title="Your Writing Journey">
+  <div class="card-header"><h2>Your Writing Journey</h2><div class="card-subtitle">Eight tests since July. The last three are the top three</div></div>
+  <div class="card-body">
+    <div class="score-timeline">
+      <div class="timeline-item"><div class="timeline-score score-amber">76%</div><div class="timeline-bar bar-amber" style="height:68px;"></div><div class="timeline-label">G3.1 (Jul)<br><span class="tl-time">11m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-amber">71%</div><div class="timeline-bar bar-amber" style="height:64px;"></div><div class="timeline-label">G3.2 (Aug)<br><span class="tl-time">16m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">81%</div><div class="timeline-bar bar-green" style="height:73px;"></div><div class="timeline-label">G3.1<br><span class="tl-time">11m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-amber">76%</div><div class="timeline-bar bar-amber" style="height:68px;"></div><div class="timeline-label">G3.2<br><span class="tl-time">10m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-red">42%</div><div class="timeline-bar bar-red" style="height:38px;"></div><div class="timeline-label">G3.3<br><span class="tl-time">12m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">87%</div><div class="timeline-bar bar-green" style="height:78px;"></div><div class="timeline-label">G3.4<br><span class="tl-time">16m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">84%</div><div class="timeline-bar bar-green" style="height:76px;"></div><div class="timeline-label">G3.5<br><span class="tl-time">17m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">89%</div><div class="timeline-bar bar-green" style="height:80px;"></div><div class="timeline-label">G3.6<br><span class="tl-time">&ndash;</span></div></div>
+    </div>
+    <span class="time-toggle" onclick="toggleTimes(this)">Show how long each test took</span>
+    <p>Questions 1 to 10 went from 22 to 25 out of 25 in five days. The paragraph has gone 0, 14, 16, 15 out of 20 across the last four tests, and it is now the only box between you and the pass.</p>
+    <div class="journey-section strengths-header">Skills you do well</div>
+    <div class="strength-chips">
+      <span class="strength-chip">Sentence work, every question <span class="chip-course">&middot; Q1&ndash;Q5, 10 of 10</span></span>
+      <span class="strength-chip">Answer plus a reason <span class="chip-course">&middot; Q6&ndash;Q10, 15 of 15</span></span>
+      <span class="strength-chip">A real central idea in the paragraph <span class="chip-course">&middot; Q11</span></span>
+    </div>
+    <div class="journey-section growth-header">What to work on</div>
+    <div class="growth-chips">
+      <span class="growth-chip weak">Reasons with no passage fact behind them <span class="chip-avg">Q11, second test running</span></span>
+      <span class="growth-chip mixed">there for their <span class="chip-avg">five times</span></span>
+    </div>
+    <div class="root-cause-teaser"><b>Same box, same gap as G3.5:</b> the right idea, none of the passage&rsquo;s facts. This passage had them ready: 30,000 quills, long claws and rough paws, a tail that swings, quills that stick in and keep moving deeper.</div>
+  </div>
+</div>
+
+<!-- Card 3: Fix 1, Show then So What -->
+<div class="card" data-title="Fix 1: Show, then So What">
+  <div class="card-header"><h2>Fix 1: Show, then So What</h2><div class="card-subtitle">Your two reasons are right. Each one needs a fact and a This shows</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: SHOW, THEN SO WHAT</div>After every reason, one <b>fact from the passage</b>, a thing you could point to in the text. Then one sentence that starts <b><i>This shows</i></b>. <b>The check:</b> could a reader find your fact in the passage? If not, it is not a fact yet. Two reasons means two facts and two <i>This shows</i>.</div>
+
+    <p>Your first reason:</p>
+    <div class="you-wrote"><div class="label">YOU WROTE</div><span class="lbl lbl-reason">REASON, NO FACT</span>&ldquo;First they are amazing climbers be able to spend most of there time in trees away from danger.&rdquo;<br><span style="font-size:9.5pt;color:#666;">True, and it is the passage&rsquo;s own idea. But nothing here could be pointed to in the text.</span></div>
+    <div class="model-box"><div class="label">THE SAME REASON, WITH SHOW AND SO WHAT</div><span class="lbl lbl-reason">REASON</span>First, porcupines are amazing climbers. <span class="lbl lbl-show">SHOW</span>The passage says their long claws and rough paws help them grip branches so they can climb easily. <span class="lbl lbl-sowhat">SO WHAT</span>This shows that a porcupine&rsquo;s body gets it up and out of a predator&rsquo;s reach.</div>
+
+    <p>Your second reason:</p>
+    <div class="you-wrote"><div class="label">YOU WROTE</div><span class="lbl lbl-reason">REASON, NO FACT</span>&ldquo;Next they have quills to protect them from danger.&rdquo;</div>
+    <div class="model-box"><div class="label">WITH SHOW AND SO WHAT</div><span class="lbl lbl-reason">REASON</span>Next, they have quills to protect them. <span class="lbl lbl-show">SHOW</span>A porcupine is covered with more than 30,000 quills, and if a predator ignores its warning it whirls around and swings its tail. <span class="lbl lbl-sowhat">SO WHAT</span>This shows that the quills are a weapon as well as armor.</div>
+
+    <div class="model-box"><div class="label">YOU HAVE DONE THE FACT MOVE BEFORE. YOUR G3.5 Q9, FULL MARKS</div>The Little Golden Books sold so well because <span class="highlight">they stood out</span> and <span class="highlight">made every child feel special</span>.<br><span style="font-size:9.5pt;color:#666;">Two facts from that passage, in one sentence. The paragraph needs the same move, twice.</span></div>
+
+    <p style="margin-top:10px;"><b>Three more pairs</b>, each from a different part of the passage:</p>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">FACT</span><span class="lbl lbl-show">SHOW</span>The quills are long, stiff hairs that can stick into an attacker&rsquo;s skin and keep moving in deeper. <span class="lbl lbl-sowhat">SO WHAT</span>This shows that one poke is enough to make a predator give up.</div>
+      <div class="ex pos"><span class="tag">FACT</span><span class="lbl lbl-show">SHOW</span>When it is frightened, a porcupine lifts its quills and makes a sharp sound with its teeth. <span class="lbl lbl-sowhat">SO WHAT</span>This shows that its body warns enemies before any fight starts.</div>
+      <div class="ex pos"><span class="tag">FACT</span><span class="lbl lbl-show">SHOW</span>A baby&rsquo;s quills are soft when it is born but soon harden. <span class="lbl lbl-sowhat">SO WHAT</span>This shows that even a young porcupine&rsquo;s body gets ready to keep it safe.</div>
+      <div class="ex neg"><span class="tag">NOT A FACT</span>Porcupines have quills that keep them safe.<br><span style="font-size:9.5pt;color:#666;">The reason again in new words. Nothing to point to.</span></div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which sentence SHOWS a fact you could point to in the passage?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="A reason in new words. Nothing in it can be found in the text." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Porcupines are good at staying safe.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="30,000 quills is in the passage." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>A porcupine is covered with more than 30,000 quills.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which one is a fact from the passage?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Pine needles in winter. You could point to it." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>In winter, when food is harder to find, porcupines eat pine needles.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Too general to point to." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Porcupines eat whatever they can find.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which one is a SO WHAT sentence?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="A fact, so a SHOW. It does not say what the fact proves." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>The porcupine swings its tail at the attacker.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;This shows&rdquo; plus what the fact proves." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>This shows that the porcupine&rsquo;s tail turns its quills into a weapon.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which one is a SO WHAT?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;This shows&rdquo; plus what it proves." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>This shows that the trees are a safe place as well as a food source.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A fact from the passage, so a SHOW." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>From the trees, porcupines eat buds, leaves and bark.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Question: <i>Why do porcupines spend so much time in trees?</i> Which answer has a fact from the passage in it?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="True, but nothing you could point to in the passage." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Porcupines spend time in trees to stay safe.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="Claws and rough paws gripping branches is in the passage." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Porcupines spend time in trees because their claws and rough paws grip the branches, and the trees keep them away from danger.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Question: <i>What might happen if an animal ignores the warning?</i></div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Whirls, swings, quills stick and keep moving deeper. All in the passage." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>The porcupine will whirl around and swing its tail, and the quills can stick in and keep moving deeper.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="True, but too thin to point to." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>It might get poked.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Every paragraph: after each reason, one fact you could point to in the passage, then <i>This shows</i>. Find the facts before you start writing.</div>
+  </div>
+</div>
+
+<!-- Card 4: Paragraph Review -->
+<div class="card" data-title="Paragraph Review">
+  <div class="card-header"><h2>Your Paragraph: 15 out of 20</h2><div class="card-subtitle">The right skeleton, no passage facts, and a read-back list</div></div>
+  <div class="card-body">
+    <p>The question: <i>Explain how the porcupine&rsquo;s body helps it stay safe in the wild. Use facts from the passage.</i> Here is yours, labelled:</p>
+    <div class="essay-excerpt">
+      <span class="lbl lbl-say">SAY</span>The porcupine is <span class="error-mark">a</span> incredible animal<span class="error-mark"> it</span> has adapted to <span class="error-mark">there</span> <span class="error-mark">enverienment</span> in some <span class="error-mark">amzing</span> ways. <span class="lbl lbl-reason">REASON, NO FACT</span>First they are amazing climbers be able to spend most of <span class="error-mark">there</span> time in trees away from danger. <span class="lbl lbl-reason">REASON, NO FACT</span>Next they have quills to protect them from danger. <span class="lbl lbl-close">CLOSE</span>In conclusion since porcupines are able to stay in trees and use <span class="error-mark">there</span> quills to protect them they increase <span class="error-mark">there</span> <span class="error-mark">surviver</span> rate by a lot.
+    </div>
+    <p>The skeleton is right: a main idea, two reasons, a closing. Both reasons are the passage&rsquo;s. What the grading did not find: one thing it could point to in the text, and a <i>This shows</i> after it. The conventions line: <i>there</i> for <i>their</i> four times, <i>a</i> incredible, three spellings, and a first sentence that is two sentences with no period between them.</p>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Decide first: how many facts from the passage are in your paragraph?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Trees and quills are your reasons, not facts. The passage&rsquo;s facts are the claws, the 30,000 quills, the swinging tail." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Two: the trees and the quills.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="None yet. Two reasons, nothing a reader could find in the text. That is the gap, same as G3.5." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>None.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Five times on this test. Which one is right?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="true" data-right-feedback="Their: belonging to them. Their time, their quills, their environment." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Porcupines spend most of their time in trees.</span></div>
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="There is a place. Belonging to them is their." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Porcupines spend most of there time in trees.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="reveal-wrapper">
+      <div class="reveal-cover" onclick="revealBetter(this)">
+        <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></div>
+        <div><div class="reveal-text">Tap to see the 20-point version</div><div class="reveal-hint">Your main idea, your two reasons, your closing. A fact and a This shows behind each reason</div></div>
+      </div>
+      <div class="reveal-content">
+        <div class="better"><div class="label">YOUR PARAGRAPH, WITH SHOW AND SO WHAT</div>
+          <span class="lbl lbl-say">SAY</span>The porcupine is <b>an</b> incredible animal<b>.</b> Its body has adapted to <b>its environment</b> in some <b>amazing</b> ways. <span class="lbl lbl-reason">REASON</span>First, porcupines are amazing climbers. <span class="lbl lbl-show">SHOW</span>The passage says their long claws and rough paws help them grip branches so they can climb easily, and from the trees they eat buds, leaves and bark. <span class="lbl lbl-sowhat">SO WHAT</span>This shows that a porcupine&rsquo;s body gets it up and out of a predator&rsquo;s reach. <span class="lbl lbl-reason">REASON</span>Next, they have quills to protect them. <span class="lbl lbl-show">SHOW</span>A porcupine is covered with more than 30,000 quills, and if a predator ignores its warning it whirls around and swings its tail so the quills stick in and keep moving deeper. <span class="lbl lbl-sowhat">SO WHAT</span>This shows that the quills are a weapon as well as armor. <span class="lbl lbl-close">CLOSE</span>In conclusion, because porcupines can stay in the trees and use <b>their</b> quills, <b>their</b> bodies raise <b>their survival</b> rate by a lot.
+        </div>
+      </div>
+    </div>
+    <p style="font-size:10.5pt;">Your main idea, your two reasons, your closing. Each reason got a fact and a <i>This shows</i>. The read-back fixed <i>their</i>, <i>an</i>, environment, amazing, survival, and put a period after <i>animal</i>. That is the five points.</p>
+  </div>
+</div>
+
+<!-- Card 5: Quick Check, Checklist -->
+<div class="card" data-title="Quick Check &amp; Checklist">
+  <div class="card-header"><h2>Quick Check</h2><div class="card-subtitle">Six new ones. Then your checklist</div></div>
+  <div class="card-body">
+    <div class="quick-check" data-back="card 3">
+      <div class="qc-title">One move and a read-back, six questions</div>
+      <div class="qc-sub">All new sentences. Answer each one once.</div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which SHOWS a fact from the passage?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="An opinion. Nothing to point to." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Porcupines are tough little animals.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Long, stiff hairs. In the passage." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>A porcupine&rsquo;s quills are actually long, stiff hairs.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which one is a SO WHAT?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;This shows&rdquo; plus what the fact proves." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>This shows that the warning gives a predator a chance to back off before anyone gets hurt.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A fact from the passage, so a SHOW." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>A frightened porcupine makes a sharp sound with its teeth.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which one is right?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Its: belonging to it. No apostrophe." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>The porcupine lifts its quills.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="It&rsquo;s means it is. The quills belong to it: its." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The porcupine lifts it&rsquo;s quills.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which SHOWS a fact from the passage?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="One baby, in spring. In the passage." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>In spring, a mother porcupine gives birth to one baby.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Too general to point to." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Porcupines have babies.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which one is right?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="There is a place. Belonging to them is their." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Porcupines protect there babies with there quills.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Their, both times." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Porcupines protect their babies with their quills.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which one has a period where the first sentence ends?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Two complete sentences fused at &ldquo;animal it.&rdquo; Nothing marks where the first one ends." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>The porcupine is an incredible animal it has adapted in amazing ways.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Cover the second half: &ldquo;It has adapted in amazing ways&rdquo; stands alone. The period belongs in front of it." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The porcupine is an incredible animal. It has adapted in amazing ways.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="qc-result"></div>
+    </div>
+
+    <div class="checklist-wrap shown">
+      <div id="mainChecklist">
+        <div class="checklist-progress-label" id="checkProgressLabel">0 of 5 checked</div>
+        <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Show, then So What.</b> After every reason: one fact I could point to in the passage, then a sentence that starts <i>This shows</i>. Two reasons, two facts, two <i>This shows</i>.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div>Before the paragraph, go back into the passage and find the facts first. Type them into the box as a plan, then write. Aim to spend at least ten minutes on the paragraph.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><i>Their</i> (belongs to them), not <i>there</i> (a place). <i>Its</i> (belongs to it), not <i>it&rsquo;s</i> (it is). <i>An</i> before a vowel: an incredible animal.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div>Two complete sentences need a period between them. Cover the second half: if it stands alone, put a period in front of it.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div>Read every answer back once before submitting: environment, amazing, survival, tightly.</div></div>
+      </div>
+      <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>Print Checklist</button>
+    </div>
+  </div>
+</div>
+
+</div>
+<div class="nav"><button id="prevBtn" onclick="navigate(-1)">&larr; Back</button><button id="nextBtn" onclick="navigate(1)">Next &rarr;</button></div>
+<div class="completion-overlay" id="completionOverlay"><div class="completion-card"><div class="completion-emoji">&#9997;</div><div class="completion-title">One point. It is in the paragraph.</div><div class="completion-sub">After each reason, one fact from the passage, then This shows. Two reasons, two facts, two This shows lines. Their, its, an, and a period between two sentences. That is the pass.</div><button class="completion-close" onclick="closeCompletion()">Got it</button></div></div>
+<canvas id="confettiCanvas"></canvas>
+<script>
+var cards=document.querySelectorAll('.card'),bar=document.getElementById('progressBar'),breadcrumb=document.getElementById('breadcrumb'),stickyEl=document.getElementById('stickyIndicator'),current=0,visited=[0];
+cards.forEach(function(card,i){var dot=document.createElement('div');dot.className='progress-dot'+(i===0?' active':'');var tooltip=document.createElement('span');tooltip.className='dot-tooltip';tooltip.textContent=card.getAttribute('data-title')||('Card '+(i+1));dot.appendChild(tooltip);dot.addEventListener('click',function(){goTo(i);});bar.appendChild(dot);});
+function updateBreadcrumb(){var title=cards[current].getAttribute('data-title')||('Card '+(current+1));breadcrumb.innerHTML='Card <b>'+(current+1)+'</b> of '+cards.length+' &mdash; '+title;stickyEl.textContent=(current+1)+' / '+cards.length;}
+function checkSticky(){var r=bar.getBoundingClientRect();stickyEl.classList.toggle('visible',r.bottom<0);}
+window.addEventListener('scroll',checkSticky);
+function goTo(idx){if(idx<0||idx>=cards.length)return;cards[current].classList.remove('active');bar.children[current].classList.remove('active');current=idx;if(visited.indexOf(current)===-1)visited.push(current);cards[current].classList.add('active');bar.children[current].classList.add('active');visited.forEach(function(v){if(v!==current)bar.children[v].classList.add('visited');});var p=document.getElementById('prevBtn'),n=document.getElementById('nextBtn');if(p){p.style.visibility=current===0?'hidden':'visible';p.disabled=current===0;}if(n){n.textContent=current===cards.length-1?'Done ✓':'Next →';}updateBreadcrumb();window.scrollTo({top:0,behavior:'smooth'});}
+function navigate(dir){if(dir===1&&current===cards.length-1){showCompletion();return;}goTo(current+dir);}
+document.addEventListener('keydown',function(e){if(e.target&&e.target.tagName==='TEXTAREA')return;if(e.key==='ArrowRight'||e.key==='ArrowDown')navigate(1);if(e.key==='ArrowLeft'||e.key==='ArrowUp')navigate(-1);});
+function revealBetter(cover){cover.nextElementSibling.classList.add('shown');cover.classList.add('hidden');}
+function shuffleOptions(){document.querySelectorAll('.discrim-options').forEach(function(box){var opts=Array.prototype.slice.call(box.querySelectorAll('.discrim-option'));for(var i=opts.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=opts[i];opts[i]=opts[j];opts[j]=t;}opts.forEach(function(o,i){box.appendChild(o);var l=o.querySelector('.discrim-label');if(l)l.textContent=String.fromCharCode(65+i);});});}
+function handleDiscrim(option){var ch=option.closest('.discrim-challenge');if(ch.classList.contains('done'))return;var fb=ch.querySelector('.discrim-feedback');var opts=ch.querySelectorAll('.discrim-option');var ok=option.getAttribute('data-correct')==='true';ch.classList.add('done');
+if(ok){option.classList.add('correct');opts.forEach(function(o){if(o!==option)o.classList.add('locked');});fb.innerHTML=option.getAttribute('data-right-feedback')||'Correct.';fb.className='discrim-feedback shown right-fb';ch.setAttribute('data-first-try','1');}
+else{option.classList.add('wrong');var right=ch.querySelector('.discrim-option[data-correct="true"]');right.classList.add('model');opts.forEach(function(o){if(o!==option&&o!==right)o.classList.add('locked');});var rl=right.querySelector('.discrim-label');fb.innerHTML='<span style="color:#cc0000"><b>Not this one.</b> '+(option.getAttribute('data-wrong-feedback')||'')+'</span><br><span style="color:#2d6a2d"><b>The answer is '+(rl?rl.textContent:'')+'.</b> '+(right.getAttribute('data-right-feedback')||'')+'</span>';fb.className='discrim-feedback shown';ch.setAttribute('data-first-try','0');var par=ch.nextElementSibling;if(par&&par.classList.contains('discrim-parallel')){fb.innerHTML+=' <b style="color:#5c2dcc">Try one more like it below.</b>';setTimeout(function(){par.classList.add('shown');},600);}}
+var bf=ch.closest('.build-frame');if(bf){var all=bf.querySelectorAll('.discrim-challenge'),dn=0;all.forEach(function(c){if(c.classList.contains('done'))dn++;});if(dn===all.length){var a=bf.querySelector('.assembled');if(a)setTimeout(function(){a.classList.add('shown');},500);}}
+var qc=ch.closest('.quick-check');if(qc)updateQC(qc);}
+function updateQC(qc){var items=qc.querySelectorAll('.discrim-challenge');var done=0,first=0;items.forEach(function(c){if(c.classList.contains('done')){done++;if(c.getAttribute('data-first-try')==='1')first++;}});if(done<items.length)return;var r=qc.querySelector('.qc-result');r.textContent=first+' of '+items.length+' right first time. '+(first>=items.length-1?'The moves are in your head. Now the checklist.':'Look back at '+qc.getAttribute('data-back')+' for the ones you missed, then come back to the checklist.');r.style.display='block';launchConfetti();}
+function toggleTimes(el){var body=el.closest('.card-body');body.classList.toggle('show-times');el.textContent=body.classList.contains('show-times')?'Hide test times':'Show how long each test took';}
+function toggleCheck(item){item.classList.toggle('checked');updateCheckProgress();}
+function updateCheckProgress(){var items=document.querySelectorAll('#mainChecklist .check-item');if(!items.length)return;var checked=document.querySelectorAll('#mainChecklist .check-item.checked').length;var fill=document.getElementById('checkProgressFill'),lbl=document.getElementById('checkProgressLabel');if(fill)fill.style.width=Math.round((checked/items.length)*100)+'%';if(lbl)lbl.innerHTML=checked===items.length?'<b style="color:#2d6a2d;">All done.</b>':checked+' of '+items.length+' checked';}
+function printChecklist(btn){var card=btn.closest('.card');var ci=card.querySelectorAll('.check-item.checked');ci.forEach(function(i){i.classList.remove('checked');});card.classList.add('print-target');window.print();card.classList.remove('print-target');ci.forEach(function(i){i.classList.add('checked');});}
+function showCompletion(){document.getElementById('completionOverlay').classList.add('visible');}
+function closeCompletion(){document.getElementById('completionOverlay').classList.remove('visible');}
+function launchConfetti(){var canvas=document.getElementById('confettiCanvas');var ctx=canvas.getContext('2d');canvas.width=window.innerWidth;canvas.height=window.innerHeight;var colors=['#b8860b','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b','#42a5f5'];var particles=[];for(var i=0;i<120;i++){particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height-canvas.height,w:Math.random()*10+5,h:Math.random()*6+3,color:colors[Math.floor(Math.random()*colors.length)],vx:(Math.random()-0.5)*4,vy:Math.random()*3+2,rot:Math.random()*360,rotV:(Math.random()-0.5)*10,life:1});}var frame=0;function animate(){ctx.clearRect(0,0,canvas.width,canvas.height);var alive=false;particles.forEach(function(p){if(p.life<=0)return;alive=true;p.x+=p.vx;p.y+=p.vy;p.vy+=0.05;p.rot+=p.rotV;if(p.y>canvas.height+20){p.life=0;return;}if(frame>60)p.life-=0.01;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();});frame++;if(alive)requestAnimationFrame(animate);else ctx.clearRect(0,0,canvas.width,canvas.height);}animate();}
+shuffleOptions();goTo(0);
+</script>
+<script src="../tracking.js"></script>
+</body>
+</html>
