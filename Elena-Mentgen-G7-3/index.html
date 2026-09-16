@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elena's Writing Test Review: G7.3</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Calibri, 'Segoe UI', sans-serif; font-size: 12pt; color: #1a1a2e; background: #f0f0f5; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; padding: 20px; }
+.progress-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
+.progress-dot { width: 12px; height: 12px; border-radius: 50%; background: #ccc; transition: background 0.3s, transform 0.2s; cursor: pointer; position: relative; }
+.progress-dot.active { background: #b8860b; transform: scale(1.25); }
+.progress-dot.visited { background: #d9b56a; }
+.progress-dot:hover { transform: scale(1.3); }
+.progress-dot .dot-tooltip { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: #b8860b; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 8.5pt; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 100; }
+.progress-dot .dot-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #b8860b; }
+.progress-dot:hover .dot-tooltip { opacity: 1; }
+.card-breadcrumb { font-size: 9.5pt; color: #888; margin-bottom: 14px; text-align: center; transition: opacity 0.3s; min-height: 1.2em; }
+.card-breadcrumb b { color: #b8860b; }
+.sticky-indicator { position: fixed; top: 12px; right: 16px; background: #b8860b; color: #fff; padding: 5px 14px; border-radius: 20px; font-size: 9pt; font-weight: 700; opacity: 0; transition: opacity 0.3s; z-index: 200; pointer-events: none; letter-spacing: 0.5px; }
+.sticky-indicator.visible { opacity: 1; }
+.card-container { position: relative; width: 640px; min-height: 420px; }
+.card { position: absolute; top: 0; left: 0; width: 100%; background: #fff; border: 2.5px solid #b8860b; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.10); opacity: 0; pointer-events: none; transform: translateX(40px); transition: opacity 0.35s, transform 0.35s; }
+.card.active { opacity: 1; pointer-events: auto; transform: translateX(0); position: relative; }
+.card-header { background: #b8860b; color: #fff; padding: 14px 20px; border-radius: 11px 11px 0 0; }
+.card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+.card-header .card-subtitle { font-size: 9.5pt; color: #f0e2bd; margin-top: 2px; }
+.card-body { padding: 18px 22px 22px; line-height: 1.55; }
+.card-body p { margin: 6px 0; }
+.score-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; }
+.score-box { background: #f8f8fc; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 10px 14px; text-align: center; }
+.score-box .big { font-size: 20pt; font-weight: 700; }
+.score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+.score-good .big { color: #2d6a2d; }
+.score-warn .big { color: #cc6600; }
+.score-low .big { color: #cc0000; }
+.you-wrote { background: #fff3f3; border-left: 3px solid #cc0000; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.you-wrote .label { font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+.better, .model-box { background: #e8f5e9; border-left: 3px solid #2d6a2d; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.better .label, .model-box .label { font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+.tip-box { background: #e8edf5; border-left: 3px solid #b8860b; padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0; }
+.tip-box .label { font-weight: 700; font-size: 9.5pt; color: #b8860b; margin-bottom: 3px; }
+.rule-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 10px 14px; margin: 10px 0; font-size: 11pt; }
+.rule-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 3px; }
+.lbl { display: inline-block; font-size: 7.5pt; font-weight: 800; letter-spacing: 0.5px; padding: 1px 6px; border-radius: 4px; margin: 0 4px 0 0; vertical-align: middle; color: #fff; line-height: 1.5; }
+.lbl-say, .lbl-echo { background: #5c2dcc; } .lbl-show, .lbl-because { background: #2d6a2d; } .lbl-sowhat { background: #cc6600; } .lbl-close { background: #457b9d; } .lbl-miss { background: #cc0000; } .lbl-reason { background: #888; } .lbl-general { background: #6d4c41; } .lbl-specific { background: #00838f; }
+.ex-list { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+.ex { padding: 8px 12px; border-radius: 6px; font-size: 10.5pt; border-left: 3px solid; }
+.ex.pos { background: #e8f5e9; border-color: #2d6a2d; } .ex.neg { background: #fff3f3; border-color: #cc0000; }
+.ex .tag { font-weight: 800; font-size: 8.5pt; margin-right: 6px; } .ex.pos .tag { color: #2d6a2d; } .ex.neg .tag { color: #cc0000; }
+.think { background: #f8f8fc; border-left: 3px solid #888; padding: 8px 14px; margin: 8px 0; font-size: 10.5pt; font-style: italic; color: #444; }
+.think .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #666; margin-bottom: 2px; }
+.highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+.error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+.discrim-option .error-mark { background: transparent; text-decoration: none; padding: 0; border-radius: 0; }
+.essay-excerpt { background: #fafafa; border: 1px solid #e0e0e8; border-radius: 6px; padding: 10px 14px; font-size: 10.5pt; margin: 8px 0; line-height: 1.7; }
+.discrim-challenge { background: #f8f5ff; border: 1.5px solid #d4c5ff; border-radius: 8px; padding: 14px; margin: 10px 0; }
+.discrim-prompt { font-weight: 700; font-size: 10.5pt; margin-bottom: 10px; color: #5c2dcc; }
+.discrim-options { display: flex; flex-direction: column; gap: 8px; }
+.discrim-option { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border: 2px solid #d4c5ff; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 10.5pt; background: #fff; }
+.discrim-option:hover { border-color: #7c4dff; background: #f5f0ff; }
+.discrim-label { font-weight: 800; color: #7c4dff; min-width: 20px; flex-shrink: 0; }
+.discrim-option.correct, .discrim-option.model { border-color: #2d6a2d; background: #e8f5e9; cursor: default; }
+.discrim-option.correct .discrim-label, .discrim-option.model .discrim-label { color: #2d6a2d; }
+.discrim-option.wrong { border-color: #cc0000; background: #fff3f3; cursor: default; }
+.discrim-option.wrong .discrim-label { color: #cc0000; }
+.discrim-option.locked { pointer-events: none; opacity: 0.5; }
+.discrim-challenge.done .discrim-option { cursor: default; }
+.discrim-feedback { margin-top: 0; font-size: 10pt; line-height: 1.45; max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.3s, opacity 0.3s, margin 0.3s; }
+.discrim-feedback.shown { max-height: 400px; opacity: 1; margin-top: 10px; }
+.discrim-feedback.right-fb { color: #2d6a2d; font-weight: 600; }
+.discrim-parallel { display: none; }
+.discrim-parallel.shown { display: block; }
+.discrim-parallel .discrim-prompt::before { content: 'One more like it. '; color: #888; font-weight: 600; }
+.reveal-wrapper { position: relative; }
+.reveal-cover { background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%); border-left: 3px solid #2d6a2d; padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 10px; transition: background 0.2s, box-shadow 0.2s; }
+.reveal-cover:hover { box-shadow: 0 2px 8px rgba(45,106,45,0.15); }
+.reveal-cover .reveal-icon { width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
+.reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #2d6a2d; }
+.reveal-cover .reveal-hint { font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px; }
+.reveal-content { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0; }
+.reveal-content.shown { max-height: 1200px; opacity: 1; margin: 8px 0; }
+.reveal-cover.hidden { display: none; }
+.your-turn { background: #f8f8fc; border: 1.5px dashed #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.your-turn .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.your-turn textarea { width: 100%; min-height: 64px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; margin: 4px 0; }
+.frame-row { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0; font-size: 10.5pt; }
+.frame-row .lbl { margin-top: 4px; }
+.frame-row .given { background: #fff; border: 1.5px solid #e0e0e8; border-radius: 6px; padding: 8px; flex: 1; color: #555; }
+.frame-row textarea { flex: 1; min-height: 48px; margin: 0; }
+.yt-btn { margin-top: 8px; padding: 7px 16px; border: 2px solid #2d6a2d; background: #fff; color: #2d6a2d; border-radius: 8px; font-family: inherit; font-weight: 600; font-size: 10pt; cursor: pointer; }
+.yt-btn:hover { background: #2d6a2d; color: #fff; }
+.yt-btn:disabled { opacity: 0.6; cursor: default; }
+.yt-model { display: none; margin-top: 10px; }
+.assembled { display: none; margin-top: 8px; }
+.assembled.shown { display: block; }
+.xp-link { display: inline-block; margin: 8px 6px 0 0; padding: 6px 14px; border-radius: 6px; background: #2d6a2d; color: #fff; font-weight: 700; font-size: 10pt; text-decoration: none; }
+.xp-link:hover { background: #1b5e1b; }
+.yt-model.shown { display: block; }
+.self-check .check-item { font-size: 10pt; padding: 6px 8px; }
+.check-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 8px; cursor: pointer; border-bottom: 1px solid #eee; border-radius: 6px; transition: background 0.15s; user-select: none; font-size: 11pt; }
+.check-item:last-child { border-bottom: none; }
+.check-item:hover { background: #f8f8fc; }
+.check-item.checked { background: #f0f8f0; }
+.check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
+.check-item.checked .check-box::after { content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
+.check-box { width: 28px; height: 28px; border: 2.5px solid #b8860b; border-radius: 6px; flex-shrink: 0; margin-top: 1px; position: relative; transition: background 0.2s, border-color 0.2s; }
+.self-check .check-box { width: 22px; height: 22px; }
+.checklist-progress { background: #eee; border-radius: 10px; height: 8px; margin: 12px 0 6px; overflow: hidden; }
+.checklist-progress-fill { background: linear-gradient(90deg, #2d6a2d, #4caf50); height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%; }
+.checklist-progress-label { font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px; }
+.quick-check { background: #f8f5ff; border: 2px solid #7c4dff; border-radius: 10px; padding: 12px 14px; margin: 10px 0; }
+.quick-check .qc-title { font-weight: 800; color: #5c2dcc; font-size: 10.5pt; margin-bottom: 4px; }
+.quick-check .qc-sub { font-size: 9.5pt; color: #666; margin-bottom: 6px; }
+.quick-check .discrim-challenge { background: #fff; margin: 8px 0; padding: 10px 12px; }
+.qc-result { display: none; font-weight: 700; margin-top: 8px; font-size: 10.5pt; color: #5c2dcc; }
+.recall-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.recall-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.recall-box textarea { width: 100%; min-height: 56px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; }
+.checklist-wrap { display: none; }
+.checklist-wrap.shown { display: block; }
+.time-toggle { font-size: 9pt; color: #b8860b; cursor: pointer; text-decoration: underline; display: inline-block; margin: 0 0 6px; }
+.tl-time { display: none; font-weight: 400; color: #aaa; }
+.show-times .tl-time { display: inline; }
+.guide-block { margin-top: 16px; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 8px 12px; background: #fafafa; font-size: 10pt; }
+.guide-block summary { cursor: pointer; font-weight: 700; color: #666; font-size: 9.5pt; }
+.guide-block ul { margin: 6px 0 4px 18px; }
+.guide-block li { margin: 4px 0; }
+.practice-recommendations { margin-top: 16px; border-top: 2px solid #e0e0e8; padding-top: 14px; }
+.practice-recs-title { font-size: 10pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #b8860b; margin-bottom: 10px; }
+.practice-tier { border-radius: 8px; padding: 12px 14px; margin: 8px 0; }
+.tier-primary { background: #e8f5e9; border: 1.5px solid #a5d6a7; }
+.tier-extra { background: #f8f8fc; border: 1.5px solid #e0e0e8; }
+.tier-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.tier-label { font-size: 8.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 2px 10px; border-radius: 10px; }
+.tier-primary .tier-label { background: #2d6a2d; color: #fff; }
+.tier-extra .tier-label { background: #888; color: #fff; }
+.tier-note { font-size: 9pt; color: #666; margin-bottom: 6px; line-height: 1.4; }
+.practice-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.practice-link { display: inline-block; padding: 5px 12px; border-radius: 6px; font-size: 9.5pt; font-weight: 600; text-decoration: none; transition: background 0.2s, transform 0.1s; }
+.tier-primary .practice-link { background: #c8e6c9; color: #1b5e1b; }
+.tier-extra .practice-link { background: #e8edf5; color: #b8860b; }
+.nav { display: flex; gap: 12px; margin-top: 16px; }
+.nav button { padding: 8px 28px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; transition: background 0.2s, color 0.2s; }
+.nav button:hover { background: #b8860b; color: #fff; }
+.print-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 8px 20px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 10.5pt; font-weight: 600; cursor: pointer; }
+.print-btn:hover { background: #b8860b; color: #fff; }
+.print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+.completion-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(184,134,11,0.6); z-index: 500; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s; }
+.completion-overlay.visible { opacity: 1; pointer-events: auto; }
+.completion-card { background: #fff; border-radius: 16px; padding: 40px 48px; text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2); transform: scale(0.8); transition: transform 0.4s ease; max-width: 420px; }
+.completion-overlay.visible .completion-card { transform: scale(1); }
+.completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+.completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; color: #b8860b; }
+.completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+.completion-close { margin-top: 20px; padding: 10px 32px; background: #b8860b; color: #fff; border: none; border-radius: 8px; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; }
+#confettiCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 501; }
+.score-timeline { display: flex; align-items: flex-end; gap: 0; margin: 12px 0 10px; padding: 0 6px; justify-content: space-between; }
+.timeline-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.timeline-score { font-size: 13pt; font-weight: 700; margin-bottom: 4px; }
+.timeline-bar { width: 70%; border-radius: 4px 4px 0 0; min-height: 8px; }
+.timeline-label { font-size: 8.5pt; color: #888; margin-top: 6px; font-weight: 600; text-align: center; }
+.score-green { color: #2d6a2d; } .score-amber { color: #cc6600; } .score-red { color: #cc0000; }
+.bar-green { background: linear-gradient(to top, #c8e6c9, #81c784); } .bar-amber { background: linear-gradient(to top, #ffe0b2, #ffb74d); } .bar-red { background: linear-gradient(to top, #ffcdd2, #ef9a9a); }
+.strength-chips, .growth-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; }
+.strength-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; background: #e8f5e9; color: #2d6a2d; border: 1.5px solid #a5d6a7; display: inline-flex; align-items: center; gap: 4px; }
+.strength-chip .chip-course, .growth-chip .chip-avg { font-size: 7.5pt; color: #888; font-weight: 400; }
+.journey-section { font-size: 9.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; margin: 10px 0 4px; padding-bottom: 3px; border-bottom: 1.5px solid; }
+.journey-section.strengths-header { color: #2d6a2d; border-color: #c8e6c9; }
+.journey-section.growth-header { color: #cc6600; border-color: #ffe0b2; }
+.root-cause-teaser { background: #f5f0ff; border-left: 3px solid #7c4dff; padding: 10px 14px; margin: 12px 0 4px; border-radius: 0 6px 6px 0; font-size: 10.5pt; line-height: 1.5; }
+.root-cause-teaser b { color: #5c2dcc; }
+.growth-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+.growth-chip.mixed { background: #fff8e8; color: #b35900; border: 1.5px solid #ffe0b2; }
+.growth-chip.weak { background: #fff3f3; color: #cc0000; border: 1.5px solid #ffcdd2; }
+@media print { body { background: #fff; padding: 0; min-height: auto; } .progress-bar, .nav, .print-btn, .card-breadcrumb, .sticky-indicator, .completion-overlay, #confettiCanvas, .reveal-cover, .checklist-progress, .checklist-progress-label, .discrim-challenge, .discrim-parallel, .quick-check, .recall-box, .yt-btn, .guide-block { display: none !important; } .card-container { width: 100%; min-height: auto; } .card { display: none !important; } .card.print-target { display: block !important; opacity: 1 !important; pointer-events: auto !important; position: relative !important; transform: none !important; box-shadow: none; border: 2px solid #b8860b; page-break-inside: avoid; } .reveal-content, .yt-model, .checklist-wrap { display: block !important; max-height: none !important; opacity: 1 !important; margin: 8px 0 !important; } }
+@media (max-width: 720px) { .card-container { width: 100%; } .score-grid { grid-template-columns: 1fr; } .timeline-score { font-size: 10pt; } }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progressBar"></div>
+<div class="card-breadcrumb" id="breadcrumb"></div>
+<div class="sticky-indicator" id="stickyIndicator"></div>
+<div class="card-container" id="cardContainer">
+
+<!-- Card 1: Score Overview -->
+<div class="card active" data-title="Score Overview">
+  <div class="card-header"><h2>Elena Mentgen</h2><div class="card-subtitle">Alpha Standardized Writing G7.3. September 2026. Passage: &ldquo;More Than a Whistle&rdquo;</div></div>
+  <div class="card-body">
+    <div class="score-grid">
+      <div class="score-box score-warn"><div class="big">77%</div><div class="label">Overall Score</div></div>
+      <div class="score-box score-good"><div class="big">9/10</div><div class="label">Multiple Choice (Q1&ndash;10)</div></div>
+      <div class="score-box score-warn"><div class="big">14/20</div><div class="label">Essay (Question 11)</div></div>
+    </div>
+    <p>Elena, this is 77%, 23 out of 30, the same as G7.2, and <b>four points from a pass</b>. Nine of ten multiple-choice questions right, for the third grade-7 test running. Everything left is in the essay.</p>
+    <p>The essay has almost every fact in the passage, in the passage&rsquo;s order, and it is one paragraph. The prompt asked for five: an introduction that moves from a general statement to a specific statement to a thesis, three body paragraphs with topic sentences, and a conclusion that runs the same road back. Those five paragraphs are worth five points on their own, before a single fact is graded.</p>
+    <div class="root-cause-teaser"><b>The one skill:</b> turn the facts you already collect into a five-paragraph essay. A thesis that answers the question, one body paragraph per connection, a conclusion. You wrote a 19-out-of-20 essay on G6.3 in May, so the shape is in you. Card 3 rebuilds it out of your own sentences.</div>
+  </div>
+</div>
+
+<!-- Card 2: Writing Journey -->
+<div class="card" data-title="Your Writing Journey">
+  <div class="card-header"><h2>Your Writing Journey</h2><div class="card-subtitle">Twenty tests across five grades. Four passes, each one the last test of its grade</div></div>
+  <div class="card-body">
+    <div class="score-timeline" style="gap:2px;padding:0;">
+      <div class="timeline-item"><div class="timeline-score score-red" style="font-size:7pt;">58</div><div class="timeline-bar bar-red" style="height:49px;"></div><div class="timeline-label" style="font-size:6.5pt;">3.1</div></div>
+      <div class="timeline-item"><div class="timeline-score score-red" style="font-size:7pt;">53</div><div class="timeline-bar bar-red" style="height:45px;"></div><div class="timeline-label" style="font-size:6.5pt;">3.2</div></div>
+      <div class="timeline-item"><div class="timeline-score score-red" style="font-size:7pt;">51</div><div class="timeline-bar bar-red" style="height:43px;"></div><div class="timeline-label" style="font-size:6.5pt;">3.3</div></div>
+      <div class="timeline-item"><div class="timeline-score score-red" style="font-size:7pt;">56</div><div class="timeline-bar bar-red" style="height:48px;"></div><div class="timeline-label" style="font-size:6.5pt;">3.4</div></div>
+      <div class="timeline-item"><div class="timeline-score score-green" style="font-size:7pt;">91&#11088;</div><div class="timeline-bar bar-green" style="height:77px;"></div><div class="timeline-label" style="font-size:6.5pt;">3.5</div></div>
+      <div class="timeline-item"><div class="timeline-score score-amber" style="font-size:7pt;">71</div><div class="timeline-bar bar-amber" style="height:60px;"></div><div class="timeline-label" style="font-size:6.5pt;">4.1</div></div>
+      <div class="timeline-item"><div class="timeline-score score-red" style="font-size:7pt;">62</div><div class="timeline-bar bar-red" style="height:53px;"></div><div class="timeline-label" style="font-size:6.5pt;">4.2</div></div>
+      <div class="timeline-item"><div class="timeline-score score-red" style="font-size:7pt;">64</div><div class="timeline-bar bar-red" style="height:54px;"></div><div class="timeline-label" style="font-size:6.5pt;">4.3</div></div>
+      <div class="timeline-item"><div class="timeline-score score-green" style="font-size:7pt;">96&#11088;</div><div class="timeline-bar bar-green" style="height:82px;"></div><div class="timeline-label" style="font-size:6.5pt;">4.4</div></div>
+      <div class="timeline-item"><div class="timeline-score score-green" style="font-size:7pt;">84</div><div class="timeline-bar bar-green" style="height:71px;"></div><div class="timeline-label" style="font-size:6.5pt;">5.1</div></div>
+      <div class="timeline-item"><div class="timeline-score score-red" style="font-size:7pt;">60</div><div class="timeline-bar bar-red" style="height:51px;"></div><div class="timeline-label" style="font-size:6.5pt;">5.2</div></div>
+      <div class="timeline-item"><div class="timeline-score score-green" style="font-size:7pt;">89</div><div class="timeline-bar bar-green" style="height:76px;"></div><div class="timeline-label" style="font-size:6.5pt;">5.3</div></div>
+      <div class="timeline-item"><div class="timeline-score score-green" style="font-size:7pt;">89</div><div class="timeline-bar bar-green" style="height:76px;"></div><div class="timeline-label" style="font-size:6.5pt;">5.4</div></div>
+      <div class="timeline-item"><div class="timeline-score score-green" style="font-size:7pt;">91&#11088;</div><div class="timeline-bar bar-green" style="height:77px;"></div><div class="timeline-label" style="font-size:6.5pt;">5.5</div></div>
+      <div class="timeline-item"><div class="timeline-score score-amber" style="font-size:7pt;">70</div><div class="timeline-bar bar-amber" style="height:60px;"></div><div class="timeline-label" style="font-size:6.5pt;">6.1</div></div>
+      <div class="timeline-item"><div class="timeline-score score-amber" style="font-size:7pt;">70</div><div class="timeline-bar bar-amber" style="height:60px;"></div><div class="timeline-label" style="font-size:6.5pt;">6.2</div></div>
+      <div class="timeline-item"><div class="timeline-score score-green" style="font-size:7pt;">97&#11088;</div><div class="timeline-bar bar-green" style="height:82px;"></div><div class="timeline-label" style="font-size:6.5pt;">6.3</div></div>
+      <div class="timeline-item"><div class="timeline-score score-amber" style="font-size:7pt;">70</div><div class="timeline-bar bar-amber" style="height:60px;"></div><div class="timeline-label" style="font-size:6.5pt;">7.1</div></div>
+      <div class="timeline-item"><div class="timeline-score score-amber" style="font-size:7pt;">77</div><div class="timeline-bar bar-amber" style="height:65px;"></div><div class="timeline-label" style="font-size:6.5pt;">7.2</div></div>
+      <div class="timeline-item"><div class="timeline-score score-amber" style="font-size:7pt;">77</div><div class="timeline-bar bar-amber" style="height:65px;"></div><div class="timeline-label" style="font-size:6.5pt;">7.3</div></div>
+    </div>
+    <p>Every grade so far has ended in a pass, and every pass came after a run of tests in the sixties and seventies. Grade 7 has gone 70, 77, 77. The multiple choice has been 9 of 10 each time. The essay has been 12, 14, 14 out of 20. That one box is the gap, and it is the same gap each time.</p>
+    <div class="journey-section strengths-header">Skills you do well</div>
+    <div class="strength-chips">
+      <span class="strength-chip">Multiple choice <span class="chip-course">&middot; 9 of 10, three tests running</span></span>
+      <span class="strength-chip">Facts from the passage <span class="chip-course">&middot; the essay has nearly all of them</span></span>
+      <span class="strength-chip">Sentence variety <span class="chip-course">&middot; a question hook, a colon list, an aside</span></span>
+    </div>
+    <div class="journey-section growth-header">What to work on</div>
+    <div class="growth-chips">
+      <span class="growth-chip weak">One paragraph where five were asked for <span class="chip-avg">Q11</span></span>
+      <span class="growth-chip mixed">Facts retold, not explained <span class="chip-avg">Q11</span></span>
+      <span class="growth-chip mixed">A cause word where a joining word was needed <span class="chip-avg">Q5</span></span>
+    </div>
+    <div class="root-cause-teaser"><b>The proof it is in you:</b> G6.3 in May was a 19-out-of-20 essay. The facts have never been the problem. The frame around them has.</div>
+  </div>
+</div>
+
+<!-- Card 3: Fix 1, Five Paragraphs -->
+<div class="card" data-title="Fix 1: Five Paragraphs">
+  <div class="card-header"><h2>Fix 1: Five Paragraphs, One Job Each</h2><div class="card-subtitle">Your facts, sorted into the essay the prompt asked for</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: FIVE PARAGRAPHS, ONE JOB EACH</div><b>Introduction:</b> a <b>general statement</b> about the topic, a <b>specific statement</b> that narrows to this passage, then the <b>thesis</b>, which answers the question in the question&rsquo;s own words. <b>Body 1, 2, 3:</b> one connection each, opened by a topic sentence, then two supporting details (a fact from the passage, then <i>This shows</i>). <b>Conclusion:</b> the same road back: the <b>thesis</b> in new words, a <b>specific statement</b>, a <b>general statement</b>. <b>The check:</b> count your paragraphs before you submit. Fewer than five, and five points are gone before a word is graded.</div>
+
+    <div class="think"><div class="label">THINKING IT THROUGH, OUT LOUD</div>I read the prompt twice: <i>how El Silbo connects the people of La Gomera to their past and to one another</i>. That is two connections already. The passage hands me a third: the young whistlers keeping it alive. Three connections, three body paragraphs. My thesis names all three, and every fact I already wrote down goes into one of them.</div>
+
+    <div class="model-box"><div class="label">THE PLAN, BUILT FROM YOUR OWN FACTS</div>
+      <span class="lbl lbl-general">GENERAL STATEMENT</span>Every language carries more than words; it carries the history of the people who speak it. <span class="lbl lbl-specific">SPECIFIC STATEMENT</span>On La Gomera, one of the Canary Islands, that language is El Silbo Gomero, a whistle made entirely of tones. <span class="lbl lbl-say">THESIS</span>El Silbo connects the people of La Gomera to one another across a hard landscape, to their past through the ancestors who first whistled it, and to their future through the young islanders who keep it alive.<br>
+      <span class="lbl lbl-say">BODY 1 TOPIC SENTENCE</span>First, El Silbo connected islanders to one another when nothing else could cross the ravines. <span style="color:#666;font-size:9.5pt;">Your facts: two miles, hill to hill, a necessity.</span><br>
+      <span class="lbl lbl-say">BODY 2 TOPIC SENTENCE</span>Second, El Silbo connects today&rsquo;s islanders to their past. <span style="color:#666;font-size:9.5pt;">Your facts: the earliest inhabitants, Spanish settlers in the 1500s, the voice of their ancestors.</span><br>
+      <span class="lbl lbl-say">BODY 3 TOPIC SENTENCE</span>Third, the island chose to keep that connection alive. <span style="color:#666;font-size:9.5pt;">Your facts: the 1980s, classes required in schools, Cyro.</span><br>
+      <span class="lbl lbl-say">THESIS, IN NEW WORDS</span>El Silbo ties the people of La Gomera to each other, to their ancestors, and to the children who will carry it on. <span class="lbl lbl-specific">SPECIFIC STATEMENT</span>That is why an island would put a whistle on the school timetable. <span class="lbl lbl-general">GENERAL STATEMENT</span>A language is worth saving when it is the sound of a people talking to itself across time.
+    </div>
+    <p style="font-size:10.5pt;">Every fact in your essay already belongs to one of those three body paragraphs. Nothing new had to be found. The introduction narrows in three steps, general to specific to thesis, and the conclusion walks the same three steps back out. That plan is what turns 14 into 19.</p>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which sentence is a thesis for this prompt?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="A hook. It gets attention but does not answer how El Silbo connects people." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Did you know that El Silbo Gomero is still whistled today?</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="It answers the question in the question&rsquo;s own words and names the three connections the body paragraphs will take." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>El Silbo connects the people of La Gomera to their past and to one another by carrying messages across the island, keeping the ancestors&rsquo; language alive, and passing it to a new generation.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence is a thesis?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="It answers the question and previews the three body paragraphs." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>El Silbo ties islanders to each other and to their history in three ways: it carried their messages, it preserved their ancestors&rsquo; voice, and it is now taught to every child.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A fact about the language, not an answer to how it connects people." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>El Silbo Gomero is a whistled language from the island of La Gomera.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which introduction is in the right order: general statement, specific statement, thesis?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="true" data-right-feedback="Wide first, then this island, then the thesis. General, specific, thesis." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Every language carries the history of its people. On La Gomera, that language is a whistle called El Silbo. El Silbo connects islanders to one another, to their past, and to their future.</span></div>
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="The thesis comes first and the general statement last. That is the conclusion&rsquo;s order, not the introduction&rsquo;s." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>El Silbo connects islanders to one another, to their past, and to their future. On La Gomera, that language is a whistle called El Silbo. Every language carries the history of its people.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which conclusion is in the right order: thesis, specific statement, general statement?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="General first, thesis last. That is the introduction&rsquo;s order. A conclusion starts with the thesis and widens out." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Languages hold a people&rsquo;s memory. On La Gomera, children now learn the whistle in school. El Silbo ties the island to its past and to itself.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Thesis first, then this island, then the wide statement. The introduction in reverse." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>El Silbo ties the island to its past and to itself. On La Gomera, children now learn the whistle in school. Languages hold a people&rsquo;s memory.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which is a topic sentence for the body paragraph about the past?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="A fact from the passage. It belongs inside the paragraph as a supporting detail, not at the top." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Historians believe El Silbo began with the island&rsquo;s earliest inhabitants.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="It states the paragraph&rsquo;s one job: the connection to the past." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>El Silbo connects today&rsquo;s islanders to their past because it is the same language their ancestors whistled.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which is a topic sentence for the body paragraph about connecting islanders to one another?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A fact. It supports the paragraph; it does not open it." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Each vowel and consonant in Spanish is replaced by a whistle.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="It names the paragraph&rsquo;s job: connecting islanders to one another." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>El Silbo connected islanders to one another when nothing else could cross the ravines.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Where does this sentence belong? <i>&ldquo;The government made El Silbo classes required in schools.&rdquo;</i></div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="true" data-right-feedback="It is a fact about saving the language, so it supports Body 3." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Body 3, keeping the language alive</span></div>
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="The introduction narrows from a general statement to a specific one to the thesis. The evidence lives in the body paragraphs." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The introduction</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Where does this sentence belong? <i>&ldquo;Messages once flew from hill to hill: news, invitations, even warnings.&rdquo;</i></div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="The conclusion restates the thesis. New facts do not go there." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>The conclusion</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="A fact about islanders talking to one another, so Body 1." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Body 1, connecting islanders to one another</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Every essay: read the prompt twice, write the thesis in the prompt&rsquo;s own words, one body paragraph per part of the thesis, then a conclusion. Count the paragraphs before you submit.</div>
+  </div>
+</div>
+
+<!-- Card 4: Fix 2, Show then So What -->
+<div class="card" data-title="Fix 2: Show, then So What">
+  <div class="card-header"><h2>Fix 2: Show, then So What</h2><div class="card-subtitle">Your facts are real. Each one needs the sentence that says what it proves</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: SHOW, THEN SO WHAT</div>Inside every body paragraph, each supporting detail is a fact from the passage followed by one sentence that starts <b><i>This shows</i></b> and says what the fact proves about that paragraph&rsquo;s connection. <b>The check:</b> count your facts, count your <i>This shows</i> sentences. The numbers should match. That is the &ldquo;use evidence and explain it&rdquo; line, five points.</div>
+
+    <p>Your best fact, and the sentence it was missing:</p>
+    <div class="you-wrote"><div class="label">YOU WROTE</div><span class="lbl lbl-show">DETAIL &middot; SHOW</span>&ldquo;This sounds can travel across the island for nearly two miles, far beyond the reach of a shout or yell.&rdquo; <span class="lbl lbl-miss">NO SO WHAT</span></div>
+    <div class="model-box"><div class="label">WITH ITS SO WHAT</div><span class="lbl lbl-show">DETAIL &middot; SHOW</span>These sounds can travel nearly two miles, far beyond the reach of a shout. <span class="lbl lbl-sowhat">DETAIL &middot; SO WHAT</span>This shows that El Silbo did what no voice could: it let neighbours who could not see each other talk.</div>
+    <div class="you-wrote"><div class="label">YOU WROTE</div><span class="lbl lbl-show">DETAIL &middot; SHOW</span>&ldquo;The government soon made El Silbo classes required in school for youngs children.&rdquo; <span class="lbl lbl-miss">NO SO WHAT</span></div>
+    <div class="model-box"><div class="label">WITH ITS SO WHAT</div><span class="lbl lbl-show">DETAIL &middot; SHOW</span>The government made El Silbo classes required in schools. <span class="lbl lbl-sowhat">DETAIL &middot; SO WHAT</span>This shows that the whole island decided the language was worth saving.</div>
+
+    <p style="margin-top:10px;"><b>Three more pairs</b>, each from a different body paragraph:</p>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">BODY 2</span><span class="lbl lbl-show">DETAIL &middot; SHOW</span>Historians believe El Silbo began with the island&rsquo;s earliest inhabitants and was later adopted by Spanish settlers in the 1500s. <span class="lbl lbl-sowhat">DETAIL &middot; SO WHAT</span>This shows that every whistle today repeats sounds that are hundreds of years old.</div>
+      <div class="ex pos"><span class="tag">BODY 1</span><span class="lbl lbl-show">DETAIL &middot; SHOW</span>Before modern phones and roads, El Silbo was a necessity rather than a curiosity. <span class="lbl lbl-sowhat">DETAIL &middot; SO WHAT</span>This shows that the whistle was how the island stayed one community.</div>
+      <div class="ex pos"><span class="tag">BODY 3</span><span class="lbl lbl-show">DETAIL &middot; SHOW</span>Young whistlers like Cyro take pride in keeping El Silbo alive. <span class="lbl lbl-sowhat">DETAIL &middot; SO WHAT</span>This shows that the connection now runs forward to the next generation as well as back.</div>
+      <div class="ex neg"><span class="tag">NOT A SO WHAT</span>El Silbo is a very important part of the island.<br><span style="font-size:9.5pt;color:#666;">A claim, not a fact and not what a fact proves.</span></div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which sentence is a SO WHAT?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="A fact from the passage, so a SHOW. It does not say what it proves." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Most adults use El Silbo only for cultural events or to entertain tourists.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;This shows&rdquo; plus what the fact proves." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>This shows that without the schools, the language would have faded into a performance for visitors.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence is a SO WHAT?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;This shows&rdquo; plus what it proves." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>This shows that the language was built for a landscape that kept people apart.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A fact from the passage, so a SHOW." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>La Gomera is known for its steep valleys and echoing cliffs.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">After the fact <i>&ldquo;By the 1980s, few people still knew how to whistle the language,&rdquo;</i> which is the SO WHAT?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="true" data-right-feedback="Names what the fact proves about the connection to the past." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>This shows that the link to the ancestors was one generation from breaking.</span></div>
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Another fact, not what the first one proves." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The government then made classes required.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">After the fact <i>&ldquo;Today, every student learns it,&rdquo;</i> which is the SO WHAT?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Another fact." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Cyro teaches El Silbo to students and tourists.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="What the fact proves about the connection to one another." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>This shows that a whole generation now shares a language their grandparents nearly lost.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Every body paragraph: after each fact, one sentence that starts <i>This shows</i>. Count the facts, count the <i>This shows</i>, make them match.</div>
+  </div>
+</div>
+
+<!-- Card 5: Essay Review -->
+<div class="card" data-title="Essay Review">
+  <div class="card-header"><h2>Your Essay: 14 out of 20</h2><div class="card-subtitle">Every fact in the passage, in one paragraph</div></div>
+  <div class="card-body">
+    <p>The prompt: <i>Explain how El Silbo connects the people of La Gomera to their past and to one another. Write 5 clear paragraphs.</i> Here is yours, labelled:</p>
+    <div class="essay-excerpt">
+      <span class="lbl lbl-general">GENERAL STATEMENT</span>Did you know that the language El Silbo Gomero is still used by some of the people today? <span class="lbl lbl-specific">SPECIFIC STATEMENT</span>El Silbo Gomero was made on the second <span class="error-mark">smalles</span> island, La Gomera. This language is a spoken language made of nothing but tones. <span class="lbl lbl-miss">NO THESIS</span><span class="lbl lbl-show">FACTS ABOUT THE PAST</span>No one <span class="error-mark">know</span> when El <span class="error-mark">Siblo</span> was created, but many believe it was started with the island&rsquo;s first inhabitants and was later used by Spanish settlers in the 1500s. <span class="lbl lbl-show">FACTS ABOUT ONE ANOTHER</span>For a long time, the language helped people talk with other people across the landscape. Every letter in the alphabet in Spanish is replaced by a whistle in different tone, <span class="error-mark">legth</span> or pitch. <span class="error-mark">This</span> sounds can travel across the island for nearly two miles, far beyond the reach of a shout or yell. Messages once flew from cliff to cliff and hill to hill: <span class="error-mark">new</span>, invitations and even warnings. Before modern technology, El Silbo was not a curiosity, but a necessity. <span class="lbl lbl-show">FACTS ABOUT SAVING IT</span>By the 1980s, few people still knew how to whistle this language. The government saw this risk of losing something so important to the island&rsquo;s identity and history. The government soon made El Silbo classes required in school for <span class="error-mark">youngs</span> children. This helped more people learn and teach others this language. Today, all the students learn it, even though most adults only use it for <span class="error-mark">cutural</span> events or to make tourists happy. Still, a new generation of islanders<span class="error-mark">-like</span> young whistler Cyro<span class="error-mark">-help</span> try to keep El Silbo alive. Cyro and others now help carry the voice of their ancestors through the steep cliffs and mountain air. <span class="lbl lbl-miss">NO CONCLUSION</span>
+    </div>
+    <p>Look at the labels. Your introduction already has two of its three parts: a general statement (the question) and a specific statement (La Gomera, a language of tones). It stops before the thesis. Your facts already fall into the three groups the body needed. What is missing is the essay around them: the thesis, the paragraph breaks, the topic sentences, the <i>This shows</i> sentences, and a conclusion that walks back out from thesis to specific to general. The five-paragraph line is worth five points and the explain line five more. The read-back: smallest, knows, Silbo, length, these sounds, news, young, cultural, and dashes rather than hyphens around <i>like young whistler Cyro</i>.</p>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Decide first: how many paragraphs did you write?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="The ideas change three times, but there is no paragraph break anywhere. To the grading, that is one paragraph." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Four, one per idea.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="One. The prompt asked for five, and those five are worth five points on their own." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>One.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="reveal-wrapper">
+      <div class="reveal-cover" onclick="revealBetter(this)">
+        <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></div>
+        <div><div class="reveal-text">Tap to see your essay in five paragraphs</div><div class="reveal-hint">Your opening, your facts, your order. A thesis, three topic sentences, six This shows, and a conclusion that mirrors the introduction</div></div>
+      </div>
+      <div class="reveal-content">
+        <div class="better"><div class="label">INTRODUCTION</div><span class="lbl lbl-general">GENERAL STATEMENT</span>Did you know that a language can be made of nothing but whistles, and still carry a people&rsquo;s whole history? <span class="lbl lbl-specific">SPECIFIC STATEMENT</span>On La Gomera, the second smallest of the Canary Islands, that language is El Silbo Gomero, a spoken language made entirely of tones that has carried messages across the ravines for centuries. <span class="lbl lbl-say">THESIS</span>El Silbo connects the people of La Gomera to one another across a hard landscape, to their past through the ancestors who first whistled it, and to their future through the young islanders who keep it alive.</div>
+        <div class="better"><div class="label">BODY 1</div><span class="lbl lbl-say">TOPIC SENTENCE</span>First, El Silbo connected islanders to one another when nothing else could cross the ravines. <span class="lbl lbl-show">DETAIL 1 &middot; SHOW</span>Each vowel and consonant in Spanish is replaced by a whistle of a different pitch or length, and the sounds can travel nearly two miles, far beyond the reach of a shout. <span class="lbl lbl-sowhat">DETAIL 1 &middot; SO WHAT</span>This shows that El Silbo did what no voice could: it let neighbours who could not see each other talk. <span class="lbl lbl-show">DETAIL 2 &middot; SHOW</span>Messages once flew from hill to hill: news, invitations, even warnings. <span class="lbl lbl-sowhat">DETAIL 2 &middot; SO WHAT</span>This shows that before phones and roads, the whistle was how the island stayed one community.</div>
+        <div class="better"><div class="label">BODY 2</div><span class="lbl lbl-say">TOPIC SENTENCE</span>Second, El Silbo connects today&rsquo;s islanders to their past. <span class="lbl lbl-show">DETAIL 1 &middot; SHOW</span>Historians believe it began with the island&rsquo;s earliest inhabitants and was later adopted by Spanish settlers in the 1500s. <span class="lbl lbl-sowhat">DETAIL 1 &middot; SO WHAT</span>This shows that every whistle today repeats sounds that are hundreds of years old. <span class="lbl lbl-show">DETAIL 2 &middot; SHOW</span>The passage calls the young whistlers carriers of &ldquo;the voice of their ancestors.&rdquo; <span class="lbl lbl-sowhat">DETAIL 2 &middot; SO WHAT</span>This shows that the language is a living link to the people who came before.</div>
+        <div class="better"><div class="label">BODY 3</div><span class="lbl lbl-say">TOPIC SENTENCE</span>Third, the island chose to keep that connection alive. <span class="lbl lbl-show">DETAIL 1 &middot; SHOW</span>By the 1980s few people could whistle it, so the government made El Silbo classes required in schools. <span class="lbl lbl-sowhat">DETAIL 1 &middot; SO WHAT</span>This shows that the whole island decided the language was worth saving. <span class="lbl lbl-show">DETAIL 2 &middot; SHOW</span>Today every student learns it, and young whistlers like Cyro take pride in it. <span class="lbl lbl-sowhat">DETAIL 2 &middot; SO WHAT</span>This shows that the connection now runs forward to the next generation as well as back.</div>
+        <div class="better"><div class="label">CONCLUSION</div><span class="lbl lbl-say">THESIS, IN NEW WORDS</span>El Silbo is more than a whistle: it ties the people of La Gomera to each other across the cliffs, to the ancestors who first used it, and to the children who will carry it on. <span class="lbl lbl-specific">SPECIFIC STATEMENT</span>That is why an island would put a whistle on the school timetable, and why a young man like Cyro whistles for students and tourists alike. <span class="lbl lbl-general">GENERAL STATEMENT</span>A language is worth saving when it is the sound of a people talking to itself across time.</div>
+      </div>
+    </div>
+    <p style="font-size:10.5pt;">Your opening, your facts, your order. What was added: the thesis after your general and specific statements, three topic sentences, six <i>This shows</i>, a conclusion that runs thesis to specific to general, and four paragraph breaks. That is the six points, and it is the essay you wrote on G6.3.</p>
+  </div>
+</div>
+
+<!-- Card 6: Quick Check, Checklist -->
+<div class="card" data-title="Quick Check &amp; Checklist">
+  <div class="card-header"><h2>Quick Check</h2><div class="card-subtitle">Seven new ones. Then your checklist</div></div>
+  <div class="card-body">
+    <div class="quick-check" data-back="card 3 or card 4">
+      <div class="qc-title">Two moves and one conjunction, seven questions</div>
+      <div class="qc-sub">All new sentences. Answer each one once.</div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">The prompt asks how a shared garden helps a town. Which sentence is a thesis?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A hook. It does not answer the question." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Have you ever wondered what an empty lot could become?</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Answers the question and previews three body paragraphs." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>A shared garden helps a town by feeding families, teaching children, and turning neighbours into friends.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence is a SO WHAT?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;This shows&rdquo; plus what the fact proves." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>This shows that the language was too useful to be a mere tradition.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A fact from the passage, so a SHOW." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Whistling saved time because people did not have to walk around the ravines.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Q5 again. <i>&ldquo;El Silbo is a language of whistles ___ it can be heard for miles.&rdquo;</i> Which word fits?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Because says the second half causes the first. Being heard for miles does not make it a whistled language; both are simply true. That is a joining word&rsquo;s job." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>because</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Two facts side by side, neither causing the other. And joins them." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>and</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which is a topic sentence for a body paragraph about the government&rsquo;s decision?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A fact. It supports the paragraph; it does not open it." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>By the 1980s, few people still knew how to whistle the language.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="It states the paragraph&rsquo;s one job." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The government&rsquo;s decision to teach El Silbo in schools kept the island&rsquo;s connection to its past from breaking.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Choose the conjunction. <i>&ldquo;The government made classes required ___ few people still knew the language.&rdquo;</i></div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Here the second half really is the cause of the first. Because fits." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>because</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="And hides the cause. The government acted for a reason, and the sentence gives it." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>and</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence is ready to submit?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="This sounds should be these sounds, and length is spelled l-e-n-g-t-h." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>This sounds change in tone, legth or pitch.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="These sounds, length." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>These sounds change in tone, length or pitch.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which set of three sentences is a conclusion, in conclusion order?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Thesis, then a specific statement, then a general one. The introduction walked in; the conclusion walks out." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>A shared garden feeds, teaches and connects a town. Neighbours who never spoke now pull weeds side by side. Small acts of care can bring a whole community together.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="General, specific, thesis. That is an introduction. A conclusion runs the other way." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Small acts of care can bring a whole community together. Neighbours who never spoke now pull weeds side by side. A shared garden feeds, teaches and connects a town.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="qc-result"></div>
+    </div>
+
+    <div class="checklist-wrap shown">
+      <div id="mainChecklist">
+        <div class="checklist-progress-label" id="checkProgressLabel">0 of 5 checked</div>
+        <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Five paragraphs, one job each.</b> Introduction: general statement, specific statement, thesis in the prompt&rsquo;s own words. Three body paragraphs. Conclusion: thesis in new words, specific statement, general statement. Count the paragraphs before I submit.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Every body paragraph:</b> a topic sentence, then two supporting details, each a fact from the passage followed by <i>This shows</i>.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div>Plan in the box first: thesis, three topic sentences, the facts sorted under each. Then write. The 90-minute window has room for it.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div>Conjunctions: <i>and</i> joins two facts that are both true. <i>Because</i> only when the second half causes the first.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div>Read-back: smallest, knows, Silbo, length, these sounds, news, young, cultural, and dashes (not hyphens) around an aside.</div></div>
+      </div>
+      <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>Print Checklist</button>
+    </div>
+  </div>
+</div>
+
+</div>
+<div class="nav"><button id="prevBtn" onclick="navigate(-1)">&larr; Back</button><button id="nextBtn" onclick="navigate(1)">Next &rarr;</button></div>
+<div class="completion-overlay" id="completionOverlay"><div class="completion-card"><div class="completion-emoji">&#9997;</div><div class="completion-title">Five paragraphs. Then This shows.</div><div class="completion-sub">Read the prompt twice. Introduction: general, specific, thesis in the prompt&rsquo;s words. One body paragraph per connection, each with a topic sentence and two supporting details that end in This shows. Conclusion: thesis, specific, general. Count the paragraphs before you submit. You wrote this essay on G6.3; write it again.</div><button class="completion-close" onclick="closeCompletion()">Got it</button></div></div>
+<canvas id="confettiCanvas"></canvas>
+<script>
+var cards=document.querySelectorAll('.card'),bar=document.getElementById('progressBar'),breadcrumb=document.getElementById('breadcrumb'),stickyEl=document.getElementById('stickyIndicator'),current=0,visited=[0];
+cards.forEach(function(card,i){var dot=document.createElement('div');dot.className='progress-dot'+(i===0?' active':'');var tooltip=document.createElement('span');tooltip.className='dot-tooltip';tooltip.textContent=card.getAttribute('data-title')||('Card '+(i+1));dot.appendChild(tooltip);dot.addEventListener('click',function(){goTo(i);});bar.appendChild(dot);});
+function updateBreadcrumb(){var title=cards[current].getAttribute('data-title')||('Card '+(current+1));breadcrumb.innerHTML='Card <b>'+(current+1)+'</b> of '+cards.length+' &mdash; '+title;stickyEl.textContent=(current+1)+' / '+cards.length;}
+function checkSticky(){var r=bar.getBoundingClientRect();stickyEl.classList.toggle('visible',r.bottom<0);}
+window.addEventListener('scroll',checkSticky);
+function goTo(idx){if(idx<0||idx>=cards.length)return;cards[current].classList.remove('active');bar.children[current].classList.remove('active');current=idx;if(visited.indexOf(current)===-1)visited.push(current);cards[current].classList.add('active');bar.children[current].classList.add('active');visited.forEach(function(v){if(v!==current)bar.children[v].classList.add('visited');});var p=document.getElementById('prevBtn'),n=document.getElementById('nextBtn');if(p){p.style.visibility=current===0?'hidden':'visible';p.disabled=current===0;}if(n){n.textContent=current===cards.length-1?'Done ✓':'Next →';}updateBreadcrumb();window.scrollTo({top:0,behavior:'smooth'});}
+function navigate(dir){if(dir===1&&current===cards.length-1){showCompletion();return;}goTo(current+dir);}
+document.addEventListener('keydown',function(e){if(e.target&&e.target.tagName==='TEXTAREA')return;if(e.key==='ArrowRight'||e.key==='ArrowDown')navigate(1);if(e.key==='ArrowLeft'||e.key==='ArrowUp')navigate(-1);});
+function revealBetter(cover){cover.nextElementSibling.classList.add('shown');cover.classList.add('hidden');}
+function shuffleOptions(){document.querySelectorAll('.discrim-options').forEach(function(box){var opts=Array.prototype.slice.call(box.querySelectorAll('.discrim-option'));for(var i=opts.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=opts[i];opts[i]=opts[j];opts[j]=t;}opts.forEach(function(o,i){box.appendChild(o);var l=o.querySelector('.discrim-label');if(l)l.textContent=String.fromCharCode(65+i);});});}
+function handleDiscrim(option){var ch=option.closest('.discrim-challenge');if(ch.classList.contains('done'))return;var fb=ch.querySelector('.discrim-feedback');var opts=ch.querySelectorAll('.discrim-option');var ok=option.getAttribute('data-correct')==='true';ch.classList.add('done');
+if(ok){option.classList.add('correct');opts.forEach(function(o){if(o!==option)o.classList.add('locked');});fb.innerHTML=option.getAttribute('data-right-feedback')||'Correct.';fb.className='discrim-feedback shown right-fb';ch.setAttribute('data-first-try','1');}
+else{option.classList.add('wrong');var right=ch.querySelector('.discrim-option[data-correct="true"]');right.classList.add('model');opts.forEach(function(o){if(o!==option&&o!==right)o.classList.add('locked');});var rl=right.querySelector('.discrim-label');fb.innerHTML='<span style="color:#cc0000"><b>Not this one.</b> '+(option.getAttribute('data-wrong-feedback')||'')+'</span><br><span style="color:#2d6a2d"><b>The answer is '+(rl?rl.textContent:'')+'.</b> '+(right.getAttribute('data-right-feedback')||'')+'</span>';fb.className='discrim-feedback shown';ch.setAttribute('data-first-try','0');var par=ch.nextElementSibling;if(par&&par.classList.contains('discrim-parallel')){fb.innerHTML+=' <b style="color:#5c2dcc">Try one more like it below.</b>';setTimeout(function(){par.classList.add('shown');},600);}}
+var bf=ch.closest('.build-frame');if(bf){var all=bf.querySelectorAll('.discrim-challenge'),dn=0;all.forEach(function(c){if(c.classList.contains('done'))dn++;});if(dn===all.length){var a=bf.querySelector('.assembled');if(a)setTimeout(function(){a.classList.add('shown');},500);}}
+var qc=ch.closest('.quick-check');if(qc)updateQC(qc);}
+function updateQC(qc){var items=qc.querySelectorAll('.discrim-challenge');var done=0,first=0;items.forEach(function(c){if(c.classList.contains('done')){done++;if(c.getAttribute('data-first-try')==='1')first++;}});if(done<items.length)return;var r=qc.querySelector('.qc-result');r.textContent=first+' of '+items.length+' right first time. '+(first>=items.length-1?'The moves are in your head. Now the checklist.':'Look back at '+qc.getAttribute('data-back')+' for the ones you missed, then come back to the checklist.');r.style.display='block';launchConfetti();}
+function toggleTimes(el){var body=el.closest('.card-body');body.classList.toggle('show-times');el.textContent=body.classList.contains('show-times')?'Hide test times':'Show how long each test took';}
+function toggleCheck(item){item.classList.toggle('checked');updateCheckProgress();}
+function updateCheckProgress(){var items=document.querySelectorAll('#mainChecklist .check-item');if(!items.length)return;var checked=document.querySelectorAll('#mainChecklist .check-item.checked').length;var fill=document.getElementById('checkProgressFill'),lbl=document.getElementById('checkProgressLabel');if(fill)fill.style.width=Math.round((checked/items.length)*100)+'%';if(lbl)lbl.innerHTML=checked===items.length?'<b style="color:#2d6a2d;">All done.</b>':checked+' of '+items.length+' checked';}
+function printChecklist(btn){var card=btn.closest('.card');var ci=card.querySelectorAll('.check-item.checked');ci.forEach(function(i){i.classList.remove('checked');});card.classList.add('print-target');window.print();card.classList.remove('print-target');ci.forEach(function(i){i.classList.add('checked');});}
+function showCompletion(){document.getElementById('completionOverlay').classList.add('visible');}
+function closeCompletion(){document.getElementById('completionOverlay').classList.remove('visible');}
+function launchConfetti(){var canvas=document.getElementById('confettiCanvas');var ctx=canvas.getContext('2d');canvas.width=window.innerWidth;canvas.height=window.innerHeight;var colors=['#b8860b','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b','#42a5f5'];var particles=[];for(var i=0;i<120;i++){particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height-canvas.height,w:Math.random()*10+5,h:Math.random()*6+3,color:colors[Math.floor(Math.random()*colors.length)],vx:(Math.random()-0.5)*4,vy:Math.random()*3+2,rot:Math.random()*360,rotV:(Math.random()-0.5)*10,life:1});}var frame=0;function animate(){ctx.clearRect(0,0,canvas.width,canvas.height);var alive=false;particles.forEach(function(p){if(p.life<=0)return;alive=true;p.x+=p.vx;p.y+=p.vy;p.vy+=0.05;p.rot+=p.rotV;if(p.y>canvas.height+20){p.life=0;return;}if(frame>60)p.life-=0.01;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();});frame++;if(alive)requestAnimationFrame(animate);else ctx.clearRect(0,0,canvas.width,canvas.height);}animate();}
+shuffleOptions();goTo(0);
+</script>
+<script src="../tracking.js"></script>
+</body>
+</html>
