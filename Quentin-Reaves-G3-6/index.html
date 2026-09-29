@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quentin Reaves - Writing Coaching Card - G3.6</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Calibri, 'Segoe UI', sans-serif; font-size: 12pt; color: #1a1a2e; background: #f0f0f5; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; padding: 20px; }
+.progress-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
+.progress-dot { width: 12px; height: 12px; border-radius: 50%; background: #ccc; transition: background 0.3s, transform 0.2s; cursor: pointer; position: relative; }
+.progress-dot.active { background: #b8860b; transform: scale(1.25); }
+.progress-dot.visited { background: #d9b56a; }
+.progress-dot:hover { transform: scale(1.3); }
+.progress-dot .dot-tooltip { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: #b8860b; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 8.5pt; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 100; }
+.progress-dot .dot-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #b8860b; }
+.progress-dot:hover .dot-tooltip { opacity: 1; }
+.card-breadcrumb { font-size: 9.5pt; color: #888; margin-bottom: 14px; text-align: center; transition: opacity 0.3s; min-height: 1.2em; }
+.card-breadcrumb b { color: #b8860b; }
+.sticky-indicator { position: fixed; top: 12px; right: 16px; background: #b8860b; color: #fff; padding: 5px 14px; border-radius: 20px; font-size: 9pt; font-weight: 700; opacity: 0; transition: opacity 0.3s; z-index: 200; pointer-events: none; letter-spacing: 0.5px; }
+.sticky-indicator.visible { opacity: 1; }
+.card-container { position: relative; width: 640px; min-height: 420px; }
+.card { position: absolute; top: 0; left: 0; width: 100%; background: #fff; border: 2.5px solid #b8860b; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.10); opacity: 0; pointer-events: none; transform: translateX(40px); transition: opacity 0.35s, transform 0.35s; }
+.card.active { opacity: 1; pointer-events: auto; transform: translateX(0); position: relative; }
+.card-header { background: #b8860b; color: #fff; padding: 14px 20px; border-radius: 11px 11px 0 0; }
+.card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+.card-header .card-subtitle { font-size: 9.5pt; color: #f0e2bd; margin-top: 2px; }
+.card-body { padding: 18px 22px 22px; line-height: 1.55; }
+.card-body p { margin: 6px 0; }
+.score-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; }
+.score-box { background: #f8f8fc; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 10px 14px; text-align: center; }
+.score-box .big { font-size: 20pt; font-weight: 700; }
+.score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+.score-good .big { color: #2d6a2d; }
+.score-warn .big { color: #cc6600; }
+.score-low .big { color: #cc0000; }
+.you-wrote { background: #fff3f3; border-left: 3px solid #cc0000; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.you-wrote .label { font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+.better, .model-box { background: #e8f5e9; border-left: 3px solid #2d6a2d; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.better .label, .model-box .label { font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+.tip-box { background: #e8edf5; border-left: 3px solid #b8860b; padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0; }
+.tip-box .label { font-weight: 700; font-size: 9.5pt; color: #b8860b; margin-bottom: 3px; }
+.rule-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 10px 14px; margin: 10px 0; font-size: 11pt; }
+.rule-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 3px; }
+.lbl { display: inline-block; font-size: 7.5pt; font-weight: 800; letter-spacing: 0.5px; padding: 1px 6px; border-radius: 4px; margin: 0 4px 0 0; vertical-align: middle; color: #fff; line-height: 1.5; }
+.lbl-say, .lbl-echo { background: #5c2dcc; } .lbl-show, .lbl-because { background: #2d6a2d; } .lbl-sowhat { background: #cc6600; } .lbl-close { background: #457b9d; } .lbl-miss { background: #cc0000; } .lbl-reason { background: #888; } .lbl-general { background: #6d4c41; } .lbl-specific { background: #00838f; } .evidence-block { margin: 10px 0 12px; border: 1.5px solid #e0e0e8; border-radius: 8px; overflow: hidden; } .ev-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 12px; font-size: 10.5pt; } .ev-row + .ev-row { border-top: 1px solid #e0e0e8; } .ev-row.paced { background: #e8f5e9; } .ev-row.rushed { background: #fff3f3; } .ev-tag { flex-shrink: 0; font-size: 8.5pt; font-weight: 800; letter-spacing: 0.5px; padding: 2px 7px; border-radius: 8px; color: #fff; margin-top: 2px; } .ev-row.paced .ev-tag { background: #2d6a2d; } .ev-row.rushed .ev-tag { background: #cc0000; } .format-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; } .format-box { background: #fbf7ea; border: 1.5px solid #e6d3a3; border-radius: 8px; padding: 10px 14px; } .format-box .format-title { font-weight: 700; font-size: 10pt; color: #b8860b; margin-bottom: 4px; } .format-box .format-detail { font-size: 9.5pt; color: #555; line-height: 1.4; } .format-box .format-pts { display: inline-block; background: #b8860b; color: #fff; font-size: 8.5pt; font-weight: 700; padding: 1px 7px; border-radius: 8px; margin-bottom: 4px; } @media (max-width: 640px) { .format-grid { grid-template-columns: 1fr; } }
+.ex-list { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+.ex { padding: 8px 12px; border-radius: 6px; font-size: 10.5pt; border-left: 3px solid; }
+.ex.pos { background: #e8f5e9; border-color: #2d6a2d; } .ex.neg { background: #fff3f3; border-color: #cc0000; }
+.ex .tag { font-weight: 800; font-size: 8.5pt; margin-right: 6px; } .ex.pos .tag { color: #2d6a2d; } .ex.neg .tag { color: #cc0000; }
+.think { background: #f8f8fc; border-left: 3px solid #888; padding: 8px 14px; margin: 8px 0; font-size: 10.5pt; font-style: italic; color: #444; }
+.think .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #666; margin-bottom: 2px; }
+.highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+.error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+.discrim-option .error-mark { background: transparent; text-decoration: none; padding: 0; border-radius: 0; }
+.essay-excerpt { background: #fafafa; border: 1px solid #e0e0e8; border-radius: 6px; padding: 10px 14px; font-size: 10.5pt; margin: 8px 0; line-height: 1.7; }
+.discrim-challenge { background: #f8f5ff; border: 1.5px solid #d4c5ff; border-radius: 8px; padding: 14px; margin: 10px 0; }
+.discrim-prompt { font-weight: 700; font-size: 10.5pt; margin-bottom: 10px; color: #5c2dcc; }
+.discrim-options { display: flex; flex-direction: column; gap: 8px; }
+.discrim-option { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border: 2px solid #d4c5ff; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 10.5pt; background: #fff; }
+.discrim-option:hover { border-color: #7c4dff; background: #f5f0ff; }
+.discrim-label { font-weight: 800; color: #7c4dff; min-width: 20px; flex-shrink: 0; }
+.discrim-option.correct, .discrim-option.model { border-color: #2d6a2d; background: #e8f5e9; cursor: default; }
+.discrim-option.correct .discrim-label, .discrim-option.model .discrim-label { color: #2d6a2d; }
+.discrim-option.wrong { border-color: #cc0000; background: #fff3f3; cursor: default; }
+.discrim-option.wrong .discrim-label { color: #cc0000; }
+.discrim-option.locked { pointer-events: none; opacity: 0.5; }
+.discrim-challenge.done .discrim-option { cursor: default; }
+.discrim-feedback { margin-top: 0; font-size: 10pt; line-height: 1.45; max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.3s, opacity 0.3s, margin 0.3s; }
+.discrim-feedback.shown { max-height: 400px; opacity: 1; margin-top: 10px; }
+.discrim-feedback.right-fb { color: #2d6a2d; font-weight: 600; }
+.discrim-parallel { display: none; }
+.discrim-parallel.shown { display: block; }
+.discrim-parallel .discrim-prompt::before { content: 'One more like it. '; color: #888; font-weight: 600; }
+.reveal-wrapper { position: relative; }
+.reveal-cover { background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%); border-left: 3px solid #2d6a2d; padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 10px; transition: background 0.2s, box-shadow 0.2s; }
+.reveal-cover:hover { box-shadow: 0 2px 8px rgba(45,106,45,0.15); }
+.reveal-cover .reveal-icon { width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
+.reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #2d6a2d; }
+.reveal-cover .reveal-hint { font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px; }
+.reveal-content { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0; }
+.reveal-content.shown { max-height: 1200px; opacity: 1; margin: 8px 0; }
+.reveal-cover.hidden { display: none; }
+.your-turn { background: #f8f8fc; border: 1.5px dashed #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.your-turn .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.your-turn textarea { width: 100%; min-height: 64px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; margin: 4px 0; }
+.frame-row { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0; font-size: 10.5pt; }
+.frame-row .lbl { margin-top: 4px; }
+.frame-row .given { background: #fff; border: 1.5px solid #e0e0e8; border-radius: 6px; padding: 8px; flex: 1; color: #555; }
+.frame-row textarea { flex: 1; min-height: 48px; margin: 0; }
+.yt-btn { margin-top: 8px; padding: 7px 16px; border: 2px solid #2d6a2d; background: #fff; color: #2d6a2d; border-radius: 8px; font-family: inherit; font-weight: 600; font-size: 10pt; cursor: pointer; }
+.yt-btn:hover { background: #2d6a2d; color: #fff; }
+.yt-btn:disabled { opacity: 0.6; cursor: default; }
+.yt-model { display: none; margin-top: 10px; }
+.assembled { display: none; margin-top: 8px; }
+.assembled.shown { display: block; }
+.xp-link { display: inline-block; margin: 8px 6px 0 0; padding: 6px 14px; border-radius: 6px; background: #2d6a2d; color: #fff; font-weight: 700; font-size: 10pt; text-decoration: none; }
+.xp-link:hover { background: #1b5e1b; }
+.yt-model.shown { display: block; }
+.self-check .check-item { font-size: 10pt; padding: 6px 8px; }
+.check-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 8px; cursor: pointer; border-bottom: 1px solid #eee; border-radius: 6px; transition: background 0.15s; user-select: none; font-size: 11pt; }
+.check-item:last-child { border-bottom: none; }
+.check-item:hover { background: #f8f8fc; }
+.check-item.checked { background: #f0f8f0; }
+.check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
+.check-item.checked .check-box::after { content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
+.check-box { width: 28px; height: 28px; border: 2.5px solid #b8860b; border-radius: 6px; flex-shrink: 0; margin-top: 1px; position: relative; transition: background 0.2s, border-color 0.2s; }
+.self-check .check-box { width: 22px; height: 22px; }
+.checklist-progress { background: #eee; border-radius: 10px; height: 8px; margin: 12px 0 6px; overflow: hidden; }
+.checklist-progress-fill { background: linear-gradient(90deg, #2d6a2d, #4caf50); height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%; }
+.checklist-progress-label { font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px; }
+.quick-check { background: #f8f5ff; border: 2px solid #7c4dff; border-radius: 10px; padding: 12px 14px; margin: 10px 0; }
+.quick-check .qc-title { font-weight: 800; color: #5c2dcc; font-size: 10.5pt; margin-bottom: 4px; }
+.quick-check .qc-sub { font-size: 9.5pt; color: #666; margin-bottom: 6px; }
+.quick-check .discrim-challenge { background: #fff; margin: 8px 0; padding: 10px 12px; }
+.qc-result { display: none; font-weight: 700; margin-top: 8px; font-size: 10.5pt; color: #5c2dcc; }
+.recall-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.recall-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.recall-box textarea { width: 100%; min-height: 56px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; }
+.checklist-wrap { display: none; }
+.checklist-wrap.shown { display: block; }
+.time-toggle { font-size: 9pt; color: #b8860b; cursor: pointer; text-decoration: underline; display: inline-block; margin: 0 0 6px; }
+.tl-time { display: none; font-weight: 400; color: #aaa; }
+.show-times .tl-time { display: inline; }
+.guide-block { margin-top: 16px; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 8px 12px; background: #fafafa; font-size: 10pt; }
+.guide-block summary { cursor: pointer; font-weight: 700; color: #666; font-size: 9.5pt; }
+.guide-block ul { margin: 6px 0 4px 18px; }
+.guide-block li { margin: 4px 0; }
+.practice-recommendations { margin-top: 16px; border-top: 2px solid #e0e0e8; padding-top: 14px; }
+.practice-recs-title { font-size: 10pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #b8860b; margin-bottom: 10px; }
+.practice-tier { border-radius: 8px; padding: 12px 14px; margin: 8px 0; }
+.tier-primary { background: #e8f5e9; border: 1.5px solid #a5d6a7; }
+.tier-extra { background: #f8f8fc; border: 1.5px solid #e0e0e8; }
+.tier-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.tier-label { font-size: 8.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 2px 10px; border-radius: 10px; }
+.tier-primary .tier-label { background: #2d6a2d; color: #fff; }
+.tier-extra .tier-label { background: #888; color: #fff; }
+.tier-note { font-size: 9pt; color: #666; margin-bottom: 6px; line-height: 1.4; }
+.practice-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.practice-link { display: inline-block; padding: 5px 12px; border-radius: 6px; font-size: 9.5pt; font-weight: 600; text-decoration: none; transition: background 0.2s, transform 0.1s; }
+.tier-primary .practice-link { background: #c8e6c9; color: #1b5e1b; }
+.tier-extra .practice-link { background: #e8edf5; color: #b8860b; }
+.nav { display: flex; gap: 12px; margin-top: 16px; }
+.nav button { padding: 8px 28px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; transition: background 0.2s, color 0.2s; }
+.nav button:hover { background: #b8860b; color: #fff; }
+.print-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 8px 20px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 10.5pt; font-weight: 600; cursor: pointer; }
+.print-btn:hover { background: #b8860b; color: #fff; }
+.print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+.completion-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(184,134,11,0.6); z-index: 500; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s; }
+.completion-overlay.visible { opacity: 1; pointer-events: auto; }
+.completion-card { background: #fff; border-radius: 16px; padding: 40px 48px; text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2); transform: scale(0.8); transition: transform 0.4s ease; max-width: 420px; }
+.completion-overlay.visible .completion-card { transform: scale(1); }
+.completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+.completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; color: #b8860b; }
+.completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+.completion-close { margin-top: 20px; padding: 10px 32px; background: #b8860b; color: #fff; border: none; border-radius: 8px; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; }
+#confettiCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 501; }
+.score-timeline { display: flex; align-items: flex-end; gap: 0; margin: 12px 0 10px; padding: 0 6px; justify-content: space-between; }
+.timeline-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.timeline-score { font-size: 13pt; font-weight: 700; margin-bottom: 4px; }
+.timeline-bar { width: 70%; border-radius: 4px 4px 0 0; min-height: 8px; }
+.timeline-label { font-size: 8.5pt; color: #888; margin-top: 6px; font-weight: 600; text-align: center; }
+.score-green { color: #2d6a2d; } .score-amber { color: #cc6600; } .score-red { color: #cc0000; }
+.bar-green { background: linear-gradient(to top, #c8e6c9, #81c784); } .bar-amber { background: linear-gradient(to top, #ffe0b2, #ffb74d); } .bar-red { background: linear-gradient(to top, #ffcdd2, #ef9a9a); }
+.strength-chips, .growth-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; }
+.strength-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; background: #e8f5e9; color: #2d6a2d; border: 1.5px solid #a5d6a7; display: inline-flex; align-items: center; gap: 4px; }
+.strength-chip .chip-course, .growth-chip .chip-avg { font-size: 7.5pt; color: #888; font-weight: 400; }
+.journey-section { font-size: 9.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; margin: 10px 0 4px; padding-bottom: 3px; border-bottom: 1.5px solid; }
+.journey-section.strengths-header { color: #2d6a2d; border-color: #c8e6c9; }
+.journey-section.growth-header { color: #cc6600; border-color: #ffe0b2; }
+.root-cause-teaser { background: #f5f0ff; border-left: 3px solid #7c4dff; padding: 10px 14px; margin: 12px 0 4px; border-radius: 0 6px 6px 0; font-size: 10.5pt; line-height: 1.5; }
+.root-cause-teaser b { color: #5c2dcc; }
+.growth-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+.growth-chip.mixed { background: #fff8e8; color: #b35900; border: 1.5px solid #ffe0b2; }
+.growth-chip.weak { background: #fff3f3; color: #cc0000; border: 1.5px solid #ffcdd2; }
+@media print { body { background: #fff; padding: 0; min-height: auto; } .progress-bar, .nav, .print-btn, .card-breadcrumb, .sticky-indicator, .completion-overlay, #confettiCanvas, .reveal-cover, .checklist-progress, .checklist-progress-label, .discrim-challenge, .discrim-parallel, .quick-check, .recall-box, .yt-btn, .guide-block { display: none !important; } .card-container { width: 100%; min-height: auto; } .card { display: none !important; } .card.print-target { display: block !important; opacity: 1 !important; pointer-events: auto !important; position: relative !important; transform: none !important; box-shadow: none; border: 2px solid #b8860b; page-break-inside: avoid; } .reveal-content, .yt-model, .checklist-wrap { display: block !important; max-height: none !important; opacity: 1 !important; margin: 8px 0 !important; } }
+@media (max-width: 720px) { .card-container { width: 100%; } .score-grid { grid-template-columns: 1fr; } .timeline-score { font-size: 10pt; } }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progressBar"></div>
+<div class="card-breadcrumb" id="breadcrumb"></div>
+<div class="sticky-indicator" id="stickyIndicator"></div>
+<div class="card-container" id="cardContainer">
+
+<!-- Card 1: Score Overview -->
+<div class="card active" data-title="Score Overview">
+  <div class="card-header"><h2>Quentin Reaves</h2><div class="card-subtitle">Alpha Standardized Writing G3.6. September 2026. Passages: &ldquo;Porcupines in Danger&rdquo; / &ldquo;The Life of a Porcupine&rdquo;</div></div>
+  <div class="card-body">
+    <div class="score-grid">
+      <div class="score-box score-warn"><div class="big">78%</div><div class="label">Overall Score</div></div>
+      <div class="score-box score-good"><div class="big">23/25</div><div class="label">Questions 1&ndash;10</div></div>
+      <div class="score-box score-low"><div class="big">12/20</div><div class="label">Paragraph (Question 11)</div></div>
+    </div>
+    <p>Quentin, the short answers earned 23 of 25. All five editing questions were perfect: the fragment, the because, the appositive, the question, the unscramble. Three one-sentence answers carried their reason for full marks. That half of the test is nearly done.</p>
+    <p>Eight of the ten missing points are in the paragraph, and it has the right facts in it: the quills, the claws for climbing, the baby&rsquo;s quills hardening. Every one of them is about the porcupine&rsquo;s body and its safety. What the paragraph never does is answer the question. It opens with the passage&rsquo;s own first sentence, tells the facts in the passage&rsquo;s order, and stops. No sentence says how the body keeps the porcupine safe, no fact has its <i>This shows</i>, and there is no ending. Your last two paragraphs both started this way.</p>
+    <div class="root-cause-teaser"><b>The one skill:</b> answer the question in your first sentence, then a <i>This shows</i> after each fact. Card 3 builds it on your own three facts. Card 4 is the read-back that would have caught the grammar slips.</div>
+  </div>
+</div>
+
+<!-- Card 2: Writing Journey -->
+<div class="card" data-title="Your Writing Journey">
+  <div class="card-header"><h2>Your Writing Journey</h2><div class="card-subtitle">Six tests since June</div></div>
+  <div class="card-body">
+    <div class="score-timeline">
+      <div class="timeline-item"><div class="timeline-score score-amber">73%</div><div class="timeline-bar bar-amber" style="height:66px;"></div><div class="timeline-label">G3.1 (Jun)<br><span class="tl-time">38m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">82%</div><div class="timeline-bar bar-green" style="height:74px;"></div><div class="timeline-label">G3.2 (Jul)<br><span class="tl-time">47m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">81%</div><div class="timeline-bar bar-green" style="height:73px;"></div><div class="timeline-label">G3.3 (Jul)<br><span class="tl-time">31m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">84%</div><div class="timeline-bar bar-green" style="height:76px;"></div><div class="timeline-label">G3.4 (Jul)<br><span class="tl-time">20m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-amber">73%</div><div class="timeline-bar bar-amber" style="height:66px;"></div><div class="timeline-label">G3.5 (Aug)<br><span class="tl-time">48m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-amber">78%</div><div class="timeline-bar bar-amber" style="height:70px;"></div><div class="timeline-label">G3.6 (Sep)<br><span class="tl-time">31m</span></div></div>
+    </div>
+    <span class="time-toggle" onclick="toggleTimes(this)">Show how long each test took</span>
+    <p>The short answers have climbed from 16 to 23 out of 25 since June. The paragraph has gone the other way: 17, 17, 17, 15, 13, 12. On the last two tests it opened with the passage&rsquo;s first sentence and retold the passage from there. The facts you pick are good ones. They need the sentence that answers the question in front of them and a <i>This shows</i> after each.</p>
+    <div class="journey-section strengths-header">Skills you do well</div>
+    <div class="strength-chips">
+      <span class="strength-chip">Fragment, because, appositive, question, unscramble <span class="chip-course">&middot; Q1&ndash;Q5, all full marks</span></span>
+      <span class="strength-chip">Answer, then because <span class="chip-course">&middot; Q8, Q9, Q10, full marks</span></span>
+      <span class="strength-chip">Facts from the passage <span class="chip-course">&middot; Q11, three of them, all about safety</span></span>
+    </div>
+    <div class="journey-section growth-header">What to work on</div>
+    <div class="growth-chips">
+      <span class="growth-chip weak">A paragraph that copies the passage&rsquo;s first sentence and retells <span class="chip-avg">Q11: 12, down from 17</span></span>
+      <span class="growth-chip mixed">Facts with no <i>This shows</i>, and no concluding sentence <span class="chip-avg">Q11</span></span>
+      <span class="growth-chip mixed">Read-back: porcupines are, its, and two sentences that lost words <span class="chip-avg">Q11, Q7</span></span>
+      <span class="growth-chip mixed">A fact changed: tail for quills <span class="chip-avg">Q6</span></span>
+    </div>
+    <div class="root-cause-teaser"><b>Two fixes.</b> Answer first, then Show and So What. And read it back once.</div>
+  </div>
+</div>
+
+<!-- Card 3: Fix 1 -->
+<div class="card" data-title="Fix 1: Answer First, then Show and So What">
+  <div class="card-header"><h2>Fix 1: Answer First, then Show and So What</h2><div class="card-subtitle">The passage&rsquo;s first sentence is not your first sentence</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: ANSWER FIRST, THEN SHOW, THEN SO WHAT</div>The <span class="lbl lbl-say">TOPIC SENTENCE</span> answers the question in the question&rsquo;s own words. Never the passage&rsquo;s opening sentence. Then each fact is a <span class="lbl lbl-show">SHOW</span> from the passage, followed by a <span class="lbl lbl-sowhat">SO WHAT</span>: <i>This shows&hellip;</i> how that part of the body keeps the porcupine safe. Then a <span class="lbl lbl-close">CONCLUDING SENTENCE</span>. <b>The check:</b> does your first sentence contain the question&rsquo;s key words, <i>body</i> and <i>safe</i>? Then count the facts and count the <i>This shows</i>.</div>
+
+    <p>Where your paragraph started, and where it should have:</p>
+    <div class="you-wrote"><div class="label">YOU WROTE</div>&ldquo;Porcupine are interesting animals that live in many parts of North America.&rdquo; <span class="lbl lbl-miss">THE PASSAGE&rsquo;S FIRST SENTENCE, NOT AN ANSWER</span><br><span style="font-size:9.5pt;color:#666;">The question asked how the porcupine&rsquo;s body helps it stay safe. This sentence says where porcupines live. On G3.5 the paragraph began the same way, with the passage&rsquo;s opening line about 500 statues.</span></div>
+    <div class="model-box"><div class="label">THE ANSWER</div><span class="lbl lbl-say">TOPIC SENTENCE</span>The porcupine&rsquo;s body keeps it safe in the wild in more than one way: its quills, its claws, and the way those quills harden as it grows.</div>
+
+    <p>Now your facts, each with the sentence it was missing:</p>
+    <div class="you-wrote"><div class="label">YOU WROTE</div><span class="lbl lbl-show">DETAIL 1 &middot; SHOW</span>&ldquo;Quills are long stiff hair that protect the animal from enemies.&rdquo; <span class="lbl lbl-miss">NO SO WHAT</span></div>
+    <div class="model-box"><div class="label">WITH ITS SO WHAT</div><span class="lbl lbl-show">DETAIL 1 &middot; SHOW</span>Its quills are long, stiff hairs that protect it from enemies, and if a predator ignores the warning, the porcupine swings its tail and the quills stick in. <span class="lbl lbl-sowhat">DETAIL 1 &middot; SO WHAT</span>This shows that the porcupine does not need to run or fight; its body punishes anything that comes too close.</div>
+
+    <div class="your-turn build-frame" id="build-para">
+      <div class="label">YOUR TURN: TAP THE SO WHAT, THE SECOND FACT, THEN ITS SO WHAT</div>
+      <div class="frame-row"><span class="lbl lbl-say">TOPIC SENTENCE</span><div class="given">The porcupine&rsquo;s body keeps it safe in the wild in more than one way: its quills, its claws, and the way those quills harden as it grows.</div></div>
+      <div class="frame-row"><span class="lbl lbl-show">DETAIL 1 &middot; SHOW</span><div class="given">Its quills are long, stiff hairs that protect it from enemies, and if a predator ignores the warning, the porcupine swings its tail and the quills stick in.</div></div>
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">DETAIL 1 &middot; SO WHAT: which sentence goes next?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;This shows&rdquo; plus how the quills keep it safe." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>This shows that the porcupine does not need to run or fight; its body punishes anything that comes too close.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A fact from the passage about food, so a SHOW, and not about safety." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>From the trees, porcupines eat buds, leaves and bark.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">DETAIL 2 &middot; SHOW: a second fact from the passage, about a different part of the body. Which one?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="An opinion, not a fact from the passage." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>I think porcupines are the toughest animals in the forest.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Your own fact about the claws, in the passage&rsquo;s words. A second part of the body." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Its long claws and rough paws help it grip branches so it can climb easily.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">DETAIL 2 &middot; SO WHAT: which sentence goes next?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A fact about winter food, so a SHOW, and not about the claws." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>In winter, when food is harder to find, they eat pine needles instead.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;This shows&rdquo; plus how the claws keep it safe." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>This shows that the porcupine can put itself out of reach before a fight even starts.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="frame-row"><span class="lbl lbl-close">CONCLUDING SENTENCE</span><div class="given">Quills for the animals that come close and claws for getting away from them keep the slow porcupine safe.</div></div>
+      <div class="assembled">
+        <div class="model-box"><div class="label">YOUR PARAGRAPH, ASSEMBLED</div><span class="lbl lbl-say">TOPIC SENTENCE</span>The porcupine&rsquo;s body keeps it safe in the wild in more than one way: its quills, its claws, and the way those quills harden as it grows. <span class="lbl lbl-show">DETAIL 1 &middot; SHOW</span>Its quills are long, stiff hairs that protect it from enemies, and if a predator ignores the warning, the porcupine swings its tail and the quills stick in. <span class="lbl lbl-sowhat">DETAIL 1 &middot; SO WHAT</span>This shows that the porcupine does not need to run or fight; its body punishes anything that comes too close. <span class="lbl lbl-show">DETAIL 2 &middot; SHOW</span>Its long claws and rough paws help it grip branches so it can climb easily. <span class="lbl lbl-sowhat">DETAIL 2 &middot; SO WHAT</span>This shows that the porcupine can put itself out of reach before a fight even starts. <span class="lbl lbl-close">CONCLUDING SENTENCE</span>Quills for the animals that come close and claws for getting away from them keep the slow porcupine safe.<br><span style="font-size:9.5pt;color:#666;">Six sentences. Your two facts, an answer in front of them, a <i>This shows</i> after each, an ending. That is most of the eight points.</span></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">The question: <i>Explain how the porcupine&rsquo;s body helps it stay safe.</i> Which sentence answers it?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="The passage&rsquo;s first sentence. It says where porcupines live, not how their body keeps them safe." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Porcupines are interesting animals that live in many parts of North America.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="Body, safe, and how: the question&rsquo;s own words." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>A porcupine&rsquo;s body keeps it safe with quills that punish attackers and claws that carry it out of reach.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">The question: <i>Explain why Jason chose to place his statues under the sea.</i> Which sentence answers it?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Why, and the two reasons. An answer." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Jason chose the sea for his statues so that the coral reefs could rest and so that the sea could keep changing his art.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="The passage&rsquo;s first sentence, the way your G3.5 paragraph began. A fact, not an answer." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Jason deCaires Taylor has made more than 500 life-sized statues.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Every paragraph: your first sentence answers the question in its own words. Then two facts, a <i>This shows</i> after each, and an ending. If your first sentence is in the passage, delete it and answer instead.</div>
+  </div>
+</div>
+
+<!-- Card 4: Fix 2, the read-back -->
+<div class="card" data-title="Fix 2: Read It Back Once">
+  <div class="card-header"><h2>Fix 2: Read It Back Once</h2><div class="card-subtitle">Plural s, its, and two sentences that lost their words</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: ONE READ-BACK, THREE QUESTIONS</div>Before you submit, read the paragraph back aloud in your head, one sentence at a time, and ask three things. <b>Does the subject match its verb?</b> <i>Porcupines are</i>, <i>a porcupine is</i>. <b>Is it <i>its</i> or <i>it&rsquo;s</i>?</b> <i>Its</i> means belonging to it; <i>it&rsquo;s</i> means it is. <b>Does the sentence make sense read aloud?</b> If a word is missing, you will hear the gap.</div>
+
+    <p>Five slips in one paragraph, and one read-back would have caught all of them:</p>
+    <div class="you-wrote"><div class="label">YOU WROTE</div>&ldquo;<span class="error-mark">Porcupine are</span> interesting animals&hellip; <span class="error-mark">Porcupine spend</span> most of their time <span class="error-mark">and tree</span> They have <span class="error-mark">rough which</span> helped them climb trees easily&hellip; <span class="error-mark">it&rsquo;s</span> quills are soft&hellip; the young porcupine <span class="error-mark">squirrels</span> harden&hellip;&rdquo;</div>
+    <div class="model-box"><div class="label">READ BACK ONCE</div>Porcupine<b>s</b> are interesting animals. &nbsp;&middot;&nbsp; Porcupine<b>s</b> spend most of their time <b>in trees</b>. They have rough <b>paws</b> which help them climb trees easily. &nbsp;&middot;&nbsp; <b>Its</b> quills are soft. &nbsp;&middot;&nbsp; The young porcupine&rsquo;s <b>quills</b> harden.</div>
+
+    <p>The same read-back on the short answers:</p>
+    <div class="you-wrote"><div class="label">YOU WROTE (Q7, 2 OUT OF 3)</div>&ldquo;<span class="error-mark">Porcupine to spend</span> so much time on trees because they can find food there easily and it keeps them safe.&rdquo;<br><span style="font-size:9.5pt;color:#666;">Two good reasons, and the sentence never gets its verb. Read aloud: <i>Porcupines spend</i>.</span></div>
+    <div class="you-wrote"><div class="label">YOU WROTE (Q6, 2 OUT OF 3)</div>&ldquo;The porcupine lifts its <span class="error-mark">tail</span> when it is scared to scare off the other animals.&rdquo;<br><span style="font-size:9.5pt;color:#666;">The passage says it lifts its <i>quills</i> and makes a warning sound. A fact changed by one word is no longer the passage&rsquo;s fact.</span></div>
+    <div class="model-box"><div class="label">WITH THE PASSAGE&rsquo;S FACT</div>A porcupine lifts its quills when it feels scared because the raised quills and the warning sound tell other animals to stay away.</div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which sentence is ready to submit?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Porcupine are: the subject is plural, so it needs its s. And it&rsquo;s here should be its." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Porcupine are slow, but it&rsquo;s quills keep it safe.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="Porcupines are, and its quills. Clean." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Porcupines are slow, but their quills keep them safe.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence is ready to submit?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="A porcupine is, and its tail. Clean." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>A porcupine is slow, but its tail is quick.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A porcupine are: one porcupine takes is. And it&rsquo;s tail should be its." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>A porcupine are slow, but it&rsquo;s tail is quick.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Read both aloud. Which sentence has all its words?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="true" data-right-feedback="Every word is there. You can hear it." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Porcupines spend most of their time in trees, where their rough paws help them climb.</span></div>
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Read it aloud: time and tree, rough which. Two gaps where words fell out." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Porcupines spend most of their time and tree, where their rough which help them climb.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which sentence matches the passage?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Tail for quills. The passage says it lifts its quills and makes a sharp sound with its teeth." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>When a porcupine feels frightened, it lifts its tail and growls.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="Quills and a sharp sound with its teeth. The passage&rsquo;s fact." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>When a porcupine feels frightened, it lifts its quills and makes a sharp sound with its teeth.</span></div>
+        </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Last minute of every paragraph: read it back once, sentence by sentence. Subject and verb agree, its or it&rsquo;s, no missing words. Then check each fact against the passage.</div>
+  </div>
+</div>
+
+<!-- Card 5: Paragraph Review -->
+<div class="card" data-title="Paragraph Review">
+  <div class="card-header"><h2>Your Paragraph: 12 out of 20</h2><div class="card-subtitle">Right facts, no answer, no ending</div></div>
+  <div class="card-body">
+    <p>The question: <i>Explain how the porcupine&rsquo;s body helps it stay safe in the wild.</i> Here is yours, labelled:</p>
+    <div class="essay-excerpt">
+      <span class="lbl lbl-miss">THE PASSAGE&rsquo;S FIRST SENTENCE, NOT AN ANSWER</span><span class="error-mark">Porcupine are</span> interesting animals that live in many parts of North America. <span class="lbl lbl-show">DETAIL 1 &middot; SHOW</span>They have a lot of quills that cover their whole body. Quills are long stiff hair that protect the animal from enemies. <span class="lbl lbl-miss">NO SO WHAT</span> <span class="lbl lbl-show">DETAIL 2 &middot; SHOW</span><span class="error-mark">Porcupine spend</span> most of their time <span class="error-mark">and tree</span> They have <span class="error-mark">rough which</span> helped them climb trees easily. <span class="lbl lbl-miss">NO SO WHAT</span> <span class="lbl lbl-show">DETAIL 3 &middot; SHOW</span>In the spring, a mother porcupine gives birth to a baby. When the baby is first born, <span class="error-mark">it&rsquo;s</span> quills are soft so it cannot protect itself, but after a few months, the young porcupine <span class="error-mark">squirrels</span> harden, and then they are ready to explore the world on their own. <span class="lbl lbl-miss">NO SO WHAT</span> <span class="lbl lbl-miss">NO CONCLUDING SENTENCE</span>
+    </div>
+    <p>Three facts from the passage, and all three are about the body and safety. That is the 12, and it is the hard part done. The eight points: the first sentence is the passage&rsquo;s, not an answer; no fact has its <i>This shows</i>; there is no concluding sentence; and five slips one read-back would have caught.</p>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Decide first: which sentence in your paragraph answers the question?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="The first sentence is the passage&rsquo;s own opening line. It says where porcupines live." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>The first one.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="None. The facts are all there, and the answer never is." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>None of them.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <p>Your August paragraph began the same way:</p>
+    <div class="you-wrote"><div class="label">YOU WROTE (G3.5, 13 OUT OF 20)</div>&ldquo;Jason deCaires Taylor has made more than 500 life-sized statues. Jason has two statue parks in the Caribbean Sea. One has 65 statues the other almost 500! Why under water you ask&hellip;&rdquo;<br><span style="font-size:9.5pt;color:#666;">The passage&rsquo;s first sentence, then its facts in order. The answer to <i>why under the sea</i> arrived in the fourth sentence. Same habit, two tests. The fix is the same too: answer first.</span></div>
+
+    <div class="reveal-wrapper">
+      <div class="reveal-cover" onclick="revealBetter(this)">
+        <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></div>
+        <div><div class="reveal-text">Tap to see the 20-point version</div><div class="reveal-hint">Your three facts, your order. An answer in front, a This shows after each, an ending</div></div>
+      </div>
+      <div class="reveal-content">
+        <div class="better"><div class="label">YOUR PARAGRAPH, WITH THE ANSWER FIRST</div>
+          <span class="lbl lbl-say">TOPIC SENTENCE</span>The porcupine&rsquo;s body keeps it safe in the wild in three ways: its quills, its claws, and the way those quills harden as it grows. <span class="lbl lbl-show">DETAIL 1 &middot; SHOW</span>Its quills are long, stiff hairs that protect it from enemies, and if a predator ignores the warning, the porcupine swings its tail and the quills stick in. <span class="lbl lbl-sowhat">DETAIL 1 &middot; SO WHAT</span>This shows that the porcupine does not need to run or fight; its body punishes anything that comes too close. <span class="lbl lbl-show">DETAIL 2 &middot; SHOW</span>Porcupines spend most of their time in trees, and their long claws and rough paws help them climb easily. <span class="lbl lbl-sowhat">DETAIL 2 &middot; SO WHAT</span>This shows that the porcupine can put itself out of reach before a fight even starts. <span class="lbl lbl-show">DETAIL 3 &middot; SHOW</span>A baby&rsquo;s quills are soft when it is born, but they soon harden. <span class="lbl lbl-sowhat">DETAIL 3 &middot; SO WHAT</span>This shows that the porcupine&rsquo;s best protection is built in from the start and grows as it does. <span class="lbl lbl-close">CONCLUDING SENTENCE</span>Quills, claws and a body that arms itself early keep the slow porcupine safe in the wild.
+        </div>
+      </div>
+    </div>
+    <p style="font-size:10.5pt;">Your three facts, in your order, spelled and read back. An answer in front of them, a <i>This shows</i> after each, and an ending. That is the eight points.</p>
+  </div>
+</div>
+
+<!-- Card 6: Quick Check, Checklist -->
+<div class="card" data-title="Quick Check &amp; Checklist">
+  <div class="card-header"><h2>Quick Check</h2><div class="card-subtitle">Six new ones. Then your checklist</div></div>
+  <div class="card-body">
+    <div class="quick-check" data-back="cards 3 and 4">
+      <div class="qc-title">Two moves, six questions</div>
+      <div class="qc-sub">All new sentences. Answer each one once.</div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">The question: <i>Explain how the camel library helps the people of Garissa.</i> Which sentence answers it?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A passage&rsquo;s opening line: a picture, not an answer." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>A camel walks proudly with boxes on its back.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Helps, the people, how: the question&rsquo;s own words." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The camel library helps the people of Garissa by bringing books to families who have no library nearby.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence is a SO WHAT?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A fact from the passage, so a SHOW." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>A porcupine is covered with more than 30,000 quills.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;This shows&rdquo; plus how the fact keeps it safe." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>This shows that the porcupine carries its protection everywhere it goes.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence is ready to submit?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Porcupines eat, and its mother. Clean." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Porcupines eat bark in winter, and a baby stays near its mother.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Porcupine eat, and it&rsquo;s mother. Two read-back slips." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Porcupine eat bark in winter, and a baby stays near it&rsquo;s mother.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Question: <i>Why do porcupines spend so much time in trees?</i> Which answer earns all three points?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Good reasons, and the sentence has no verb. Porcupines spend." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Porcupines to spend time in trees because food is there and it is safe.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="A whole sentence, then because, then two reasons from the passage." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Porcupines spend so much time in trees because they find leaves and bark there and stay out of reach of predators.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence is a concluding sentence for a paragraph about how the porcupine stays safe?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Another fact. A paragraph that ends on a fact has no ending." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>After a few months, the young porcupine is ready to explore the forest.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Answers the question again in new words." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>That is how a slow animal with no way to run stays one of the safest in the forest.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence matches the passage?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Whirls around and swings its tail. The passage&rsquo;s words." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>If a predator ignores the warning, the porcupine whirls around and swings its tail.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Shoots its quills: the other passage says that is not true. A porcupine cannot throw its quills." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>If a predator ignores the warning, the porcupine shoots its quills like arrows.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="qc-result"></div>
+    </div>
+
+    <div class="checklist-wrap shown">
+      <div id="mainChecklist">
+        <div class="checklist-progress-label" id="checkProgressLabel">0 of 6 checked</div>
+        <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Plan before drafting:</b> the answer in one sentence, two or three facts from the passage, a <i>This shows</i> after each, a concluding sentence.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Answer first.</b> My first sentence uses the question&rsquo;s key words. It is never the passage&rsquo;s first sentence.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Show, then So What.</b> After every fact, <i>This shows</i> how it answers the question.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div>The last sentence answers the question again in new words. Never end on a fact.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Read it back once:</b> subject matches verb, its or it&rsquo;s, no missing words.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div>Every fact matches the passage word for word: quills, not tail.</div></div>
+      </div>
+      <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>Print Checklist</button>
+    </div>
+  </div>
+</div>
+
+</div>
+<div class="nav"><button id="prevBtn" onclick="navigate(-1)">&larr; Back</button><button id="nextBtn" onclick="navigate(1)">Next &rarr;</button></div>
+<div class="completion-overlay" id="completionOverlay"><div class="completion-card"><div class="completion-emoji">&#9997;</div><div class="completion-title">Answer first, then This shows</div><div class="completion-sub">Your first sentence answers the question in its own words, never the passage's opening line. Two facts, a This shows after each, an ending. Then read it back once: subject and verb, its or it's, no missing words. That is the eight points.</div><button class="completion-close" onclick="closeCompletion()">Got it</button></div></div>
+<canvas id="confettiCanvas"></canvas>
+<script>
+var cards=document.querySelectorAll('.card'),bar=document.getElementById('progressBar'),breadcrumb=document.getElementById('breadcrumb'),stickyEl=document.getElementById('stickyIndicator'),current=0,visited=[0];
+cards.forEach(function(card,i){var dot=document.createElement('div');dot.className='progress-dot'+(i===0?' active':'');var tooltip=document.createElement('span');tooltip.className='dot-tooltip';tooltip.textContent=card.getAttribute('data-title')||('Card '+(i+1));dot.appendChild(tooltip);dot.addEventListener('click',function(){goTo(i);});bar.appendChild(dot);});
+function updateBreadcrumb(){var title=cards[current].getAttribute('data-title')||('Card '+(current+1));breadcrumb.innerHTML='Card <b>'+(current+1)+'</b> of '+cards.length+' &mdash; '+title;stickyEl.textContent=(current+1)+' / '+cards.length;}
+function checkSticky(){var r=bar.getBoundingClientRect();stickyEl.classList.toggle('visible',r.bottom<0);}
+window.addEventListener('scroll',checkSticky);
+function goTo(idx){if(idx<0||idx>=cards.length)return;cards[current].classList.remove('active');bar.children[current].classList.remove('active');current=idx;if(visited.indexOf(current)===-1)visited.push(current);cards[current].classList.add('active');bar.children[current].classList.add('active');visited.forEach(function(v){if(v!==current)bar.children[v].classList.add('visited');});var p=document.getElementById('prevBtn'),n=document.getElementById('nextBtn');if(p){p.style.visibility=current===0?'hidden':'visible';p.disabled=current===0;}if(n){n.textContent=current===cards.length-1?'Done ✓':'Next →';}updateBreadcrumb();window.scrollTo({top:0,behavior:'smooth'});}
+function navigate(dir){if(dir===1&&current===cards.length-1){showCompletion();return;}goTo(current+dir);}
+document.addEventListener('keydown',function(e){if(e.target&&e.target.tagName==='TEXTAREA')return;if(e.key==='ArrowRight'||e.key==='ArrowDown')navigate(1);if(e.key==='ArrowLeft'||e.key==='ArrowUp')navigate(-1);});
+function revealBetter(cover){cover.nextElementSibling.classList.add('shown');cover.classList.add('hidden');}
+function shuffleOptions(){document.querySelectorAll('.discrim-options').forEach(function(box){var opts=Array.prototype.slice.call(box.querySelectorAll('.discrim-option'));for(var i=opts.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=opts[i];opts[i]=opts[j];opts[j]=t;}opts.forEach(function(o,i){box.appendChild(o);var l=o.querySelector('.discrim-label');if(l)l.textContent=String.fromCharCode(65+i);});});}
+function handleDiscrim(option){var ch=option.closest('.discrim-challenge');if(ch.classList.contains('done'))return;var fb=ch.querySelector('.discrim-feedback');var opts=ch.querySelectorAll('.discrim-option');var ok=option.getAttribute('data-correct')==='true';ch.classList.add('done');
+if(ok){option.classList.add('correct');opts.forEach(function(o){if(o!==option)o.classList.add('locked');});fb.innerHTML=option.getAttribute('data-right-feedback')||'Correct.';fb.className='discrim-feedback shown right-fb';ch.setAttribute('data-first-try','1');}
+else{option.classList.add('wrong');var right=ch.querySelector('.discrim-option[data-correct="true"]');right.classList.add('model');opts.forEach(function(o){if(o!==option&&o!==right)o.classList.add('locked');});var rl=right.querySelector('.discrim-label');fb.innerHTML='<span style="color:#cc0000"><b>Not this one.</b> '+(option.getAttribute('data-wrong-feedback')||'')+'</span><br><span style="color:#2d6a2d"><b>The answer is '+(rl?rl.textContent:'')+'.</b> '+(right.getAttribute('data-right-feedback')||'')+'</span>';fb.className='discrim-feedback shown';ch.setAttribute('data-first-try','0');var par=ch.nextElementSibling;if(par&&par.classList.contains('discrim-parallel')){fb.innerHTML+=' <b style="color:#5c2dcc">Try one more like it below.</b>';setTimeout(function(){par.classList.add('shown');},600);}}
+var bf=ch.closest('.build-frame');if(bf){var all=bf.querySelectorAll('.discrim-challenge'),dn=0;all.forEach(function(c){if(c.classList.contains('done'))dn++;});if(dn===all.length){var a=bf.querySelector('.assembled');if(a)setTimeout(function(){a.classList.add('shown');},500);}}
+var qc=ch.closest('.quick-check');if(qc)updateQC(qc);}
+function updateQC(qc){var items=qc.querySelectorAll('.discrim-challenge');var done=0,first=0;items.forEach(function(c){if(c.classList.contains('done')){done++;if(c.getAttribute('data-first-try')==='1')first++;}});if(done<items.length)return;var r=qc.querySelector('.qc-result');r.textContent=first+' of '+items.length+' right first time. '+(first>=items.length-1?'The moves are in your head. Now the checklist.':'Look back at '+qc.getAttribute('data-back')+' for the ones you missed, then come back to the checklist.');r.style.display='block';launchConfetti();}
+function toggleTimes(el){var body=el.closest('.card-body');body.classList.toggle('show-times');el.textContent=body.classList.contains('show-times')?'Hide test times':'Show how long each test took';}
+function toggleCheck(item){item.classList.toggle('checked');updateCheckProgress();}
+function updateCheckProgress(){var items=document.querySelectorAll('#mainChecklist .check-item');if(!items.length)return;var checked=document.querySelectorAll('#mainChecklist .check-item.checked').length;var fill=document.getElementById('checkProgressFill'),lbl=document.getElementById('checkProgressLabel');if(fill)fill.style.width=Math.round((checked/items.length)*100)+'%';if(lbl)lbl.innerHTML=checked===items.length?'<b style="color:#2d6a2d;">All done.</b>':checked+' of '+items.length+' checked';}
+function printChecklist(btn){var card=btn.closest('.card');var ci=card.querySelectorAll('.check-item.checked');ci.forEach(function(i){i.classList.remove('checked');});card.classList.add('print-target');window.print();card.classList.remove('print-target');ci.forEach(function(i){i.classList.add('checked');});}
+function showCompletion(){document.getElementById('completionOverlay').classList.add('visible');}
+function closeCompletion(){document.getElementById('completionOverlay').classList.remove('visible');}
+function launchConfetti(){var canvas=document.getElementById('confettiCanvas');var ctx=canvas.getContext('2d');canvas.width=window.innerWidth;canvas.height=window.innerHeight;var colors=['#b8860b','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b','#42a5f5'];var particles=[];for(var i=0;i<120;i++){particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height-canvas.height,w:Math.random()*10+5,h:Math.random()*6+3,color:colors[Math.floor(Math.random()*colors.length)],vx:(Math.random()-0.5)*4,vy:Math.random()*3+2,rot:Math.random()*360,rotV:(Math.random()-0.5)*10,life:1});}var frame=0;function animate(){ctx.clearRect(0,0,canvas.width,canvas.height);var alive=false;particles.forEach(function(p){if(p.life<=0)return;alive=true;p.x+=p.vx;p.y+=p.vy;p.vy+=0.05;p.rot+=p.rotV;if(p.y>canvas.height+20){p.life=0;return;}if(frame>60)p.life-=0.01;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();});frame++;if(alive)requestAnimationFrame(animate);else ctx.clearRect(0,0,canvas.width,canvas.height);}animate();}
+shuffleOptions();goTo(0);
+</script>
+<script src="../tracking.js"></script>
+</body>
+</html>
