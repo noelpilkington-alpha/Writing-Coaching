@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ronan Huang: Writing Coaching Cards</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Calibri, 'Segoe UI', sans-serif; font-size: 12pt; color: #1a1a2e; background: #f0f0f5; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; padding: 20px; }
+.progress-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
+.progress-dot { width: 12px; height: 12px; border-radius: 50%; background: #ccc; transition: background 0.3s, transform 0.2s; cursor: pointer; position: relative; }
+.progress-dot.active { background: #b8860b; transform: scale(1.25); }
+.progress-dot.visited { background: #d9b56a; }
+.progress-dot:hover { transform: scale(1.3); }
+.progress-dot .dot-tooltip { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: #b8860b; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 8.5pt; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 100; }
+.progress-dot .dot-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #b8860b; }
+.progress-dot:hover .dot-tooltip { opacity: 1; }
+.card-breadcrumb { font-size: 9.5pt; color: #888; margin-bottom: 14px; text-align: center; transition: opacity 0.3s; min-height: 1.2em; }
+.card-breadcrumb b { color: #b8860b; }
+.sticky-indicator { position: fixed; top: 12px; right: 16px; background: #b8860b; color: #fff; padding: 5px 14px; border-radius: 20px; font-size: 9pt; font-weight: 700; opacity: 0; transition: opacity 0.3s; z-index: 200; pointer-events: none; letter-spacing: 0.5px; }
+.sticky-indicator.visible { opacity: 1; }
+.card-container { position: relative; width: 640px; min-height: 420px; }
+.card { position: absolute; top: 0; left: 0; width: 100%; background: #fff; border: 2.5px solid #b8860b; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.10); opacity: 0; pointer-events: none; transform: translateX(40px); transition: opacity 0.35s, transform 0.35s; }
+.card.active { opacity: 1; pointer-events: auto; transform: translateX(0); position: relative; }
+.card-header { background: #b8860b; color: #fff; padding: 14px 20px; border-radius: 11px 11px 0 0; }
+.card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+.card-header .card-subtitle { font-size: 9.5pt; color: #f0e2bd; margin-top: 2px; }
+.card-body { padding: 18px 22px 22px; line-height: 1.55; }
+.card-body p { margin: 6px 0; }
+.score-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; }
+.score-box { background: #f8f8fc; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 10px 14px; text-align: center; }
+.score-box .big { font-size: 20pt; font-weight: 700; }
+.score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+.score-good .big { color: #2d6a2d; }
+.score-warn .big { color: #cc6600; }
+.score-low .big { color: #cc0000; }
+.you-wrote { background: #fff3f3; border-left: 3px solid #cc0000; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.you-wrote .label { font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+.better, .model-box { background: #e8f5e9; border-left: 3px solid #2d6a2d; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.better .label, .model-box .label { font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+.tip-box { background: #e8edf5; border-left: 3px solid #b8860b; padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0; }
+.tip-box .label { font-weight: 700; font-size: 9.5pt; color: #b8860b; margin-bottom: 3px; }
+.rule-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 10px 14px; margin: 10px 0; font-size: 11pt; }
+.rule-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 3px; }
+.lbl { display: inline-block; font-size: 7.5pt; font-weight: 800; letter-spacing: 0.5px; padding: 1px 6px; border-radius: 4px; margin: 0 4px 0 0; vertical-align: middle; color: #fff; line-height: 1.5; }
+.lbl-say, .lbl-echo { background: #5c2dcc; } .lbl-show, .lbl-because { background: #2d6a2d; } .lbl-sowhat { background: #cc6600; } .lbl-close { background: #457b9d; } .lbl-miss { background: #cc0000; } .lbl-reason { background: #888; } .lbl-general { background: #6d4c41; } .lbl-specific { background: #00838f; } .evidence-block { margin: 10px 0 12px; border: 1.5px solid #e0e0e8; border-radius: 8px; overflow: hidden; } .ev-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 12px; font-size: 10.5pt; } .ev-row + .ev-row { border-top: 1px solid #e0e0e8; } .ev-row.paced { background: #e8f5e9; } .ev-row.rushed { background: #fff3f3; } .ev-tag { flex-shrink: 0; font-size: 8.5pt; font-weight: 800; letter-spacing: 0.5px; padding: 2px 7px; border-radius: 8px; color: #fff; margin-top: 2px; } .ev-row.paced .ev-tag { background: #2d6a2d; } .ev-row.rushed .ev-tag { background: #cc0000; } .format-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; } .format-box { background: #fbf7ea; border: 1.5px solid #e6d3a3; border-radius: 8px; padding: 10px 14px; } .format-box .format-title { font-weight: 700; font-size: 10pt; color: #b8860b; margin-bottom: 4px; } .format-box .format-detail { font-size: 9.5pt; color: #555; line-height: 1.4; } .format-box .format-pts { display: inline-block; background: #b8860b; color: #fff; font-size: 8.5pt; font-weight: 700; padding: 1px 7px; border-radius: 8px; margin-bottom: 4px; } @media (max-width: 640px) { .format-grid { grid-template-columns: 1fr; } }
+.ex-list { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+.ex { padding: 8px 12px; border-radius: 6px; font-size: 10.5pt; border-left: 3px solid; }
+.ex.pos { background: #e8f5e9; border-color: #2d6a2d; } .ex.neg { background: #fff3f3; border-color: #cc0000; }
+.ex .tag { font-weight: 800; font-size: 8.5pt; margin-right: 6px; } .ex.pos .tag { color: #2d6a2d; } .ex.neg .tag { color: #cc0000; }
+.think { background: #f8f8fc; border-left: 3px solid #888; padding: 8px 14px; margin: 8px 0; font-size: 10.5pt; font-style: italic; color: #444; }
+.think .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #666; margin-bottom: 2px; }
+.highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+.error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+.discrim-option .error-mark { background: transparent; text-decoration: none; padding: 0; border-radius: 0; }
+.essay-excerpt { background: #fafafa; border: 1px solid #e0e0e8; border-radius: 6px; padding: 10px 14px; font-size: 10.5pt; margin: 8px 0; line-height: 1.7; }
+.discrim-challenge { background: #f8f5ff; border: 1.5px solid #d4c5ff; border-radius: 8px; padding: 14px; margin: 10px 0; }
+.discrim-prompt { font-weight: 700; font-size: 10.5pt; margin-bottom: 10px; color: #5c2dcc; }
+.discrim-options { display: flex; flex-direction: column; gap: 8px; }
+.discrim-option { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border: 2px solid #d4c5ff; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 10.5pt; background: #fff; }
+.discrim-option:hover { border-color: #7c4dff; background: #f5f0ff; }
+.discrim-label { font-weight: 800; color: #7c4dff; min-width: 20px; flex-shrink: 0; }
+.discrim-option.correct, .discrim-option.model { border-color: #2d6a2d; background: #e8f5e9; cursor: default; }
+.discrim-option.correct .discrim-label, .discrim-option.model .discrim-label { color: #2d6a2d; }
+.discrim-option.wrong { border-color: #cc0000; background: #fff3f3; cursor: default; }
+.discrim-option.wrong .discrim-label { color: #cc0000; }
+.discrim-option.locked { pointer-events: none; opacity: 0.5; }
+.discrim-challenge.done .discrim-option { cursor: default; }
+.discrim-feedback { margin-top: 0; font-size: 10pt; line-height: 1.45; max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.3s, opacity 0.3s, margin 0.3s; }
+.discrim-feedback.shown { max-height: 400px; opacity: 1; margin-top: 10px; }
+.discrim-feedback.right-fb { color: #2d6a2d; font-weight: 600; }
+.discrim-parallel { display: none; }
+.discrim-parallel.shown { display: block; }
+.discrim-parallel .discrim-prompt::before { content: 'One more like it. '; color: #888; font-weight: 600; }
+.reveal-wrapper { position: relative; }
+.reveal-cover { background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%); border-left: 3px solid #2d6a2d; padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 10px; transition: background 0.2s, box-shadow 0.2s; }
+.reveal-cover:hover { box-shadow: 0 2px 8px rgba(45,106,45,0.15); }
+.reveal-cover .reveal-icon { width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
+.reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #2d6a2d; }
+.reveal-cover .reveal-hint { font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px; }
+.reveal-content { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0; }
+.reveal-content.shown { max-height: 1200px; opacity: 1; margin: 8px 0; }
+.reveal-cover.hidden { display: none; }
+.your-turn { background: #f8f8fc; border: 1.5px dashed #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.your-turn .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.your-turn textarea { width: 100%; min-height: 64px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; margin: 4px 0; }
+.frame-row { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0; font-size: 10.5pt; }
+.frame-row .lbl { margin-top: 4px; }
+.frame-row .given { background: #fff; border: 1.5px solid #e0e0e8; border-radius: 6px; padding: 8px; flex: 1; color: #555; }
+.frame-row textarea { flex: 1; min-height: 48px; margin: 0; }
+.yt-btn { margin-top: 8px; padding: 7px 16px; border: 2px solid #2d6a2d; background: #fff; color: #2d6a2d; border-radius: 8px; font-family: inherit; font-weight: 600; font-size: 10pt; cursor: pointer; }
+.yt-btn:hover { background: #2d6a2d; color: #fff; }
+.yt-btn:disabled { opacity: 0.6; cursor: default; }
+.yt-model { display: none; margin-top: 10px; }
+.assembled { display: none; margin-top: 8px; }
+.assembled.shown { display: block; }
+.xp-link { display: inline-block; margin: 8px 6px 0 0; padding: 6px 14px; border-radius: 6px; background: #2d6a2d; color: #fff; font-weight: 700; font-size: 10pt; text-decoration: none; }
+.xp-link:hover { background: #1b5e1b; }
+.yt-model.shown { display: block; }
+.self-check .check-item { font-size: 10pt; padding: 6px 8px; }
+.check-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 8px; cursor: pointer; border-bottom: 1px solid #eee; border-radius: 6px; transition: background 0.15s; user-select: none; font-size: 11pt; }
+.check-item:last-child { border-bottom: none; }
+.check-item:hover { background: #f8f8fc; }
+.check-item.checked { background: #f0f8f0; }
+.check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
+.check-item.checked .check-box::after { content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
+.check-box { width: 28px; height: 28px; border: 2.5px solid #b8860b; border-radius: 6px; flex-shrink: 0; margin-top: 1px; position: relative; transition: background 0.2s, border-color 0.2s; }
+.self-check .check-box { width: 22px; height: 22px; }
+.checklist-progress { background: #eee; border-radius: 10px; height: 8px; margin: 12px 0 6px; overflow: hidden; }
+.checklist-progress-fill { background: linear-gradient(90deg, #2d6a2d, #4caf50); height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%; }
+.checklist-progress-label { font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px; }
+.quick-check { background: #f8f5ff; border: 2px solid #7c4dff; border-radius: 10px; padding: 12px 14px; margin: 10px 0; }
+.quick-check .qc-title { font-weight: 800; color: #5c2dcc; font-size: 10.5pt; margin-bottom: 4px; }
+.quick-check .qc-sub { font-size: 9.5pt; color: #666; margin-bottom: 6px; }
+.quick-check .discrim-challenge { background: #fff; margin: 8px 0; padding: 10px 12px; }
+.qc-result { display: none; font-weight: 700; margin-top: 8px; font-size: 10.5pt; color: #5c2dcc; }
+.recall-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.recall-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.recall-box textarea { width: 100%; min-height: 56px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; }
+.checklist-wrap { display: none; }
+.checklist-wrap.shown { display: block; }
+.time-toggle { font-size: 9pt; color: #b8860b; cursor: pointer; text-decoration: underline; display: inline-block; margin: 0 0 6px; }
+.tl-time { display: none; font-weight: 400; color: #aaa; }
+.show-times .tl-time { display: inline; }
+.guide-block { margin-top: 16px; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 8px 12px; background: #fafafa; font-size: 10pt; }
+.guide-block summary { cursor: pointer; font-weight: 700; color: #666; font-size: 9.5pt; }
+.guide-block ul { margin: 6px 0 4px 18px; }
+.guide-block li { margin: 4px 0; }
+.practice-recommendations { margin-top: 16px; border-top: 2px solid #e0e0e8; padding-top: 14px; }
+.practice-recs-title { font-size: 10pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #b8860b; margin-bottom: 10px; }
+.practice-tier { border-radius: 8px; padding: 12px 14px; margin: 8px 0; }
+.tier-primary { background: #e8f5e9; border: 1.5px solid #a5d6a7; }
+.tier-extra { background: #f8f8fc; border: 1.5px solid #e0e0e8; }
+.tier-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.tier-label { font-size: 8.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 2px 10px; border-radius: 10px; }
+.tier-primary .tier-label { background: #2d6a2d; color: #fff; }
+.tier-extra .tier-label { background: #888; color: #fff; }
+.tier-note { font-size: 9pt; color: #666; margin-bottom: 6px; line-height: 1.4; }
+.practice-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.practice-link { display: inline-block; padding: 5px 12px; border-radius: 6px; font-size: 9.5pt; font-weight: 600; text-decoration: none; transition: background 0.2s, transform 0.1s; }
+.tier-primary .practice-link { background: #c8e6c9; color: #1b5e1b; }
+.tier-extra .practice-link { background: #e8edf5; color: #b8860b; }
+.nav { display: flex; gap: 12px; margin-top: 16px; }
+.nav button { padding: 8px 28px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; transition: background 0.2s, color 0.2s; }
+.nav button:hover { background: #b8860b; color: #fff; }
+.print-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 8px 20px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 10.5pt; font-weight: 600; cursor: pointer; }
+.print-btn:hover { background: #b8860b; color: #fff; }
+.print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+.completion-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(184,134,11,0.6); z-index: 500; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s; }
+.completion-overlay.visible { opacity: 1; pointer-events: auto; }
+.completion-card { background: #fff; border-radius: 16px; padding: 40px 48px; text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2); transform: scale(0.8); transition: transform 0.4s ease; max-width: 420px; }
+.completion-overlay.visible .completion-card { transform: scale(1); }
+.completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+.completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; color: #b8860b; }
+.completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+.completion-close { margin-top: 20px; padding: 10px 32px; background: #b8860b; color: #fff; border: none; border-radius: 8px; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; }
+#confettiCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 501; }
+.score-timeline { display: flex; align-items: flex-end; gap: 0; margin: 12px 0 10px; padding: 0 6px; justify-content: space-between; }
+.timeline-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.timeline-score { font-size: 13pt; font-weight: 700; margin-bottom: 4px; }
+.timeline-bar { width: 70%; border-radius: 4px 4px 0 0; min-height: 8px; }
+.timeline-label { font-size: 8.5pt; color: #888; margin-top: 6px; font-weight: 600; text-align: center; }
+.score-green { color: #2d6a2d; } .score-amber { color: #cc6600; } .score-red { color: #cc0000; }
+.bar-green { background: linear-gradient(to top, #c8e6c9, #81c784); } .bar-amber { background: linear-gradient(to top, #ffe0b2, #ffb74d); } .bar-red { background: linear-gradient(to top, #ffcdd2, #ef9a9a); }
+.strength-chips, .growth-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; }
+.strength-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; background: #e8f5e9; color: #2d6a2d; border: 1.5px solid #a5d6a7; display: inline-flex; align-items: center; gap: 4px; }
+.strength-chip .chip-course, .growth-chip .chip-avg { font-size: 7.5pt; color: #888; font-weight: 400; }
+.journey-section { font-size: 9.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; margin: 10px 0 4px; padding-bottom: 3px; border-bottom: 1.5px solid; }
+.journey-section.strengths-header { color: #2d6a2d; border-color: #c8e6c9; }
+.journey-section.growth-header { color: #cc6600; border-color: #ffe0b2; }
+.root-cause-teaser { background: #f5f0ff; border-left: 3px solid #7c4dff; padding: 10px 14px; margin: 12px 0 4px; border-radius: 0 6px 6px 0; font-size: 10.5pt; line-height: 1.5; }
+.root-cause-teaser b { color: #5c2dcc; }
+.growth-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+.growth-chip.mixed { background: #fff8e8; color: #b35900; border: 1.5px solid #ffe0b2; }
+.growth-chip.weak { background: #fff3f3; color: #cc0000; border: 1.5px solid #ffcdd2; }
+@media print { body { background: #fff; padding: 0; min-height: auto; } .progress-bar, .nav, .print-btn, .card-breadcrumb, .sticky-indicator, .completion-overlay, #confettiCanvas, .reveal-cover, .checklist-progress, .checklist-progress-label, .discrim-challenge, .discrim-parallel, .quick-check, .recall-box, .yt-btn, .guide-block { display: none !important; } .card-container { width: 100%; min-height: auto; } .card { display: none !important; } .card.print-target { display: block !important; opacity: 1 !important; pointer-events: auto !important; position: relative !important; transform: none !important; box-shadow: none; border: 2px solid #b8860b; page-break-inside: avoid; } .reveal-content, .yt-model, .checklist-wrap { display: block !important; max-height: none !important; opacity: 1 !important; margin: 8px 0 !important; } }
+@media (max-width: 720px) { .card-container { width: 100%; } .score-grid { grid-template-columns: 1fr; } .timeline-score { font-size: 10pt; } }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progressBar"></div>
+<div class="card-breadcrumb" id="breadcrumb"></div>
+<div class="sticky-indicator" id="stickyIndicator"></div>
+<div class="card-container" id="cardContainer">
+
+<!-- Card 1: Your Starting Point -->
+<div class="card active" data-title="Your Starting Point">
+  <div class="card-header"><h2>Ronan Huang</h2><div class="card-subtitle">Alpha Standardized Writing G5.3. September 2026. Passages: &ldquo;The Camping &lsquo;Trip&rsquo;&rdquo; / &ldquo;Virtual-Reality Field Trips: Worth the Investment?&rdquo;</div></div>
+  <div class="card-body">
+    <div class="score-grid">
+      <div class="score-box score-low"><div class="big">51%</div><div class="label">Overall Score</div></div>
+      <div class="score-box score-good"><div class="big">23/25</div><div class="label">Questions 1&ndash;10</div></div>
+      <div class="score-box score-low"><div class="big">0/20</div><div class="label">Paragraph (Question 11)</div></div>
+    </div>
+    <p>Ronan, this test has two halves that could not be more different. The short answers were 23 of 25, your best on any G5 test: an appositive with the commas in the right place, two sentences joined with <i>but</i>, and five one-sentence answers that every one carried a reason. And the paragraph box was empty. That box is worth 20 points, almost half the test. 51% is what 23 of 25 looks like with nothing in the box.</p>
+    <p>The paragraph you wrote on G5.2 earned 12 of 20. That paragraph, on this test, would have made 35 of 45, 78%. Your G4.3 paragraph earned 17; with it, this test is 40 of 45, 89%, one point from a pass. The first G5 pass was on the table on the 25th, and the box it needed was blank. The two short-answer points are Q4, a because that never appeared, and Q5, a question that asked something the sentence never said.</p>
+    <div class="root-cause-teaser"><b>The plan:</b> the box always gets words, the paragraph gets more time than any other question, and its first sentence answers the question. Then two small Q1 to Q5 jobs: <i>because</i>, and the interrogative.</div>
+    <div class="journey-section strengths-header">Skills you do well</div>
+    <div class="strength-chips">
+      <span class="strength-chip">Answer, then because, then the reason <span class="chip-course">&middot; Q6&ndash;Q10, 15 of 15</span></span>
+      <span class="strength-chip">An appositive between commas <span class="chip-course">&middot; Q1, full marks</span></span>
+      <span class="strength-chip">Two sentences joined with but; two combined into one <span class="chip-course">&middot; Q2, Q3, full marks</span></span>
+      <span class="strength-chip">A long paragraph with two studies from the article <span class="chip-course">&middot; G5.2, 12 of 20</span></span>
+    </div>
+    <div class="journey-section growth-header">What to work on</div>
+    <div class="growth-chips">
+      <span class="growth-chip weak">The paragraph box left empty <span class="chip-avg">Q11: 20 points</span></span>
+      <span class="growth-chip mixed">Expand using because, with no because <span class="chip-avg">Q4</span></span>
+      <span class="growth-chip mixed">An interrogative that changed the question <span class="chip-avg">Q5</span></span>
+      <span class="growth-chip mixed">Read-back: dont, cant, Familys, lead <span class="chip-avg">Q6&ndash;Q10, no points lost this time; five conventions points wait in the paragraph</span></span>
+    </div>
+  </div>
+</div>
+
+<!-- Card 2: Writing Journey -->
+<div class="card" data-title="Your Writing Journey">
+  <div class="card-header"><h2>Your Writing Journey</h2><div class="card-subtitle">Seven tests since February</div></div>
+  <div class="card-body">
+    <div class="score-timeline">
+      <div class="timeline-item"><div class="timeline-score score-green">91%</div><div class="timeline-bar bar-green" style="height:82px;"></div><div class="timeline-label">G3.1 (Feb)</div></div>
+      <div class="timeline-item"><div class="timeline-score score-red">0%</div><div class="timeline-bar bar-red" style="height:4px;"></div><div class="timeline-label">G4.1 (Mar)</div></div>
+      <div class="timeline-item"><div class="timeline-score score-red">63%</div><div class="timeline-bar bar-red" style="height:57px;"></div><div class="timeline-label">G4.2 (Jul)<br><span class="tl-time">43m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">91%</div><div class="timeline-bar bar-green" style="height:82px;"></div><div class="timeline-label">G4.3 (Aug)<br><span class="tl-time">1h 18m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-amber">72%</div><div class="timeline-bar bar-amber" style="height:65px;"></div><div class="timeline-label">G5.1 (Aug)</div></div>
+      <div class="timeline-item"><div class="timeline-score score-amber">78%</div><div class="timeline-bar bar-amber" style="height:70px;"></div><div class="timeline-label">G5.2 (Sep)<br><span class="tl-time">53m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-red">51%</div><div class="timeline-bar bar-red" style="height:46px;"></div><div class="timeline-label">G5.3 (Sep)<br><span class="tl-time">22m</span></div></div>
+    </div>
+    <span class="time-toggle" onclick="toggleTimes(this)">Show how long each test took</span>
+    <p>Two passes at 91, one on G3 and one on G4, then three G5 tests at 72, 78 and 51. The March G4.1 shows 0% and no time, so it says nothing about your writing. Look at the times: 78 minutes on G4.3 and a pass; 53 minutes on G5.2, 21 of them in one box, and a 250-word paragraph came out of it; 22 minutes on G5.3, no question getting more than three minutes, and the paragraph blank. Your G5 short answers have climbed: 18, 23, 23 out of 25. Your G5 paragraphs have gone 15, 12, 0. The short answers are ready for G5. The paragraph is where the pass is.</p>
+    <div class="journey-section strengths-header">Skills you do well</div>
+    <div class="strength-chips">
+      <span class="strength-chip">Short answers on G5: 18, 23, 23 out of 25 <span class="chip-course">&middot; G5.1 to G5.3</span></span>
+      <span class="strength-chip">A 17-point paragraph with concrete detail when you give it time <span class="chip-course">&middot; G4.3: a foot wide, 8 inches deep, leaves and manure</span></span>
+      <span class="strength-chip">A because in every one-sentence answer <span class="chip-course">&middot; G5.2, G5.3</span></span>
+    </div>
+    <div class="journey-section growth-header">What to work on</div>
+    <div class="growth-chips">
+      <span class="growth-chip weak">Paragraph: 15, 12, blank <span class="chip-avg">G5.1, G5.2, G5.3</span></span>
+      <span class="growth-chip mixed">Paragraphs that retell the article in order instead of answering the question <span class="chip-avg">G5.2 logos, G5.1 horses</span></span>
+      <span class="growth-chip mixed">A 22-minute test with nothing over three minutes <span class="chip-avg">G5.3</span></span>
+    </div>
+    <div class="root-cause-teaser"><b>Two fixes for the box.</b> Always words in it, with more time than any other question. And the answer to the question in sentence one.</div>
+  </div>
+</div>
+
+<!-- Card 3: Fix 1, the box always gets words -->
+<div class="card" data-title="Fix 1: The Box Always Gets Words">
+  <div class="card-header"><h2>Fix 1: The Box Always Gets Words</h2><div class="card-subtitle">Q11: 20 points, empty, on the test where the rest was your best</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: THE PARAGRAPH GETS WORDS, AND THE MOST TIME</div>The paragraph box is worth 20 of the 45 points, more than Q1 to Q5 put together. An empty box scores 0. Four plain sentences that answer the question score 8 to 10. A full paragraph scores 15 or more. <b>The check:</b> before you press submit, scroll up to the paragraph box. If it has fewer than four sentences, you are not finished.</div>
+
+    <p>What the empty box cost, using paragraphs you have already written:</p>
+    <div class="format-grid">
+      <div class="format-box"><span class="format-pts">0 of 20</span><div class="format-title">The box as you left it</div><div class="format-detail">23 + 0 = <b>23 of 45, 51%</b>.</div></div>
+      <div class="format-box"><span class="format-pts">12 of 20</span><div class="format-title">With your G5.2 paragraph</div><div class="format-detail">23 + 12 = <b>35 of 45, 78%</b>. The same paragraph you wrote two weeks earlier.</div></div>
+      <div class="format-box"><span class="format-pts">17 of 20</span><div class="format-title">With your G4.3 paragraph</div><div class="format-detail">23 + 17 = <b>40 of 45, 89%</b>. One point from a pass.</div></div>
+    </div>
+
+    <p style="margin-top:10px;">Your last four tests, by how long they took:</p>
+    <div class="evidence-block">
+      <div class="ev-row paced"><span class="ev-tag">PACED</span>G4.3 &middot; 1 hour 18 minutes &middot; 91%, paragraph 17 of 20. Passed.</div>
+      <div class="ev-row paced"><span class="ev-tag">PACED</span>G5.2 &middot; 53 minutes, 21 of them in one box &middot; 78%, paragraph 12 of 20, 250 words.</div>
+      <div class="ev-row rushed"><span class="ev-tag">RUSHED</span>G4.2 &middot; 43 minutes &middot; 63%. A paragraph of two short paragraphs, 13 of 20, and five Q1 to Q5 slips.</div>
+      <div class="ev-row rushed"><span class="ev-tag">RUSHED</span>G5.3 &middot; 22 minutes, no question over three minutes &middot; 51%, paragraph blank.</div>
+    </div>
+    <p>You are rushing on the tests you score lowest on, and the paragraph pays for it. On the 25th you spent about sixteen minutes on Q1 to Q10 and scored 23 of 25. That pace is fine. The paragraph needed the next fifteen, and it got none.</p>
+
+    <div class="rule-box"><div class="label">THE PLAN FOR THE NEXT TEST</div><b>1.</b> Before Q1, scroll down and read the Q11 prompt once, so the target is in your head while you read the article. <b>2.</b> Q1 to Q10: about two minutes each, the way you did it on the 25th. <b>3.</b> The paragraph: <b>aim to spend at least 15 minutes in the box</b>. Sentence one answers the question. Then two facts from the article, each with a <i>This shows</i>. Then an ending. <b>4.</b> Tired, or stuck on the prompt? Write the four-sentence version anyway: the answer, one fact, one <i>This shows</i>, one ending. That is 8 to 10 points instead of 0. <b>5.</b> Before submit, scroll up. Every box has words, and the paragraph has at least four sentences.</div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">The article was long, the prompt is confusing, and the paragraph box is empty. Which earns more?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="An empty box is 0 of 20. Nothing you could write scores lower than nothing." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Submit now; a rushed paragraph would only lose points.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="Four sentences: 8 to 10 points. Ten points on the 25th would have been 73%." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Write four sentences: the answer, one fact from the article, a This shows, an ending.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Q10 is done and the test feels finished. What comes before submit?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Every box has words; the paragraph has four or more sentences. Then submit." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Scroll up and check every box, and count the sentences in the paragraph.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="On the 25th the test felt finished too, and 20 points were still on the page." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Press submit; the questions were all answered.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which four-sentence paragraph is the safe version for <i>How does the author show that VR field trips are a good idea for schools?</i></div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="true" data-right-feedback="The answer, one fact from the article, This shows, an ending. Plain, whole, and worth points." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>The author shows VR field trips are a good idea by proving students learn more from them. The article says studies show people remember more when they experience something instead of only reading about it. This shows that VR is not just fun; it makes lessons stick. That is why the author believes VR is worth the money.</span></div>
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Four pieces, no answer to the question, and two of them are not sentences." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>VR is cool. Taylor saw cows behind her. Martin Luther King. I think VR is good for schools.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Every lesson that ends with a paragraph: the box gets words, the first sentence answers the question, and you read it back before you submit. The habit on the small ones is the habit on the test.</div>
+  </div>
+</div>
+
+<!-- Card 4: Fix 2, answer the question in sentence one -->
+<div class="card" data-title="Fix 2: Answer the Question in Sentence One">
+  <div class="card-header"><h2>Fix 2: Answer the Question in Sentence One</h2><div class="card-subtitle">The G5 prompt asks how the author shows something. Your last two paragraphs retold the article instead</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: TOPIC SENTENCE, THEN SHOW, THEN SO WHAT</div><span class="lbl lbl-say">TOPIC SENTENCE</span> answers the question in your own words: <i>The author shows VR field trips are a good idea by&hellip;</i> Then a <span class="lbl lbl-show">DETAIL &middot; SHOW</span>, a fact or quote from the article, and a <span class="lbl lbl-sowhat">DETAIL &middot; SO WHAT</span>: <i>This shows&hellip;</i> what the fact proves about the author&rsquo;s point. Two or three of those. Then a <span class="lbl lbl-close">CONCLUDING SENTENCE</span>. <b>The check:</b> read your first sentence next to the prompt. Does it answer the question, or does it start telling the article from the beginning?</div>
+
+    <p>Your G5.2 paragraph, 12 of 20, began like this:</p>
+    <div class="you-wrote"><div class="label">YOU WROTE (G5.2, FIRST TWO SENTENCES)</div>&ldquo;Logos can be popular and common in everyday use. But if we see logos everyday, then why can we not remember them?&rdquo; <span class="lbl lbl-miss">RETELLS, DOES NOT ANSWER</span><br><span style="font-size:9.5pt;color:#666;">The question was about why a logo has value for a business. The paragraph explained why people cannot remember logos: two studies, in the article&rsquo;s order, 250 words, and no sentence that answered the question. The facts were good. They were pointed at the wrong target.</span></div>
+    <p>Your G4.3 paragraph earned 17 because its facts were concrete: a foot wide, 8 inches deep, leaves and manure, ten years without good rain. Facts a reader can point to on the page earn points. Put an answer in front of them and a <i>This shows</i> after each, and that paragraph passes.</p>
+    <div class="model-box"><div class="label">A TOPIC SENTENCE FOR THE 25TH</div><span class="lbl lbl-say">TOPIC SENTENCE</span>The author shows that VR field trips are a good idea for schools by giving proof that students learn more, that every subject comes alive, and that VR solves the problems of real trips.<br><span style="font-size:9.5pt;color:#666;">The prompt&rsquo;s own words, <i>the author shows</i>, and then the answer: three kinds of proof. Everything after it has a job.</span></div>
+
+    <div class="your-turn build-frame" id="build-para">
+      <div class="label">YOUR TURN: TAP THE SHOW, THE SO WHAT, THE SECOND SHOW, THE SECOND SO WHAT</div>
+      <div class="frame-row"><span class="lbl lbl-say">TOPIC SENTENCE</span><div class="given">The author shows that VR field trips are a good idea for schools by giving proof that students learn more, that every subject comes alive, and that VR solves the problems of real trips.</div></div>
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">DETAIL 1 &middot; SHOW: which is a fact from the article?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Paragraph 2 of the article: a study and a student&rsquo;s quote. A reader can point to both." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Studies show that people remember more when they experience something instead of only reading about it, and a student named Taylor said VR is &ldquo;way cooler than a video.&rdquo;</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="An opinion about the future. Not on the page." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>VR is the future of education, and every school will have it soon.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">DETAIL 1 &middot; SO WHAT: which sentence goes next?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Another fact from the article, so a SHOW, not what the first fact proves." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>In science, students can dive into the Great Barrier Reef or walk on the surface of Mars.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;This shows&rdquo; plus what the fact proves about how the author argues." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>This shows that the author backs up the idea with both research and a real student&rsquo;s voice, so the reader trusts it.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">DETAIL 2 &middot; SHOW: a second fact from the article, about a different kind of proof. Which one?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Your opinion about field trips. The paragraph is about how the author argues." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>I think real field trips are more fun than VR because you get to leave school.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Paragraph 4 of the article: the numbers, and the problems VR avoids." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The author also points out that one 300-dollar headset can save money compared with trips costing more than 1,000 dollars a year, with no buses, permission slips or safety worries.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">DETAIL 2 &middot; SO WHAT: which sentence goes next?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;This shows&rdquo; plus what the numbers prove about the author&rsquo;s argument." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>This shows that the author answers the biggest worry, cost, with real numbers and turns it into a reason for VR.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A fact from paragraph 5, so a SHOW, and about screens, not cost." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Some people say kids already spend too much time on screens.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="frame-row"><span class="lbl lbl-close">CONCLUDING SENTENCE</span><div class="given">With research, a student&rsquo;s own words and real numbers, the author makes VR field trips look like an adventure that schools can afford.</div></div>
+      <div class="assembled">
+        <div class="model-box"><div class="label">THE PARAGRAPH, ASSEMBLED</div><span class="lbl lbl-say">TOPIC SENTENCE</span>The author shows that VR field trips are a good idea for schools by giving proof that students learn more, that every subject comes alive, and that VR solves the problems of real trips. <span class="lbl lbl-show">DETAIL 1 &middot; SHOW</span>Studies show that people remember more when they experience something instead of only reading about it, and a student named Taylor said VR is &ldquo;way cooler than a video.&rdquo; <span class="lbl lbl-sowhat">DETAIL 1 &middot; SO WHAT</span>This shows that the author backs up the idea with both research and a real student&rsquo;s voice, so the reader trusts it. <span class="lbl lbl-show">DETAIL 2 &middot; SHOW</span>The author also points out that one 300-dollar headset can save money compared with trips costing more than 1,000 dollars a year, with no buses, permission slips or safety worries. <span class="lbl lbl-sowhat">DETAIL 2 &middot; SO WHAT</span>This shows that the author answers the biggest worry, cost, with real numbers and turns it into a reason for VR. <span class="lbl lbl-close">CONCLUDING SENTENCE</span>With research, a student&rsquo;s own words and real numbers, the author makes VR field trips look like an adventure that schools can afford.<br><span style="font-size:9.5pt;color:#666;">Six sentences, about 130 words: half the length of your G5.2 paragraph, and every sentence has a job. This is a 17 or 18, and with your 23 short-answer points, a pass.</span></div>
+      </div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Every paragraph prompt: write the first sentence with the prompt&rsquo;s own words in it, then the answer. Then one fact, one <i>This shows</i>, one fact, one <i>This shows</i>, one ending. Count the facts; count the <i>This shows</i>.</div>
+  </div>
+</div>
+
+<!-- Card 5: Fix 3, because carries the reason -->
+<div class="card" data-title="Fix 3: Because Carries the Reason">
+  <div class="card-header"><h2>Fix 3: Because Carries the Reason</h2><div class="card-subtitle">Q4: expand sentence 19 using because. The because never came</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: WHEN THE INSTRUCTION SAYS BECAUSE, THE WORD IS IN YOUR ANSWER</div>Some Q1 to Q5 instructions name the exact word: <i>expand using because</i>, <i>combine using since</i>. The word has to appear, followed by a reason in your own words. <b>The check:</b> find <i>because</i> in your sentence. Then cover everything in front of it and read the rest. Is it a <i>why</i>, or is it a description of how someone looked or what they could not do?</div>
+
+    <div class="you-wrote"><div class="label">YOU WROTE (Q4, 1 OUT OF 2)</div>&ldquo;Jaylen trudged inside, shoulders drooping, <span class="error-mark">unable to go to Willow State Park</span>.&rdquo; <span class="lbl lbl-miss">NO BECAUSE</span><br><span style="font-size:9.5pt;color:#666;">A good sentence, and it tells what he could not do. The instruction asked for <i>because</i> and for why: the storms had closed the park, and the trip he had packed for was gone.</span></div>
+    <div class="model-box"><div class="label">WITH BECAUSE</div>Jaylen trudged inside, shoulders drooping, <span class="lbl lbl-because">BECAUSE</span>because the storms had closed the park and the camping trip he had packed for was canceled.</div>
+
+    <p style="margin-top:10px;"><b>Your own because sentences</b>, from this test and the last, and one that only repeats:</p>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">YOURS, Q9</span>Jaylen might have felt sad, deflated, and angry <b>because</b> the trip was canceled due to bad weather.</div>
+      <div class="ex pos"><span class="tag">YOURS, Q6</span>Changing plans can still lead to fun <b>because</b> even if you don&rsquo;t get to go somewhere, you can still pretend you are there.</div>
+      <div class="ex pos"><span class="tag">YOURS, G5.2 Q2</span>We made the pie together, step by step, <b>because</b> we loved working together and wanted to make sure the recipe was right.</div>
+      <div class="ex neg"><span class="tag">A BECAUSE THAT REPEATS</span>Jaylen trudged inside because he walked inside sadly.<br><span style="font-size:9.5pt;color:#666;">Cover the front: <i>he walked inside sadly</i> is the same fact again. A reason is something the sentence did not already say.</span></div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Expand sentence 27, <i>She sorted poles by size</i>, using <i>because</i>. Which answer does the job?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="true" data-right-feedback="Because is there, and after it comes a why the sentence did not already say." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>She sorted poles by size because the instructions she had memorized said the long poles go in first.</span></div>
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="A good detail about how, and no because. The same slip as Q4." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>She sorted poles by size, laying the long ones on the left and the short ones on the right.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Expand <i>A bowl of popcorn sat untouched</i> using <i>because</i>. Which answer does the job?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Describes the popcorn. No because, no why." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>A bowl of popcorn sat untouched, going cold and salty on the table.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Because, then the why: nobody wanted a movie instead of the trip." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>A bowl of popcorn sat untouched because nobody felt like a movie when the trip they had waited for was gone.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Cover the front of each sentence. Which because gives a reason the sentence did not already say?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Because she was staying behind repeats the sentence. Not a reason." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Kim stayed behind, eyeing the car, because she was staying behind.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="The new tent in the trunk and an idea: a why, from the story." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Kim stayed behind, eyeing the car, because the new tent was still in the trunk and she had an idea.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>When an instruction names a word, that word goes in your answer. Then cover the front and check that what follows is a why.</div>
+  </div>
+</div>
+
+<!-- Card 6: Fix 4, interrogative -->
+<div class="card" data-title="Fix 4: A Question the Sentence Answers">
+  <div class="card-header"><h2>Fix 4: A Question the Sentence Answers</h2><div class="card-subtitle">Q5: rewrite sentence 5 as an interrogative. Yours asked something new</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: HELPING VERB TO THE FRONT, EVERY FACT KEPT</div><i>Interrogative</i> means a question. To turn a statement into one, put <i>Did</i>, <i>Do</i>, <i>Does</i>, <i>Is</i>, <i>Was</i>, <i>Were</i> or <i>Had</i> at the front and keep the rest: <i>The Thompsons camped at Willow State Park every summer</i> becomes <i>Did the Thompsons camp at Willow State Park every summer?</i> <b>The check:</b> answer your own question. If the answer is the original sentence, you did the job. If your question starts with <i>how</i>, <i>why</i> or <i>when</i>, it asks for something the sentence never said.</div>
+
+    <div class="you-wrote"><div class="label">YOU WROTE (Q5, 1 OUT OF 2)</div>&ldquo;Every summer, <span class="error-mark">how did</span> the Thompsons camp at Willow State Park?&rdquo; <span class="lbl lbl-miss">ASKS SOMETHING NEW</span><br><span style="font-size:9.5pt;color:#666;">Answer it: in tents? by car? Sentence 5 never said how. A question mark, correct grammar, <i>camped</i> correctly turned into <i>did&hellip;camp</i>, and a different question.</span></div>
+    <div class="model-box"><div class="label">A QUESTION THAT SENTENCE 5 ANSWERS</div>Did the Thompsons camp at Willow State Park every summer?<br><span style="font-size:9.5pt;color:#666;">Answer: yes, every summer the Thompsons camped at Willow State Park. That is sentence 5, so the job is done.</span></div>
+
+    <p style="margin-top:10px;"><b>Three interrogatives</b> from the story, and one that asks something new:</p>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">INTERROGATIVE</span>Kim cleared her throat. &rarr; <b>Did</b> Kim clear her throat?</div>
+      <div class="ex pos"><span class="tag">INTERROGATIVE</span>They&rsquo;d booked their site six months early. &rarr; <b>Had</b> they booked their site six months early?</div>
+      <div class="ex pos"><span class="tag">INTERROGATIVE</span>The park had hiking trails and a lake. &rarr; <b>Did</b> the park have hiking trails and a lake?</div>
+      <div class="ex neg"><span class="tag">ASKS SOMETHING NEW</span>Why did the park have hiking trails and a lake?<br><span style="font-size:9.5pt;color:#666;">A question, and the sentence cannot answer it. <i>Why</i> asks for a reason the sentence never gave.</span></div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Rewrite <i>The family sat glumly on the couch</i> as an interrogative. Which answer does the job?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="true" data-right-feedback="Did to the front, every fact kept. Answer: yes, the family sat glumly on the couch." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Did the family sit glumly on the couch?</span></div>
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Why asks for a reason the sentence never gave. The same slip as Q5." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Why did the family sit glumly on the couch?</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Rewrite <i>She&rsquo;d memorized the instructions twice</i> as an interrogative. Which answer does the job?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="How many times asks for the fact instead of keeping it. Twice has to stay in the question." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>How many times had she memorized the instructions?</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Had to the front, twice kept. Answer: yes, she had memorized them twice." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Had she memorized the instructions twice?</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which question does the sentence <i>Dad wedged the first-aid kit into the last sliver of trunk space</i> answer?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="When is not in the sentence. It cannot answer this." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>When did Dad pack the first-aid kit?</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="Yes, he did. Every fact kept, so the sentence answers it." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Did Dad wedge the first-aid kit into the last sliver of trunk space?</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Every interrogative question: helping verb to the front, every fact kept, question mark at the end. Then answer your own question and check that the answer is the sentence you started with.</div>
+  </div>
+</div>
+
+<!-- Card 7: Quick Check, Checklist -->
+<div class="card" data-title="Quick Check &amp; Checklist">
+  <div class="card-header"><h2>Quick Check</h2><div class="card-subtitle">Six new ones. Then your checklist</div></div>
+  <div class="card-body">
+    <div class="quick-check" data-back="cards 3 to 6">
+      <div class="qc-title">The box, the first sentence, because, and the interrogative</div>
+      <div class="qc-sub">All new sentences. Answer each one once.</div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">The paragraph prompt is confusing and the article is long. Which earns more?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Empty is 0 of 20. Wrong-but-written is never lower than that." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Leave the box empty rather than write something that might be wrong.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="The prompt&rsquo;s own words make the first sentence; one fact and a This shows make the middle. Points." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Write the answer sentence using the prompt&rsquo;s own words, add one fact and a This shows, then an ending.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which is a topic sentence that answers <i>How does the author show that VR field trips are a good idea for schools?</i></div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="The article&rsquo;s own first line. Retelling from the beginning, not answering." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Imagine wearing a headset that makes you feel like you are floating above Earth.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="The prompt&rsquo;s words, then the answer." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The author shows VR field trips are a good idea by proving they help students learn and by removing the problems of real trips.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence is a SO WHAT?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A fact from the article, so a SHOW." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Students who use wheelchairs can &ldquo;climb&rdquo; mountains in VR.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;This shows&rdquo; plus what the fact proves about the author&rsquo;s argument." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>This shows that the author proves VR is fair for every student, not only fun.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Expand <i>Jaylen&rsquo;s head whipped around</i> using <i>because</i>. Which answer does the job?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Because, then a why from the story." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Jaylen&rsquo;s head whipped around because camping in the yard meant the adventure was back on.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Describes how fast. No because." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Jaylen&rsquo;s head whipped around, fast as a flash.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Rewrite <i>Kim unfolded the tent in the backyard</i> as an interrogative. Which answer does the job?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="How asks for something the sentence never said." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>How did Kim unfold the tent in the backyard?</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Did to the front, every fact kept." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Did Kim unfold the tent in the backyard?</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence is ready to submit?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Families, don&rsquo;t, can&rsquo;t. Correct." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Families don&rsquo;t always get the trip they planned, but they can&rsquo;t lose the fun if they camp in the yard.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Familys, dont, cant: three from your Q6 to Q8 answers. In the paragraph, these cost conventions points." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Familys dont always get the trip they planned, but they cant lose the fun if they camp in the yard.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="qc-result"></div>
+    </div>
+
+    <div class="checklist-wrap shown">
+      <div id="mainChecklist">
+        <div class="checklist-progress-label" id="checkProgressLabel">0 of 7 checked</div>
+        <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Before Q1:</b> scroll down and read the Q11 prompt once, so the target is in my head.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>The paragraph box is never empty.</b> Aim to spend at least 15 minutes in it. Tired or stuck: four sentences anyway.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Sentence one answers the question</b> in the prompt&rsquo;s own words. Never the article&rsquo;s first line.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Every fact from the article gets a <i>This shows</i>.</b> Count the facts, count the <i>This shows</i>.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>When the instruction names a word</b> (<i>because</i>, <i>since</i>), that word is in my answer, followed by a why.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Interrogative:</b> Did, Do or Was to the front, every fact kept. Answer my own question; the answer should be the original sentence.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Read-back before submit:</b> don&rsquo;t, can&rsquo;t, families, led. Then scroll up: every box has words.</div></div>
+      </div>
+      <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>Print Checklist</button>
+    </div>
+  </div>
+</div>
+
+</div>
+<div class="nav"><button id="prevBtn" onclick="navigate(-1)">&larr; Back</button><button id="nextBtn" onclick="navigate(1)">Next &rarr;</button></div>
+<div class="completion-overlay" id="completionOverlay"><div class="completion-card"><div class="completion-emoji">&#9997;</div><div class="completion-title">Ronan Huang</div><div class="completion-sub">Alpha Standardized Writing G5.3</div><button class="completion-close" onclick="closeCompletion()">Got it</button></div></div>
+<canvas id="confettiCanvas"></canvas>
+<script>
+var cards=document.querySelectorAll('.card'),bar=document.getElementById('progressBar'),breadcrumb=document.getElementById('breadcrumb'),stickyEl=document.getElementById('stickyIndicator'),current=0,visited=[0];
+cards.forEach(function(card,i){var dot=document.createElement('div');dot.className='progress-dot'+(i===0?' active':'');var tooltip=document.createElement('span');tooltip.className='dot-tooltip';tooltip.textContent=card.getAttribute('data-title')||('Card '+(i+1));dot.appendChild(tooltip);dot.addEventListener('click',function(){goTo(i);});bar.appendChild(dot);});
+function updateBreadcrumb(){var title=cards[current].getAttribute('data-title')||('Card '+(current+1));breadcrumb.innerHTML='Card <b>'+(current+1)+'</b> of '+cards.length+' &mdash; '+title;stickyEl.textContent=(current+1)+' / '+cards.length;}
+function checkSticky(){var r=bar.getBoundingClientRect();stickyEl.classList.toggle('visible',r.bottom<0);}
+window.addEventListener('scroll',checkSticky);
+function goTo(idx){if(idx<0||idx>=cards.length)return;cards[current].classList.remove('active');bar.children[current].classList.remove('active');current=idx;if(visited.indexOf(current)===-1)visited.push(current);cards[current].classList.add('active');bar.children[current].classList.add('active');visited.forEach(function(v){if(v!==current)bar.children[v].classList.add('visited');});var p=document.getElementById('prevBtn'),n=document.getElementById('nextBtn');if(p){p.style.visibility=current===0?'hidden':'visible';p.disabled=current===0;}if(n){n.textContent=current===cards.length-1?'Done ✓':'Next →';}updateBreadcrumb();window.scrollTo({top:0,behavior:'smooth'});}
+function navigate(dir){if(dir===1&&current===cards.length-1){showCompletion();return;}goTo(current+dir);}
+document.addEventListener('keydown',function(e){if(e.target&&e.target.tagName==='TEXTAREA')return;if(e.key==='ArrowRight'||e.key==='ArrowDown')navigate(1);if(e.key==='ArrowLeft'||e.key==='ArrowUp')navigate(-1);});
+function revealBetter(cover){cover.nextElementSibling.classList.add('shown');cover.classList.add('hidden');}
+function shuffleOptions(){document.querySelectorAll('.discrim-options').forEach(function(box){var opts=Array.prototype.slice.call(box.querySelectorAll('.discrim-option'));for(var i=opts.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=opts[i];opts[i]=opts[j];opts[j]=t;}opts.forEach(function(o,i){box.appendChild(o);var l=o.querySelector('.discrim-label');if(l)l.textContent=String.fromCharCode(65+i);});});}
+function handleDiscrim(option){var ch=option.closest('.discrim-challenge');if(ch.classList.contains('done'))return;var fb=ch.querySelector('.discrim-feedback');var opts=ch.querySelectorAll('.discrim-option');var ok=option.getAttribute('data-correct')==='true';ch.classList.add('done');
+if(ok){option.classList.add('correct');opts.forEach(function(o){if(o!==option)o.classList.add('locked');});fb.innerHTML=option.getAttribute('data-right-feedback')||'Correct.';fb.className='discrim-feedback shown right-fb';ch.setAttribute('data-first-try','1');}
+else{option.classList.add('wrong');var right=ch.querySelector('.discrim-option[data-correct="true"]');right.classList.add('model');opts.forEach(function(o){if(o!==option&&o!==right)o.classList.add('locked');});var rl=right.querySelector('.discrim-label');fb.innerHTML='<span style="color:#cc0000"><b>Not this one.</b> '+(option.getAttribute('data-wrong-feedback')||'')+'</span><br><span style="color:#2d6a2d"><b>The answer is '+(rl?rl.textContent:'')+'.</b> '+(right.getAttribute('data-right-feedback')||'')+'</span>';fb.className='discrim-feedback shown';ch.setAttribute('data-first-try','0');var par=ch.nextElementSibling;if(par&&par.classList.contains('discrim-parallel')){fb.innerHTML+=' <b style="color:#5c2dcc">Try one more like it below.</b>';setTimeout(function(){par.classList.add('shown');},600);}}
+var bf=ch.closest('.build-frame');if(bf){var all=bf.querySelectorAll('.discrim-challenge'),dn=0;all.forEach(function(c){if(c.classList.contains('done'))dn++;});if(dn===all.length){var a=bf.querySelector('.assembled');if(a)setTimeout(function(){a.classList.add('shown');},500);}}
+var qc=ch.closest('.quick-check');if(qc)updateQC(qc);}
+function updateQC(qc){var items=qc.querySelectorAll('.discrim-challenge');var done=0,first=0;items.forEach(function(c){if(c.classList.contains('done')){done++;if(c.getAttribute('data-first-try')==='1')first++;}});if(done<items.length)return;var r=qc.querySelector('.qc-result');r.textContent=first+' of '+items.length+' right first time. '+(first>=items.length-1?'The moves are in your head. Now the checklist.':'Look back at '+qc.getAttribute('data-back')+' for the ones you missed, then come back to the checklist.');r.style.display='block';launchConfetti();}
+function toggleTimes(el){var body=el.closest('.card-body');body.classList.toggle('show-times');el.textContent=body.classList.contains('show-times')?'Hide test times':'Show how long each test took';}
+function toggleCheck(item){item.classList.toggle('checked');updateCheckProgress();}
+function updateCheckProgress(){var items=document.querySelectorAll('#mainChecklist .check-item');if(!items.length)return;var checked=document.querySelectorAll('#mainChecklist .check-item.checked').length;var fill=document.getElementById('checkProgressFill'),lbl=document.getElementById('checkProgressLabel');if(fill)fill.style.width=Math.round((checked/items.length)*100)+'%';if(lbl)lbl.innerHTML=checked===items.length?'<b style="color:#2d6a2d;">All done.</b>':checked+' of '+items.length+' checked';}
+function printChecklist(btn){var card=btn.closest('.card');var ci=card.querySelectorAll('.check-item.checked');ci.forEach(function(i){i.classList.remove('checked');});card.classList.add('print-target');window.print();card.classList.remove('print-target');ci.forEach(function(i){i.classList.add('checked');});}
+function showCompletion(){document.getElementById('completionOverlay').classList.add('visible');}
+function closeCompletion(){document.getElementById('completionOverlay').classList.remove('visible');}
+function launchConfetti(){var canvas=document.getElementById('confettiCanvas');var ctx=canvas.getContext('2d');canvas.width=window.innerWidth;canvas.height=window.innerHeight;var colors=['#b8860b','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b','#42a5f5'];var particles=[];for(var i=0;i<120;i++){particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height-canvas.height,w:Math.random()*10+5,h:Math.random()*6+3,color:colors[Math.floor(Math.random()*colors.length)],vx:(Math.random()-0.5)*4,vy:Math.random()*3+2,rot:Math.random()*360,rotV:(Math.random()-0.5)*10,life:1});}var frame=0;function animate(){ctx.clearRect(0,0,canvas.width,canvas.height);var alive=false;particles.forEach(function(p){if(p.life<=0)return;alive=true;p.x+=p.vx;p.y+=p.vy;p.vy+=0.05;p.rot+=p.rotV;if(p.y>canvas.height+20){p.life=0;return;}if(frame>60)p.life-=0.01;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();});frame++;if(alive)requestAnimationFrame(animate);else ctx.clearRect(0,0,canvas.width,canvas.height);}animate();}
+shuffleOptions();goTo(0);
+</script>
+<script src="../tracking.js"></script>
+</body>
+</html>
