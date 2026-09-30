@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dimitri Camino | Grammar Rules Reference</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Calibri, 'Segoe UI', sans-serif; font-size: 12pt; color: #1a1a2e; background: #f0f0f5; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; padding: 20px; }
+.progress-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
+.progress-dot { width: 12px; height: 12px; border-radius: 50%; background: #ccc; transition: background 0.3s, transform 0.2s; cursor: pointer; position: relative; }
+.progress-dot.active { background: #b8860b; transform: scale(1.25); }
+.progress-dot.visited { background: #d9b56a; }
+.progress-dot:hover { transform: scale(1.3); }
+.progress-dot .dot-tooltip { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: #b8860b; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 8.5pt; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 100; }
+.progress-dot .dot-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #b8860b; }
+.progress-dot:hover .dot-tooltip { opacity: 1; }
+.card-breadcrumb { font-size: 9.5pt; color: #888; margin-bottom: 14px; text-align: center; transition: opacity 0.3s; min-height: 1.2em; }
+.card-breadcrumb b { color: #b8860b; }
+.sticky-indicator { position: fixed; top: 12px; right: 16px; background: #b8860b; color: #fff; padding: 5px 14px; border-radius: 20px; font-size: 9pt; font-weight: 700; opacity: 0; transition: opacity 0.3s; z-index: 200; pointer-events: none; letter-spacing: 0.5px; }
+.sticky-indicator.visible { opacity: 1; }
+.card-container { position: relative; width: 640px; min-height: 420px; }
+.card { position: absolute; top: 0; left: 0; width: 100%; background: #fff; border: 2.5px solid #b8860b; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.10); opacity: 0; pointer-events: none; transform: translateX(40px); transition: opacity 0.35s, transform 0.35s; }
+.card.active { opacity: 1; pointer-events: auto; transform: translateX(0); position: relative; }
+.card-header { background: #b8860b; color: #fff; padding: 14px 20px; border-radius: 11px 11px 0 0; }
+.card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+.card-header .card-subtitle { font-size: 9.5pt; color: #f0e2bd; margin-top: 2px; }
+.card-body { padding: 18px 22px 22px; line-height: 1.55; }
+.card-body p { margin: 6px 0; }
+.score-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; }
+.score-box { background: #f8f8fc; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 10px 14px; text-align: center; }
+.score-box .big { font-size: 20pt; font-weight: 700; }
+.score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+.score-good .big { color: #2d6a2d; }
+.score-warn .big { color: #cc6600; }
+.score-low .big { color: #cc0000; }
+.you-wrote { background: #fff3f3; border-left: 3px solid #cc0000; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.you-wrote .label { font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+.better, .model-box { background: #e8f5e9; border-left: 3px solid #2d6a2d; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.better .label, .model-box .label { font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+.tip-box { background: #e8edf5; border-left: 3px solid #b8860b; padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0; }
+.tip-box .label { font-weight: 700; font-size: 9.5pt; color: #b8860b; margin-bottom: 3px; }
+.rule-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 10px 14px; margin: 10px 0; font-size: 11pt; }
+.rule-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 3px; }
+.lbl { display: inline-block; font-size: 7.5pt; font-weight: 800; letter-spacing: 0.5px; padding: 1px 6px; border-radius: 4px; margin: 0 4px 0 0; vertical-align: middle; color: #fff; line-height: 1.5; }
+.lbl-say, .lbl-echo { background: #5c2dcc; } .lbl-show, .lbl-because { background: #2d6a2d; } .lbl-sowhat { background: #cc6600; } .lbl-close { background: #457b9d; } .lbl-miss { background: #cc0000; } .lbl-reason { background: #888; } .lbl-general { background: #6d4c41; } .lbl-specific { background: #00838f; } .evidence-block { margin: 10px 0 12px; border: 1.5px solid #e0e0e8; border-radius: 8px; overflow: hidden; } .ev-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 12px; font-size: 10.5pt; } .ev-row + .ev-row { border-top: 1px solid #e0e0e8; } .ev-row.paced { background: #e8f5e9; } .ev-row.rushed { background: #fff3f3; } .ev-tag { flex-shrink: 0; font-size: 8.5pt; font-weight: 800; letter-spacing: 0.5px; padding: 2px 7px; border-radius: 8px; color: #fff; margin-top: 2px; } .ev-row.paced .ev-tag { background: #2d6a2d; } .ev-row.rushed .ev-tag { background: #cc0000; } .format-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; } .format-box { background: #fbf7ea; border: 1.5px solid #e6d3a3; border-radius: 8px; padding: 10px 14px; } .format-box .format-title { font-weight: 700; font-size: 10pt; color: #b8860b; margin-bottom: 4px; } .format-box .format-detail { font-size: 9.5pt; color: #555; line-height: 1.4; } .format-box .format-pts { display: inline-block; background: #b8860b; color: #fff; font-size: 8.5pt; font-weight: 700; padding: 1px 7px; border-radius: 8px; margin-bottom: 4px; } @media (max-width: 640px) { .format-grid { grid-template-columns: 1fr; } }
+.ex-list { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+.ex { padding: 8px 12px; border-radius: 6px; font-size: 10.5pt; border-left: 3px solid; }
+.ex.pos { background: #e8f5e9; border-color: #2d6a2d; } .ex.neg { background: #fff3f3; border-color: #cc0000; }
+.ex .tag { font-weight: 800; font-size: 8.5pt; margin-right: 6px; } .ex.pos .tag { color: #2d6a2d; } .ex.neg .tag { color: #cc0000; }
+.think { background: #f8f8fc; border-left: 3px solid #888; padding: 8px 14px; margin: 8px 0; font-size: 10.5pt; font-style: italic; color: #444; }
+.think .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #666; margin-bottom: 2px; }
+.highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+.error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+.discrim-option .error-mark { background: transparent; text-decoration: none; padding: 0; border-radius: 0; }
+.essay-excerpt { background: #fafafa; border: 1px solid #e0e0e8; border-radius: 6px; padding: 10px 14px; font-size: 10.5pt; margin: 8px 0; line-height: 1.7; }
+.discrim-challenge { background: #f8f5ff; border: 1.5px solid #d4c5ff; border-radius: 8px; padding: 14px; margin: 10px 0; }
+.discrim-prompt { font-weight: 700; font-size: 10.5pt; margin-bottom: 10px; color: #5c2dcc; }
+.discrim-options { display: flex; flex-direction: column; gap: 8px; }
+.discrim-option { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border: 2px solid #d4c5ff; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 10.5pt; background: #fff; }
+.discrim-option:hover { border-color: #7c4dff; background: #f5f0ff; }
+.discrim-label { font-weight: 800; color: #7c4dff; min-width: 20px; flex-shrink: 0; }
+.discrim-option.correct, .discrim-option.model { border-color: #2d6a2d; background: #e8f5e9; cursor: default; }
+.discrim-option.correct .discrim-label, .discrim-option.model .discrim-label { color: #2d6a2d; }
+.discrim-option.wrong { border-color: #cc0000; background: #fff3f3; cursor: default; }
+.discrim-option.wrong .discrim-label { color: #cc0000; }
+.discrim-option.locked { pointer-events: none; opacity: 0.5; }
+.discrim-challenge.done .discrim-option { cursor: default; }
+.discrim-feedback { margin-top: 0; font-size: 10pt; line-height: 1.45; max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.3s, opacity 0.3s, margin 0.3s; }
+.discrim-feedback.shown { max-height: 400px; opacity: 1; margin-top: 10px; }
+.discrim-feedback.right-fb { color: #2d6a2d; font-weight: 600; }
+.discrim-parallel { display: none; }
+.discrim-parallel.shown { display: block; }
+.discrim-parallel .discrim-prompt::before { content: 'One more like it. '; color: #888; font-weight: 600; }
+.reveal-wrapper { position: relative; }
+.reveal-cover { background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%); border-left: 3px solid #2d6a2d; padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 10px; transition: background 0.2s, box-shadow 0.2s; }
+.reveal-cover:hover { box-shadow: 0 2px 8px rgba(45,106,45,0.15); }
+.reveal-cover .reveal-icon { width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
+.reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #2d6a2d; }
+.reveal-cover .reveal-hint { font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px; }
+.reveal-content { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0; }
+.reveal-content.shown { max-height: 1200px; opacity: 1; margin: 8px 0; }
+.reveal-cover.hidden { display: none; }
+.your-turn { background: #f8f8fc; border: 1.5px dashed #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.your-turn .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.your-turn textarea { width: 100%; min-height: 64px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; margin: 4px 0; }
+.frame-row { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0; font-size: 10.5pt; }
+.frame-row .lbl { margin-top: 4px; }
+.frame-row .given { background: #fff; border: 1.5px solid #e0e0e8; border-radius: 6px; padding: 8px; flex: 1; color: #555; }
+.frame-row textarea { flex: 1; min-height: 48px; margin: 0; }
+.yt-btn { margin-top: 8px; padding: 7px 16px; border: 2px solid #2d6a2d; background: #fff; color: #2d6a2d; border-radius: 8px; font-family: inherit; font-weight: 600; font-size: 10pt; cursor: pointer; }
+.yt-btn:hover { background: #2d6a2d; color: #fff; }
+.yt-btn:disabled { opacity: 0.6; cursor: default; }
+.yt-model { display: none; margin-top: 10px; }
+.assembled { display: none; margin-top: 8px; }
+.assembled.shown { display: block; }
+.xp-link { display: inline-block; margin: 8px 6px 0 0; padding: 6px 14px; border-radius: 6px; background: #2d6a2d; color: #fff; font-weight: 700; font-size: 10pt; text-decoration: none; }
+.xp-link:hover { background: #1b5e1b; }
+.yt-model.shown { display: block; }
+.self-check .check-item { font-size: 10pt; padding: 6px 8px; }
+.check-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 8px; cursor: pointer; border-bottom: 1px solid #eee; border-radius: 6px; transition: background 0.15s; user-select: none; font-size: 11pt; }
+.check-item:last-child { border-bottom: none; }
+.check-item:hover { background: #f8f8fc; }
+.check-item.checked { background: #f0f8f0; }
+.check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
+.check-item.checked .check-box::after { content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
+.check-box { width: 28px; height: 28px; border: 2.5px solid #b8860b; border-radius: 6px; flex-shrink: 0; margin-top: 1px; position: relative; transition: background 0.2s, border-color 0.2s; }
+.self-check .check-box { width: 22px; height: 22px; }
+.checklist-progress { background: #eee; border-radius: 10px; height: 8px; margin: 12px 0 6px; overflow: hidden; }
+.checklist-progress-fill { background: linear-gradient(90deg, #2d6a2d, #4caf50); height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%; }
+.checklist-progress-label { font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px; }
+.quick-check { background: #f8f5ff; border: 2px solid #7c4dff; border-radius: 10px; padding: 12px 14px; margin: 10px 0; }
+.quick-check .qc-title { font-weight: 800; color: #5c2dcc; font-size: 10.5pt; margin-bottom: 4px; }
+.quick-check .qc-sub { font-size: 9.5pt; color: #666; margin-bottom: 6px; }
+.quick-check .discrim-challenge { background: #fff; margin: 8px 0; padding: 10px 12px; }
+.qc-result { display: none; font-weight: 700; margin-top: 8px; font-size: 10.5pt; color: #5c2dcc; }
+.recall-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.recall-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.recall-box textarea { width: 100%; min-height: 56px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; }
+.checklist-wrap { display: none; }
+.checklist-wrap.shown { display: block; }
+.time-toggle { font-size: 9pt; color: #b8860b; cursor: pointer; text-decoration: underline; display: inline-block; margin: 0 0 6px; }
+.tl-time { display: none; font-weight: 400; color: #aaa; }
+.show-times .tl-time { display: inline; }
+.guide-block { margin-top: 16px; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 8px 12px; background: #fafafa; font-size: 10pt; }
+.guide-block summary { cursor: pointer; font-weight: 700; color: #666; font-size: 9.5pt; }
+.guide-block ul { margin: 6px 0 4px 18px; }
+.guide-block li { margin: 4px 0; }
+.practice-recommendations { margin-top: 16px; border-top: 2px solid #e0e0e8; padding-top: 14px; }
+.practice-recs-title { font-size: 10pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #b8860b; margin-bottom: 10px; }
+.practice-tier { border-radius: 8px; padding: 12px 14px; margin: 8px 0; }
+.tier-primary { background: #e8f5e9; border: 1.5px solid #a5d6a7; }
+.tier-extra { background: #f8f8fc; border: 1.5px solid #e0e0e8; }
+.tier-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.tier-label { font-size: 8.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 2px 10px; border-radius: 10px; }
+.tier-primary .tier-label { background: #2d6a2d; color: #fff; }
+.tier-extra .tier-label { background: #888; color: #fff; }
+.tier-note { font-size: 9pt; color: #666; margin-bottom: 6px; line-height: 1.4; }
+.practice-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.practice-link { display: inline-block; padding: 5px 12px; border-radius: 6px; font-size: 9.5pt; font-weight: 600; text-decoration: none; transition: background 0.2s, transform 0.1s; }
+.tier-primary .practice-link { background: #c8e6c9; color: #1b5e1b; }
+.tier-extra .practice-link { background: #e8edf5; color: #b8860b; }
+.nav { display: flex; gap: 12px; margin-top: 16px; }
+.nav button { padding: 8px 28px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; transition: background 0.2s, color 0.2s; }
+.nav button:hover { background: #b8860b; color: #fff; }
+.print-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 8px 20px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 10.5pt; font-weight: 600; cursor: pointer; }
+.print-btn:hover { background: #b8860b; color: #fff; }
+.print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+.completion-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(184,134,11,0.6); z-index: 500; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s; }
+.completion-overlay.visible { opacity: 1; pointer-events: auto; }
+.completion-card { background: #fff; border-radius: 16px; padding: 40px 48px; text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2); transform: scale(0.8); transition: transform 0.4s ease; max-width: 420px; }
+.completion-overlay.visible .completion-card { transform: scale(1); }
+.completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+.completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; color: #b8860b; }
+.completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+.completion-close { margin-top: 20px; padding: 10px 32px; background: #b8860b; color: #fff; border: none; border-radius: 8px; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; }
+#confettiCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 501; }
+.score-timeline { display: flex; align-items: flex-end; gap: 0; margin: 12px 0 10px; padding: 0 6px; justify-content: space-between; }
+.timeline-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.timeline-score { font-size: 13pt; font-weight: 700; margin-bottom: 4px; }
+.timeline-bar { width: 70%; border-radius: 4px 4px 0 0; min-height: 8px; }
+.timeline-label { font-size: 8.5pt; color: #888; margin-top: 6px; font-weight: 600; text-align: center; }
+.score-green { color: #2d6a2d; } .score-amber { color: #cc6600; } .score-red { color: #cc0000; }
+.bar-green { background: linear-gradient(to top, #c8e6c9, #81c784); } .bar-amber { background: linear-gradient(to top, #ffe0b2, #ffb74d); } .bar-red { background: linear-gradient(to top, #ffcdd2, #ef9a9a); }
+.strength-chips, .growth-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; }
+.strength-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; background: #e8f5e9; color: #2d6a2d; border: 1.5px solid #a5d6a7; display: inline-flex; align-items: center; gap: 4px; }
+.strength-chip .chip-course, .growth-chip .chip-avg { font-size: 7.5pt; color: #888; font-weight: 400; }
+.journey-section { font-size: 9.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; margin: 10px 0 4px; padding-bottom: 3px; border-bottom: 1.5px solid; }
+.journey-section.strengths-header { color: #2d6a2d; border-color: #c8e6c9; }
+.journey-section.growth-header { color: #cc6600; border-color: #ffe0b2; }
+.root-cause-teaser { background: #f5f0ff; border-left: 3px solid #7c4dff; padding: 10px 14px; margin: 12px 0 4px; border-radius: 0 6px 6px 0; font-size: 10.5pt; line-height: 1.5; }
+.root-cause-teaser b { color: #5c2dcc; }
+.growth-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+.growth-chip.mixed { background: #fff8e8; color: #b35900; border: 1.5px solid #ffe0b2; }
+.growth-chip.weak { background: #fff3f3; color: #cc0000; border: 1.5px solid #ffcdd2; }
+@media print { body { background: #fff; padding: 0; min-height: auto; } .progress-bar, .nav, .print-btn, .card-breadcrumb, .sticky-indicator, .completion-overlay, #confettiCanvas, .reveal-cover, .checklist-progress, .checklist-progress-label, .discrim-challenge, .discrim-parallel, .quick-check, .recall-box, .yt-btn, .guide-block { display: none !important; } .card-container { width: 100%; min-height: auto; } .card { display: none !important; } .card.print-target { display: block !important; opacity: 1 !important; pointer-events: auto !important; position: relative !important; transform: none !important; box-shadow: none; border: 2px solid #b8860b; page-break-inside: avoid; } .reveal-content, .yt-model, .checklist-wrap { display: block !important; max-height: none !important; opacity: 1 !important; margin: 8px 0 !important; } }
+@media (max-width: 720px) { .card-container { width: 100%; } .score-grid { grid-template-columns: 1fr; } .timeline-score { font-size: 10pt; } }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progressBar"></div>
+<div class="card-breadcrumb" id="breadcrumb"></div>
+<div class="sticky-indicator" id="stickyIndicator"></div>
+<div class="card-container" id="cardContainer">
+
+<!-- Card 1: Sentences -->
+<div class="card active" data-title="Sentences">
+  <div class="card-header"><h2>Grammar Rules Reference</h2><div class="card-subtitle">The general rules, each one a check you can run. Keep this page open when you write</div></div>
+  <div class="card-body">
+    <p>Six cards of rules, a quick check, and a rules list you can print. Every rule is worded the way the four units teach it.</p>
+    <div class="rule-box" data-canon="Find the action word. Find the doer. Is the thought finished?"><div class="label">1. A SENTENCE</div><b>Find the action word. Find the doer. Is the thought finished?</b> All three there: a sentence. Any one missing: a fragment. Long does not mean finished.</div>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">SENTENCE</span>Kites fly.</div>
+      <div class="ex neg"><span class="tag">FRAGMENT</span>the red kite in the tall tree<br><span style="font-size:9.5pt;color:#666;">No action word. <i>The red kite is stuck in the tall tree.</i></span></div>
+      <div class="ex neg"><span class="tag">FRAGMENT</span>When the wind picked up<br><span style="font-size:9.5pt;color:#666;"><i>When</i> leaves it hanging. <i>When the wind picked up, the kite rose.</i></span></div>
+    </div>
+    <div class="rule-box" data-canon="Two thoughts, two sentences."><div class="label">2. TWO THOUGHTS</div><b>Two thoughts, two sentences,</b> or one joining word between them (<i>and</i>, <i>but</i>, <i>so</i>, <i>because</i>). A comma on its own cannot hold two sentences together.</div>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">RIGHT</span>The rain stopped. We went outside.</div>
+      <div class="ex pos"><span class="tag">RIGHT</span>The rain stopped, so we went outside.</div>
+      <div class="ex neg"><span class="tag">RUN-ON</span>The rain stopped we went outside.</div>
+      <div class="ex neg"><span class="tag">COMMA ALONE</span>The rain stopped, we went outside.</div>
+    </div>
+    <div class="rule-box" data-canon="The end mark matches."><div class="label">3. FOUR KINDS OF SENTENCE, FOUR END MARKS</div><b>The end mark matches.</b> A <b>statement</b> (declarative) tells and ends with a period. A <b>question</b> (interrogative) starts with a question word or a helper such as <i>do</i>, <i>did</i>, <i>can</i>, <i>is</i>, and ends with a question mark. A <b>command</b> (imperative) starts with the action word and ends with a period. An <b>exclamation</b> (exclamatory) tells with strong feeling and ends with an exclamation mark. It never asks.</div>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">STATEMENT</span>Swimmers rinse off after the pool.</div>
+      <div class="ex pos"><span class="tag">QUESTION</span>Do swimmers rinse off after the pool?</div>
+      <div class="ex pos"><span class="tag">COMMAND</span>Rinse off after the pool.</div>
+      <div class="ex pos"><span class="tag">EXCLAMATION</span>That pool is freezing!</div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 2: Capitals -->
+<div class="card" data-title="Capitals">
+  <div class="card-header"><h2>Capitals</h2><div class="card-subtitle">Three places a capital goes, and where it does not</div></div>
+  <div class="card-body">
+    <div class="rule-box" data-canon="Names, months and titles get a capital."><div class="label">4. CAPITAL LETTERS</div>A capital goes on: <b>the first word of a sentence</b>; <b>the word I</b>; and <b>names, months and titles</b>: one particular person, place, pet, brand, day, month, holiday, and the main words of a book or film title. <b>The check:</b> is it the name of one particular one? Capital. Is it a kind of thing (a dog, a city, a season)? Small letter.</div>
+    <div class="rule-box" data-canon="Small letter after the comma."><div class="label">5. AFTER A COMMA</div><b>After a comma, a small letter,</b> unless it is a name or I.</div>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">RIGHT</span>On Friday, Maya and I visited Denver.</div>
+      <div class="ex pos"><span class="tag">RIGHT</span>We read The Hobbit in March.</div>
+      <div class="ex pos"><span class="tag">RIGHT</span>A brave warrior, the Roman legionary marched many miles.<br><span style="font-size:9.5pt;color:#666;">Yours. Small letter after the comma; <i>Roman</i> keeps its capital because it is a name.</span></div>
+      <div class="ex neg"><span class="tag">WRONG</span>on friday, maya and i visited denver.<br><span style="font-size:9.5pt;color:#666;">Six capitals missing.</span></div>
+      <div class="ex neg"><span class="tag">WRONG</span>In the Summer we swim.<br><span style="font-size:9.5pt;color:#666;">A season is a kind of time, not a name. <i>summer</i>.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 3: Punctuation -->
+<div class="card" data-title="Punctuation">
+  <div class="card-header"><h2>Punctuation</h2><div class="card-subtitle">Commas, apostrophes, quotation marks</div></div>
+  <div class="card-body">
+    <div class="rule-box" data-canon="A comma hugs the word before it, then one space."><div class="label">6. COMMAS</div>A comma goes: <b>between items in a list</b> (<i>eggs, milk, and bread</i>); <b>before and, but or so when they join two whole sentences</b> (<i>I ran, but I missed the bus.</i>); <b>after an opening phrase</b> (<i>After lunch, we read.</i>); and <b>on both sides of a naming phrase</b> (<i>Leo, my cousin, plays drums.</i>). <b>A comma hugs the word before it, then one space.</b> A comma never holds two sentences together on its own.</div>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">LIST</span>We packed hats, snacks, and water.</div>
+      <div class="ex pos"><span class="tag">TWO SENTENCES JOINED</span>The bus was late, so we walked.</div>
+      <div class="ex pos"><span class="tag">OPENING PHRASE</span>After the game, the team ate pizza.</div>
+      <div class="ex neg"><span class="tag">WRONG</span>Sam ,my cousin ,plays drums.<br><span style="font-size:9.5pt;color:#666;">Spaces on the wrong side. <i>Sam, my cousin, plays drums.</i></span></div>
+    </div>
+    <div class="rule-box" data-canon="An apostrophe marks a missing letter or an owner."><div class="label">7. APOSTROPHES</div><b>An apostrophe marks a missing letter or an owner.</b> <i>can&rsquo;t</i>, <i>it&rsquo;s</i>: letters are missing. <i>Sam&rsquo;s bike</i>: Sam owns it. A plural noun, more than one of something, gets none: <i>dogs</i>, <i>knives</i>. The owner words <i>its</i>, <i>his</i>, <i>hers</i> never take one.</div>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">MISSING LETTER</span>We didn&rsquo;t hear the bell.</div>
+      <div class="ex pos"><span class="tag">OWNER</span>The coach&rsquo;s whistle was loud.</div>
+      <div class="ex neg"><span class="tag">WRONG</span>The dog&rsquo;s ran across the yard.<br><span style="font-size:9.5pt;color:#666;">A plural noun, nothing owned. <i>The dogs ran.</i></span></div>
+    </div>
+    <div class="rule-box" data-canon="Quotation marks go around exact words."><div class="label">8. QUOTATION MARKS</div><b>Quotation marks go around exact words:</b> what someone said, word for word, or a short exact phrase copied from a passage. Your own words about the passage get none.</div>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">EXACT WORDS</span>The article says the reefs &ldquo;can rest.&rdquo;</div>
+      <div class="ex pos"><span class="tag">YOUR OWN WORDS</span>The article explains that the reefs get a break from swimmers.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 4: Words That Agree -->
+<div class="card" data-title="Words That Agree">
+  <div class="card-header"><h2>Words That Agree</h2><div class="card-subtitle">Subject and verb, tense, pronouns, sound-alikes</div></div>
+  <div class="card-body">
+    <div class="rule-box" data-canon="One thing: is. More than one: are. After did: the plain verb."><div class="label">9. SUBJECT AND VERB</div><b>One thing: is. More than one: are. After did: the plain verb.</b> One thing takes <i>is</i>, <i>was</i>, <i>has</i>, <i>does</i>, <i>runs</i>. More than one takes <i>are</i>, <i>were</i>, <i>have</i>, <i>do</i>, <i>run</i>. After <i>did</i>, <i>does</i> or <i>do</i>, the verb goes back to its plain form: <i>did win</i>, not <i>did won</i>. <b>The check:</b> point at the doer and count it.</div>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">RIGHT</span>Under the porch are three puppies.</div>
+      <div class="ex pos"><span class="tag">RIGHT</span>Did the bus leave on time?</div>
+      <div class="ex neg"><span class="tag">WRONG</span>Under the porch is three puppies.</div>
+    </div>
+    <div class="rule-box" data-canon="Pick a tense and stay in it."><div class="label">10. TENSE</div><b>Pick a tense and stay in it.</b> If the sentence starts in the past, the other verbs stay in the past.</div>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">RIGHT</span>The air was freezing, so we sweated less.</div>
+      <div class="ex neg"><span class="tag">WRONG</span>The air was freezing, so we sweat less.</div>
+    </div>
+    <div class="rule-box" data-canon="I does the action. Me receives it."><div class="label">11. I AND ME</div><b>I does the action. Me receives it.</b> <i>Sam and I went.</i> <i>The coach spoke to Sam and me.</i> <b>The check:</b> take the other person out. <i>I went</i>, not <i>me went</i>. <i>Spoke to me</i>, not <i>spoke to I</i>.</div>
+    <div class="rule-box" data-canon="The pairs."><div class="label">12. SOUND-ALIKE PAIRS</div>These sound the same and mean different things. <b>its</b> (belongs to it) / <b>it&rsquo;s</b> (it is). <b>their</b> (belongs to them) / <b>there</b> (a place) / <b>they&rsquo;re</b> (they are). <b>your</b> (belongs to you) / <b>you&rsquo;re</b> (you are). <b>to</b> (toward) / <b>too</b> (also, or extremely) / <b>two</b> (2). <b>where</b> (a place) / <b>wear</b> (clothes). <b>then</b> (next) / <b>than</b> (comparing). <b>The check:</b> say the long form back. If <i>it is</i> fits, write <i>it&rsquo;s</i>.</div>
+  </div>
+</div>
+
+<!-- Card 5: Joining and Naming -->
+<div class="card" data-title="Joining and Naming">
+  <div class="card-header"><h2>Joining and Naming</h2><div class="card-subtitle">Joining words, and the naming phrase</div></div>
+  <div class="card-body">
+    <div class="rule-box" data-canon="Each joining word has a job."><div class="label">13. JOINING WORDS</div><b>Each joining word has a job.</b> <i>and</i> adds. <i>but</i> contrasts. <i>so</i> gives the result. <i>because</i> gives the reason. <i>since</i> gives the reason or the time. <i>or</i> gives a choice. When <i>and</i>, <i>but</i> or <i>so</i> join two whole sentences, a comma goes before them. <i>because</i> and <i>since</i> take no comma when they come second in the sentence. Use the joining word the instruction names, not a different one.</div>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">RESULT</span>The gym was closed, so we ran outside.</div>
+      <div class="ex pos"><span class="tag">REASON</span>We ran outside because the gym was closed.</div>
+      <div class="ex pos"><span class="tag">CONTRAST</span>We wanted the gym, but it was closed.</div>
+      <div class="ex neg"><span class="tag">WRONG JOB</span>We ran outside, and the gym was closed.<br><span style="font-size:9.5pt;color:#666;"><i>And</i> only adds. The second half is the reason, so <i>because</i>.</span></div>
+    </div>
+    <div class="rule-box" data-canon="An appositive is a naming phrase."><div class="label">14. THE NAMING PHRASE (APPOSITIVE)</div><b>An appositive is a naming phrase.</b> It gives the thing another name, starts with <i>a</i>, <i>an</i>, <i>the</i> or <i>my</i> plus a naming word, and has no verb inside. <b>The check:</b> cover the noun. Can your phrase stand in its place? In the middle, commas on both sides. First in the sentence: <b>naming word first, small letter after the comma.</b></div>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">MIDDLE</span>The paterfamilias, the head of a Roman family, made all of the important decisions.<br><span style="font-size:9.5pt;color:#666;">Yours, full marks.</span></div>
+      <div class="ex pos"><span class="tag">FIRST</span>A skilled painter, Emma shared her favorite hobby with her new classmate.<br><span style="font-size:9.5pt;color:#666;">Yours, full marks.</span></div>
+      <div class="ex neg"><span class="tag">NOT A NAMING PHRASE</span>The drum, that was out of shape, was made from a can.<br><span style="font-size:9.5pt;color:#666;"><i>That was</i> has a verb and cannot stand in for the drum. <i>The drum, a loud instrument, was made from a can.</i></span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 6: Paragraphs and Outlines -->
+<div class="card" data-title="Paragraphs and Outlines">
+  <div class="card-header"><h2>Paragraphs and Outlines</h2><div class="card-subtitle">The shape that earns the twenty points</div></div>
+  <div class="card-body">
+    <div class="rule-box" data-canon="The topic sentence answers, it does not ask."><div class="label">15. THE PARAGRAPH</div><b>The topic sentence answers, it does not ask.</b> It is a statement that answers the question in the prompt. Then <b>two or more supporting details</b>, each one a fact from the passage followed by a <b>This shows</b> sentence that says what the fact proves. Then the <b>concluding sentence: one sentence, no new fact.</b> Six sentences at least.</div>
+    <div class="model-box"><div class="label">THE SHAPE, ON A MADE-UP PASSAGE ABOUT BEES</div><span class="lbl lbl-say">TOPIC SENTENCE</span>Bees matter to farmers because they pollinate the crops. <span class="lbl lbl-show">DETAIL 1 &middot; SHOW</span>The passage says one hive can visit a million flowers in a day. <span class="lbl lbl-sowhat">DETAIL 1 &middot; SO WHAT</span>This shows that a single hive does work no farmer could do by hand. <span class="lbl lbl-show">DETAIL 2 &middot; SHOW</span>It also says apple trees without bees grow fewer than half as many apples. <span class="lbl lbl-sowhat">DETAIL 2 &middot; SO WHAT</span>This shows that the harvest depends on the bees showing up. <span class="lbl lbl-close">CONCLUDING SENTENCE</span>Bees are small, but a farm cannot work without them.</div>
+    <div class="rule-box" data-canon="Notes are key words, not sentences."><div class="label">16. THE OUTLINE</div>Before the paragraph, the outline: the topic sentence as a full statement, then <b>notes</b>, and <b>notes are key words, not sentences.</b> If a note could stand on its own with a period, it is a sentence, not a note. Then the concluding sentence. On the test, type the outline at the top of the box, write the paragraph under it, then delete the outline before you submit.</div>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">NOTE</span>million flowers a day, hive</div>
+      <div class="ex pos"><span class="tag">NOTE</span>apple trees, fewer than half</div>
+      <div class="ex neg"><span class="tag">A SENTENCE, NOT A NOTE</span>One hive can visit a million flowers in a day.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 7: Quick Check and the Rules at a Glance -->
+<div class="card" data-title="Quick Check &amp; Rules List">
+  <div class="card-header"><h2>Quick Check</h2><div class="card-subtitle">Eight rules, eight questions. Then the printable list</div></div>
+  <div class="card-body">
+    <div class="quick-check" data-back="cards 1 to 6">
+      <div class="qc-title">The rules, eight questions</div>
+      <div class="qc-sub">New sentences. Answer each once.</div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Rule 1. Which is a sentence?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="No action word. A fragment, however long." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>the muddy blue bike behind the shed</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Doer, action word, finished." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Bikes rust.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Rule 2. Which one is right?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Two thoughts, two sentences." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>The bell rang. We lined up.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Two thoughts with nothing between them." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The bell rang we lined up.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Rule 3. Which end mark matches?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="It asks, so it needs a question mark." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Can you hear the music.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="A question with its question mark." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Can you hear the music?</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Rule 4. Which one is right?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="October is a month. Capital." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>The fair opens in October.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A month is the name of one particular month. Capital." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The fair opens in october.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Rule 6. Which comma is right?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="But joins two whole sentences here, so the comma goes before it." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>I studied hard but I still felt nervous.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Two whole sentences joined by but, comma before it." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>I studied hard, but I still felt nervous.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Rule 7. Plural noun, or an owner?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Cats is a plural noun, nothing owned, no mark." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>The cats slept in the sun.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Nothing is owned. A plural noun gets no mark." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The cat&rsquo;s slept in the sun.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Rule 9. Which one is right?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Two kittens, more than one, so are." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>In the basket is two kittens.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="More than one kitten, so are." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>In the basket are two kittens.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Rule 11. Which one is right?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Take Sam out: I went. So Sam and I." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Sam and I went to the game.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Take Sam out: me went does not work. I does the action." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Sam and me went to the game.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="qc-result"></div>
+    </div>
+
+    <div class="checklist-wrap shown">
+      <div id="mainChecklist">
+        <div class="checklist-progress-label" id="checkProgressLabel">0 of 14 checked</div>
+        <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>1. Find the action word. Find the doer. Is the thought finished?</b></div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>2. Two thoughts, two sentences,</b> or one joining word. Never a comma alone.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>3. The end mark matches:</b> statement and command take a period, question a question mark, exclamation an exclamation mark.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>4. Capitals:</b> first word, I, names, months, days, titles.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>5. Small letter after the comma,</b> unless it is a name or I.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>6. Commas:</b> in a list, before and/but/so joining two sentences, after an opening phrase, around a naming phrase. The comma hugs the word before it.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>7. An apostrophe marks a missing letter or an owner.</b> A plural noun gets none.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>8. Quotation marks</b> go around exact words only.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>9. One thing: is. More than one: are. After did: the plain verb.</b></div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>10. Pick a tense and stay in it.</b></div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>11. I does the action. Me receives it.</b> Take the other person out to check.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>12. The pairs:</b> its/it&rsquo;s, their/there/they&rsquo;re, your/you&rsquo;re, to/too/two, where/wear, then/than.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>13. Each joining word has a job.</b> <b>14. An appositive is a naming phrase.</b></div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>15. The topic sentence answers.</b> Two details, each with a This shows. One concluding sentence, no new fact. <b>16. Notes are key words, not sentences.</b></div></div>
+      </div>
+      <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>Print the Rules List</button>
+    </div>
+  </div>
+</div>
+
+</div>
+<div class="nav"><button id="prevBtn" onclick="navigate(-1)">&larr; Back</button><button id="nextBtn" onclick="navigate(1)">Next &rarr;</button></div>
+<div class="completion-overlay" id="completionOverlay"><div class="completion-card"><div class="completion-emoji">&#9997;</div><div class="completion-title">The rules.</div><div class="completion-sub">Every rule on these cards is a check you can run. Keep the page open when you write, print the rules list, and run the read-back five before you submit.</div><button class="completion-close" onclick="closeCompletion()">Got it</button></div></div>
+<canvas id="confettiCanvas"></canvas>
+<script>
+var cards=document.querySelectorAll('.card'),bar=document.getElementById('progressBar'),breadcrumb=document.getElementById('breadcrumb'),stickyEl=document.getElementById('stickyIndicator'),current=0,visited=[0];
+cards.forEach(function(card,i){var dot=document.createElement('div');dot.className='progress-dot'+(i===0?' active':'');var tooltip=document.createElement('span');tooltip.className='dot-tooltip';tooltip.textContent=card.getAttribute('data-title')||('Card '+(i+1));dot.appendChild(tooltip);dot.addEventListener('click',function(){goTo(i);});bar.appendChild(dot);});
+function updateBreadcrumb(){var title=cards[current].getAttribute('data-title')||('Card '+(current+1));breadcrumb.innerHTML='Card <b>'+(current+1)+'</b> of '+cards.length+' &mdash; '+title;stickyEl.textContent=(current+1)+' / '+cards.length;}
+function checkSticky(){var r=bar.getBoundingClientRect();stickyEl.classList.toggle('visible',r.bottom<0);}
+window.addEventListener('scroll',checkSticky);
+function goTo(idx){if(idx<0||idx>=cards.length)return;cards[current].classList.remove('active');bar.children[current].classList.remove('active');current=idx;if(visited.indexOf(current)===-1)visited.push(current);cards[current].classList.add('active');bar.children[current].classList.add('active');visited.forEach(function(v){if(v!==current)bar.children[v].classList.add('visited');});var p=document.getElementById('prevBtn'),n=document.getElementById('nextBtn');if(p){p.style.visibility=current===0?'hidden':'visible';p.disabled=current===0;}if(n){n.textContent=current===cards.length-1?'Done ✓':'Next →';}updateBreadcrumb();window.scrollTo({top:0,behavior:'smooth'});}
+function navigate(dir){if(dir===1&&current===cards.length-1){showCompletion();return;}goTo(current+dir);}
+document.addEventListener('keydown',function(e){if(e.target&&e.target.tagName==='TEXTAREA')return;if(e.key==='ArrowRight'||e.key==='ArrowDown')navigate(1);if(e.key==='ArrowLeft'||e.key==='ArrowUp')navigate(-1);});
+function revealBetter(cover){cover.nextElementSibling.classList.add('shown');cover.classList.add('hidden');}
+function shuffleOptions(){document.querySelectorAll('.discrim-options').forEach(function(box){var opts=Array.prototype.slice.call(box.querySelectorAll('.discrim-option'));for(var i=opts.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=opts[i];opts[i]=opts[j];opts[j]=t;}opts.forEach(function(o,i){box.appendChild(o);var l=o.querySelector('.discrim-label');if(l)l.textContent=String.fromCharCode(65+i);});});}
+function handleDiscrim(option){var ch=option.closest('.discrim-challenge');if(ch.classList.contains('done'))return;var fb=ch.querySelector('.discrim-feedback');var opts=ch.querySelectorAll('.discrim-option');var ok=option.getAttribute('data-correct')==='true';ch.classList.add('done');
+if(ok){option.classList.add('correct');opts.forEach(function(o){if(o!==option)o.classList.add('locked');});fb.innerHTML=option.getAttribute('data-right-feedback')||'Correct.';fb.className='discrim-feedback shown right-fb';ch.setAttribute('data-first-try','1');}
+else{option.classList.add('wrong');var right=ch.querySelector('.discrim-option[data-correct="true"]');right.classList.add('model');opts.forEach(function(o){if(o!==option&&o!==right)o.classList.add('locked');});var rl=right.querySelector('.discrim-label');fb.innerHTML='<span style="color:#cc0000"><b>Not this one.</b> '+(option.getAttribute('data-wrong-feedback')||'')+'</span><br><span style="color:#2d6a2d"><b>The answer is '+(rl?rl.textContent:'')+'.</b> '+(right.getAttribute('data-right-feedback')||'')+'</span>';fb.className='discrim-feedback shown';ch.setAttribute('data-first-try','0');var par=ch.nextElementSibling;if(par&&par.classList.contains('discrim-parallel')){fb.innerHTML+=' <b style="color:#5c2dcc">Try one more like it below.</b>';setTimeout(function(){par.classList.add('shown');},600);}}
+var bf=ch.closest('.build-frame');if(bf){var all=bf.querySelectorAll('.discrim-challenge'),dn=0;all.forEach(function(c){if(c.classList.contains('done'))dn++;});if(dn===all.length){var a=bf.querySelector('.assembled');if(a)setTimeout(function(){a.classList.add('shown');},500);}}
+var qc=ch.closest('.quick-check');if(qc)updateQC(qc);}
+function updateQC(qc){var items=qc.querySelectorAll('.discrim-challenge');var done=0,first=0;items.forEach(function(c){if(c.classList.contains('done')){done++;if(c.getAttribute('data-first-try')==='1')first++;}});if(done<items.length)return;var r=qc.querySelector('.qc-result');r.textContent=first+' of '+items.length+' right first time. '+(first>=items.length-1?'The moves are in your head. Now the checklist.':'Look back at '+qc.getAttribute('data-back')+' for the ones you missed, then come back to the checklist.');r.style.display='block';launchConfetti();}
+function toggleTimes(el){var body=el.closest('.card-body');body.classList.toggle('show-times');el.textContent=body.classList.contains('show-times')?'Hide test times':'Show how long each test took';}
+function toggleCheck(item){item.classList.toggle('checked');updateCheckProgress();}
+function updateCheckProgress(){var items=document.querySelectorAll('#mainChecklist .check-item');if(!items.length)return;var checked=document.querySelectorAll('#mainChecklist .check-item.checked').length;var fill=document.getElementById('checkProgressFill'),lbl=document.getElementById('checkProgressLabel');if(fill)fill.style.width=Math.round((checked/items.length)*100)+'%';if(lbl)lbl.innerHTML=checked===items.length?'<b style="color:#2d6a2d;">All done.</b>':checked+' of '+items.length+' checked';}
+function printChecklist(btn){var card=btn.closest('.card');var ci=card.querySelectorAll('.check-item.checked');ci.forEach(function(i){i.classList.remove('checked');});card.classList.add('print-target');window.print();card.classList.remove('print-target');ci.forEach(function(i){i.classList.add('checked');});}
+function showCompletion(){document.getElementById('completionOverlay').classList.add('visible');}
+function closeCompletion(){document.getElementById('completionOverlay').classList.remove('visible');}
+function launchConfetti(){var canvas=document.getElementById('confettiCanvas');var ctx=canvas.getContext('2d');canvas.width=window.innerWidth;canvas.height=window.innerHeight;var colors=['#b8860b','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b','#42a5f5'];var particles=[];for(var i=0;i<120;i++){particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height-canvas.height,w:Math.random()*10+5,h:Math.random()*6+3,color:colors[Math.floor(Math.random()*colors.length)],vx:(Math.random()-0.5)*4,vy:Math.random()*3+2,rot:Math.random()*360,rotV:(Math.random()-0.5)*10,life:1});}var frame=0;function animate(){ctx.clearRect(0,0,canvas.width,canvas.height);var alive=false;particles.forEach(function(p){if(p.life<=0)return;alive=true;p.x+=p.vx;p.y+=p.vy;p.vy+=0.05;p.rot+=p.rotV;if(p.y>canvas.height+20){p.life=0;return;}if(frame>60)p.life-=0.01;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();});frame++;if(alive)requestAnimationFrame(animate);else ctx.clearRect(0,0,canvas.width,canvas.height);}animate();}
+shuffleOptions();goTo(0);
+</script>
+<script src="../tracking.js"></script>
+</body>
+</html>
