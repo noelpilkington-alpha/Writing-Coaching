@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tomi Fernandez: Writing Coaching Cards</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Calibri, 'Segoe UI', sans-serif; font-size: 12pt; color: #1a1a2e; background: #f0f0f5; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; padding: 20px; }
+.progress-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
+.progress-dot { width: 12px; height: 12px; border-radius: 50%; background: #ccc; transition: background 0.3s, transform 0.2s; cursor: pointer; position: relative; }
+.progress-dot.active { background: #b8860b; transform: scale(1.25); }
+.progress-dot.visited { background: #d9b56a; }
+.progress-dot:hover { transform: scale(1.3); }
+.progress-dot .dot-tooltip { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: #b8860b; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 8.5pt; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 100; }
+.progress-dot .dot-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #b8860b; }
+.progress-dot:hover .dot-tooltip { opacity: 1; }
+.card-breadcrumb { font-size: 9.5pt; color: #888; margin-bottom: 14px; text-align: center; transition: opacity 0.3s; min-height: 1.2em; }
+.card-breadcrumb b { color: #b8860b; }
+.sticky-indicator { position: fixed; top: 12px; right: 16px; background: #b8860b; color: #fff; padding: 5px 14px; border-radius: 20px; font-size: 9pt; font-weight: 700; opacity: 0; transition: opacity 0.3s; z-index: 200; pointer-events: none; letter-spacing: 0.5px; }
+.sticky-indicator.visible { opacity: 1; }
+.card-container { position: relative; width: 640px; min-height: 420px; }
+.card { position: absolute; top: 0; left: 0; width: 100%; background: #fff; border: 2.5px solid #b8860b; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.10); opacity: 0; pointer-events: none; transform: translateX(40px); transition: opacity 0.35s, transform 0.35s; }
+.card.active { opacity: 1; pointer-events: auto; transform: translateX(0); position: relative; }
+.card-header { background: #b8860b; color: #fff; padding: 14px 20px; border-radius: 11px 11px 0 0; }
+.card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+.card-header .card-subtitle { font-size: 9.5pt; color: #f0e2bd; margin-top: 2px; }
+.card-body { padding: 18px 22px 22px; line-height: 1.55; }
+.card-body p { margin: 6px 0; }
+.score-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; }
+.score-box { background: #f8f8fc; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 10px 14px; text-align: center; }
+.score-box .big { font-size: 20pt; font-weight: 700; }
+.score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+.score-good .big { color: #2d6a2d; }
+.score-warn .big { color: #cc6600; }
+.score-low .big { color: #cc0000; }
+.you-wrote { background: #fff3f3; border-left: 3px solid #cc0000; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.you-wrote .label { font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+.better, .model-box { background: #e8f5e9; border-left: 3px solid #2d6a2d; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.better .label, .model-box .label { font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+.tip-box { background: #e8edf5; border-left: 3px solid #b8860b; padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0; }
+.tip-box .label { font-weight: 700; font-size: 9.5pt; color: #b8860b; margin-bottom: 3px; }
+.rule-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 10px 14px; margin: 10px 0; font-size: 11pt; }
+.rule-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 3px; }
+.lbl { display: inline-block; font-size: 7.5pt; font-weight: 800; letter-spacing: 0.5px; padding: 1px 6px; border-radius: 4px; margin: 0 4px 0 0; vertical-align: middle; color: #fff; line-height: 1.5; }
+.lbl-say, .lbl-echo { background: #5c2dcc; } .lbl-show, .lbl-because { background: #2d6a2d; } .lbl-sowhat { background: #cc6600; } .lbl-close { background: #457b9d; } .lbl-miss { background: #cc0000; } .lbl-reason { background: #888; } .lbl-general { background: #6d4c41; } .lbl-specific { background: #00838f; } .evidence-block { margin: 10px 0 12px; border: 1.5px solid #e0e0e8; border-radius: 8px; overflow: hidden; } .ev-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 12px; font-size: 10.5pt; } .ev-row + .ev-row { border-top: 1px solid #e0e0e8; } .ev-row.paced { background: #e8f5e9; } .ev-row.rushed { background: #fff3f3; } .ev-tag { flex-shrink: 0; font-size: 8.5pt; font-weight: 800; letter-spacing: 0.5px; padding: 2px 7px; border-radius: 8px; color: #fff; margin-top: 2px; } .ev-row.paced .ev-tag { background: #2d6a2d; } .ev-row.rushed .ev-tag { background: #cc0000; } .format-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; } .format-box { background: #fbf7ea; border: 1.5px solid #e6d3a3; border-radius: 8px; padding: 10px 14px; } .format-box .format-title { font-weight: 700; font-size: 10pt; color: #b8860b; margin-bottom: 4px; } .format-box .format-detail { font-size: 9.5pt; color: #555; line-height: 1.4; } .format-box .format-pts { display: inline-block; background: #b8860b; color: #fff; font-size: 8.5pt; font-weight: 700; padding: 1px 7px; border-radius: 8px; margin-bottom: 4px; } @media (max-width: 640px) { .format-grid { grid-template-columns: 1fr; } }
+.ex-list { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+.ex { padding: 8px 12px; border-radius: 6px; font-size: 10.5pt; border-left: 3px solid; }
+.ex.pos { background: #e8f5e9; border-color: #2d6a2d; } .ex.neg { background: #fff3f3; border-color: #cc0000; }
+.ex .tag { font-weight: 800; font-size: 8.5pt; margin-right: 6px; } .ex.pos .tag { color: #2d6a2d; } .ex.neg .tag { color: #cc0000; }
+.think { background: #f8f8fc; border-left: 3px solid #888; padding: 8px 14px; margin: 8px 0; font-size: 10.5pt; font-style: italic; color: #444; }
+.think .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #666; margin-bottom: 2px; }
+.highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+.error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+.discrim-option .error-mark { background: transparent; text-decoration: none; padding: 0; border-radius: 0; }
+.essay-excerpt { background: #fafafa; border: 1px solid #e0e0e8; border-radius: 6px; padding: 10px 14px; font-size: 10.5pt; margin: 8px 0; line-height: 1.7; }
+.discrim-challenge { background: #f8f5ff; border: 1.5px solid #d4c5ff; border-radius: 8px; padding: 14px; margin: 10px 0; }
+.discrim-prompt { font-weight: 700; font-size: 10.5pt; margin-bottom: 10px; color: #5c2dcc; }
+.discrim-options { display: flex; flex-direction: column; gap: 8px; }
+.discrim-option { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border: 2px solid #d4c5ff; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 10.5pt; background: #fff; }
+.discrim-option:hover { border-color: #7c4dff; background: #f5f0ff; }
+.discrim-label { font-weight: 800; color: #7c4dff; min-width: 20px; flex-shrink: 0; }
+.discrim-option.correct, .discrim-option.model { border-color: #2d6a2d; background: #e8f5e9; cursor: default; }
+.discrim-option.correct .discrim-label, .discrim-option.model .discrim-label { color: #2d6a2d; }
+.discrim-option.wrong { border-color: #cc0000; background: #fff3f3; cursor: default; }
+.discrim-option.wrong .discrim-label { color: #cc0000; }
+.discrim-option.locked { pointer-events: none; opacity: 0.5; }
+.discrim-challenge.done .discrim-option { cursor: default; }
+.discrim-feedback { margin-top: 0; font-size: 10pt; line-height: 1.45; max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.3s, opacity 0.3s, margin 0.3s; }
+.discrim-feedback.shown { max-height: 400px; opacity: 1; margin-top: 10px; }
+.discrim-feedback.right-fb { color: #2d6a2d; font-weight: 600; }
+.discrim-parallel { display: none; }
+.discrim-parallel.shown { display: block; }
+.discrim-parallel .discrim-prompt::before { content: 'One more like it. '; color: #888; font-weight: 600; }
+.reveal-wrapper { position: relative; }
+.reveal-cover { background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%); border-left: 3px solid #2d6a2d; padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 10px; transition: background 0.2s, box-shadow 0.2s; }
+.reveal-cover:hover { box-shadow: 0 2px 8px rgba(45,106,45,0.15); }
+.reveal-cover .reveal-icon { width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
+.reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #2d6a2d; }
+.reveal-cover .reveal-hint { font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px; }
+.reveal-content { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0; }
+.reveal-content.shown { max-height: 1200px; opacity: 1; margin: 8px 0; }
+.reveal-cover.hidden { display: none; }
+.your-turn { background: #f8f8fc; border: 1.5px dashed #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.your-turn .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.your-turn textarea { width: 100%; min-height: 64px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; margin: 4px 0; }
+.frame-row { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0; font-size: 10.5pt; }
+.frame-row .lbl { margin-top: 4px; }
+.frame-row .given { background: #fff; border: 1.5px solid #e0e0e8; border-radius: 6px; padding: 8px; flex: 1; color: #555; }
+.frame-row textarea { flex: 1; min-height: 48px; margin: 0; }
+.yt-btn { margin-top: 8px; padding: 7px 16px; border: 2px solid #2d6a2d; background: #fff; color: #2d6a2d; border-radius: 8px; font-family: inherit; font-weight: 600; font-size: 10pt; cursor: pointer; }
+.yt-btn:hover { background: #2d6a2d; color: #fff; }
+.yt-btn:disabled { opacity: 0.6; cursor: default; }
+.yt-model { display: none; margin-top: 10px; }
+.assembled { display: none; margin-top: 8px; }
+.assembled.shown { display: block; }
+.xp-link { display: inline-block; margin: 8px 6px 0 0; padding: 6px 14px; border-radius: 6px; background: #2d6a2d; color: #fff; font-weight: 700; font-size: 10pt; text-decoration: none; }
+.xp-link:hover { background: #1b5e1b; }
+.yt-model.shown { display: block; }
+.self-check .check-item { font-size: 10pt; padding: 6px 8px; }
+.check-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 8px; cursor: pointer; border-bottom: 1px solid #eee; border-radius: 6px; transition: background 0.15s; user-select: none; font-size: 11pt; }
+.check-item:last-child { border-bottom: none; }
+.check-item:hover { background: #f8f8fc; }
+.check-item.checked { background: #f0f8f0; }
+.check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
+.check-item.checked .check-box::after { content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
+.check-box { width: 28px; height: 28px; border: 2.5px solid #b8860b; border-radius: 6px; flex-shrink: 0; margin-top: 1px; position: relative; transition: background 0.2s, border-color 0.2s; }
+.self-check .check-box { width: 22px; height: 22px; }
+.checklist-progress { background: #eee; border-radius: 10px; height: 8px; margin: 12px 0 6px; overflow: hidden; }
+.checklist-progress-fill { background: linear-gradient(90deg, #2d6a2d, #4caf50); height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%; }
+.checklist-progress-label { font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px; }
+.quick-check { background: #f8f5ff; border: 2px solid #7c4dff; border-radius: 10px; padding: 12px 14px; margin: 10px 0; }
+.quick-check .qc-title { font-weight: 800; color: #5c2dcc; font-size: 10.5pt; margin-bottom: 4px; }
+.quick-check .qc-sub { font-size: 9.5pt; color: #666; margin-bottom: 6px; }
+.quick-check .discrim-challenge { background: #fff; margin: 8px 0; padding: 10px 12px; }
+.qc-result { display: none; font-weight: 700; margin-top: 8px; font-size: 10.5pt; color: #5c2dcc; }
+.recall-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.recall-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.recall-box textarea { width: 100%; min-height: 56px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; }
+.checklist-wrap { display: none; }
+.checklist-wrap.shown { display: block; }
+.time-toggle { font-size: 9pt; color: #b8860b; cursor: pointer; text-decoration: underline; display: inline-block; margin: 0 0 6px; }
+.tl-time { display: none; font-weight: 400; color: #aaa; }
+.show-times .tl-time { display: inline; }
+.guide-block { margin-top: 16px; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 8px 12px; background: #fafafa; font-size: 10pt; }
+.guide-block summary { cursor: pointer; font-weight: 700; color: #666; font-size: 9.5pt; }
+.guide-block ul { margin: 6px 0 4px 18px; }
+.guide-block li { margin: 4px 0; }
+.practice-recommendations { margin-top: 16px; border-top: 2px solid #e0e0e8; padding-top: 14px; }
+.practice-recs-title { font-size: 10pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #b8860b; margin-bottom: 10px; }
+.practice-tier { border-radius: 8px; padding: 12px 14px; margin: 8px 0; }
+.tier-primary { background: #e8f5e9; border: 1.5px solid #a5d6a7; }
+.tier-extra { background: #f8f8fc; border: 1.5px solid #e0e0e8; }
+.tier-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.tier-label { font-size: 8.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 2px 10px; border-radius: 10px; }
+.tier-primary .tier-label { background: #2d6a2d; color: #fff; }
+.tier-extra .tier-label { background: #888; color: #fff; }
+.tier-note { font-size: 9pt; color: #666; margin-bottom: 6px; line-height: 1.4; }
+.practice-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.practice-link { display: inline-block; padding: 5px 12px; border-radius: 6px; font-size: 9.5pt; font-weight: 600; text-decoration: none; transition: background 0.2s, transform 0.1s; }
+.tier-primary .practice-link { background: #c8e6c9; color: #1b5e1b; }
+.tier-extra .practice-link { background: #e8edf5; color: #b8860b; }
+.nav { display: flex; gap: 12px; margin-top: 16px; }
+.nav button { padding: 8px 28px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; transition: background 0.2s, color 0.2s; }
+.nav button:hover { background: #b8860b; color: #fff; }
+.print-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 8px 20px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 10.5pt; font-weight: 600; cursor: pointer; }
+.print-btn:hover { background: #b8860b; color: #fff; }
+.print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+.completion-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(184,134,11,0.6); z-index: 500; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s; }
+.completion-overlay.visible { opacity: 1; pointer-events: auto; }
+.completion-card { background: #fff; border-radius: 16px; padding: 40px 48px; text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2); transform: scale(0.8); transition: transform 0.4s ease; max-width: 420px; }
+.completion-overlay.visible .completion-card { transform: scale(1); }
+.completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+.completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; color: #b8860b; }
+.completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+.completion-close { margin-top: 20px; padding: 10px 32px; background: #b8860b; color: #fff; border: none; border-radius: 8px; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; }
+#confettiCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 501; }
+.score-timeline { display: flex; align-items: flex-end; gap: 0; margin: 12px 0 10px; padding: 0 6px; justify-content: space-between; }
+.timeline-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.timeline-score { font-size: 13pt; font-weight: 700; margin-bottom: 4px; }
+.timeline-bar { width: 70%; border-radius: 4px 4px 0 0; min-height: 8px; }
+.timeline-label { font-size: 8.5pt; color: #888; margin-top: 6px; font-weight: 600; text-align: center; }
+.score-green { color: #2d6a2d; } .score-amber { color: #cc6600; } .score-red { color: #cc0000; }
+.bar-green { background: linear-gradient(to top, #c8e6c9, #81c784); } .bar-amber { background: linear-gradient(to top, #ffe0b2, #ffb74d); } .bar-red { background: linear-gradient(to top, #ffcdd2, #ef9a9a); }
+.strength-chips, .growth-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; }
+.strength-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; background: #e8f5e9; color: #2d6a2d; border: 1.5px solid #a5d6a7; display: inline-flex; align-items: center; gap: 4px; }
+.strength-chip .chip-course, .growth-chip .chip-avg { font-size: 7.5pt; color: #888; font-weight: 400; }
+.journey-section { font-size: 9.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; margin: 10px 0 4px; padding-bottom: 3px; border-bottom: 1.5px solid; }
+.journey-section.strengths-header { color: #2d6a2d; border-color: #c8e6c9; }
+.journey-section.growth-header { color: #cc6600; border-color: #ffe0b2; }
+.root-cause-teaser { background: #f5f0ff; border-left: 3px solid #7c4dff; padding: 10px 14px; margin: 12px 0 4px; border-radius: 0 6px 6px 0; font-size: 10.5pt; line-height: 1.5; }
+.root-cause-teaser b { color: #5c2dcc; }
+.growth-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+.growth-chip.mixed { background: #fff8e8; color: #b35900; border: 1.5px solid #ffe0b2; }
+.growth-chip.weak { background: #fff3f3; color: #cc0000; border: 1.5px solid #ffcdd2; }
+@media print { body { background: #fff; padding: 0; min-height: auto; } .progress-bar, .nav, .print-btn, .card-breadcrumb, .sticky-indicator, .completion-overlay, #confettiCanvas, .reveal-cover, .checklist-progress, .checklist-progress-label, .discrim-challenge, .discrim-parallel, .quick-check, .recall-box, .yt-btn, .guide-block { display: none !important; } .card-container { width: 100%; min-height: auto; } .card { display: none !important; } .card.print-target { display: block !important; opacity: 1 !important; pointer-events: auto !important; position: relative !important; transform: none !important; box-shadow: none; border: 2px solid #b8860b; page-break-inside: avoid; } .reveal-content, .yt-model, .checklist-wrap { display: block !important; max-height: none !important; opacity: 1 !important; margin: 8px 0 !important; } }
+@media (max-width: 720px) { .card-container { width: 100%; } .score-grid { grid-template-columns: 1fr; } .timeline-score { font-size: 10pt; } }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progressBar"></div>
+<div class="card-breadcrumb" id="breadcrumb"></div>
+<div class="sticky-indicator" id="stickyIndicator"></div>
+<div class="card-container" id="cardContainer">
+
+<!-- Card 1: Your Starting Point -->
+<div class="card active" data-title="Your Starting Point">
+  <div class="card-header"><h2>Tomi Fernandez</h2><div class="card-subtitle">Alpha Standardized Writing G5.3. October 2026. Passages: &ldquo;The Camping &lsquo;Trip&rsquo;&rdquo; / &ldquo;Virtual-Reality Field Trips: Worth the Investment?&rdquo;</div></div>
+  <div class="card-body">
+    <div class="score-grid">
+      <div class="score-box score-good"><div class="big">84%</div><div class="label">Overall Score</div></div>
+      <div class="score-box score-good"><div class="big">23/25</div><div class="label">Questions 1&ndash;10</div></div>
+      <div class="score-box score-warn"><div class="big">15/20</div><div class="label">Paragraph (Question 11)</div></div>
+    </div>
+    <p>Tomi, 38 of 45 is three points from a pass, and both fixes from your September cards landed. Every Q6 to Q10 answer is a whole sentence this time; in September three of them began with <i>Because</i> and stopped. And the paragraph has the article in it now: the study about remembering more, and the buses, permission slips and safety worries. In September it had a real idea and no article. Q1 to Q5 were 10 of 10, the first time on a G5 test.</p>
+    <p>Seven points went missing. Two are short answers: Q6 gives a reason that repeats the claim (meaningful because they keep what makes them meaningful), and Q10 names what helped Jaylen with no why. Five are in the paragraph, and all five are in the frame around your two good facts. The first three sentences are the article&rsquo;s own opening, copied. The sentence that should carry the point says only that there are many benefits. Neither fact is followed by what it proves. And the ending gives the reader advice instead of pulling the two facts together.</p>
+    <div class="root-cause-teaser"><b>The plan:</b> a topic sentence with two parts, the point and the how. Details chosen because they belong to a how. An ending that puts the reasons together. And for Q6 to Q10, a reason that says something new.</div>
+    <div class="journey-section strengths-header">Skills you do well</div>
+    <div class="strength-chips">
+      <span class="strength-chip">Whole sentences for every one-sentence answer <span class="chip-course">&middot; Q6&ndash;Q10, up from three fragments in September</span></span>
+      <span class="strength-chip">Appositive, but, because, interrogative <span class="chip-course">&middot; Q1&ndash;Q5, 10 of 10</span></span>
+      <span class="strength-chip">Two facts from the article, the right two <span class="chip-course">&middot; Q11</span></span>
+      <span class="strength-chip">Ninety minutes on the test, nothing rushed <span class="chip-course">&middot; G5.3</span></span>
+    </div>
+    <div class="journey-section growth-header">What to work on</div>
+    <div class="growth-chips">
+      <span class="growth-chip weak">Paragraph frame: the article&rsquo;s opening copied, a point with no how, no This shows, advice for an ending <span class="chip-avg">Q11: five points</span></span>
+      <span class="growth-chip mixed">A reason that repeats the claim <span class="chip-avg">Q6</span></span>
+      <span class="growth-chip mixed">What helped, with no why <span class="chip-avg">Q10</span></span>
+      <span class="growth-chip mixed">Read-back: remeber, forfield, a list missing its first comma <span class="chip-avg">Q11</span></span>
+    </div>
+  </div>
+</div>
+
+<!-- Card 2: Writing Journey -->
+<div class="card" data-title="Your Writing Journey">
+  <div class="card-header"><h2>Your Writing Journey</h2><div class="card-subtitle">Nine tests in a year</div></div>
+  <div class="card-body">
+    <div class="score-timeline">
+      <div class="timeline-item"><div class="timeline-score score-red">60%</div><div class="timeline-bar bar-red" style="height:54px;"></div><div class="timeline-label">G3.1 (Oct)<br><span class="tl-time">46m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">87%</div><div class="timeline-bar bar-green" style="height:78px;"></div><div class="timeline-label">G3.2 (Feb)<br><span class="tl-time">1h 29m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">89%</div><div class="timeline-bar bar-green" style="height:80px;"></div><div class="timeline-label">G3.3 (Mar)<br><span class="tl-time">60m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">93%</div><div class="timeline-bar bar-green" style="height:84px;"></div><div class="timeline-label">G3.4 (Mar)<br><span class="tl-time">54m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-amber">74%</div><div class="timeline-bar bar-amber" style="height:67px;"></div><div class="timeline-label">G4.1 (Mar)<br><span class="tl-time">35m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">91%</div><div class="timeline-bar bar-green" style="height:82px;"></div><div class="timeline-label">G4.2 (Apr)<br><span class="tl-time">28m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">87%</div><div class="timeline-bar bar-green" style="height:78px;"></div><div class="timeline-label">G5.1 (May)<br><span class="tl-time">35m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-amber">78%</div><div class="timeline-bar bar-amber" style="height:70px;"></div><div class="timeline-label">G5.2 (Sep)<br><span class="tl-time">51m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">84%</div><div class="timeline-bar bar-green" style="height:76px;"></div><div class="timeline-label">G5.3 (Oct)<br><span class="tl-time">1h 30m</span></div></div>
+    </div>
+    <span class="time-toggle" onclick="toggleTimes(this)">Show how long each test took</span>
+    <p>Two passes, G3.4 at 93 and G4.2 at 91, and three G5 tests at 87, 78 and 84. The short answers on G5 have been 22, 20 and 23 out of 25. The paragraph has been 17, 15 and 15, and each time a different piece was missing: in May, four sentences and no ending; in September, a real idea with nothing from the article; now the article is there and the frame around it is not. The frame is a topic sentence with a point and a how, a <i>This shows</i> after each fact, and an ending that puts the facts together. Ninety minutes on this test, so time is not what is missing.</p>
+    <div class="journey-section strengths-header">Skills you do well</div>
+    <div class="strength-chips">
+      <span class="strength-chip">Q1 to Q5 at 10 of 10 <span class="chip-course">&middot; G5.2 and G5.3</span></span>
+      <span class="strength-chip">Because-fragments gone <span class="chip-course">&middot; Q6&ndash;Q10, September to October</span></span>
+      <span class="strength-chip">Facts from the article when you reach for them <span class="chip-course">&middot; G5.1, G5.3</span></span>
+    </div>
+    <div class="journey-section growth-header">What to work on</div>
+    <div class="growth-chips">
+      <span class="growth-chip weak">The paragraph frame: topic sentence, This shows, ending <span class="chip-avg">17, 15, 15</span></span>
+      <span class="growth-chip mixed">Reasons that repeat the claim or stop early <span class="chip-avg">Q6, Q10; also Q8 in May</span></span>
+    </div>
+    <div class="root-cause-teaser"><b>Three points from a pass.</b> The paragraph frame alone is worth five. Cards 3, 4 and 6 build it on your own two facts.</div>
+  </div>
+</div>
+
+<!-- Card 3: Fix 1, topic sentence has two parts -->
+<div class="card" data-title="Fix 1: A Topic Sentence Has Two Parts">
+  <div class="card-header"><h2>Fix 1: A Topic Sentence Has Two Parts</h2><div class="card-subtitle">The point, and how the paragraph will prove it. Yours had neither</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: THE POINT, THEN THE HOW</div>A topic sentence does two jobs in one sentence. <span class="lbl lbl-say">POINT</span> answers the question. <span class="lbl lbl-say">HOW</span> names the reasons the paragraph will use to prove it, usually two or three. You already write this shape in your short answers. Your Q7, full marks: <i><b>Setting up tents or watching movies can strengthen family relationships</b> [the point] <b>by causing them to spend time together and know each other more</b> [the how].</i> A paragraph&rsquo;s first sentence is that same sentence, and the how is the list of facts you are about to give. Every detail that follows has to belong to one of the hows. <b>The check:</b> underline the point, underline the how, count the hows. Then, for each fact you plan to use, point to the how it belongs to. A fact with no how stays out, even if it is in the article.</div>
+
+    <div class="you-wrote"><div class="label">YOU WROTE (Q11, FIRST FOUR SENTENCES)</div>&ldquo;<span class="error-mark">Imagine wearing a headset that makes you feel like you are floating above earth. This is not a movie. Some schools now use virtual reality (VR) to take students on field trips to places they may never see in their life.</span> There are many benefits to VR field trips.&rdquo; <span class="lbl lbl-miss">THE ARTICLE&rsquo;S OPENING, THEN A POINT WITH NO HOW</span><br><span style="font-size:9.5pt;color:#666;">Three sentences copied from the article, then <i>many benefits</i>: a point that promises proof without saying what the proof will be. The reader cannot tell which facts are coming, and while you were writing, neither could you.</span></div>
+    <div class="model-box"><div class="label">THE TOPIC SENTENCE YOUR PARAGRAPH NEEDED</div><span class="lbl lbl-say">POINT</span>The author shows that VR field trips are a good idea for schools <span class="lbl lbl-say">HOW</span>by proving that students learn more from them and by showing that they avoid the problems of real trips.<br><span style="font-size:9.5pt;color:#666;">Your two facts, the memory study and the buses, are exactly these two hows. The topic sentence you needed was already inside your paragraph. It was never written down.</span></div>
+
+    <p style="margin-top:10px;"><b>Three topic sentences with both parts</b>, and one with only a point:</p>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">YOURS, Q7</span><b>Setting up tents or watching movies can strengthen family relationships</b> by causing them to spend time together and know each other more.<br><span style="font-size:9.5pt;color:#666;">The point, then one how. Add a second how and this is a topic sentence.</span></div>
+      <div class="ex pos"><span class="tag">YOURS, Q8</span><b>Kim&rsquo;s creative idea can inspire me to play ping pong at home with my dad</b> if I can&rsquo;t play soccer because the soccer field is closed.<br><span style="font-size:9.5pt;color:#666;">The point, then the how: the problem, and what you would do instead.</span></div>
+      <div class="ex pos"><span class="tag">POINT + HOW</span><b>Kim turned a canceled trip into a camping night</b> by using the tent and flashlights the family already had and by refusing to let the weather decide the fun.</div>
+      <div class="ex neg"><span class="tag">POINT ONLY</span>There are a lot of reasons VR is good for schools.<br><span style="font-size:9.5pt;color:#666;">A point with no how, the same shape as <i>there are many benefits</i>. Neither the reader nor the writer knows what is coming next.</span></div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which topic sentence has both parts?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="A point, then a promise. I will tell you why is not a how; it is the space where the how should be." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>VR field trips are a great idea for schools, and I will tell you why.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="The point, then two hows: memory, and cost. The reader knows which two facts are coming." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The author shows VR field trips are worth it by proving students remember more and by showing that one headset costs less than a year of real trips.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which topic sentence has both parts?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="The point, then the how: what they kept, and where they moved it." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Changing plans can still be fun because the Thompsons kept the tent and the night of games and only moved them to the backyard.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Lots of reasons is a point with no how." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Changing plans can be fun for lots of reasons.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">The topic sentence says: <i>&hellip;by proving that students learn more and by showing that VR avoids the problems of real trips.</i> Which detail belongs?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="true" data-right-feedback="Belongs to the second how: problems of real trips that VR removes." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Students who use wheelchairs can &ldquo;climb&rdquo; mountains, and there are no buses and no permission slips.</span></div>
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="The article&rsquo;s hook. It is on the page and belongs to neither how." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Imagine wearing a headset that makes you feel like you are floating above Earth.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Same topic sentence: <i>&hellip;by proving that students learn more and by showing that VR avoids the problems of real trips.</i> Which detail belongs?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="True, in the article, and it belongs to a how this topic sentence did not name. Save it for a paragraph whose how is subjects coming alive." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Art students could tour the Louvre in France without leaving their desks.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Belongs to the first how: students learn more." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Studies show people remember more when they experience something instead of only reading about it.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Find the how in your own Q9: <i>Jaylen might have felt depressed when the trip that he was looking really forward to was canceled.</i> Which part is the how?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="That is the point: the answer to the question. The how is what comes after it." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Jaylen might have felt depressed</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="The how: the reason the point is true. In a paragraph, each how becomes a fact from the article." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>when the trip that he was looking really forward to was canceled</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Before the first sentence, write the point and the hows on scrap paper. Then pick each fact by asking which how it belongs to. The topic sentence is your plan, written down.</div>
+  </div>
+</div>
+
+<!-- Card 4: Fix 2, the ending puts the reasons together -->
+<div class="card" data-title="Fix 2: The Ending Puts the Reasons Together">
+  <div class="card-header"><h2>Fix 2: The Ending Puts the Reasons Together</h2><div class="card-subtitle">Not the point again in new words. What the reasons add up to</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: NAME THE REASONS, THEN SAY WHAT THEY ADD UP TO</div>A concluding sentence looks back at the hows and says what they prove together: <i>Together, [how 1] and [how 2] show that [the point, now earned].</i> It is not the topic sentence in new words, and it is not advice to the reader. <b>The check:</b> does your last sentence mention both reasons? Does it say something the topic sentence could not say yet, because the proof had not been given?</div>
+
+    <div class="you-wrote"><div class="label">YOU WROTE (Q11, LAST TWO SENTENCES)</div>&ldquo;VR field trips are just overall good ideas <span class="error-mark">forfield</span> trips with many benefits. <span class="error-mark">So next time you go to school talk to your teacher about VR field trips, maybe you will get to do some.</span>&rdquo; <span class="lbl lbl-miss">RESTATES, THEN CHANGES THE SUBJECT</span><br><span style="font-size:9.5pt;color:#666;">The first sentence says <i>many benefits</i> again, as vague as it was at the top. The second gives the reader advice about their own school, which the question never asked about. Neither sentence mentions the memory study or the buses, the two things the paragraph actually proved.</span></div>
+    <div class="model-box"><div class="label">WITH THE REASONS PUT TOGETHER</div><span class="lbl lbl-close">CONCLUDING SENTENCE &middot; TOGETHER</span>Together, the research on memory and the end of buses, permission slips and safety worries let the author argue that VR is worth its price: students learn more, and schools risk less.<br><span style="font-size:9.5pt;color:#666;">Both hows named, then what they add up to. <i>Learn more, risk less</i> is something the topic sentence could not have said before the facts.</span></div>
+
+    <p style="margin-top:10px;"><b>Three endings that put the reasons together</b>, and one that only repeats:</p>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">TOGETHER</span>A tent that was already packed and a sister who would not give up turned a canceled trip into the Thompsons&rsquo; best camping night yet.</div>
+      <div class="ex pos"><span class="tag">TOGETHER</span>Memory research and a 300-dollar price tag make the same case from two sides: VR teaches more and costs less.</div>
+      <div class="ex pos"><span class="tag">TOGETHER</span>Because the author gives a study for the learning and real numbers for the cost, a reader can check both reasons instead of just taking his word.</div>
+      <div class="ex neg"><span class="tag">REPEATS</span>In conclusion, VR field trips are a good idea for schools.<br><span style="font-size:9.5pt;color:#666;">The topic sentence again, shorter. Nothing the facts earned is in it.</span></div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which ending puts the reasons together?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Many benefits again. No reason named, nothing added." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>In conclusion, there are many benefits to VR field trips.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="Both reasons named, then what they add up to: more learning for less risk." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Together, the memory research and the missing buses show why the author calls VR an investment: schools get more learning for less risk.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">A paragraph about how Kim saved the camping trip. Which ending puts the reasons together?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Advice to the reader. The question was about Kim, not about the reader&rsquo;s backyard." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>So the next time your plans change, try camping in your backyard too.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="The tent and the refusal to quit, together, show what the trip was really about." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Kim&rsquo;s tent and her refusal to quit show that the trip was never about the park; it was about the night together.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which ending says something the topic sentence could not say yet?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="true" data-right-feedback="Only true after the study and the numbers have been given. The topic sentence could not have said it." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Because the author gives a study for the learning and real numbers for the cost, a reader can check both reasons instead of just taking his word.</span></div>
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="The topic sentence, word for word. Nothing earned by the facts." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The author shows that VR field trips are a good idea for schools.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Before you write the last sentence, reread your topic sentence and name both hows. Then write what they prove together. If the last sentence could have been the first sentence, it is not finished.</div>
+  </div>
+</div>
+
+<!-- Card 5: Fix 3, a reason that says something new -->
+<div class="card" data-title="Fix 3: A Reason That Says Something New">
+  <div class="card-header"><h2>Fix 3: A Reason That Says Something New</h2><div class="card-subtitle">Q6 repeated the claim. Q10 stopped before the why</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: THE REASON ADDS A FACT THE CLAIM DID NOT HAVE</div>One of the three points is for the reason, explanation or example; one is for a clear answer in a sentence, and one for conventions. A reason earns them when it says something the first half did not: a fact from the story, or a concrete example from your life. <b>The check:</b> cover the first half and read the because-half alone. If it could be the claim again in other words, it is not a reason yet.</div>
+
+    <div class="you-wrote"><div class="label">YOU WROTE (Q6, 2 OUT OF 3)</div>&ldquo;Changing plans can still be meaningful even if they are different <span class="error-mark">as long as they keep their key factor of why they are meaningful</span>.&rdquo; <span class="lbl lbl-miss">THE REASON REPEATS THE CLAIM</span><br><span style="font-size:9.5pt;color:#666;">Meaningful because they keep what makes them meaningful. The second half is the first half turned around. The story has the concrete version: the trip was canceled, and the tent, the flashlights and the night together were kept.</span></div>
+    <div class="model-box"><div class="label">WITH A REASON THAT ADDS A FACT</div>Changing plans can still lead to fun <span class="lbl lbl-because">BECAUSE</span>because the Thompsons kept the part that mattered, a night in their own tent with games and stories, and only moved it to the backyard.</div>
+    <div class="you-wrote"><div class="label">YOU WROTE (Q10, 2 OUT OF 3)</div>&ldquo;What helped Jaylen feel better was camping in his backyard.&rdquo; <span class="lbl lbl-miss">NO WHY</span><br><span style="font-size:9.5pt;color:#666;">Correct, and finished too early. Why did a backyard work when the couch and the popcorn did not?</span></div>
+    <div class="model-box"><div class="label">WITH THE WHY</div>What helped Jaylen feel better was camping in the backyard <span class="lbl lbl-because">BECAUSE</span>because Kim&rsquo;s tent gave him back the adventure the storm had taken, flashlights and all.</div>
+
+    <p style="margin-top:10px;"><b>Your three full-mark answers</b>, each with a fact the claim did not have, and one that repeats:</p>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">YOURS, Q8</span>Kim&rsquo;s idea can inspire me to play ping pong at home with my dad <b>if I can&rsquo;t play soccer because the soccer field is closed</b>.</div>
+      <div class="ex pos"><span class="tag">YOURS, Q7</span>Setting up tents or watching movies can strengthen family relationships <b>by causing them to spend time together and know each other more</b>.</div>
+      <div class="ex pos"><span class="tag">YOURS, Q9</span>Jaylen might have felt depressed <b>when the trip that he was looking really forward to was canceled</b>.</div>
+      <div class="ex neg"><span class="tag">REPEATS</span>Working together makes a task more fun because it is more enjoyable with someone.<br><span style="font-size:9.5pt;color:#666;">Cover the first half: <i>more enjoyable with someone</i> is <i>more fun together</i> again. No fact added.</span></div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Question: <i>Why can a small idea make a big difference?</i> Which answer earns all three points?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Change things a lot is big difference in other words. The reason repeats the claim." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>A small idea can make a big difference because it can change things a lot.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="A fact from the story the claim did not have: one question about a tent, one glum evening turned around." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>A small idea can make a big difference because Kim&rsquo;s one question about the tent turned a glum evening on the couch into a camping night.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Question: <i>What helped Kim stay hopeful when the trip was canceled?</i> Which answer earns all three points?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Two facts from the story the claim did not have: the tent in the trunk, the instructions memorized." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Kim stayed hopeful because the new tent was still in the trunk and she had memorized how to set it up.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Did not lose hope is stayed hopeful again." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Kim stayed hopeful because she did not lose hope.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Cover the first half of each. Which because-half adds a fact?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Stronger when they do things together is the claim turned around." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Doing things together strengthens a family because families are stronger when they do things together.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="A story all of them were part of: a fact the claim did not have." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Doing things together strengthens a family because, like the Thompsons in the yard, they end up with a story all of them were part of.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Every one-sentence answer: after the because, a fact from the story or an example from your life. Cover the first half and check that the second half could not be the first half in disguise.</div>
+  </div>
+</div>
+
+<!-- Card 6: Paragraph Review -->
+<div class="card" data-title="Paragraph Review">
+  <div class="card-header"><h2>Your Paragraph: 15 out of 20</h2><div class="card-subtitle">Two good facts in a frame that was not built yet</div></div>
+  <div class="card-body">
+    <p>The question: <i>How does the author show that VR field trips are a good idea for schools?</i> Here is yours, labelled:</p>
+    <div class="essay-excerpt">
+      <span class="lbl lbl-miss">THE ARTICLE&rsquo;S OPENING, COPIED</span>Imagine wearing a headset that makes you feel like you are floating above earth. This is not a movie. Some schools now use virtual reality (VR) to take students on field trips to places they may never see in their life. <span class="lbl lbl-miss">POINT, NO HOW</span>There are many benefits to VR field trips. <span class="lbl lbl-show">DETAIL 1 &middot; SHOW</span>For example, studies show that people <span class="error-mark">remeber</span> more when they experience something instead of reading about it. <span class="lbl lbl-miss">NO SO WHAT</span> <span class="lbl lbl-show">DETAIL 2 &middot; SHOW</span>Another reason VR field trips are better is because VR field trips avoid the problems of the real field trips. For example, there are no <span class="error-mark">buses no</span> permission slips, no safety worries. <span class="lbl lbl-miss">NO SO WHAT</span> <span class="lbl lbl-miss">RESTATES, THEN ADVICE</span>VR field trips are just overall good ideas <span class="error-mark">forfield</span> trips with many benefits. So next time you go to school talk to your teacher about VR field trips, maybe you will get to do some.
+    </div>
+    <p>The two facts are the right two, and they are from the article. That is the 15. The five points are the frame. Notice the question too: it asks <i>how the author shows</i>, and your paragraph argues that VR is good. The point has to be about the author&rsquo;s proof, and each <i>This shows</i> has to say what the fact proves about how the author argues.</p>
+
+    <div class="rule-box"><div class="label">THE RECIPE, WITH THE TWO-PART TOPIC SENTENCE</div><span class="lbl lbl-say">TOPIC SENTENCE</span> = <span class="lbl lbl-say">POINT</span> + <span class="lbl lbl-say">HOW</span>. For each how, one <span class="lbl lbl-show">DETAIL &middot; SHOW</span>, a fact from the article chosen because it belongs to that how, and one <span class="lbl lbl-sowhat">DETAIL &middot; SO WHAT</span>: <i>This shows&hellip;</i> how the fact proves that how. Then the <span class="lbl lbl-close">CONCLUDING SENTENCE</span> names the hows and says what they add up to. <b>The check:</b> every sentence can be pointed at a part of the topic sentence. The copied opening, the advice to the reader: neither can.</div>
+
+    <div class="your-turn build-frame" id="build-para">
+      <div class="label">YOUR TURN: YOUR TWO FACTS, IN THE FRAME. TAP THE SO WHATS AND THE ENDING</div>
+      <div class="frame-row"><span class="lbl lbl-say">TOPIC SENTENCE &middot; POINT + HOW</span><div class="given">The author shows that VR field trips are a good idea for schools by proving that students learn more from them and by showing that they avoid the problems of real trips.</div></div>
+      <div class="frame-row"><span class="lbl lbl-show">DETAIL 1 &middot; SHOW</span><div class="given">The article says studies show that people remember more when they experience something instead of only reading about it, and a student named Taylor called a VR farm visit &ldquo;way cooler than a video.&rdquo;</div></div>
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">DETAIL 1 &middot; SO WHAT: which sentence proves the first how?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;This shows&rdquo; plus what the fact proves about how the author argues: research, not opinion." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>This shows the author backing the first claim with research rather than opinion: if experience beats reading, a VR trip teaches more than a page about the same place.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A fact from the article, so a SHOW, and it belongs to a how the topic sentence did not name." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>In history, students can stand in Washington, D.C., in 1963 and hear the &ldquo;I Have a Dream&rdquo; speech.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">DETAIL 2 &middot; SHOW: which fact belongs to the second how?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="The article&rsquo;s hook. On the page, and it belongs to neither how." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Imagine wearing a headset that makes you feel like you are floating above Earth.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Your own fact, with its commas, plus the cost line from the same paragraph of the article." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The author also points out that VR avoids the problems of real trips: no buses, no permission slips, no safety worries, and a 300-dollar headset instead of trips costing more than 1,000 dollars a year.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">DETAIL 2 &middot; SO WHAT: which sentence proves the second how?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Advice to the reader. It cannot be pointed at any part of the topic sentence." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>So next time you are at school, ask if you can try a VR field trip.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;This shows&rdquo; plus how the author argues: the objections to real trips become reasons for VR." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>This shows the author turning the usual arguments against field trips, risk and paperwork and cost, into arguments for VR.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">CONCLUDING SENTENCE: which one puts the two hows together?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Both hows named, then what they add up to: learn more, risk less." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Together, the research on memory and the end of buses, permission slips and safety worries let the author argue that VR is worth its price: students learn more, and schools risk less.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Many benefits again. The topic sentence&rsquo;s weakest words, repeated." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>VR field trips are overall good ideas with many benefits.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="assembled">
+        <div class="model-box"><div class="label">YOUR PARAGRAPH, IN THE FRAME</div><span class="lbl lbl-say">TOPIC SENTENCE &middot; POINT + HOW</span>The author shows that VR field trips are a good idea for schools by proving that students learn more from them and by showing that they avoid the problems of real trips. <span class="lbl lbl-show">DETAIL 1 &middot; SHOW</span>The article says studies show that people remember more when they experience something instead of only reading about it, and a student named Taylor called a VR farm visit &ldquo;way cooler than a video.&rdquo; <span class="lbl lbl-sowhat">DETAIL 1 &middot; SO WHAT</span>This shows the author backing the first claim with research rather than opinion: if experience beats reading, a VR trip teaches more than a page about the same place. <span class="lbl lbl-show">DETAIL 2 &middot; SHOW</span>The author also points out that VR avoids the problems of real trips: no buses, no permission slips, no safety worries, and a 300-dollar headset instead of trips costing more than 1,000 dollars a year. <span class="lbl lbl-sowhat">DETAIL 2 &middot; SO WHAT</span>This shows the author turning the usual arguments against field trips, risk and paperwork and cost, into arguments for VR. <span class="lbl lbl-close">CONCLUDING SENTENCE &middot; TOGETHER</span>Together, the research on memory and the end of buses, permission slips and safety worries let the author argue that VR is worth its price: students learn more, and schools risk less.<br><span style="font-size:9.5pt;color:#666;">Six sentences, and every one can be pointed at a part of the topic sentence. Your two facts, kept. The copied opening and the advice, gone. That is the five points.</span></div>
+      </div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Every paragraph: point and how first, on scrap paper. One fact per how, from the article. <i>This shows</i> after each. An ending that names the hows and says what they add up to. Then read it back: remember, for field trips, a comma between every item in a list.</div>
+  </div>
+</div>
+
+<!-- Card 7: Quick Check, Checklist -->
+<div class="card" data-title="Quick Check &amp; Checklist">
+  <div class="card-header"><h2>Quick Check</h2><div class="card-subtitle">Six new ones. Then your checklist</div></div>
+  <div class="card-body">
+    <div class="quick-check" data-back="cards 3 to 6">
+      <div class="qc-title">Point and how, the ending, and the reason, six questions</div>
+      <div class="qc-sub">All new sentences. Answer each one once.</div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which topic sentence has a point and a how?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A point with no how. Many reasons names none of them." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Kim is a great sister for many reasons.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="The point, then two hows: what they already had, and the weather." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Kim saved the camping trip by using what the family already had and by refusing to let the weather decide the fun.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">The topic sentence says: <i>&hellip;by using what the family already had and by refusing to let the weather decide the fun.</i> Which detail belongs?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Belongs to the first how: what the family already had." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>She asked Dad to grab the new tent and the flashlights from the car.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="In the story, and it belongs to neither how. A fact with no how stays out." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The park had hiking trails, a lake, a bird sanctuary, and even a tiny museum.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence is a SO WHAT?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A fact from the story, so a SHOW." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Thirty minutes later, she marched inside.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;This shows&rdquo; plus what the fact proves about the how." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>This shows Kim refusing to wait for someone else to fix the evening.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which ending puts the reasons together?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Both hows named, then what they add up to." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>A tent from the trunk and a sister who would not quit turned a canceled trip into the night the Thompsons will remember.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="The point again, shorter. Nothing the facts earned." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>In conclusion, Kim saved the camping trip.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Question: <i>Why might a family remember a backyard camp-out more than a park trip?</i> Which answer earns all three points?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="More memorable is remember more in other words. The reason repeats the claim." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>A family might remember a backyard camp-out more because it is more memorable.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="A fact the claim did not have: the night was almost lost, and one of them rescued it." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>A family might remember a backyard camp-out more because it was the night they almost lost, rescued by one of their own.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence is ready to submit?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Remeber, and a list missing its first comma: two from your paragraph." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>There are no buses no permission slips, and students remeber more.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Remember, and a comma between every item. Correct." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>There are no buses, no permission slips, and students remember more.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="qc-result"></div>
+    </div>
+
+    <div class="checklist-wrap shown">
+      <div id="mainChecklist">
+        <div class="checklist-progress-label" id="checkProgressLabel">0 of 7 checked</div>
+        <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Plan first:</b> write the point, then the hows, on scrap paper. Count the hows: two or three.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Pick each fact because it belongs to a how.</b> A fact with no how stays out, even if it is in the article.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Never open with the article&rsquo;s own first sentences.</b> Sentence one is the point and the how.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>After each fact:</b> <i>This shows</i> plus how the fact proves that how.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Ending:</b> name both hows and say what they add up to. No advice to the reader.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Q6 to Q10:</b> cover the first half. The because-half must add a fact the claim did not have.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Read-back:</b> remember, for field trips, a comma between every item in a list.</div></div>
+      </div>
+      <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>Print Checklist</button>
+    </div>
+  </div>
+</div>
+
+</div>
+<div class="nav"><button id="prevBtn" onclick="navigate(-1)">&larr; Back</button><button id="nextBtn" onclick="navigate(1)">Next &rarr;</button></div>
+<div class="completion-overlay" id="completionOverlay"><div class="completion-card"><div class="completion-emoji">&#9997;</div><div class="completion-title">Good luck on your next test!</div><div class="completion-sub">Point and how first. One fact per how, This shows after each, and an ending that puts the reasons together.</div><button class="completion-close" onclick="closeCompletion()">Got it</button></div></div>
+<canvas id="confettiCanvas"></canvas>
+<script>
+var cards=document.querySelectorAll('.card'),bar=document.getElementById('progressBar'),breadcrumb=document.getElementById('breadcrumb'),stickyEl=document.getElementById('stickyIndicator'),current=0,visited=[0];
+cards.forEach(function(card,i){var dot=document.createElement('div');dot.className='progress-dot'+(i===0?' active':'');var tooltip=document.createElement('span');tooltip.className='dot-tooltip';tooltip.textContent=card.getAttribute('data-title')||('Card '+(i+1));dot.appendChild(tooltip);dot.addEventListener('click',function(){goTo(i);});bar.appendChild(dot);});
+function updateBreadcrumb(){var title=cards[current].getAttribute('data-title')||('Card '+(current+1));breadcrumb.innerHTML='Card <b>'+(current+1)+'</b> of '+cards.length+' &mdash; '+title;stickyEl.textContent=(current+1)+' / '+cards.length;}
+function checkSticky(){var r=bar.getBoundingClientRect();stickyEl.classList.toggle('visible',r.bottom<0);}
+window.addEventListener('scroll',checkSticky);
+function goTo(idx){if(idx<0||idx>=cards.length)return;cards[current].classList.remove('active');bar.children[current].classList.remove('active');current=idx;if(visited.indexOf(current)===-1)visited.push(current);cards[current].classList.add('active');bar.children[current].classList.add('active');visited.forEach(function(v){if(v!==current)bar.children[v].classList.add('visited');});var p=document.getElementById('prevBtn'),n=document.getElementById('nextBtn');if(p){p.style.visibility=current===0?'hidden':'visible';p.disabled=current===0;}if(n){n.textContent=current===cards.length-1?'Done ✓':'Next →';}updateBreadcrumb();window.scrollTo({top:0,behavior:'smooth'});}
+function navigate(dir){if(dir===1&&current===cards.length-1){showCompletion();return;}goTo(current+dir);}
+document.addEventListener('keydown',function(e){if(e.target&&e.target.tagName==='TEXTAREA')return;if(e.key==='ArrowRight'||e.key==='ArrowDown')navigate(1);if(e.key==='ArrowLeft'||e.key==='ArrowUp')navigate(-1);});
+function revealBetter(cover){cover.nextElementSibling.classList.add('shown');cover.classList.add('hidden');}
+function shuffleOptions(){document.querySelectorAll('.discrim-options').forEach(function(box){var opts=Array.prototype.slice.call(box.querySelectorAll('.discrim-option'));for(var i=opts.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=opts[i];opts[i]=opts[j];opts[j]=t;}opts.forEach(function(o,i){box.appendChild(o);var l=o.querySelector('.discrim-label');if(l)l.textContent=String.fromCharCode(65+i);});});}
+function handleDiscrim(option){var ch=option.closest('.discrim-challenge');if(ch.classList.contains('done'))return;var fb=ch.querySelector('.discrim-feedback');var opts=ch.querySelectorAll('.discrim-option');var ok=option.getAttribute('data-correct')==='true';ch.classList.add('done');
+if(ok){option.classList.add('correct');opts.forEach(function(o){if(o!==option)o.classList.add('locked');});fb.innerHTML=option.getAttribute('data-right-feedback')||'Correct.';fb.className='discrim-feedback shown right-fb';ch.setAttribute('data-first-try','1');}
+else{option.classList.add('wrong');var right=ch.querySelector('.discrim-option[data-correct="true"]');right.classList.add('model');opts.forEach(function(o){if(o!==option&&o!==right)o.classList.add('locked');});var rl=right.querySelector('.discrim-label');fb.innerHTML='<span style="color:#cc0000"><b>Not this one.</b> '+(option.getAttribute('data-wrong-feedback')||'')+'</span><br><span style="color:#2d6a2d"><b>The answer is '+(rl?rl.textContent:'')+'.</b> '+(right.getAttribute('data-right-feedback')||'')+'</span>';fb.className='discrim-feedback shown';ch.setAttribute('data-first-try','0');var par=ch.nextElementSibling;if(par&&par.classList.contains('discrim-parallel')){fb.innerHTML+=' <b style="color:#5c2dcc">Try one more like it below.</b>';setTimeout(function(){par.classList.add('shown');},600);}}
+var bf=ch.closest('.build-frame');if(bf){var all=bf.querySelectorAll('.discrim-challenge'),dn=0;all.forEach(function(c){if(c.classList.contains('done'))dn++;});if(dn===all.length){var a=bf.querySelector('.assembled');if(a)setTimeout(function(){a.classList.add('shown');},500);}}
+var qc=ch.closest('.quick-check');if(qc)updateQC(qc);}
+function updateQC(qc){var items=qc.querySelectorAll('.discrim-challenge');var done=0,first=0;items.forEach(function(c){if(c.classList.contains('done')){done++;if(c.getAttribute('data-first-try')==='1')first++;}});if(done<items.length)return;var r=qc.querySelector('.qc-result');r.textContent=first+' of '+items.length+' right first time. '+(first>=items.length-1?'The moves are in your head. Now the checklist.':'Look back at '+qc.getAttribute('data-back')+' for the ones you missed, then come back to the checklist.');r.style.display='block';launchConfetti();}
+function toggleTimes(el){var body=el.closest('.card-body');body.classList.toggle('show-times');el.textContent=body.classList.contains('show-times')?'Hide test times':'Show how long each test took';}
+function toggleCheck(item){item.classList.toggle('checked');updateCheckProgress();}
+function updateCheckProgress(){var items=document.querySelectorAll('#mainChecklist .check-item');if(!items.length)return;var checked=document.querySelectorAll('#mainChecklist .check-item.checked').length;var fill=document.getElementById('checkProgressFill'),lbl=document.getElementById('checkProgressLabel');if(fill)fill.style.width=Math.round((checked/items.length)*100)+'%';if(lbl)lbl.innerHTML=checked===items.length?'<b style="color:#2d6a2d;">All done.</b>':checked+' of '+items.length+' checked';}
+function printChecklist(btn){var card=btn.closest('.card');var ci=card.querySelectorAll('.check-item.checked');ci.forEach(function(i){i.classList.remove('checked');});card.classList.add('print-target');window.print();card.classList.remove('print-target');ci.forEach(function(i){i.classList.add('checked');});}
+function showCompletion(){document.getElementById('completionOverlay').classList.add('visible');}
+function closeCompletion(){document.getElementById('completionOverlay').classList.remove('visible');}
+function launchConfetti(){var canvas=document.getElementById('confettiCanvas');var ctx=canvas.getContext('2d');canvas.width=window.innerWidth;canvas.height=window.innerHeight;var colors=['#b8860b','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b','#42a5f5'];var particles=[];for(var i=0;i<120;i++){particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height-canvas.height,w:Math.random()*10+5,h:Math.random()*6+3,color:colors[Math.floor(Math.random()*colors.length)],vx:(Math.random()-0.5)*4,vy:Math.random()*3+2,rot:Math.random()*360,rotV:(Math.random()-0.5)*10,life:1});}var frame=0;function animate(){ctx.clearRect(0,0,canvas.width,canvas.height);var alive=false;particles.forEach(function(p){if(p.life<=0)return;alive=true;p.x+=p.vx;p.y+=p.vy;p.vy+=0.05;p.rot+=p.rotV;if(p.y>canvas.height+20){p.life=0;return;}if(frame>60)p.life-=0.01;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();});frame++;if(alive)requestAnimationFrame(animate);else ctx.clearRect(0,0,canvas.width,canvas.height);}animate();}
+shuffleOptions();goTo(0);
+</script>
+<script src="../tracking.js"></script>
+</body>
+</html>
