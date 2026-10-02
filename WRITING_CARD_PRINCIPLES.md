@@ -136,9 +136,9 @@ All text visible to students must use simple, age-appropriate words.
 |--------|-------------------|
 | BP1, BP2 | Body 1, Body 2 |
 | TS | Topic Sentence |
-| CONC | Ending / Closing |
+| CONC | Concluding Sentence |
 | E1, X1 | Evidence, Explain why |
-| CS | Closing Sentence |
+| CS | Concluding Sentence |
 | MCQ | multiple choice |
 | SPO | Paragraph Outline (add "(Paragraph Outline)" parenthetical) |
 
@@ -244,7 +244,7 @@ The Alpha Writing tests have a generous time limit (roughly 60 minutes available
 When teaching paragraph structure on G3–G5 cards, use the term **Supporting Detail** (not "Body," "Body 1 / Body 2," or "body sentence"). The curriculum term for the middle rows of a Single Paragraph Outline is Supporting Detail (often abbreviated **D1 / D2** in shorthand outlines).
 
 **Use** this language:
-- ✅ SPO rows: TOPIC / **DETAIL 1** / **DETAIL 2** / CLOSE
+- ✅ SPO rows: TOPIC SENTENCE / **DETAIL 1** / **DETAIL 2** / CONCLUDING SENTENCE (never `SAY` / `CLOSE` as labels)
 - ✅ "2–3 supporting details, each pulling a specific fact from the passage"
 - ✅ Shorthand outlines: "D1: …" / "D2: …"
 
@@ -272,6 +272,28 @@ When a card is a **pre-test prep** for a student who hasn't yet taken the test, 
 **Why:** Alex's prep card originally used the Sports and Society passage (from G3.4) as its SPO example, and Anna/Sally/Lucy references in the proofread card. If a student studying the prep card later sees the same passage on a real test, the prep card has given them advance content — which is both unfair and useless (they've already practiced the specific answer). Prep content must teach **structure and habits** using clearly invented examples.
 
 **Double-check:** before shipping a prep card, grep the final HTML for every test passage you know of — sports/cricket/britain/1800s, pokemon/tajiri/bug, anna/sally/seal, layla/geode, garissa/camel, hershey/bear, soil/dirt, lucy/rocket — and confirm zero matches.
+
+---
+
+### 3.11 Topic sentence = the point + the how; concluding sentence puts the hows together
+
+Never describe the topic sentence as "states the point" or "states the main idea", and never describe the concluding sentence as "says the point again in new words". Both are too abstract for the students who need them (Noel, 2026-10-02).
+
+**The topic sentence has two parts.**
+- **THE POINT** answers the question, as a statement in the question's own words.
+- **THE HOW** names the reasons the paragraph will use to prove the point, usually two or three. The how is the plan: one supporting detail per how.
+- Student-facing labels: `TOPIC SENTENCE · POINT` and `TOPIC SENTENCE · HOW` (or `POINT` / `HOW` inside a rule box). Say "the how" or "the reasons", not "how it will be supported": students hear that as "a quote and a study".
+- Example built from a student's own test: *The author shows that VR field trips are a good idea for schools* [point] *by proving that students learn more from them and by showing that they avoid the problems of real trips* [how].
+
+**Details are chosen on merit.** Every `DETAIL · SHOW` must belong to a how named in the topic sentence. The check: "point to the how this fact belongs to; a fact with no how stays out, even if it is in the article." Distractors in discrimination items should be on-page-but-off-how facts (true, from the passage, belonging to no how), because retelling the passage in order is the real error. The `DETAIL · SO WHAT` names the how it proves ("This shows the author backing the first claim with research rather than opinion…").
+
+**The concluding sentence is synthesis, made operational.** Name the hows, then say what they add up to: *Together, [how 1] and [how 2] show that [the point, now earned].* Checks: does the last sentence mention both hows? Does it say something the topic sentence could not say yet, because the proof had not been given? Not advice to the reader, not "In conclusion" plus the topic sentence, never "The End". Label: `CONCLUDING SENTENCE · TOGETHER` ("synthesis" fails the plain-vocabulary rule in 3.3).
+
+**Teach it on the student's own sentences only.** Show the point + how shape on a sentence the student already wrote for full marks; a Q6–Q10 answer usually has it (*Setting up tents can strengthen family relationships* [point] *by causing them to spend time together* [how]). Build the model topic sentence from the hows implied by the facts the student actually chose. Make "find the how" items from the student's own answers. Never import an unrelated claim as the example: a phone-ban argument with a concession was too advanced and the wrong genre for a G5 expository paragraph. The concession ("Although…") is a third part for G6+ argumentative paragraphs only, taught on a student's own argumentative writing when one comes up.
+
+**Weight.** On the G3–G5 rubric the topic sentence and the supporting details carry the points; the concluding sentence is the cheapest part. Give the ending a full card only when the student's ending was the failure (advice to the reader, "The End", a copied restatement).
+
+First card built this way: `Tomi-Fernandez-G5-3` (commit 4d40157).
 
 ---
 
@@ -321,6 +343,8 @@ Planning before writing is the **single highest-leverage intervention** (Brainli
 After every piece of evidence, the student should ask **"So what? Why does this matter?"** — the answer is the explanation.
 
 This replaces abstract instruction about "elaboration." Include a "So What? Why Does This Matter?" box in every fix card's `.discrim-then`.
+
+In the paragraph recipe the SO WHAT is the second half of each supporting detail, and it names the how it proves (see 3.11): *This shows that the author backs the first claim with research, not opinion.*
 
 ### 4.6 Root cause diagnosis on the Journey card
 
@@ -440,6 +464,8 @@ Every card's Card 7 (checklist) must include a functional Print button:
 
 ### 5.8 Completion celebration
 
+The overlay title is `Good luck on your next test!` and the sub-line is the set's plan in one sentence (the same plan the Starting Point teaser gives). Never the student's name and the test name (Noel, 2026-10-02).
+
 On clicking "Done" on the last card:
 - Trigger `.completion-overlay` with student name + 3 concrete goals for next test
 - Launch confetti animation via `launchConfetti()`
@@ -486,6 +512,10 @@ Grep/search the finished HTML for each of these:
 - [ ] No "two sentences" / "Sentence 1 ... Sentence 2" on Q6-Q10 coaching
 - [ ] No jargon abbreviations visible to students (BP1, TS, MCQ, CONC, bare SPO)
 - [ ] Student's first name appears frequently; no third-person references
+- [ ] Paragraph model: the topic sentence has a POINT and a HOW; every `DETAIL · SHOW` can be pointed at a how; the concluding sentence names the hows and says what they add up to (3.11)
+- [ ] Paragraph examples come from the student's own test material, never an imported claim (3.11)
+- [ ] Q6–Q10 points stated as 1 answer + 1 reason/example + 1 conventions; never "two points are for the reason"
+- [ ] Completion overlay reads "Good luck on your next test!" plus the plan one-liner (5.8)
 
 ### Structural
 - [ ] `<meta name="viewport">` present
@@ -529,3 +559,7 @@ Patterns from past violations the user has flagged:
 - ❌ Telling students the test takes 60 minutes and they should use all 60 — it typically takes 30–40 minutes for students who do well. Frame pacing as "give the test the time it needs," not "use the full time limit"
 - ❌ Using "Body 1 / Body 2" or "body sentence" for paragraph structure — the curriculum term is "Supporting Detail" (D1 / D2 in shorthand)
 - ❌ Using real test passage content (Sports and Society, Pokemon/Tajiri, Anna + Sally the seal, Layla + geode, Garissa camel library, etc.) in pre-test prep cards — every example must be an invented, clearly-labeled practice passage
+- ❌ Describing the topic sentence as "states the point / main idea" or the concluding sentence as "says the point again in new words" — teach the point + the how, and "name the hows, say what they add up to" (3.11)
+- ❌ Teaching paragraph structure on an imported example (a phone-ban claim) instead of the student's own sentences (3.11)
+- ❌ Saying "two of the three points are for the reason" on Q6–Q10 — the reason is one point (answer 1, reason 1, conventions 1)
+- ❌ A completion overlay that shows the student's name and the test name — it reads "Good luck on your next test!" plus the set's plan one-liner (5.8)
