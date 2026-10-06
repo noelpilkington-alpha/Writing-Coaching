@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jake Friedrichsen: Writing Coaching Cards</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Calibri, 'Segoe UI', sans-serif; font-size: 12pt; color: #1a1a2e; background: #f0f0f5; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; padding: 20px; }
+.progress-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
+.progress-dot { width: 12px; height: 12px; border-radius: 50%; background: #ccc; transition: background 0.3s, transform 0.2s; cursor: pointer; position: relative; }
+.progress-dot.active { background: #b8860b; transform: scale(1.25); }
+.progress-dot.visited { background: #d9b56a; }
+.progress-dot:hover { transform: scale(1.3); }
+.progress-dot .dot-tooltip { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: #b8860b; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 8.5pt; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 100; }
+.progress-dot .dot-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #b8860b; }
+.progress-dot:hover .dot-tooltip { opacity: 1; }
+.card-breadcrumb { font-size: 9.5pt; color: #888; margin-bottom: 14px; text-align: center; transition: opacity 0.3s; min-height: 1.2em; }
+.card-breadcrumb b { color: #b8860b; }
+.sticky-indicator { position: fixed; top: 12px; right: 16px; background: #b8860b; color: #fff; padding: 5px 14px; border-radius: 20px; font-size: 9pt; font-weight: 700; opacity: 0; transition: opacity 0.3s; z-index: 200; pointer-events: none; letter-spacing: 0.5px; }
+.sticky-indicator.visible { opacity: 1; }
+.card-container { position: relative; width: 640px; min-height: 420px; }
+.card { position: absolute; top: 0; left: 0; width: 100%; background: #fff; border: 2.5px solid #b8860b; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.10); opacity: 0; pointer-events: none; transform: translateX(40px); transition: opacity 0.35s, transform 0.35s; }
+.card.active { opacity: 1; pointer-events: auto; transform: translateX(0); position: relative; }
+.card-header { background: #b8860b; color: #fff; padding: 14px 20px; border-radius: 11px 11px 0 0; }
+.card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+.card-header .card-subtitle { font-size: 9.5pt; color: #f0e2bd; margin-top: 2px; }
+.card-body { padding: 18px 22px 22px; line-height: 1.55; }
+.card-body p { margin: 6px 0; }
+.score-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; }
+.score-box { background: #f8f8fc; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 10px 14px; text-align: center; }
+.score-box .big { font-size: 20pt; font-weight: 700; }
+.score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+.score-good .big { color: #2d6a2d; }
+.score-warn .big { color: #cc6600; }
+.score-low .big { color: #cc0000; }
+.you-wrote { background: #fff3f3; border-left: 3px solid #cc0000; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.you-wrote .label { font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+.better, .model-box { background: #e8f5e9; border-left: 3px solid #2d6a2d; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.better .label, .model-box .label { font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+.tip-box { background: #e8edf5; border-left: 3px solid #b8860b; padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0; }
+.tip-box .label { font-weight: 700; font-size: 9.5pt; color: #b8860b; margin-bottom: 3px; }
+.rule-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 10px 14px; margin: 10px 0; font-size: 11pt; }
+.rule-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 3px; }
+.lbl { display: inline-block; font-size: 7.5pt; font-weight: 800; letter-spacing: 0.5px; padding: 1px 6px; border-radius: 4px; margin: 0 4px 0 0; vertical-align: middle; color: #fff; line-height: 1.5; }
+.lbl-say, .lbl-echo { background: #5c2dcc; } .lbl-show, .lbl-because { background: #2d6a2d; } .lbl-sowhat { background: #cc6600; } .lbl-close { background: #457b9d; } .lbl-miss { background: #cc0000; } .lbl-reason { background: #888; } .lbl-general { background: #6d4c41; } .lbl-specific { background: #00838f; } .evidence-block { margin: 10px 0 12px; border: 1.5px solid #e0e0e8; border-radius: 8px; overflow: hidden; } .ev-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 12px; font-size: 10.5pt; } .ev-row + .ev-row { border-top: 1px solid #e0e0e8; } .ev-row.paced { background: #e8f5e9; } .ev-row.rushed { background: #fff3f3; } .ev-tag { flex-shrink: 0; font-size: 8.5pt; font-weight: 800; letter-spacing: 0.5px; padding: 2px 7px; border-radius: 8px; color: #fff; margin-top: 2px; } .ev-row.paced .ev-tag { background: #2d6a2d; } .ev-row.rushed .ev-tag { background: #cc0000; } .format-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; } .format-box { background: #fbf7ea; border: 1.5px solid #e6d3a3; border-radius: 8px; padding: 10px 14px; } .format-box .format-title { font-weight: 700; font-size: 10pt; color: #b8860b; margin-bottom: 4px; } .format-box .format-detail { font-size: 9.5pt; color: #555; line-height: 1.4; } .format-box .format-pts { display: inline-block; background: #b8860b; color: #fff; font-size: 8.5pt; font-weight: 700; padding: 1px 7px; border-radius: 8px; margin-bottom: 4px; } @media (max-width: 640px) { .format-grid { grid-template-columns: 1fr; } }
+.ex-list { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+.ex { padding: 8px 12px; border-radius: 6px; font-size: 10.5pt; border-left: 3px solid; }
+.ex.pos { background: #e8f5e9; border-color: #2d6a2d; } .ex.neg { background: #fff3f3; border-color: #cc0000; }
+.ex .tag { font-weight: 800; font-size: 8.5pt; margin-right: 6px; } .ex.pos .tag { color: #2d6a2d; } .ex.neg .tag { color: #cc0000; }
+.think { background: #f8f8fc; border-left: 3px solid #888; padding: 8px 14px; margin: 8px 0; font-size: 10.5pt; font-style: italic; color: #444; }
+.think .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #666; margin-bottom: 2px; }
+.highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+.error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+.discrim-option .error-mark { background: transparent; text-decoration: none; padding: 0; border-radius: 0; }
+.essay-excerpt { background: #fafafa; border: 1px solid #e0e0e8; border-radius: 6px; padding: 10px 14px; font-size: 10.5pt; margin: 8px 0; line-height: 1.7; }
+.discrim-challenge { background: #f8f5ff; border: 1.5px solid #d4c5ff; border-radius: 8px; padding: 14px; margin: 10px 0; }
+.discrim-prompt { font-weight: 700; font-size: 10.5pt; margin-bottom: 10px; color: #5c2dcc; }
+.discrim-options { display: flex; flex-direction: column; gap: 8px; }
+.discrim-option { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border: 2px solid #d4c5ff; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 10.5pt; background: #fff; }
+.discrim-option:hover { border-color: #7c4dff; background: #f5f0ff; }
+.discrim-label { font-weight: 800; color: #7c4dff; min-width: 20px; flex-shrink: 0; }
+.discrim-option.correct, .discrim-option.model { border-color: #2d6a2d; background: #e8f5e9; cursor: default; }
+.discrim-option.correct .discrim-label, .discrim-option.model .discrim-label { color: #2d6a2d; }
+.discrim-option.wrong { border-color: #cc0000; background: #fff3f3; cursor: default; }
+.discrim-option.wrong .discrim-label { color: #cc0000; }
+.discrim-option.locked { pointer-events: none; opacity: 0.5; }
+.discrim-challenge.done .discrim-option { cursor: default; }
+.discrim-feedback { margin-top: 0; font-size: 10pt; line-height: 1.45; max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.3s, opacity 0.3s, margin 0.3s; }
+.discrim-feedback.shown { max-height: 400px; opacity: 1; margin-top: 10px; }
+.discrim-feedback.right-fb { color: #2d6a2d; font-weight: 600; }
+.discrim-parallel { display: none; }
+.discrim-parallel.shown { display: block; }
+.discrim-parallel .discrim-prompt::before { content: 'One more like it. '; color: #888; font-weight: 600; }
+.reveal-wrapper { position: relative; }
+.reveal-cover { background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%); border-left: 3px solid #2d6a2d; padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 10px; transition: background 0.2s, box-shadow 0.2s; }
+.reveal-cover:hover { box-shadow: 0 2px 8px rgba(45,106,45,0.15); }
+.reveal-cover .reveal-icon { width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
+.reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #2d6a2d; }
+.reveal-cover .reveal-hint { font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px; }
+.reveal-content { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0; }
+.reveal-content.shown { max-height: 1200px; opacity: 1; margin: 8px 0; }
+.reveal-cover.hidden { display: none; }
+.your-turn { background: #f8f8fc; border: 1.5px dashed #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.your-turn .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.your-turn textarea { width: 100%; min-height: 64px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; margin: 4px 0; }
+.frame-row { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0; font-size: 10.5pt; }
+.frame-row .lbl { margin-top: 4px; }
+.frame-row .given { background: #fff; border: 1.5px solid #e0e0e8; border-radius: 6px; padding: 8px; flex: 1; color: #555; }
+.frame-row textarea { flex: 1; min-height: 48px; margin: 0; }
+.yt-btn { margin-top: 8px; padding: 7px 16px; border: 2px solid #2d6a2d; background: #fff; color: #2d6a2d; border-radius: 8px; font-family: inherit; font-weight: 600; font-size: 10pt; cursor: pointer; }
+.yt-btn:hover { background: #2d6a2d; color: #fff; }
+.yt-btn:disabled { opacity: 0.6; cursor: default; }
+.yt-model { display: none; margin-top: 10px; }
+.assembled { display: none; margin-top: 8px; }
+.assembled.shown { display: block; }
+.xp-link { display: inline-block; margin: 8px 6px 0 0; padding: 6px 14px; border-radius: 6px; background: #2d6a2d; color: #fff; font-weight: 700; font-size: 10pt; text-decoration: none; }
+.xp-link:hover { background: #1b5e1b; }
+.yt-model.shown { display: block; }
+.self-check .check-item { font-size: 10pt; padding: 6px 8px; }
+.check-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 8px; cursor: pointer; border-bottom: 1px solid #eee; border-radius: 6px; transition: background 0.15s; user-select: none; font-size: 11pt; }
+.check-item:last-child { border-bottom: none; }
+.check-item:hover { background: #f8f8fc; }
+.check-item.checked { background: #f0f8f0; }
+.check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
+.check-item.checked .check-box::after { content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
+.check-box { width: 28px; height: 28px; border: 2.5px solid #b8860b; border-radius: 6px; flex-shrink: 0; margin-top: 1px; position: relative; transition: background 0.2s, border-color 0.2s; }
+.self-check .check-box { width: 22px; height: 22px; }
+.checklist-progress { background: #eee; border-radius: 10px; height: 8px; margin: 12px 0 6px; overflow: hidden; }
+.checklist-progress-fill { background: linear-gradient(90deg, #2d6a2d, #4caf50); height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%; }
+.checklist-progress-label { font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px; }
+.quick-check { background: #f8f5ff; border: 2px solid #7c4dff; border-radius: 10px; padding: 12px 14px; margin: 10px 0; }
+.quick-check .qc-title { font-weight: 800; color: #5c2dcc; font-size: 10.5pt; margin-bottom: 4px; }
+.quick-check .qc-sub { font-size: 9.5pt; color: #666; margin-bottom: 6px; }
+.quick-check .discrim-challenge { background: #fff; margin: 8px 0; padding: 10px 12px; }
+.qc-result { display: none; font-weight: 700; margin-top: 8px; font-size: 10.5pt; color: #5c2dcc; }
+.recall-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.recall-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.recall-box textarea { width: 100%; min-height: 56px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; }
+.checklist-wrap { display: none; }
+.checklist-wrap.shown { display: block; }
+.time-toggle { font-size: 9pt; color: #b8860b; cursor: pointer; text-decoration: underline; display: inline-block; margin: 0 0 6px; }
+.tl-time { display: none; font-weight: 400; color: #aaa; }
+.show-times .tl-time { display: inline; }
+.guide-block { margin-top: 16px; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 8px 12px; background: #fafafa; font-size: 10pt; }
+.guide-block summary { cursor: pointer; font-weight: 700; color: #666; font-size: 9.5pt; }
+.guide-block ul { margin: 6px 0 4px 18px; }
+.guide-block li { margin: 4px 0; }
+.practice-recommendations { margin-top: 16px; border-top: 2px solid #e0e0e8; padding-top: 14px; }
+.practice-recs-title { font-size: 10pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #b8860b; margin-bottom: 10px; }
+.practice-tier { border-radius: 8px; padding: 12px 14px; margin: 8px 0; }
+.tier-primary { background: #e8f5e9; border: 1.5px solid #a5d6a7; }
+.tier-extra { background: #f8f8fc; border: 1.5px solid #e0e0e8; }
+.tier-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.tier-label { font-size: 8.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 2px 10px; border-radius: 10px; }
+.tier-primary .tier-label { background: #2d6a2d; color: #fff; }
+.tier-extra .tier-label { background: #888; color: #fff; }
+.tier-note { font-size: 9pt; color: #666; margin-bottom: 6px; line-height: 1.4; }
+.practice-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.practice-link { display: inline-block; padding: 5px 12px; border-radius: 6px; font-size: 9.5pt; font-weight: 600; text-decoration: none; transition: background 0.2s, transform 0.1s; }
+.tier-primary .practice-link { background: #c8e6c9; color: #1b5e1b; }
+.tier-extra .practice-link { background: #e8edf5; color: #b8860b; }
+.nav { display: flex; gap: 12px; margin-top: 16px; }
+.nav button { padding: 8px 28px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; transition: background 0.2s, color 0.2s; }
+.nav button:hover { background: #b8860b; color: #fff; }
+.print-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 8px 20px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 10.5pt; font-weight: 600; cursor: pointer; }
+.print-btn:hover { background: #b8860b; color: #fff; }
+.print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+.completion-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(184,134,11,0.6); z-index: 500; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s; }
+.completion-overlay.visible { opacity: 1; pointer-events: auto; }
+.completion-card { background: #fff; border-radius: 16px; padding: 40px 48px; text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2); transform: scale(0.8); transition: transform 0.4s ease; max-width: 420px; }
+.completion-overlay.visible .completion-card { transform: scale(1); }
+.completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+.completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; color: #b8860b; }
+.completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+.completion-close { margin-top: 20px; padding: 10px 32px; background: #b8860b; color: #fff; border: none; border-radius: 8px; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; }
+#confettiCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 501; }
+.score-timeline { display: flex; align-items: flex-end; gap: 0; margin: 12px 0 10px; padding: 0 6px; justify-content: space-between; }
+.timeline-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.timeline-score { font-size: 13pt; font-weight: 700; margin-bottom: 4px; }
+.timeline-bar { width: 70%; border-radius: 4px 4px 0 0; min-height: 8px; }
+.timeline-label { font-size: 8.5pt; color: #888; margin-top: 6px; font-weight: 600; text-align: center; }
+.score-green { color: #2d6a2d; } .score-amber { color: #cc6600; } .score-red { color: #cc0000; }
+.bar-green { background: linear-gradient(to top, #c8e6c9, #81c784); } .bar-amber { background: linear-gradient(to top, #ffe0b2, #ffb74d); } .bar-red { background: linear-gradient(to top, #ffcdd2, #ef9a9a); }
+.strength-chips, .growth-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; }
+.strength-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; background: #e8f5e9; color: #2d6a2d; border: 1.5px solid #a5d6a7; display: inline-flex; align-items: center; gap: 4px; }
+.strength-chip .chip-course, .growth-chip .chip-avg { font-size: 7.5pt; color: #888; font-weight: 400; }
+.journey-section { font-size: 9.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; margin: 10px 0 4px; padding-bottom: 3px; border-bottom: 1.5px solid; }
+.journey-section.strengths-header { color: #2d6a2d; border-color: #c8e6c9; }
+.journey-section.growth-header { color: #cc6600; border-color: #ffe0b2; }
+.root-cause-teaser { background: #f5f0ff; border-left: 3px solid #7c4dff; padding: 10px 14px; margin: 12px 0 4px; border-radius: 0 6px 6px 0; font-size: 10.5pt; line-height: 1.5; }
+.root-cause-teaser b { color: #5c2dcc; }
+.growth-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+.growth-chip.mixed { background: #fff8e8; color: #b35900; border: 1.5px solid #ffe0b2; }
+.growth-chip.weak { background: #fff3f3; color: #cc0000; border: 1.5px solid #ffcdd2; }
+@media print { body { background: #fff; padding: 0; min-height: auto; } .progress-bar, .nav, .print-btn, .card-breadcrumb, .sticky-indicator, .completion-overlay, #confettiCanvas, .reveal-cover, .checklist-progress, .checklist-progress-label, .discrim-challenge, .discrim-parallel, .quick-check, .recall-box, .yt-btn, .guide-block { display: none !important; } .card-container { width: 100%; min-height: auto; } .card { display: none !important; } .card.print-target { display: block !important; opacity: 1 !important; pointer-events: auto !important; position: relative !important; transform: none !important; box-shadow: none; border: 2px solid #b8860b; page-break-inside: avoid; } .reveal-content, .yt-model, .checklist-wrap { display: block !important; max-height: none !important; opacity: 1 !important; margin: 8px 0 !important; } }
+@media (max-width: 720px) { .card-container { width: 100%; } .score-grid { grid-template-columns: 1fr; } .timeline-score { font-size: 10pt; } }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progressBar"></div>
+<div class="card-breadcrumb" id="breadcrumb"></div>
+<div class="sticky-indicator" id="stickyIndicator"></div>
+<div class="card-container" id="cardContainer">
+
+<!-- Card 1: Your Starting Point -->
+<div class="card active" data-title="Your Starting Point">
+  <div class="card-header"><h2>Jake Friedrichsen</h2><div class="card-subtitle">Alpha Standardized Writing G6.1. October 2026. Passage: &ldquo;Wilma Rudolph: A Champion of Perseverance&rdquo;</div></div>
+  <div class="card-body">
+    <div class="score-grid">
+      <div class="score-box score-good"><div class="big">83%</div><div class="label">Overall Score</div></div>
+      <div class="score-box score-good"><div class="big">10/10</div><div class="label">Questions 1&ndash;10</div></div>
+      <div class="score-box score-warn"><div class="big">15/20</div><div class="label">Essay (Question 11)</div></div>
+    </div>
+    <p>Jake, your first G6 test scored 25 of 30, and Questions 1 to 10 were perfect. This test is built differently from the G3 to G5 tests you climbed through in September. Questions 1 to 10 are multiple choice worth one point each, 10 in all. Question 11 is a five-paragraph essay worth 20, two thirds of the test. A pass is 27, so you are two points away, and all five missing points are in the essay.</p>
+    <div class="format-grid">
+      <div class="format-box"><span class="format-pts">1 point each &middot; 10 total</span><div class="format-title">Q1&ndash;Q10 &middot; Multiple choice</div><div class="format-detail">Sentence types, appositives, topic sentences, transitions. You earned 10 of 10.</div></div>
+      <div class="format-box"><span class="format-pts">20 points</span><div class="format-title">Q11 &middot; The essay</div><div class="format-detail">Five parts, scored separately: five clear paragraphs with a thesis and topic sentences (5), evidence that is explained (5), organized and on topic (4), strong varied sentences (3), spelling and grammar (3). You earned 15 of 20.</div></div>
+    </div>
+    <p>Your essay has the right skeleton: an introduction with a thesis, three body paragraphs in time order, a conclusion. The five points went to what each part leaves out. The introduction is two sentences with no way in. Each body paragraph gives facts and stops before saying what they show, so the second half of the prompt, <i>what we can learn</i>, appears only at the start and the end. The conclusion is the thesis again. And the read-back: <i>perservered</i> twice, <i>perserverance</i>, <i>a illness</i>.</p>
+    <div class="root-cause-teaser"><b>The plan:</b> an introduction that moves from general to specific to a thesis naming your three body paragraphs. In every body paragraph, after the facts, a <i>This shows</i> that also says what we learn. A conclusion that runs the introduction backwards. And one read-back for the word the whole essay is about.</div>
+    <div class="journey-section strengths-header">Skills you do well</div>
+    <div class="strength-chips">
+      <span class="strength-chip">Every multiple-choice question <span class="chip-course">&middot; Q1&ndash;Q10, 10 of 10</span></span>
+      <span class="strength-chip">Five parts in the right order, facts from the passage in each body paragraph <span class="chip-course">&middot; Q11</span></span>
+      <span class="strength-chip">A thesis that answers both halves of the prompt <span class="chip-course">&middot; Q11, sentence two</span></span>
+    </div>
+    <div class="journey-section growth-header">What to work on</div>
+    <div class="growth-chips">
+      <span class="growth-chip weak">Body paragraphs that give facts and stop: no This shows, no what-we-learn <span class="chip-avg">Q11: evidence and explanation</span></span>
+      <span class="growth-chip mixed">A two-sentence introduction and a conclusion that repeats it <span class="chip-avg">Q11: structure</span></span>
+      <span class="growth-chip mixed">Short, same-shaped sentences <span class="chip-avg">Q11: sentence variety</span></span>
+      <span class="growth-chip mixed">Read-back: perseverance, an illness <span class="chip-avg">Q11: editing</span></span>
+    </div>
+  </div>
+</div>
+
+<!-- Card 2: Writing Journey -->
+<div class="card" data-title="Your Writing Journey">
+  <div class="card-header"><h2>Your Writing Journey</h2><div class="card-subtitle">Five tests, four grade levels, seven weeks</div></div>
+  <div class="card-body">
+    <div class="score-timeline">
+      <div class="timeline-item"><div class="timeline-score score-green">80%</div><div class="timeline-bar bar-green" style="height:72px;"></div><div class="timeline-label">G3.1 (Aug 21)<br><span class="tl-time">18m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">91%</div><div class="timeline-bar bar-green" style="height:82px;"></div><div class="timeline-label">G3.2 (Sep 10)<br><span class="tl-time">34m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">91%</div><div class="timeline-bar bar-green" style="height:82px;"></div><div class="timeline-label">G4.1 (Sep 11)<br><span class="tl-time">32m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">98%</div><div class="timeline-bar bar-green" style="height:88px;"></div><div class="timeline-label">G5.1 (Sep 23)<br><span class="tl-time">1h 41m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">83%</div><div class="timeline-bar bar-green" style="height:75px;"></div><div class="timeline-label">G6.1 (Oct)</div></div>
+    </div>
+    <span class="time-toggle" onclick="toggleTimes(this)">Show how long each test took</span>
+    <p>Three passes in a row, G3.2, G4.1 and G5.1, each on the first try, and a 98 on the G5 test with a Question 11 answer that earned 19 of 20. It had a first sentence naming two ways horses communicate, a fact with numbers for each, and an ending that added them up. The G6 essay asks for that shape five times over, and the parts your G5 answer had are the parts the essay is missing: the <i>This shows</i> after each fact, and an ending with something to add up. The time for this test is not in the records yet.</p>
+    <div class="journey-section strengths-header">Skills you do well</div>
+    <div class="strength-chips">
+      <span class="strength-chip">A G5.1 answer with two hows, numbers, and an ending that adds up <span class="chip-course">&middot; Q11, 19 of 20</span></span>
+      <span class="strength-chip">Sentence skills at every level <span class="chip-course">&middot; G4.1 and G5.1 Q1&ndash;Q5, G6.1 Q1&ndash;Q10</span></span>
+      <span class="strength-chip">Giving the test the time it needs <span class="chip-course">&middot; G5.1</span></span>
+    </div>
+    <div class="journey-section growth-header">What to work on</div>
+    <div class="growth-chips">
+      <span class="growth-chip weak">Carry the G5 habits into each body paragraph <span class="chip-avg">G6.1: 15 of 20</span></span>
+      <span class="growth-chip mixed">Introduction and conclusion with three moves each <span class="chip-avg">G6.1</span></span>
+      <span class="growth-chip mixed">No comma before because <span class="chip-avg">G4.1 Q5, G5.1 Q7</span></span>
+    </div>
+    <div class="root-cause-teaser"><b>Two points from a G6 pass.</b> Cards 3 and 4 are the essay frame. Card 5 is the read-back and the sentences.</div>
+  </div>
+</div>
+
+<!-- Card 3: Fix 1, introduction and conclusion -->
+<div class="card" data-title="Fix 1: The Way In and the Way Out">
+  <div class="card-header"><h2>Fix 1: The Way In and the Way Out</h2><div class="card-subtitle">Your introduction is two sentences. Your conclusion is the same two</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: GENERAL, SPECIFIC, THESIS; THEN THE MIRROR</div>An introduction makes three moves. <span class="lbl lbl-say">GENERAL STATEMENT</span>: a true sentence about the idea, not yet about Wilma. <span class="lbl lbl-say">SPECIFIC STATEMENT</span>: Wilma, named, with the fact that sets up the essay. <span class="lbl lbl-say">THESIS</span>: the point, and the three hows that will become your three body paragraphs. The conclusion runs it backwards: <span class="lbl lbl-close">THESIS, IN NEW WORDS</span>, then a <span class="lbl lbl-close">SPECIFIC STATEMENT</span>, then a <span class="lbl lbl-close">GENERAL STATEMENT</span> that says what the three bodies add up to. <b>The check:</b> count the moves in your first and last paragraphs. Three each. And the thesis names three things; the three body paragraphs prove them in that order.</div>
+
+    <div class="you-wrote"><div class="label">YOU WROTE (INTRODUCTION)</div>&ldquo;Wilma Rudolph <span class="error-mark">perservered</span> through many hardships like not being able to walk. Her <span class="error-mark">perserverance</span> can help us learn to never give up.&rdquo; <span class="lbl lbl-miss">THESIS ONLY, NO WAY IN, NO THREE HOWS</span><br><span style="font-size:9.5pt;color:#666;">Two sentences, and the second is a real thesis: it answers both halves of the prompt, how she persevered and what we learn. What is missing is the way in, and the three things the thesis promises to prove.</span></div>
+    <div class="model-box"><div class="label">THREE MOVES IN</div><span class="lbl lbl-say">GENERAL STATEMENT</span>Most people meet one wall in life they are told they cannot get past. <span class="lbl lbl-say">SPECIFIC STATEMENT</span>Wilma Rudolph met hers as a small child, when polio left her leg in a metal brace and doctors said she would never walk again. <span class="lbl lbl-say">THESIS</span>Wilma showed perseverance by walking again when the doctors said she never would, by training until she was the fastest woman in the world, and by spending her life after the Olympics telling young people to keep trying, and her story teaches that a dream survives as long as the work does.<br><span style="font-size:9.5pt;color:#666;">Your thesis, kept, with the three body paragraphs named inside it.</span></div>
+    <div class="you-wrote"><div class="label">YOU WROTE (CONCLUSION)</div>&ldquo;Wilma Rudolph perservered through not being able to walk and still won medals at the Olympics. Because of her we can learn to never give up.&rdquo; <span class="lbl lbl-miss">THE INTRODUCTION AGAIN</span><br><span style="font-size:9.5pt;color:#666;">The same two sentences, with the medals added. Nothing the three body paragraphs earned is in it.</span></div>
+    <div class="model-box"><div class="label">THREE MOVES OUT</div><span class="lbl lbl-close">THESIS, IN NEW WORDS</span>A brace, a track and a stage: Wilma Rudolph kept going at every one of them, and each time the going was the lesson. <span class="lbl lbl-close">SPECIFIC STATEMENT</span>The girl the doctors wrote off walked at twelve, won three gold medals in Rome, and then spent decades telling children that dreams come true if you keep trying. <span class="lbl lbl-close">GENERAL STATEMENT</span>What we learn from her is that perseverance is not one brave moment but years of ordinary work, and that it is worth more when you hand it on.</div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which sentence is a GENERAL STATEMENT to open the essay?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="A fact about Wilma: that is the specific statement, the second move." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Wilma Rudolph was born in 1940 in Tennessee, the 20th of 22 children.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="True of the idea, not yet about Wilma. The first move." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The people we remember longest are usually the ones who were told to stop and did not.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which thesis names three body paragraphs?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Three hows, in the order the body paragraphs will take." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Wilma showed perseverance by walking again, by training until she was the fastest woman in the world, and by teaching others to keep trying, and each one shows us that giving up is a choice.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A point with no hows. The reader cannot tell what the three body paragraphs will be." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Wilma persevered through many hardships, and we can learn a lot from her.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which sentence closes the essay with a GENERAL STATEMENT, the last move out?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="true" data-right-feedback="What the three bodies add up to, said about the idea, not only about Wilma." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Her story teaches that perseverance is years of ordinary work, and that it counts double when you pass it on.</span></div>
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="The thesis again, word for word. The way out has to add something." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Wilma Rudolph persevered through not being able to walk, and we can learn to never give up.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Plan the thesis first: the point and three hows. Then write the two sentences in front of it, general then specific. Save the conclusion for last and write the introduction backwards.</div>
+  </div>
+</div>
+
+<!-- Card 4: Fix 2, body paragraphs -->
+<div class="card" data-title="Fix 2: After the Facts, This Shows">
+  <div class="card-header"><h2>Fix 2: After the Facts, This Shows</h2><div class="card-subtitle">Each body paragraph gives facts from the passage and stops. The prompt&rsquo;s second half never arrives</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: TOPIC SENTENCE, FACT, THIS SHOWS, AND WHAT WE LEARN</div>Each body paragraph is your G5.1 answer again. A <span class="lbl lbl-say">TOPIC SENTENCE</span> with the point (one way she persevered) and the how. A <span class="lbl lbl-show">DETAIL &middot; SHOW</span>: a fact from the passage with its number or its words. A <span class="lbl lbl-sowhat">DETAIL &middot; SO WHAT</span>: <i>This shows</i> plus what the fact proves, and because this prompt has two halves, what we can learn from it. <b>The check:</b> in each body paragraph, find <i>This shows</i>, and find the word <i>learn</i> or <i>teaches</i>. Both missing means half the prompt is unanswered in that paragraph.</div>
+
+    <div class="you-wrote"><div class="label">YOU WROTE (BODY PARAGRAPH 1)</div>&ldquo;As a kid Wilma Rudolph got <span class="error-mark">a illness</span> that made it hard to walk. Doctors said she would never be able to walk again. Despite that Wilma never gave up hope. She exercised every day and at the age of 12 she finally walked again.&rdquo; <span class="lbl lbl-miss">FACTS IN ORDER, THEN A STOP</span><br><span style="font-size:9.5pt;color:#666;">Four facts from the passage, in the right order, and all of them correct. The first sentence is a fact, not a topic sentence: it does not say this is the first way she persevered. And the paragraph ends on the last fact, so the reader is never told what it shows or what to learn from it.</span></div>
+    <div class="model-box"><div class="label">YOUR FACTS, IN THE FRAME</div><span class="lbl lbl-say">TOPIC SENTENCE</span>Wilma&rsquo;s first act of perseverance was learning to walk again when the doctors said she never would. <span class="lbl lbl-show">DETAIL &middot; SHOW</span>Polio left her left leg weak and in a metal brace for years, her family did exercises with her at home every day, and at twelve she took the brace off and walked without help. <span class="lbl lbl-sowhat">DETAIL &middot; SO WHAT</span>This shows that her perseverance was years of daily work rather than one brave moment, and it teaches us that the people around you are part of the effort.<br><span style="font-size:9.5pt;color:#666;">Your four facts, kept, with a topic sentence in front and a <i>This shows</i> behind that answers the second half of the prompt.</span></div>
+
+    <p style="margin-top:10px;"><b>The third body paragraph</b> the passage was offering you, and the one that got the Olympics twice:</p>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">TOPIC SENTENCE</span>Wilma&rsquo;s last act of perseverance came after the medals, when she did not stop working.</div>
+      <div class="ex pos"><span class="tag">SHOW</span>She went on to teach, to coach and to speak, told her story to young people, and said that dreams can come true if you keep trying.</div>
+      <div class="ex pos"><span class="tag">SO WHAT</span>This shows perseverance turned outward, and it teaches us that the point of getting past a wall is to help the next person over it.</div>
+      <div class="ex neg"><span class="tag">YOURS, BODY 2 AND 3</span>Body 2 ends with the Olympics, and body 3 begins there.<br><span style="font-size:9.5pt;color:#666;">Two body paragraphs on one how. The passage&rsquo;s last paragraph, her life after Rome, was the third how waiting to be used.</span></div>
+    </div>
+
+    <div class="your-turn build-frame" id="build-body">
+      <div class="label">YOUR TURN: BODY PARAGRAPH 2, THE RUNNING YEARS. TAP THE TOPIC SENTENCE, THE SO WHAT</div>
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">TOPIC SENTENCE: which one names the second way she persevered?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Your opening: a fact in time order. It does not say this is the second way." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>After Wilma learned to walk again, she started racing.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="The point, the second way, and the how." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Wilma&rsquo;s second act of perseverance was turning a leg that had worn a brace into the fastest one in the world.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="frame-row"><span class="lbl lbl-show">DETAIL &middot; SHOW</span><div class="given">She joined her school&rsquo;s track team and practiced hard, kept training in college until she was one of the fastest women in the world, and in 1960 in Rome won three gold medals, the first American woman to win that many at a single Olympics.</div></div>
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">SO WHAT: which sentence proves the how and says what we learn?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;This shows&rdquo; plus what the facts prove, plus the lesson." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>This shows that she did not stop at walking, the goal everyone else had set for her, and it teaches us that the finish line moves every time you reach it.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Another fact from the passage, so a SHOW, and the body paragraph still ends without a This shows." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>She became a world-famous athlete and a symbol of strength.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="assembled">
+        <div class="model-box"><div class="label">BODY PARAGRAPH 2, ASSEMBLED</div><span class="lbl lbl-say">TOPIC SENTENCE</span>Wilma&rsquo;s second act of perseverance was turning a leg that had worn a brace into the fastest one in the world. <span class="lbl lbl-show">DETAIL &middot; SHOW</span>She joined her school&rsquo;s track team and practiced hard, kept training in college until she was one of the fastest women in the world, and in 1960 in Rome won three gold medals, the first American woman to win that many at a single Olympics. <span class="lbl lbl-sowhat">DETAIL &middot; SO WHAT</span>This shows that she did not stop at walking, the goal everyone else had set for her, and it teaches us that the finish line moves every time you reach it.<br><span style="font-size:9.5pt;color:#666;">Three sentences that do three jobs. Your facts, one topic sentence in front, one <i>This shows</i> behind. Do it three times and the evidence points are yours.</span></div>
+      </div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Every body paragraph: topic sentence with the how, the facts, then <i>This shows</i>. When the prompt has two halves, the <i>This shows</i> answers the second one.</div>
+  </div>
+</div>
+
+<!-- Card 5: Fix 3, sentences and read-back -->
+<div class="card" data-title="Fix 3: Vary the Sentences, Read Back the Word">
+  <div class="card-header"><h2>Fix 3: Vary the Sentences, Read Back the Word</h2><div class="card-subtitle">Six points of the essay are sentences and editing. The word the essay is about was misspelled three times</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: ONE LONG, ONE SHORT; THEN A FINGER ON THE KEY WORD</div>Three points are for varied, formal sentences: join two short facts with <i>because</i>, <i>but</i>, <i>so</i> or <i>when</i>, and let one short sentence land after a long one. Three points are for editing. <b>The check:</b> find the word the prompt is about, here <i>perseverance</i>, and read every copy of it back letter by letter. Then read one sentence from each body paragraph aloud in your head: if they all have the same shape, join two.</div>
+
+    <div class="you-wrote"><div class="label">YOU WROTE</div>&ldquo;Wilma Rudolph <span class="error-mark">perservered</span>&hellip;&rdquo; &nbsp; &ldquo;Her <span class="error-mark">perserverance</span>&hellip;&rdquo; &nbsp; &ldquo;&hellip;got <span class="error-mark">a illness</span>&hellip;&rdquo; &nbsp; &ldquo;&hellip;won three gold medals <span class="error-mark">running</span>.&rdquo;<br><span style="font-size:9.5pt;color:#666;">The prompt spells <i>perseverance</i> for you, twice. Copy the key word from the prompt rather than from memory. <i>An</i> before a vowel. And <i>three gold medals in track and field</i> is the passage&rsquo;s phrase.</span></div>
+    <div class="you-wrote"><div class="label">YOU WROTE (BODY PARAGRAPH 3, THE SHAPE OF THE SENTENCES)</div>&ldquo;At the Olympics Wilma won three gold medals running. She was the first American woman to win that many medals at a single Olympics. Because of this she became a symbol of strength.&rdquo; <span class="lbl lbl-miss">THREE SENTENCES, ONE SHAPE</span><br><span style="font-size:9.5pt;color:#666;">Subject, verb, fact. Subject, verb, fact. Correct every time, and the rubric&rsquo;s three sentence points go to variety.</span></div>
+    <div class="model-box"><div class="label">THE SAME FACTS, TWO SHAPES</div>When Wilma won three gold medals in track and field at the 1960 Olympics in Rome, she became the first American woman to win that many at a single Games, and the girl in the brace became a symbol of strength. The brace was gone for good.</div>
+
+    <p style="margin-top:10px;"><b>Three ways to vary a sentence</b>, and one that only lengthens it:</p>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">START WITH WHEN OR AFTER</span><b>After</b> years of exercises at home, Wilma took off the brace at twelve.</div>
+      <div class="ex pos"><span class="tag">JOIN WITH BUT</span>Doctors said she would never walk again, <b>but</b> her mother never gave up hope.</div>
+      <div class="ex pos"><span class="tag">A SHORT ONE AFTER A LONG ONE</span>She trained through school and college until she was one of the fastest women alive. Then she ran in Rome.</div>
+      <div class="ex neg"><span class="tag">ONLY LONGER</span>Wilma won three gold medals and she was the first American woman to do that and she became a symbol of strength.<br><span style="font-size:9.5pt;color:#666;">Three facts and two <i>ands</i>. Longer, not varied.</span></div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which pair of sentences has two shapes?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="true" data-right-feedback="A when-sentence, then a short one. Two shapes." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>When Wilma took the brace off at twelve, she had spent years earning that one step. She never put it back on.</span></div>
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Subject, verb, fact, twice. Correct, and one shape." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Wilma took the brace off at twelve. She never put it back on.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which pair of sentences has two shapes?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="One shape, twice." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Wilma became a coach. She told young people to believe in themselves.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="A long sentence joined with and, then a short one." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Wilma went on to teach, coach and speak, and she spent years telling young people to believe in themselves. The medals were the smaller part.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which sentence is ready to submit?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Perserverance, and a illness: two from the essay." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Her perserverance began with a illness that put her leg in a brace.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="Perseverance as the prompt spells it, and an illness. Correct." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Her perseverance began with an illness that put her leg in a brace.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Copy the key word from the prompt. In every body paragraph, join two facts with <i>when</i>, <i>but</i> or <i>because</i>, and let one short sentence land. Read the whole essay back once before you submit.</div>
+  </div>
+</div>
+
+<!-- Card 6: Quick Check, Checklist -->
+<div class="card" data-title="Quick Check &amp; Checklist">
+  <div class="card-header"><h2>Quick Check</h2><div class="card-subtitle">Six new ones. Then your checklist</div></div>
+  <div class="card-body">
+    <div class="quick-check" data-back="cards 3 to 5">
+      <div class="qc-title">The way in, the body paragraphs, the way out, six questions</div>
+      <div class="qc-sub">All new sentences. Answer each one once.</div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which is the SPECIFIC STATEMENT, the second move of an introduction?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="General: true of the idea, nobody named. The first move." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Some people turn a setback into the start of something.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Wilma named, with the fact that sets up the essay." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Wilma Rudolph, the 20th of 22 children, was wearing a metal leg brace when most children were learning to run.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which thesis names its three body paragraphs?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Three hows, in order." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Wilma persevered through a brace, through years on the track, and through a lifetime of speaking, and each stage teaches a different lesson about not quitting.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A point with no hows." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Wilma Rudolph is a great example of perseverance for everyone.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which is a topic sentence for a body paragraph, rather than a fact?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A fact from the passage. It does not say which way of persevering this paragraph is about." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>In 1960, Wilma competed in the Olympic Games in Rome.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="The how, named, before the facts arrive." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Wilma&rsquo;s second act of perseverance was the training that carried her from a school track team to Rome.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence is a SO WHAT that also answers <i>what we can learn</i>?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;This shows&rdquo; plus what the fact proves, plus the lesson." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>This shows that her family&rsquo;s daily exercises mattered as much as her own will, and it teaches us that nobody perseveres alone.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A fact from the passage, so a SHOW." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Her family helped her do exercises at home every day for years.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which is the first move of a conclusion, the thesis in new words?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="The thesis word for word. New words, or it is not a new move." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Wilma Rudolph persevered through many hardships like not being able to walk.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="The same point, said a new way, with the three stages inside it." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>A brace, a track and a stage: Wilma Rudolph kept going at every one of them.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence is ready to submit?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Perseverance spelled as the prompt spells it, and two sentence shapes." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>When Wilma spoke to young people, she turned her perseverance into theirs. That was her last race.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Perserverance, and one shape twice." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Wilma spoke to young people. She turned her perserverance into theirs.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="qc-result"></div>
+    </div>
+
+    <div class="checklist-wrap shown">
+      <div id="mainChecklist">
+        <div class="checklist-progress-label" id="checkProgressLabel">0 of 6 checked</div>
+        <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Plan the thesis first:</b> the point and three hows. The three body paragraphs prove them in that order.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Introduction:</b> general, specific, thesis. <b>Conclusion:</b> thesis in new words, specific, general.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Every body paragraph:</b> topic sentence with the how, facts with their numbers, then <i>This shows</i>.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>A two-half prompt gets both halves in every body paragraph:</b> the <i>This shows</i> says what we learn.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Sentences:</b> in each body paragraph, join two facts with <i>when</i>, <i>but</i> or <i>because</i>, and let one short sentence land.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Read-back:</b> copy the key word from the prompt. Perseverance. An illness. No comma before because.</div></div>
+      </div>
+      <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>Print Checklist</button>
+    </div>
+  </div>
+</div>
+
+</div>
+<div class="nav"><button id="prevBtn" onclick="navigate(-1)">&larr; Back</button><button id="nextBtn" onclick="navigate(1)">Next &rarr;</button></div>
+<div class="completion-overlay" id="completionOverlay"><div class="completion-card"><div class="completion-emoji">&#9997;</div><div class="completion-title">Good luck on your next test!</div><div class="completion-sub">Thesis with three hows. Introduction general, specific, thesis; conclusion in reverse. Every body paragraph: topic sentence, facts, This shows that says what we learn. Copy the key word from the prompt.</div><button class="completion-close" onclick="closeCompletion()">Got it</button></div></div>
+<canvas id="confettiCanvas"></canvas>
+<script>
+var cards=document.querySelectorAll('.card'),bar=document.getElementById('progressBar'),breadcrumb=document.getElementById('breadcrumb'),stickyEl=document.getElementById('stickyIndicator'),current=0,visited=[0];
+cards.forEach(function(card,i){var dot=document.createElement('div');dot.className='progress-dot'+(i===0?' active':'');var tooltip=document.createElement('span');tooltip.className='dot-tooltip';tooltip.textContent=card.getAttribute('data-title')||('Card '+(i+1));dot.appendChild(tooltip);dot.addEventListener('click',function(){goTo(i);});bar.appendChild(dot);});
+function updateBreadcrumb(){var title=cards[current].getAttribute('data-title')||('Card '+(current+1));breadcrumb.innerHTML='Card <b>'+(current+1)+'</b> of '+cards.length+' &mdash; '+title;stickyEl.textContent=(current+1)+' / '+cards.length;}
+function checkSticky(){var r=bar.getBoundingClientRect();stickyEl.classList.toggle('visible',r.bottom<0);}
+window.addEventListener('scroll',checkSticky);
+function goTo(idx){if(idx<0||idx>=cards.length)return;cards[current].classList.remove('active');bar.children[current].classList.remove('active');current=idx;if(visited.indexOf(current)===-1)visited.push(current);cards[current].classList.add('active');bar.children[current].classList.add('active');visited.forEach(function(v){if(v!==current)bar.children[v].classList.add('visited');});var p=document.getElementById('prevBtn'),n=document.getElementById('nextBtn');if(p){p.style.visibility=current===0?'hidden':'visible';p.disabled=current===0;}if(n){n.textContent=current===cards.length-1?'Done ✓':'Next →';}updateBreadcrumb();window.scrollTo({top:0,behavior:'smooth'});}
+function navigate(dir){if(dir===1&&current===cards.length-1){showCompletion();return;}goTo(current+dir);}
+document.addEventListener('keydown',function(e){if(e.target&&e.target.tagName==='TEXTAREA')return;if(e.key==='ArrowRight'||e.key==='ArrowDown')navigate(1);if(e.key==='ArrowLeft'||e.key==='ArrowUp')navigate(-1);});
+function revealBetter(cover){cover.nextElementSibling.classList.add('shown');cover.classList.add('hidden');}
+function shuffleOptions(){document.querySelectorAll('.discrim-options').forEach(function(box){var opts=Array.prototype.slice.call(box.querySelectorAll('.discrim-option'));for(var i=opts.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=opts[i];opts[i]=opts[j];opts[j]=t;}opts.forEach(function(o,i){box.appendChild(o);var l=o.querySelector('.discrim-label');if(l)l.textContent=String.fromCharCode(65+i);});});}
+function handleDiscrim(option){var ch=option.closest('.discrim-challenge');if(ch.classList.contains('done'))return;var fb=ch.querySelector('.discrim-feedback');var opts=ch.querySelectorAll('.discrim-option');var ok=option.getAttribute('data-correct')==='true';ch.classList.add('done');
+if(ok){option.classList.add('correct');opts.forEach(function(o){if(o!==option)o.classList.add('locked');});fb.innerHTML=option.getAttribute('data-right-feedback')||'Correct.';fb.className='discrim-feedback shown right-fb';ch.setAttribute('data-first-try','1');}
+else{option.classList.add('wrong');var right=ch.querySelector('.discrim-option[data-correct="true"]');right.classList.add('model');opts.forEach(function(o){if(o!==option&&o!==right)o.classList.add('locked');});var rl=right.querySelector('.discrim-label');fb.innerHTML='<span style="color:#cc0000"><b>Not this one.</b> '+(option.getAttribute('data-wrong-feedback')||'')+'</span><br><span style="color:#2d6a2d"><b>The answer is '+(rl?rl.textContent:'')+'.</b> '+(right.getAttribute('data-right-feedback')||'')+'</span>';fb.className='discrim-feedback shown';ch.setAttribute('data-first-try','0');var par=ch.nextElementSibling;if(par&&par.classList.contains('discrim-parallel')){fb.innerHTML+=' <b style="color:#5c2dcc">Try one more like it below.</b>';setTimeout(function(){par.classList.add('shown');},600);}}
+var bf=ch.closest('.build-frame');if(bf){var all=bf.querySelectorAll('.discrim-challenge'),dn=0;all.forEach(function(c){if(c.classList.contains('done'))dn++;});if(dn===all.length){var a=bf.querySelector('.assembled');if(a)setTimeout(function(){a.classList.add('shown');},500);}}
+var qc=ch.closest('.quick-check');if(qc)updateQC(qc);}
+function updateQC(qc){var items=qc.querySelectorAll('.discrim-challenge');var done=0,first=0;items.forEach(function(c){if(c.classList.contains('done')){done++;if(c.getAttribute('data-first-try')==='1')first++;}});if(done<items.length)return;var r=qc.querySelector('.qc-result');r.textContent=first+' of '+items.length+' right first time. '+(first>=items.length-1?'The moves are in your head. Now the checklist.':'Look back at '+qc.getAttribute('data-back')+' for the ones you missed, then come back to the checklist.');r.style.display='block';launchConfetti();}
+function toggleTimes(el){var body=el.closest('.card-body');body.classList.toggle('show-times');el.textContent=body.classList.contains('show-times')?'Hide test times':'Show how long each test took';}
+function toggleCheck(item){item.classList.toggle('checked');updateCheckProgress();}
+function updateCheckProgress(){var items=document.querySelectorAll('#mainChecklist .check-item');if(!items.length)return;var checked=document.querySelectorAll('#mainChecklist .check-item.checked').length;var fill=document.getElementById('checkProgressFill'),lbl=document.getElementById('checkProgressLabel');if(fill)fill.style.width=Math.round((checked/items.length)*100)+'%';if(lbl)lbl.innerHTML=checked===items.length?'<b style="color:#2d6a2d;">All done.</b>':checked+' of '+items.length+' checked';}
+function printChecklist(btn){var card=btn.closest('.card');var ci=card.querySelectorAll('.check-item.checked');ci.forEach(function(i){i.classList.remove('checked');});card.classList.add('print-target');window.print();card.classList.remove('print-target');ci.forEach(function(i){i.classList.add('checked');});}
+function showCompletion(){document.getElementById('completionOverlay').classList.add('visible');}
+function closeCompletion(){document.getElementById('completionOverlay').classList.remove('visible');}
+function launchConfetti(){var canvas=document.getElementById('confettiCanvas');var ctx=canvas.getContext('2d');canvas.width=window.innerWidth;canvas.height=window.innerHeight;var colors=['#b8860b','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b','#42a5f5'];var particles=[];for(var i=0;i<120;i++){particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height-canvas.height,w:Math.random()*10+5,h:Math.random()*6+3,color:colors[Math.floor(Math.random()*colors.length)],vx:(Math.random()-0.5)*4,vy:Math.random()*3+2,rot:Math.random()*360,rotV:(Math.random()-0.5)*10,life:1});}var frame=0;function animate(){ctx.clearRect(0,0,canvas.width,canvas.height);var alive=false;particles.forEach(function(p){if(p.life<=0)return;alive=true;p.x+=p.vx;p.y+=p.vy;p.vy+=0.05;p.rot+=p.rotV;if(p.y>canvas.height+20){p.life=0;return;}if(frame>60)p.life-=0.01;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();});frame++;if(alive)requestAnimationFrame(animate);else ctx.clearRect(0,0,canvas.width,canvas.height);}animate();}
+shuffleOptions();goTo(0);
+</script>
+<script src="../tracking.js"></script>
+</body>
+</html>
