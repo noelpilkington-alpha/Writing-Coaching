@@ -295,6 +295,8 @@ Never describe the topic sentence as "states the point" or "states the main idea
 
 First card built this way: `Tomi-Fernandez-G5-3` (commit 4d40157).
 
+**Essays (G6–G8), per Noel's "Student guide: How to write an essay" (2026-10-06).** Plan first, in key words, and check every component before writing. Introduction = general statement, specific statement, thesis statement (the thesis names the hows, one per body paragraph). **Each body paragraph has four parts: topic sentence (linking back to the thesis), supporting details from the passage, explanation ("Why do they matter? What do they tell us?"), concluding sentence.** The explanation may follow each detail or be one synthesized explanation after all the details; the check is that every detail is explained somewhere and the reader can tell which detail each explanation belongs to. Conclusion inverts the introduction: thesis synthesized (how the essay addressed it), specific statement, general statement (what the audience should take away). The general Essay Guide (`Essay-Writing-Guide/`) uses the label EXPLANATION for the second half of a detail; student cards keep SHOW / SO WHAT unless Noel says otherwise. Three-part body paragraphs (no concluding sentence) are no longer taught on essay cards.
+
 ---
 
 ## 4. Design principles — how cards teach
@@ -514,6 +516,7 @@ Grep/search the finished HTML for each of these:
 - [ ] Student's first name appears frequently; no third-person references
 - [ ] Paragraph model: the topic sentence has a POINT and a HOW; every `DETAIL · SHOW` can be pointed at a how; the concluding sentence names the hows and says what they add up to (3.11)
 - [ ] Paragraph examples come from the student's own test material, never an imported claim (3.11)
+- [ ] Essay cards (G6–G8): every body paragraph model has four parts (topic sentence, details, explanation, concluding sentence); explanation placement after each detail or synthesized is accepted (3.11)
 - [ ] Q6–Q10 points stated as 1 answer + 1 reason/example + 1 conventions; never "two points are for the reason"
 - [ ] Completion overlay reads "Good luck on your next test!" plus the plan one-liner (5.8)
 
