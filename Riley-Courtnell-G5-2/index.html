@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Riley Courtnell: Writing Coaching Cards</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Calibri, 'Segoe UI', sans-serif; font-size: 12pt; color: #1a1a2e; background: #f0f0f5; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; padding: 20px; }
+.progress-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
+.progress-dot { width: 12px; height: 12px; border-radius: 50%; background: #ccc; transition: background 0.3s, transform 0.2s; cursor: pointer; position: relative; }
+.progress-dot.active { background: #b8860b; transform: scale(1.25); }
+.progress-dot.visited { background: #d9b56a; }
+.progress-dot:hover { transform: scale(1.3); }
+.progress-dot .dot-tooltip { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: #b8860b; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 8.5pt; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 100; }
+.progress-dot .dot-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #b8860b; }
+.progress-dot:hover .dot-tooltip { opacity: 1; }
+.card-breadcrumb { font-size: 9.5pt; color: #888; margin-bottom: 14px; text-align: center; transition: opacity 0.3s; min-height: 1.2em; }
+.card-breadcrumb b { color: #b8860b; }
+.sticky-indicator { position: fixed; top: 12px; right: 16px; background: #b8860b; color: #fff; padding: 5px 14px; border-radius: 20px; font-size: 9pt; font-weight: 700; opacity: 0; transition: opacity 0.3s; z-index: 200; pointer-events: none; letter-spacing: 0.5px; }
+.sticky-indicator.visible { opacity: 1; }
+.card-container { position: relative; width: 640px; min-height: 420px; }
+.card { position: absolute; top: 0; left: 0; width: 100%; background: #fff; border: 2.5px solid #b8860b; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.10); opacity: 0; pointer-events: none; transform: translateX(40px); transition: opacity 0.35s, transform 0.35s; }
+.card.active { opacity: 1; pointer-events: auto; transform: translateX(0); position: relative; }
+.card-header { background: #b8860b; color: #fff; padding: 14px 20px; border-radius: 11px 11px 0 0; }
+.card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+.card-header .card-subtitle { font-size: 9.5pt; color: #f0e2bd; margin-top: 2px; }
+.card-body { padding: 18px 22px 22px; line-height: 1.55; }
+.card-body p { margin: 6px 0; }
+.score-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; }
+.score-box { background: #f8f8fc; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 10px 14px; text-align: center; }
+.score-box .big { font-size: 20pt; font-weight: 700; }
+.score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+.score-good .big { color: #2d6a2d; }
+.score-warn .big { color: #cc6600; }
+.score-low .big { color: #cc0000; }
+.you-wrote { background: #fff3f3; border-left: 3px solid #cc0000; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.you-wrote .label { font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+.better, .model-box { background: #e8f5e9; border-left: 3px solid #2d6a2d; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.better .label, .model-box .label { font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+.tip-box { background: #e8edf5; border-left: 3px solid #b8860b; padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0; }
+.tip-box .label { font-weight: 700; font-size: 9.5pt; color: #b8860b; margin-bottom: 3px; }
+.rule-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 10px 14px; margin: 10px 0; font-size: 11pt; }
+.rule-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 3px; }
+.lbl { display: inline-block; font-size: 7.5pt; font-weight: 800; letter-spacing: 0.5px; padding: 1px 6px; border-radius: 4px; margin: 0 4px 0 0; vertical-align: middle; color: #fff; line-height: 1.5; }
+.lbl-say, .lbl-echo { background: #5c2dcc; } .lbl-show, .lbl-because { background: #2d6a2d; } .lbl-sowhat { background: #cc6600; } .lbl-close { background: #457b9d; } .lbl-miss { background: #cc0000; } .lbl-reason { background: #888; } .lbl-general { background: #6d4c41; } .lbl-specific { background: #00838f; } .evidence-block { margin: 10px 0 12px; border: 1.5px solid #e0e0e8; border-radius: 8px; overflow: hidden; } .ev-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 12px; font-size: 10.5pt; } .ev-row + .ev-row { border-top: 1px solid #e0e0e8; } .ev-row.paced { background: #e8f5e9; } .ev-row.rushed { background: #fff3f3; } .ev-tag { flex-shrink: 0; font-size: 8.5pt; font-weight: 800; letter-spacing: 0.5px; padding: 2px 7px; border-radius: 8px; color: #fff; margin-top: 2px; } .ev-row.paced .ev-tag { background: #2d6a2d; } .ev-row.rushed .ev-tag { background: #cc0000; } .format-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; } .format-box { background: #fbf7ea; border: 1.5px solid #e6d3a3; border-radius: 8px; padding: 10px 14px; } .format-box .format-title { font-weight: 700; font-size: 10pt; color: #b8860b; margin-bottom: 4px; } .format-box .format-detail { font-size: 9.5pt; color: #555; line-height: 1.4; } .format-box .format-pts { display: inline-block; background: #b8860b; color: #fff; font-size: 8.5pt; font-weight: 700; padding: 1px 7px; border-radius: 8px; margin-bottom: 4px; } @media (max-width: 640px) { .format-grid { grid-template-columns: 1fr; } }
+.ex-list { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+.ex { padding: 8px 12px; border-radius: 6px; font-size: 10.5pt; border-left: 3px solid; }
+.ex.pos { background: #e8f5e9; border-color: #2d6a2d; } .ex.neg { background: #fff3f3; border-color: #cc0000; }
+.ex .tag { font-weight: 800; font-size: 8.5pt; margin-right: 6px; } .ex.pos .tag { color: #2d6a2d; } .ex.neg .tag { color: #cc0000; }
+.think { background: #f8f8fc; border-left: 3px solid #888; padding: 8px 14px; margin: 8px 0; font-size: 10.5pt; font-style: italic; color: #444; }
+.think .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #666; margin-bottom: 2px; }
+.highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+.error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+.discrim-option .error-mark { background: transparent; text-decoration: none; padding: 0; border-radius: 0; }
+.essay-excerpt { background: #fafafa; border: 1px solid #e0e0e8; border-radius: 6px; padding: 10px 14px; font-size: 10.5pt; margin: 8px 0; line-height: 1.7; }
+.discrim-challenge { background: #f8f5ff; border: 1.5px solid #d4c5ff; border-radius: 8px; padding: 14px; margin: 10px 0; }
+.discrim-prompt { font-weight: 700; font-size: 10.5pt; margin-bottom: 10px; color: #5c2dcc; }
+.discrim-options { display: flex; flex-direction: column; gap: 8px; }
+.discrim-option { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border: 2px solid #d4c5ff; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 10.5pt; background: #fff; }
+.discrim-option:hover { border-color: #7c4dff; background: #f5f0ff; }
+.discrim-label { font-weight: 800; color: #7c4dff; min-width: 20px; flex-shrink: 0; }
+.discrim-option.correct, .discrim-option.model { border-color: #2d6a2d; background: #e8f5e9; cursor: default; }
+.discrim-option.correct .discrim-label, .discrim-option.model .discrim-label { color: #2d6a2d; }
+.discrim-option.wrong { border-color: #cc0000; background: #fff3f3; cursor: default; }
+.discrim-option.wrong .discrim-label { color: #cc0000; }
+.discrim-option.locked { pointer-events: none; opacity: 0.5; }
+.discrim-challenge.done .discrim-option { cursor: default; }
+.discrim-feedback { margin-top: 0; font-size: 10pt; line-height: 1.45; max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.3s, opacity 0.3s, margin 0.3s; }
+.discrim-feedback.shown { max-height: 400px; opacity: 1; margin-top: 10px; }
+.discrim-feedback.right-fb { color: #2d6a2d; font-weight: 600; }
+.discrim-parallel { display: none; }
+.discrim-parallel.shown { display: block; }
+.discrim-parallel .discrim-prompt::before { content: 'One more like it. '; color: #888; font-weight: 600; }
+.reveal-wrapper { position: relative; }
+.reveal-cover { background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%); border-left: 3px solid #2d6a2d; padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 10px; transition: background 0.2s, box-shadow 0.2s; }
+.reveal-cover:hover { box-shadow: 0 2px 8px rgba(45,106,45,0.15); }
+.reveal-cover .reveal-icon { width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
+.reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #2d6a2d; }
+.reveal-cover .reveal-hint { font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px; }
+.reveal-content { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0; }
+.reveal-content.shown { max-height: 1200px; opacity: 1; margin: 8px 0; }
+.reveal-cover.hidden { display: none; }
+.your-turn { background: #f8f8fc; border: 1.5px dashed #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.your-turn .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.your-turn textarea { width: 100%; min-height: 64px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; margin: 4px 0; }
+.frame-row { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0; font-size: 10.5pt; }
+.frame-row .lbl { margin-top: 4px; }
+.frame-row .given { background: #fff; border: 1.5px solid #e0e0e8; border-radius: 6px; padding: 8px; flex: 1; color: #555; }
+.frame-row textarea { flex: 1; min-height: 48px; margin: 0; }
+.yt-btn { margin-top: 8px; padding: 7px 16px; border: 2px solid #2d6a2d; background: #fff; color: #2d6a2d; border-radius: 8px; font-family: inherit; font-weight: 600; font-size: 10pt; cursor: pointer; }
+.yt-btn:hover { background: #2d6a2d; color: #fff; }
+.yt-btn:disabled { opacity: 0.6; cursor: default; }
+.yt-model { display: none; margin-top: 10px; }
+.assembled { display: none; margin-top: 8px; }
+.assembled.shown { display: block; }
+.xp-link { display: inline-block; margin: 8px 6px 0 0; padding: 6px 14px; border-radius: 6px; background: #2d6a2d; color: #fff; font-weight: 700; font-size: 10pt; text-decoration: none; }
+.xp-link:hover { background: #1b5e1b; }
+.yt-model.shown { display: block; }
+.self-check .check-item { font-size: 10pt; padding: 6px 8px; }
+.check-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 8px; cursor: pointer; border-bottom: 1px solid #eee; border-radius: 6px; transition: background 0.15s; user-select: none; font-size: 11pt; }
+.check-item:last-child { border-bottom: none; }
+.check-item:hover { background: #f8f8fc; }
+.check-item.checked { background: #f0f8f0; }
+.check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
+.check-item.checked .check-box::after { content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
+.check-box { width: 28px; height: 28px; border: 2.5px solid #b8860b; border-radius: 6px; flex-shrink: 0; margin-top: 1px; position: relative; transition: background 0.2s, border-color 0.2s; }
+.self-check .check-box { width: 22px; height: 22px; }
+.checklist-progress { background: #eee; border-radius: 10px; height: 8px; margin: 12px 0 6px; overflow: hidden; }
+.checklist-progress-fill { background: linear-gradient(90deg, #2d6a2d, #4caf50); height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%; }
+.checklist-progress-label { font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px; }
+.quick-check { background: #f8f5ff; border: 2px solid #7c4dff; border-radius: 10px; padding: 12px 14px; margin: 10px 0; }
+.quick-check .qc-title { font-weight: 800; color: #5c2dcc; font-size: 10.5pt; margin-bottom: 4px; }
+.quick-check .qc-sub { font-size: 9.5pt; color: #666; margin-bottom: 6px; }
+.quick-check .discrim-challenge { background: #fff; margin: 8px 0; padding: 10px 12px; }
+.qc-result { display: none; font-weight: 700; margin-top: 8px; font-size: 10.5pt; color: #5c2dcc; }
+.recall-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.recall-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.recall-box textarea { width: 100%; min-height: 56px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; }
+.checklist-wrap { display: none; }
+.checklist-wrap.shown { display: block; }
+.time-toggle { font-size: 9pt; color: #b8860b; cursor: pointer; text-decoration: underline; display: inline-block; margin: 0 0 6px; }
+.tl-time { display: none; font-weight: 400; color: #aaa; }
+.show-times .tl-time { display: inline; }
+.guide-block { margin-top: 16px; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 8px 12px; background: #fafafa; font-size: 10pt; }
+.guide-block summary { cursor: pointer; font-weight: 700; color: #666; font-size: 9.5pt; }
+.guide-block ul { margin: 6px 0 4px 18px; }
+.guide-block li { margin: 4px 0; }
+.practice-recommendations { margin-top: 16px; border-top: 2px solid #e0e0e8; padding-top: 14px; }
+.practice-recs-title { font-size: 10pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #b8860b; margin-bottom: 10px; }
+.practice-tier { border-radius: 8px; padding: 12px 14px; margin: 8px 0; }
+.tier-primary { background: #e8f5e9; border: 1.5px solid #a5d6a7; }
+.tier-extra { background: #f8f8fc; border: 1.5px solid #e0e0e8; }
+.tier-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.tier-label { font-size: 8.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 2px 10px; border-radius: 10px; }
+.tier-primary .tier-label { background: #2d6a2d; color: #fff; }
+.tier-extra .tier-label { background: #888; color: #fff; }
+.tier-note { font-size: 9pt; color: #666; margin-bottom: 6px; line-height: 1.4; }
+.practice-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.practice-link { display: inline-block; padding: 5px 12px; border-radius: 6px; font-size: 9.5pt; font-weight: 600; text-decoration: none; transition: background 0.2s, transform 0.1s; }
+.tier-primary .practice-link { background: #c8e6c9; color: #1b5e1b; }
+.tier-extra .practice-link { background: #e8edf5; color: #b8860b; }
+.nav { display: flex; gap: 12px; margin-top: 16px; }
+.nav button { padding: 8px 28px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; transition: background 0.2s, color 0.2s; }
+.nav button:hover { background: #b8860b; color: #fff; }
+.print-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 8px 20px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 10.5pt; font-weight: 600; cursor: pointer; }
+.print-btn:hover { background: #b8860b; color: #fff; }
+.print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+.completion-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(184,134,11,0.6); z-index: 500; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s; }
+.completion-overlay.visible { opacity: 1; pointer-events: auto; }
+.completion-card { background: #fff; border-radius: 16px; padding: 40px 48px; text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2); transform: scale(0.8); transition: transform 0.4s ease; max-width: 420px; }
+.completion-overlay.visible .completion-card { transform: scale(1); }
+.completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+.completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; color: #b8860b; }
+.completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+.completion-close { margin-top: 20px; padding: 10px 32px; background: #b8860b; color: #fff; border: none; border-radius: 8px; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; }
+#confettiCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 501; }
+.score-timeline { display: flex; align-items: flex-end; gap: 0; margin: 12px 0 10px; padding: 0 6px; justify-content: space-between; }
+.timeline-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.timeline-score { font-size: 13pt; font-weight: 700; margin-bottom: 4px; }
+.timeline-bar { width: 70%; border-radius: 4px 4px 0 0; min-height: 8px; }
+.timeline-label { font-size: 8.5pt; color: #888; margin-top: 6px; font-weight: 600; text-align: center; }
+.score-green { color: #2d6a2d; } .score-amber { color: #cc6600; } .score-red { color: #cc0000; }
+.bar-green { background: linear-gradient(to top, #c8e6c9, #81c784); } .bar-amber { background: linear-gradient(to top, #ffe0b2, #ffb74d); } .bar-red { background: linear-gradient(to top, #ffcdd2, #ef9a9a); }
+.strength-chips, .growth-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; }
+.strength-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; background: #e8f5e9; color: #2d6a2d; border: 1.5px solid #a5d6a7; display: inline-flex; align-items: center; gap: 4px; }
+.strength-chip .chip-course, .growth-chip .chip-avg { font-size: 7.5pt; color: #888; font-weight: 400; }
+.journey-section { font-size: 9.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; margin: 10px 0 4px; padding-bottom: 3px; border-bottom: 1.5px solid; }
+.journey-section.strengths-header { color: #2d6a2d; border-color: #c8e6c9; }
+.journey-section.growth-header { color: #cc6600; border-color: #ffe0b2; }
+.root-cause-teaser { background: #f5f0ff; border-left: 3px solid #7c4dff; padding: 10px 14px; margin: 12px 0 4px; border-radius: 0 6px 6px 0; font-size: 10.5pt; line-height: 1.5; }
+.root-cause-teaser b { color: #5c2dcc; }
+.growth-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+.growth-chip.mixed { background: #fff8e8; color: #b35900; border: 1.5px solid #ffe0b2; }
+.growth-chip.weak { background: #fff3f3; color: #cc0000; border: 1.5px solid #ffcdd2; }
+@media print { body { background: #fff; padding: 0; min-height: auto; } .progress-bar, .nav, .print-btn, .card-breadcrumb, .sticky-indicator, .completion-overlay, #confettiCanvas, .reveal-cover, .checklist-progress, .checklist-progress-label, .discrim-challenge, .discrim-parallel, .quick-check, .recall-box, .yt-btn, .guide-block { display: none !important; } .card-container { width: 100%; min-height: auto; } .card { display: none !important; } .card.print-target { display: block !important; opacity: 1 !important; pointer-events: auto !important; position: relative !important; transform: none !important; box-shadow: none; border: 2px solid #b8860b; page-break-inside: avoid; } .reveal-content, .yt-model, .checklist-wrap { display: block !important; max-height: none !important; opacity: 1 !important; margin: 8px 0 !important; } }
+@media (max-width: 720px) { .card-container { width: 100%; } .score-grid { grid-template-columns: 1fr; } .timeline-score { font-size: 10pt; } }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progressBar"></div>
+<div class="card-breadcrumb" id="breadcrumb"></div>
+<div class="sticky-indicator" id="stickyIndicator"></div>
+<div class="card-container" id="cardContainer">
+
+<!-- Card 1: Your Starting Point -->
+<div class="card active" data-title="Your Starting Point">
+  <div class="card-header"><h2>Riley Courtnell</h2><div class="card-subtitle">Alpha Standardized Writing G5.2. October 2026. Passages: &ldquo;Blue-Ribbon Baking&rdquo; / &ldquo;What Can We See in a Logo?&rdquo;</div></div>
+  <div class="card-body">
+    <div class="score-grid">
+      <div class="score-box score-good"><div class="big">89%</div><div class="label">Overall Score</div></div>
+      <div class="score-box score-good"><div class="big">23/25</div><div class="label">Questions 1&ndash;10</div></div>
+      <div class="score-box score-good"><div class="big">17/20</div><div class="label">Paragraph (Question 11)</div></div>
+    </div>
+    <p>Riley, 40 of 45 is one point from a G5 pass, and the three things your last card asked for all showed up. The appositive in Q1 renames with a noun, <i>an experienced baker</i>, full marks. Q7 and Q9 carry a <i>because</i>. And the paragraph has a quote from the article and a sentence that explains it, which is why it went from 16 to 17.</p>
+    <p>Five points went missing, and four of them are spelling and punctuation. Q5 lost its point to <i>shiney</i>, <i>aple</i> and a stray space in <i>first- place</i>. Q10 has no because, no period, and <i>satasfied</i>. The paragraph has eleven slips, <i>Buisness</i> twice and <i>familier</i> three times among them, plus a study with its numbers left out, and an ending that says the first sentence again. That ending is the one habit from your last card that has not moved yet: five tests, five restated endings.</p>
+    <div class="root-cause-teaser"><b>The plan:</b> one read-back, finger on each word, before every submit. An ending that names the facts and says what they add up to. And every one-sentence answer finished with its because.</div>
+    <div class="journey-section strengths-header">Skills you do well</div>
+    <div class="strength-chips">
+      <span class="strength-chip">Appositive, because, two combines <span class="chip-course">&middot; Q1&ndash;Q4, 8 of 8</span></span>
+      <span class="strength-chip">A quote from the article, explained <span class="chip-course">&middot; Q11, attentional saturation</span></span>
+      <span class="strength-chip">Answer, then because <span class="chip-course">&middot; Q7, Q9, full marks</span></span>
+      <span class="strength-chip">A topic sentence with a point and a how <span class="chip-course">&middot; Q11, sentence one</span></span>
+    </div>
+    <div class="journey-section growth-header">What to work on</div>
+    <div class="growth-chips">
+      <span class="growth-chip weak">Read-back: eleven slips in the paragraph, three in Q5, one in Q10 <span class="chip-avg">four points</span></span>
+      <span class="growth-chip mixed">The ending repeats the first sentence <span class="chip-avg">Q11, fifth test running</span></span>
+      <span class="growth-chip mixed">A study without its numbers <span class="chip-avg">Q11</span></span>
+      <span class="growth-chip mixed">An answer with no because and no period <span class="chip-avg">Q10</span></span>
+    </div>
+  </div>
+</div>
+
+<!-- Card 2: Writing Journey -->
+<div class="card" data-title="Your Writing Journey">
+  <div class="card-header"><h2>Your Writing Journey</h2><div class="card-subtitle">Five tests, three grade levels, three weeks</div></div>
+  <div class="card-body">
+    <div class="score-timeline">
+      <div class="timeline-item"><div class="timeline-score score-green">89%</div><div class="timeline-bar bar-green" style="height:80px;"></div><div class="timeline-label">G3.1 (Sep 11)<br><span class="tl-time">25m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">93%</div><div class="timeline-bar bar-green" style="height:84px;"></div><div class="timeline-label">G3.2 (Sep 24)<br><span class="tl-time">18m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">91%</div><div class="timeline-bar bar-green" style="height:82px;"></div><div class="timeline-label">G4.1 (Sep 24)<br><span class="tl-time">19m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">84%</div><div class="timeline-bar bar-green" style="height:76px;"></div><div class="timeline-label">G5.1 (Sep 25)<br><span class="tl-time">51m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">89%</div><div class="timeline-bar bar-green" style="height:80px;"></div><div class="timeline-label">G5.2 (Oct 2)<br><span class="tl-time">29m</span></div></div>
+    </div>
+    <span class="time-toggle" onclick="toggleTimes(this)">Show how long each test took</span>
+    <p>Two G3 passes and a G4 pass in September, then 84 and 89 on G5. Between the two G5 tests the appositive was fixed, the because arrived in Q7 and Q9, and the paragraph gained a quote and an explanation. What stayed the same is the last sentence. Five paragraphs, five endings that repeat the first sentence: <i>soil provides life</i>, <i>the library has a positive impact</i>, <i>Cody gets proven wrong</i>, <i>horses communicate through symbols and expressions</i>, and now <i>a memorable logo is fundamental to businesses</i>. The other repeat is new: the spellings. Sixteen minutes went into this paragraph and none of them into reading it back.</p>
+    <div class="journey-section strengths-header">Skills you do well</div>
+    <div class="strength-chips">
+      <span class="strength-chip">Three grade levels passed first try <span class="chip-course">&middot; G3.2, G4.1, and a G5 pass one point away</span></span>
+      <span class="strength-chip">Fixes that land between tests <span class="chip-course">&middot; appositive, because, the quote</span></span>
+      <span class="strength-chip">Topic sentences that answer, every test <span class="chip-course">&middot; five for five</span></span>
+    </div>
+    <div class="journey-section growth-header">What to work on</div>
+    <div class="growth-chips">
+      <span class="growth-chip weak">An ending that adds the facts up <span class="chip-avg">five paragraphs, five restatements</span></span>
+      <span class="growth-chip mixed">The read-back before submit <span class="chip-avg">G5.2: fifteen slips</span></span>
+      <span class="growth-chip mixed">A because inside every one-sentence answer <span class="chip-avg">G5.1 Q9, Q10; G5.2 Q10</span></span>
+    </div>
+    <div class="root-cause-teaser"><b>One point from a pass.</b> The read-back alone is worth four. The ending is worth one or two more. Card 3 is the read-back, card 4 is the ending.</div>
+  </div>
+</div>
+
+<!-- Card 3: Fix 1, the read-back -->
+<div class="card" data-title="Fix 1: Read It Back, Finger on Each Word">
+  <div class="card-header"><h2>Fix 1: Read It Back, Finger on Each Word</h2><div class="card-subtitle">Fifteen slips on this test, and four points</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: ONE READ-BACK, AND COPY THE WORDS THE PAGE GIVES YOU</div>Before you submit, read every answer once with a finger on each word. The finger catches what the eye skips: a missing letter, a doubled one, a missing period. Then one more check: any word that is on the page, <i>business</i>, <i>familiar</i>, <i>apple</i>, <i>remember</i>, is copied from the page, never from memory. <b>The check:</b> the paragraph box is five conventions points. Count your slips before you submit; more than two and you have not read it back.</div>
+
+    <div class="you-wrote"><div class="label">YOU WROTE (Q5, 1 OUT OF 2)</div>&ldquo;We were both amazed to see a <span class="error-mark">shiney</span> <span class="error-mark">first- place</span> ribbon right next to our <span class="error-mark">aple</span> pie.&rdquo; <span class="lbl lbl-miss">THE REVISION WAS RIGHT; THREE SLIPS COST THE POINT</span><br><span style="font-size:9.5pt;color:#666;">The sentence does the job the question asked. <i>Shiny</i>, <i>first-place</i> with no space, and <i>apple</i>, which is spelled on the page in sentence 7.</span></div>
+    <div class="you-wrote"><div class="label">YOU WROTE (Q11, THE SLIPS)</div>&ldquo;<span class="error-mark">Buisness</span> experts&hellip; it becomes <span class="error-mark">familier</span> to them&hellip; they <span class="error-mark">dont</span> remember&hellip; so <span class="error-mark">the</span> decide what seems important&hellip; <span class="error-mark">its</span> called&hellip; could not <span class="error-mark">remeber</span>&hellip; a <span class="error-mark">familier</span> logo&hellip; fundamental to <span class="error-mark">buisnesses</span>.&rdquo; <span class="lbl lbl-miss">ELEVEN SLIPS IN ONE PARAGRAPH</span><br><span style="font-size:9.5pt;color:#666;"><i>Business</i> is in the question. <i>Familiar</i> is in paragraph 6 of the article. <i>They decide</i> is inside your own quotation marks, so it has to match the article letter for letter. Every one of these is a finger-on-the-word catch.</span></div>
+    <div class="model-box"><div class="label">THE SAME SENTENCES, READ BACK ONCE</div>Business experts believe that a recognizable logo is valuable because it triggers a sense of familiarity. When people see the same logo over and over, it becomes familiar to them&hellip; they don&rsquo;t remember every detail&hellip; &ldquo;our brains cannot remember every single thing we see, so they decide what seems important.&rdquo; When our brains do this, it&rsquo;s called &ldquo;attentional saturation.&rdquo;</div>
+
+    <p style="margin-top:10px;"><b>What the finger catches</b>, one of each kind:</p>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">A WORD ON THE PAGE</span>familier &rarr; <b>familiar</b> (paragraph 6); buisness &rarr; <b>business</b> (the question)</div>
+      <div class="ex pos"><span class="tag">A MISSING APOSTROPHE</span>dont, its called &rarr; <b>don&rsquo;t</b>, <b>it&rsquo;s called</b></div>
+      <div class="ex pos"><span class="tag">A MISSING END MARK</span>they feel happy and satisfied &rarr; they feel happy and satisfied<b>.</b></div>
+      <div class="ex neg"><span class="tag">INSIDE QUOTATION MARKS</span>&ldquo;so the decide what seems important&rdquo;<br><span style="font-size:9.5pt;color:#666;">A quote has to match the page exactly. The article says <i>they decide</i>. One missing letter turns a quote into a misquote.</span></div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Finger on each word. Which sentence is ready to submit?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Buisness, familier, and dont: three from your paragraph." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Buisness experts know that a familier logo sells, even when people dont remember it exactly.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="Business and familiar copied from the page, don&rsquo;t with its apostrophe." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Business experts know that a familiar logo sells, even when people don&rsquo;t remember it exactly.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Finger on each word. Which sentence is ready to submit?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Shiny, first-place, apple. Correct." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>A shiny first-place ribbon sat beside the apple pie.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Shiney, a space in first- place, aple: the Q5 slips." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>A shiney first- place ribbon sat beside the aple pie.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">The article says: <i>Our brains cannot remember every single thing we see, so they decide what seems important.</i> Which quote is exact?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="true" data-right-feedback="Letter for letter. A quote the grader can check." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>The article says our brains &ldquo;decide what seems important.&rdquo;</span></div>
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="The decide. One letter missing inside the quotation marks makes it a misquote." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The article says our brains &ldquo;so the decide what seems important.&rdquo;</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Every answer, every lesson: one read-back with a finger on each word before you press done. Any word that is on the page, copy from the page.</div>
+  </div>
+</div>
+
+<!-- Card 4: Fix 2, the ending -->
+<div class="card" data-title="Fix 2: The Ending, Fifth Time">
+  <div class="card-header"><h2>Fix 2: The Ending, Fifth Time</h2><div class="card-subtitle">Your five paragraphs all end by saying the first sentence again. Here is the one that does not</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: NAME THE FACTS, THEN SAY WHAT THEY ADD UP TO</div>A concluding sentence looks back at the facts you gave and says what they prove together: <i>Together, [fact 1] and [fact 2] show that [the point, now earned].</i> It is not the first sentence in new words. <b>The tell:</b> could your last sentence have been written before the facts? Then it is the first sentence again. <i>In conclusion, having a memorable logo is fundamental to businesses</i> could have been sentence one.</div>
+
+    <div class="you-wrote"><div class="label">YOU WROTE, FIVE TIMES</div>&ldquo;In conclusion, soil provides life, making it important.&rdquo; &nbsp; &ldquo;In conclusion, the Camel Mobile Library has a positive impact on the people of Garissa.&rdquo; &nbsp; &ldquo;In conclusion, Cody gets proven wrong and the events change his opinion.&rdquo; &nbsp; &ldquo;In conclusion, horses can communicate through symbols and facial expressions.&rdquo; &nbsp; &ldquo;<span class="error-mark">In conclusion, having a memorable logo is fundamental to businesses.</span>&rdquo; <span class="lbl lbl-miss">THE FIRST SENTENCE, EACH TIME</span><br><span style="font-size:9.5pt;color:#666;">Each paragraph had good facts in the middle, and each ending gave them nothing to add up to. Five tests, the same point waiting at the end of each one.</span></div>
+    <div class="model-box"><div class="label">YOUR FACTS, ADDED UP</div><span class="lbl lbl-close">CONCLUDING SENTENCE &middot; TOGETHER</span>A brain that drops the details to attentional saturation but keeps the feeling of a familiar shape is why a logo nobody can draw can still sell a product.<br><span style="font-size:9.5pt;color:#666;">Both of your facts named, attentional saturation and familiarity, then what they add up to: a logo sells even when it cannot be drawn. The first sentence could not have said that.</span></div>
+
+    <p style="margin-top:10px;"><b>Three endings that add facts up</b>, and one that repeats:</p>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">TOGETHER</span>Seventeen expressions and a three-board code add up to horses that have been talking to us for years while we learned to listen.</div>
+      <div class="ex pos"><span class="tag">TOGETHER</span>Camels that reach moving families and stories that feel like home are how a library with no building changed what Garissa reads.</div>
+      <div class="ex pos"><span class="tag">TOGETHER</span>One flat tire and one goal were enough to replace what Cody thought he knew about two of his teammates.</div>
+      <div class="ex neg"><span class="tag">REPEATS</span>In conclusion, a recognizable logo is valuable to businesses.<br><span style="font-size:9.5pt;color:#666;">The first sentence, shorter. The tell: it could have come first.</span></div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">After facts about attentional saturation and about familiarity making people buy, which ending adds them up?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Your ending. It could have been the first sentence, so it adds nothing." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>In conclusion, having a memorable logo is fundamental to businesses.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="Both facts named, then what they prove together." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Forgetting the details and trusting the shape are the same habit of the brain, and that habit is what a company pays for when it pays for a logo.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">A paragraph about Grandma Addie&rsquo;s pie gave two facts: she taught every step over four Sundays, and the pie won first place. Which ending adds them up?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Both facts named, then what they add up to." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Four Sundays of slicing and mixing turned a second-place pie into a first-place one, which is what Grandma Addie meant by calling her granddaughter the secret ingredient.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Could have been the first sentence. The tell." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>In conclusion, Grandma Addie taught her granddaughter how to bake a pie.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which test tells you an ending is only the first sentence again?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="true" data-right-feedback="If it could have come first, the facts earned nothing in it." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Ask whether it could have been written before the facts.</span></div>
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="In conclusion is a fine signal, but it does not turn a repeated sentence into a new one." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Check whether it starts with In conclusion.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Before you write the last sentence, reread your facts and name them. Then say what they prove together. If the sentence could have come first, it is not finished.</div>
+  </div>
+</div>
+
+<!-- Card 5: Fix 3, Q10 because -->
+<div class="card" data-title="Fix 3: Finish the Sentence">
+  <div class="card-header"><h2>Fix 3: Finish the Sentence</h2><div class="card-subtitle">Q10: the feeling, with no because and no period</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: ANSWER, THEN BECAUSE, THEN THE PERIOD</div>For Q6 to Q10, one point is for a clear answer in a sentence, one point is for the reason, explanation or example inside it, and one is for spelling and punctuation. <b>The check:</b> find the word <i>because</i> (or <i>so</i>), then find the period. Missing either one, the sentence is not finished.</div>
+
+    <div class="you-wrote"><div class="label">YOU WROTE (Q10, 2 OUT OF 3)</div>&ldquo;When their hard work is recognized they feel happy and <span class="error-mark">satasfied</span><span class="error-mark">&nbsp;</span>&rdquo; <span class="lbl lbl-miss">NO BECAUSE, NO PERIOD</span><br><span style="font-size:9.5pt;color:#666;">The feeling is named, which is the answer. The question asked how someone might feel; the second point is why. And the sentence has no end mark.</span></div>
+    <div class="model-box"><div class="label">FINISHED</div>When their hard work is finally recognized, they feel happy and satisfied <span class="lbl lbl-because">BECAUSE</span>because the hours nobody saw have been seen at last.</div>
+
+    <p style="margin-top:10px;"><b>Your own answers that carried the because</b>, and the one that stopped:</p>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">YOURS, Q7</span>Practice over time makes you successful <b>because</b> it develops your skills in the activity you&rsquo;re doing.</div>
+      <div class="ex pos"><span class="tag">YOURS, Q9</span>Working with someone you like can make the task easier and more enjoyable <b>because</b> you&rsquo;re doing it together.</div>
+      <div class="ex pos"><span class="tag">YOURS, Q2</span>We made the pie together, step by step, <b>because</b> I needed to learn exactly how to make it.</div>
+      <div class="ex neg"><span class="tag">YOURS, Q10</span>When their hard work is recognized they feel happy and satisfied<br><span style="font-size:9.5pt;color:#666;">The answer, and it stops, without a because and without a period. Two points.</span></div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Question: <i>How might someone feel when their hard work is finally recognized?</i> Which answer earns all three points?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="The feeling, and it stops. No because, so two points." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>They might feel proud and relieved.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="The feeling, then because, then the reason, then the period." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>They might feel proud and relieved because the work finally counted for something other people could see.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Question: <i>How might a child feel the first time a recipe works?</i> Which answer earns all three points?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="The feeling, then because, then the reason." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>A child might feel amazed because something they made with their hands turned out exactly as planned.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="No because, and no period." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>A child might feel amazed and happy</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Every one-sentence answer: the answer, then because, then the reason, then the period. Put your finger on the because and on the period before you move on.</div>
+  </div>
+</div>
+
+<!-- Card 6: Paragraph Review -->
+<div class="card" data-title="Paragraph Review">
+  <div class="card-header"><h2>Your Paragraph: 17 out of 20</h2><div class="card-subtitle">The frame is complete now. Three points: the read-back, the numbers, the ending</div></div>
+  <div class="card-body">
+    <p>The question: <i>Why do many business experts believe that a recognizable logo is valuable?</i> Here is yours, labelled:</p>
+    <div class="essay-excerpt">
+      <span class="lbl lbl-say">TOPIC SENTENCE &middot; POINT</span><span class="error-mark">Buisness</span> experts believe that a recognizable logo is valuable <span class="lbl lbl-say">HOW</span>because it triggers a sense of familiarity. <span class="lbl lbl-show">DETAIL 1 &middot; SHOW</span>When people see the same logo over and over, it becomes <span class="error-mark">familier</span> to them and part of their everyday life. Once a logo becomes <span class="error-mark">familier</span> to someone, they <span class="error-mark">dont</span> remember every detail of the logo, but rather the general idea of it. &ldquo;Scientists believe... our brains cannot remember every single thing we see, so <span class="error-mark">the</span> decide what seems important.&rdquo; When our brains do this <span class="error-mark">its</span> called &ldquo;attentional saturation.&rdquo; <span class="lbl lbl-show">DETAIL 2 &middot; SHOW</span>A group of studies was done with students, and many could not <span class="error-mark">remeber</span> the exact logo they see everyday. <span class="lbl lbl-sowhat">DETAIL &middot; SO WHAT</span>Making a memorable logo is essential to companies, because when people see a <span class="error-mark">familier</span> logo, they are more likely to buy the product. <span class="lbl lbl-miss">REPEATS THE FIRST SENTENCE</span>In conclusion, having a memorable logo is fundamental to <span class="error-mark">buisnesses</span>.
+    </div>
+    <p>This is the frame your last card asked for: a topic sentence with a point and a how, a quote from the article, a second detail, an explanation that says why it matters to a company. That is a 17 on a G5 test, one week after a 16. The three points: eleven slips for the read-back; the study with its numbers left out, where the article gives you 85 students, one correct drawing and fewer than half picking the real logo from a group; and an ending that is the first sentence again.</p>
+
+    <div class="rule-box"><div class="label">THE LAST THREE POINTS</div>Copy the page&rsquo;s words from the page and read the paragraph back once. Put the numbers in: a study without its numbers is a gist, not a detail. End by naming the facts and saying what they add up to. <b>The check:</b> count the slips (two or fewer), count the numbers (at least one), read the last sentence (could it have come first?).</div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which version of your study sentence is a detail a grader can point to?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Your sentence: true, and no number, so a gist." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>A group of studies was done with students, and many could not remember the exact logo they see every day.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="The same fact with the article&rsquo;s numbers: 85, one, fewer than half." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>In 2015, UCLA researchers asked 85 students to draw the Apple logo they saw every day; only one drew it correctly, and fewer than half could pick the real one from a group.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="reveal-wrapper">
+      <div class="reveal-cover" onclick="revealBetter(this)">
+        <div class="reveal-icon"><svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></div>
+        <div><div class="reveal-text">Tap to see the 20-point version</div><div class="reveal-hint">Your sentences, read back. The numbers put in. An ending that adds up</div></div>
+      </div>
+      <div class="reveal-content">
+        <div class="better"><div class="label">YOUR PARAGRAPH, FINISHED</div>
+          <span class="lbl lbl-say">TOPIC SENTENCE &middot; POINT + HOW</span>Business experts believe that a recognizable logo is valuable because it triggers a sense of familiarity, and because the brain keeps that feeling even after it has dropped the details. <span class="lbl lbl-show">DETAIL 1 &middot; SHOW</span>When people see the same logo over and over, it becomes familiar and part of their everyday life, yet they don&rsquo;t remember every detail of it: the article says our brains &ldquo;cannot remember every single thing we see, so they decide what seems important,&rdquo; which scientists call &ldquo;attentional saturation.&rdquo; <span class="lbl lbl-show">DETAIL 2 &middot; SHOW</span>In 2015, UCLA researchers asked 85 students to draw the Apple logo they saw every day; only one drew it correctly, and fewer than half could pick the real one from a group. <span class="lbl lbl-sowhat">DETAIL &middot; SO WHAT</span>This shows why a memorable logo is essential to a company: when people see a familiar logo they are more likely to buy the product, even when they could not draw it. <span class="lbl lbl-close">CONCLUDING SENTENCE &middot; TOGETHER</span>A brain that drops the details to attentional saturation but keeps the feeling of a familiar shape is why a logo nobody can draw can still sell a product.
+        </div>
+      </div>
+    </div>
+    <p style="font-size:10.5pt;">Your frame, your quote, your explanation. Eleven slips fixed, the study given its numbers, a second how added to the first sentence, and an ending with something to add up. That is the three points, and the pass.</p>
+  </div>
+</div>
+
+<!-- Card 7: Quick Check, Checklist -->
+<div class="card" data-title="Quick Check &amp; Checklist">
+  <div class="card-header"><h2>Quick Check</h2><div class="card-subtitle">Six new ones. Then your checklist</div></div>
+  <div class="card-body">
+    <div class="quick-check" data-back="cards 3 to 6">
+      <div class="qc-title">The read-back, the ending, and the because, six questions</div>
+      <div class="qc-sub">All new sentences. Answer each one once.</div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Finger on each word. Which sentence is ready to submit?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Remember, it&rsquo;s, and a period at the end." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Most people cannot remember the details of a penny, and it&rsquo;s something they see every week.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Remeber, its, and no period." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Most people cannot remeber the details of a penny, and its something they see every week</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">The article says: <i>Logos are made to catch our eye and help us remember a product.</i> Which quote is exact?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Catch the eye. One changed word inside the quotation marks." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Logos are made to &ldquo;catch the eye and help us remember a product.&rdquo;</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Letter for letter." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Logos are made to &ldquo;catch our eye and help us remember a product.&rdquo;</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence is a detail a grader can point to?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="A time, a task, a result from paragraph 3." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>In the 1970s, people asked to draw a penny from memory mostly could not say which way Lincoln faced.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="True, and a gist. No number, no name." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Some studies have shown that people forget things they see a lot.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">After facts about the penny test and the Apple test, which ending adds them up?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Could have been the first sentence." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>In conclusion, it is hard to remember the details of things we see every day.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Both facts named, then what they add up to." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>A coin and a logo, fifty years apart, failed the same test, which tells us the forgetting is in our brains and not in the design.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Question: <i>How might a designer feel when people forget the details of a logo?</i> Which answer earns all three points?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="The feeling, then because, then the reason, then the period." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>A designer might feel disappointed because the details took the most work and are the first thing people drop.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="The feeling, and it stops, with no period." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>A designer might feel disappointed and a little sad</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence copies the page&rsquo;s word from the page?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Familier is not the word on the page." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>A familier logo makes people feel good about buying a product.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Familiar, as paragraph 6 spells it." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>A familiar logo makes people feel good about buying a product.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="qc-result"></div>
+    </div>
+
+    <div class="checklist-wrap shown">
+      <div id="mainChecklist">
+        <div class="checklist-progress-label" id="checkProgressLabel">0 of 6 checked</div>
+        <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>One read-back, finger on each word</b>, before every submit. Two slips or fewer in the paragraph.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Any word that is on the page is copied from the page</b>: business, familiar, apple, remember.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>A quote matches the article letter for letter.</b></div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Every detail has its number or its name.</b> A study without its numbers is a gist.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Ending:</b> name the facts and say what they add up to. If it could have come first, rewrite it.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Q6 to Q10:</b> the answer, then because, then the reason, then the period.</div></div>
+      </div>
+      <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>Print Checklist</button>
+    </div>
+  </div>
+</div>
+
+</div>
+<div class="nav"><button id="prevBtn" onclick="navigate(-1)">&larr; Back</button><button id="nextBtn" onclick="navigate(1)">Next &rarr;</button></div>
+<div class="completion-overlay" id="completionOverlay"><div class="completion-card"><div class="completion-emoji">&#9997;</div><div class="completion-title">Good luck on your next test!</div><div class="completion-sub">One read-back, finger on each word, copying the page's words from the page. Every detail with its number. An ending that names the facts and says what they add up to. Answer, then because, then the period.</div><button class="completion-close" onclick="closeCompletion()">Got it</button></div></div>
+<canvas id="confettiCanvas"></canvas>
+<script>
+var cards=document.querySelectorAll('.card'),bar=document.getElementById('progressBar'),breadcrumb=document.getElementById('breadcrumb'),stickyEl=document.getElementById('stickyIndicator'),current=0,visited=[0];
+cards.forEach(function(card,i){var dot=document.createElement('div');dot.className='progress-dot'+(i===0?' active':'');var tooltip=document.createElement('span');tooltip.className='dot-tooltip';tooltip.textContent=card.getAttribute('data-title')||('Card '+(i+1));dot.appendChild(tooltip);dot.addEventListener('click',function(){goTo(i);});bar.appendChild(dot);});
+function updateBreadcrumb(){var title=cards[current].getAttribute('data-title')||('Card '+(current+1));breadcrumb.innerHTML='Card <b>'+(current+1)+'</b> of '+cards.length+' &mdash; '+title;stickyEl.textContent=(current+1)+' / '+cards.length;}
+function checkSticky(){var r=bar.getBoundingClientRect();stickyEl.classList.toggle('visible',r.bottom<0);}
+window.addEventListener('scroll',checkSticky);
+function goTo(idx){if(idx<0||idx>=cards.length)return;cards[current].classList.remove('active');bar.children[current].classList.remove('active');current=idx;if(visited.indexOf(current)===-1)visited.push(current);cards[current].classList.add('active');bar.children[current].classList.add('active');visited.forEach(function(v){if(v!==current)bar.children[v].classList.add('visited');});var p=document.getElementById('prevBtn'),n=document.getElementById('nextBtn');if(p){p.style.visibility=current===0?'hidden':'visible';p.disabled=current===0;}if(n){n.textContent=current===cards.length-1?'Done ✓':'Next →';}updateBreadcrumb();window.scrollTo({top:0,behavior:'smooth'});}
+function navigate(dir){if(dir===1&&current===cards.length-1){showCompletion();return;}goTo(current+dir);}
+document.addEventListener('keydown',function(e){if(e.target&&e.target.tagName==='TEXTAREA')return;if(e.key==='ArrowRight'||e.key==='ArrowDown')navigate(1);if(e.key==='ArrowLeft'||e.key==='ArrowUp')navigate(-1);});
+function revealBetter(cover){cover.nextElementSibling.classList.add('shown');cover.classList.add('hidden');}
+function shuffleOptions(){document.querySelectorAll('.discrim-options').forEach(function(box){var opts=Array.prototype.slice.call(box.querySelectorAll('.discrim-option'));for(var i=opts.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=opts[i];opts[i]=opts[j];opts[j]=t;}opts.forEach(function(o,i){box.appendChild(o);var l=o.querySelector('.discrim-label');if(l)l.textContent=String.fromCharCode(65+i);});});}
+function handleDiscrim(option){var ch=option.closest('.discrim-challenge');if(ch.classList.contains('done'))return;var fb=ch.querySelector('.discrim-feedback');var opts=ch.querySelectorAll('.discrim-option');var ok=option.getAttribute('data-correct')==='true';ch.classList.add('done');
+if(ok){option.classList.add('correct');opts.forEach(function(o){if(o!==option)o.classList.add('locked');});fb.innerHTML=option.getAttribute('data-right-feedback')||'Correct.';fb.className='discrim-feedback shown right-fb';ch.setAttribute('data-first-try','1');}
+else{option.classList.add('wrong');var right=ch.querySelector('.discrim-option[data-correct="true"]');right.classList.add('model');opts.forEach(function(o){if(o!==option&&o!==right)o.classList.add('locked');});var rl=right.querySelector('.discrim-label');fb.innerHTML='<span style="color:#cc0000"><b>Not this one.</b> '+(option.getAttribute('data-wrong-feedback')||'')+'</span><br><span style="color:#2d6a2d"><b>The answer is '+(rl?rl.textContent:'')+'.</b> '+(right.getAttribute('data-right-feedback')||'')+'</span>';fb.className='discrim-feedback shown';ch.setAttribute('data-first-try','0');var par=ch.nextElementSibling;if(par&&par.classList.contains('discrim-parallel')){fb.innerHTML+=' <b style="color:#5c2dcc">Try one more like it below.</b>';setTimeout(function(){par.classList.add('shown');},600);}}
+var bf=ch.closest('.build-frame');if(bf){var all=bf.querySelectorAll('.discrim-challenge'),dn=0;all.forEach(function(c){if(c.classList.contains('done'))dn++;});if(dn===all.length){var a=bf.querySelector('.assembled');if(a)setTimeout(function(){a.classList.add('shown');},500);}}
+var qc=ch.closest('.quick-check');if(qc)updateQC(qc);}
+function updateQC(qc){var items=qc.querySelectorAll('.discrim-challenge');var done=0,first=0;items.forEach(function(c){if(c.classList.contains('done')){done++;if(c.getAttribute('data-first-try')==='1')first++;}});if(done<items.length)return;var r=qc.querySelector('.qc-result');r.textContent=first+' of '+items.length+' right first time. '+(first>=items.length-1?'The moves are in your head. Now the checklist.':'Look back at '+qc.getAttribute('data-back')+' for the ones you missed, then come back to the checklist.');r.style.display='block';launchConfetti();}
+function toggleTimes(el){var body=el.closest('.card-body');body.classList.toggle('show-times');el.textContent=body.classList.contains('show-times')?'Hide test times':'Show how long each test took';}
+function toggleCheck(item){item.classList.toggle('checked');updateCheckProgress();}
+function updateCheckProgress(){var items=document.querySelectorAll('#mainChecklist .check-item');if(!items.length)return;var checked=document.querySelectorAll('#mainChecklist .check-item.checked').length;var fill=document.getElementById('checkProgressFill'),lbl=document.getElementById('checkProgressLabel');if(fill)fill.style.width=Math.round((checked/items.length)*100)+'%';if(lbl)lbl.innerHTML=checked===items.length?'<b style="color:#2d6a2d;">All done.</b>':checked+' of '+items.length+' checked';}
+function printChecklist(btn){var card=btn.closest('.card');var ci=card.querySelectorAll('.check-item.checked');ci.forEach(function(i){i.classList.remove('checked');});card.classList.add('print-target');window.print();card.classList.remove('print-target');ci.forEach(function(i){i.classList.add('checked');});}
+function showCompletion(){document.getElementById('completionOverlay').classList.add('visible');}
+function closeCompletion(){document.getElementById('completionOverlay').classList.remove('visible');}
+function launchConfetti(){var canvas=document.getElementById('confettiCanvas');var ctx=canvas.getContext('2d');canvas.width=window.innerWidth;canvas.height=window.innerHeight;var colors=['#b8860b','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b','#42a5f5'];var particles=[];for(var i=0;i<120;i++){particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height-canvas.height,w:Math.random()*10+5,h:Math.random()*6+3,color:colors[Math.floor(Math.random()*colors.length)],vx:(Math.random()-0.5)*4,vy:Math.random()*3+2,rot:Math.random()*360,rotV:(Math.random()-0.5)*10,life:1});}var frame=0;function animate(){ctx.clearRect(0,0,canvas.width,canvas.height);var alive=false;particles.forEach(function(p){if(p.life<=0)return;alive=true;p.x+=p.vx;p.y+=p.vy;p.vy+=0.05;p.rot+=p.rotV;if(p.y>canvas.height+20){p.life=0;return;}if(frame>60)p.life-=0.01;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();});frame++;if(alive)requestAnimationFrame(animate);else ctx.clearRect(0,0,canvas.width,canvas.height);}animate();}
+shuffleOptions();goTo(0);
+</script>
+<script src="../tracking.js"></script>
+</body>
+</html>
