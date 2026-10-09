@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amelia Barakat: Writing Coaching Cards</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Calibri, 'Segoe UI', sans-serif; font-size: 12pt; color: #1a1a2e; background: #f0f0f5; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; padding: 20px; }
+.progress-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
+.progress-dot { width: 12px; height: 12px; border-radius: 50%; background: #ccc; transition: background 0.3s, transform 0.2s; cursor: pointer; position: relative; }
+.progress-dot.active { background: #b8860b; transform: scale(1.25); }
+.progress-dot.visited { background: #d9b56a; }
+.progress-dot:hover { transform: scale(1.3); }
+.progress-dot .dot-tooltip { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: #b8860b; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 8.5pt; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 100; }
+.progress-dot .dot-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #b8860b; }
+.progress-dot:hover .dot-tooltip { opacity: 1; }
+.card-breadcrumb { font-size: 9.5pt; color: #888; margin-bottom: 14px; text-align: center; transition: opacity 0.3s; min-height: 1.2em; }
+.card-breadcrumb b { color: #b8860b; }
+.sticky-indicator { position: fixed; top: 12px; right: 16px; background: #b8860b; color: #fff; padding: 5px 14px; border-radius: 20px; font-size: 9pt; font-weight: 700; opacity: 0; transition: opacity 0.3s; z-index: 200; pointer-events: none; letter-spacing: 0.5px; }
+.sticky-indicator.visible { opacity: 1; }
+.card-container { position: relative; width: 640px; min-height: 420px; }
+.card { position: absolute; top: 0; left: 0; width: 100%; background: #fff; border: 2.5px solid #b8860b; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.10); opacity: 0; pointer-events: none; transform: translateX(40px); transition: opacity 0.35s, transform 0.35s; }
+.card.active { opacity: 1; pointer-events: auto; transform: translateX(0); position: relative; }
+.card-header { background: #b8860b; color: #fff; padding: 14px 20px; border-radius: 11px 11px 0 0; }
+.card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+.card-header .card-subtitle { font-size: 9.5pt; color: #f0e2bd; margin-top: 2px; }
+.card-body { padding: 18px 22px 22px; line-height: 1.55; }
+.card-body p { margin: 6px 0; }
+.score-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; }
+.score-box { background: #f8f8fc; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 10px 14px; text-align: center; }
+.score-box .big { font-size: 20pt; font-weight: 700; }
+.score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+.score-good .big { color: #2d6a2d; }
+.score-warn .big { color: #cc6600; }
+.score-low .big { color: #cc0000; }
+.you-wrote { background: #fff3f3; border-left: 3px solid #cc0000; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.you-wrote .label { font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+.better, .model-box { background: #e8f5e9; border-left: 3px solid #2d6a2d; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.better .label, .model-box .label { font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+.tip-box { background: #e8edf5; border-left: 3px solid #b8860b; padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0; }
+.tip-box .label { font-weight: 700; font-size: 9.5pt; color: #b8860b; margin-bottom: 3px; }
+.rule-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 10px 14px; margin: 10px 0; font-size: 11pt; }
+.rule-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 3px; }
+.lbl { display: inline-block; font-size: 7.5pt; font-weight: 800; letter-spacing: 0.5px; padding: 1px 6px; border-radius: 4px; margin: 0 4px 0 0; vertical-align: middle; color: #fff; line-height: 1.5; }
+.lbl-say, .lbl-echo { background: #5c2dcc; } .lbl-show, .lbl-because { background: #2d6a2d; } .lbl-sowhat { background: #cc6600; } .lbl-close { background: #457b9d; } .lbl-miss { background: #cc0000; } .lbl-reason { background: #888; } .lbl-general { background: #6d4c41; } .lbl-specific { background: #00838f; } .evidence-block { margin: 10px 0 12px; border: 1.5px solid #e0e0e8; border-radius: 8px; overflow: hidden; } .ev-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 12px; font-size: 10.5pt; } .ev-row + .ev-row { border-top: 1px solid #e0e0e8; } .ev-row.paced { background: #e8f5e9; } .ev-row.rushed { background: #fff3f3; } .ev-tag { flex-shrink: 0; font-size: 8.5pt; font-weight: 800; letter-spacing: 0.5px; padding: 2px 7px; border-radius: 8px; color: #fff; margin-top: 2px; } .ev-row.paced .ev-tag { background: #2d6a2d; } .ev-row.rushed .ev-tag { background: #cc0000; } .format-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; } .format-box { background: #fbf7ea; border: 1.5px solid #e6d3a3; border-radius: 8px; padding: 10px 14px; } .format-box .format-title { font-weight: 700; font-size: 10pt; color: #b8860b; margin-bottom: 4px; } .format-box .format-detail { font-size: 9.5pt; color: #555; line-height: 1.4; } .format-box .format-pts { display: inline-block; background: #b8860b; color: #fff; font-size: 8.5pt; font-weight: 700; padding: 1px 7px; border-radius: 8px; margin-bottom: 4px; } @media (max-width: 640px) { .format-grid { grid-template-columns: 1fr; } }
+.ex-list { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+.ex { padding: 8px 12px; border-radius: 6px; font-size: 10.5pt; border-left: 3px solid; }
+.ex.pos { background: #e8f5e9; border-color: #2d6a2d; } .ex.neg { background: #fff3f3; border-color: #cc0000; }
+.ex .tag { font-weight: 800; font-size: 8.5pt; margin-right: 6px; } .ex.pos .tag { color: #2d6a2d; } .ex.neg .tag { color: #cc0000; }
+.think { background: #f8f8fc; border-left: 3px solid #888; padding: 8px 14px; margin: 8px 0; font-size: 10.5pt; font-style: italic; color: #444; }
+.think .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #666; margin-bottom: 2px; }
+.highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+.error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+.discrim-option .error-mark { background: transparent; text-decoration: none; padding: 0; border-radius: 0; }
+.essay-excerpt { background: #fafafa; border: 1px solid #e0e0e8; border-radius: 6px; padding: 10px 14px; font-size: 10.5pt; margin: 8px 0; line-height: 1.7; }
+.discrim-challenge { background: #f8f5ff; border: 1.5px solid #d4c5ff; border-radius: 8px; padding: 14px; margin: 10px 0; }
+.discrim-prompt { font-weight: 700; font-size: 10.5pt; margin-bottom: 10px; color: #5c2dcc; }
+.discrim-options { display: flex; flex-direction: column; gap: 8px; }
+.discrim-option { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border: 2px solid #d4c5ff; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 10.5pt; background: #fff; }
+.discrim-option:hover { border-color: #7c4dff; background: #f5f0ff; }
+.discrim-label { font-weight: 800; color: #7c4dff; min-width: 20px; flex-shrink: 0; }
+.discrim-option.correct, .discrim-option.model { border-color: #2d6a2d; background: #e8f5e9; cursor: default; }
+.discrim-option.correct .discrim-label, .discrim-option.model .discrim-label { color: #2d6a2d; }
+.discrim-option.wrong { border-color: #cc0000; background: #fff3f3; cursor: default; }
+.discrim-option.wrong .discrim-label { color: #cc0000; }
+.discrim-option.locked { pointer-events: none; opacity: 0.5; }
+.discrim-challenge.done .discrim-option { cursor: default; }
+.discrim-feedback { margin-top: 0; font-size: 10pt; line-height: 1.45; max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.3s, opacity 0.3s, margin 0.3s; }
+.discrim-feedback.shown { max-height: 400px; opacity: 1; margin-top: 10px; }
+.discrim-feedback.right-fb { color: #2d6a2d; font-weight: 600; }
+.discrim-parallel { display: none; }
+.discrim-parallel.shown { display: block; }
+.discrim-parallel .discrim-prompt::before { content: 'One more like it. '; color: #888; font-weight: 600; }
+.reveal-wrapper { position: relative; }
+.reveal-cover { background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%); border-left: 3px solid #2d6a2d; padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 10px; transition: background 0.2s, box-shadow 0.2s; }
+.reveal-cover:hover { box-shadow: 0 2px 8px rgba(45,106,45,0.15); }
+.reveal-cover .reveal-icon { width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
+.reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #2d6a2d; }
+.reveal-cover .reveal-hint { font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px; }
+.reveal-content { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0; }
+.reveal-content.shown { max-height: 1200px; opacity: 1; margin: 8px 0; }
+.reveal-cover.hidden { display: none; }
+.your-turn { background: #f8f8fc; border: 1.5px dashed #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.your-turn .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.your-turn textarea { width: 100%; min-height: 64px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; margin: 4px 0; }
+.frame-row { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0; font-size: 10.5pt; }
+.frame-row .lbl { margin-top: 4px; }
+.frame-row .given { background: #fff; border: 1.5px solid #e0e0e8; border-radius: 6px; padding: 8px; flex: 1; color: #555; }
+.frame-row textarea { flex: 1; min-height: 48px; margin: 0; }
+.yt-btn { margin-top: 8px; padding: 7px 16px; border: 2px solid #2d6a2d; background: #fff; color: #2d6a2d; border-radius: 8px; font-family: inherit; font-weight: 600; font-size: 10pt; cursor: pointer; }
+.yt-btn:hover { background: #2d6a2d; color: #fff; }
+.yt-btn:disabled { opacity: 0.6; cursor: default; }
+.yt-model { display: none; margin-top: 10px; }
+.assembled { display: none; margin-top: 8px; }
+.assembled.shown { display: block; }
+.xp-link { display: inline-block; margin: 8px 6px 0 0; padding: 6px 14px; border-radius: 6px; background: #2d6a2d; color: #fff; font-weight: 700; font-size: 10pt; text-decoration: none; }
+.xp-link:hover { background: #1b5e1b; }
+.yt-model.shown { display: block; }
+.self-check .check-item { font-size: 10pt; padding: 6px 8px; }
+.check-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 8px; cursor: pointer; border-bottom: 1px solid #eee; border-radius: 6px; transition: background 0.15s; user-select: none; font-size: 11pt; }
+.check-item:last-child { border-bottom: none; }
+.check-item:hover { background: #f8f8fc; }
+.check-item.checked { background: #f0f8f0; }
+.check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
+.check-item.checked .check-box::after { content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
+.check-box { width: 28px; height: 28px; border: 2.5px solid #b8860b; border-radius: 6px; flex-shrink: 0; margin-top: 1px; position: relative; transition: background 0.2s, border-color 0.2s; }
+.self-check .check-box { width: 22px; height: 22px; }
+.checklist-progress { background: #eee; border-radius: 10px; height: 8px; margin: 12px 0 6px; overflow: hidden; }
+.checklist-progress-fill { background: linear-gradient(90deg, #2d6a2d, #4caf50); height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%; }
+.checklist-progress-label { font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px; }
+.quick-check { background: #f8f5ff; border: 2px solid #7c4dff; border-radius: 10px; padding: 12px 14px; margin: 10px 0; }
+.quick-check .qc-title { font-weight: 800; color: #5c2dcc; font-size: 10.5pt; margin-bottom: 4px; }
+.quick-check .qc-sub { font-size: 9.5pt; color: #666; margin-bottom: 6px; }
+.quick-check .discrim-challenge { background: #fff; margin: 8px 0; padding: 10px 12px; }
+.qc-result { display: none; font-weight: 700; margin-top: 8px; font-size: 10.5pt; color: #5c2dcc; }
+.recall-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.recall-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.recall-box textarea { width: 100%; min-height: 56px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; }
+.checklist-wrap { display: none; }
+.checklist-wrap.shown { display: block; }
+.time-toggle { font-size: 9pt; color: #b8860b; cursor: pointer; text-decoration: underline; display: inline-block; margin: 0 0 6px; }
+.tl-time { display: none; font-weight: 400; color: #aaa; }
+.show-times .tl-time { display: inline; }
+.guide-block { margin-top: 16px; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 8px 12px; background: #fafafa; font-size: 10pt; }
+.guide-block summary { cursor: pointer; font-weight: 700; color: #666; font-size: 9.5pt; }
+.guide-block ul { margin: 6px 0 4px 18px; }
+.guide-block li { margin: 4px 0; }
+.practice-recommendations { margin-top: 16px; border-top: 2px solid #e0e0e8; padding-top: 14px; }
+.practice-recs-title { font-size: 10pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #b8860b; margin-bottom: 10px; }
+.practice-tier { border-radius: 8px; padding: 12px 14px; margin: 8px 0; }
+.tier-primary { background: #e8f5e9; border: 1.5px solid #a5d6a7; }
+.tier-extra { background: #f8f8fc; border: 1.5px solid #e0e0e8; }
+.tier-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.tier-label { font-size: 8.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 2px 10px; border-radius: 10px; }
+.tier-primary .tier-label { background: #2d6a2d; color: #fff; }
+.tier-extra .tier-label { background: #888; color: #fff; }
+.tier-note { font-size: 9pt; color: #666; margin-bottom: 6px; line-height: 1.4; }
+.practice-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.practice-link { display: inline-block; padding: 5px 12px; border-radius: 6px; font-size: 9.5pt; font-weight: 600; text-decoration: none; transition: background 0.2s, transform 0.1s; }
+.tier-primary .practice-link { background: #c8e6c9; color: #1b5e1b; }
+.tier-extra .practice-link { background: #e8edf5; color: #b8860b; }
+.nav { display: flex; gap: 12px; margin-top: 16px; }
+.nav button { padding: 8px 28px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; transition: background 0.2s, color 0.2s; }
+.nav button:hover { background: #b8860b; color: #fff; }
+.print-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 8px 20px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 10.5pt; font-weight: 600; cursor: pointer; }
+.print-btn:hover { background: #b8860b; color: #fff; }
+.print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+.completion-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(184,134,11,0.6); z-index: 500; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s; }
+.completion-overlay.visible { opacity: 1; pointer-events: auto; }
+.completion-card { background: #fff; border-radius: 16px; padding: 40px 48px; text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2); transform: scale(0.8); transition: transform 0.4s ease; max-width: 420px; }
+.completion-overlay.visible .completion-card { transform: scale(1); }
+.completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+.completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; color: #b8860b; }
+.completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+.completion-close { margin-top: 20px; padding: 10px 32px; background: #b8860b; color: #fff; border: none; border-radius: 8px; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; }
+#confettiCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 501; }
+.score-timeline { display: flex; align-items: flex-end; gap: 0; margin: 12px 0 10px; padding: 0 6px; justify-content: space-between; }
+.timeline-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.timeline-score { font-size: 13pt; font-weight: 700; margin-bottom: 4px; }
+.timeline-bar { width: 70%; border-radius: 4px 4px 0 0; min-height: 8px; }
+.timeline-label { font-size: 8.5pt; color: #888; margin-top: 6px; font-weight: 600; text-align: center; }
+.score-green { color: #2d6a2d; } .score-amber { color: #cc6600; } .score-red { color: #cc0000; }
+.bar-green { background: linear-gradient(to top, #c8e6c9, #81c784); } .bar-amber { background: linear-gradient(to top, #ffe0b2, #ffb74d); } .bar-red { background: linear-gradient(to top, #ffcdd2, #ef9a9a); }
+.strength-chips, .growth-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; }
+.strength-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; background: #e8f5e9; color: #2d6a2d; border: 1.5px solid #a5d6a7; display: inline-flex; align-items: center; gap: 4px; }
+.strength-chip .chip-course, .growth-chip .chip-avg { font-size: 7.5pt; color: #888; font-weight: 400; }
+.journey-section { font-size: 9.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; margin: 10px 0 4px; padding-bottom: 3px; border-bottom: 1.5px solid; }
+.journey-section.strengths-header { color: #2d6a2d; border-color: #c8e6c9; }
+.journey-section.growth-header { color: #cc6600; border-color: #ffe0b2; }
+.root-cause-teaser { background: #f5f0ff; border-left: 3px solid #7c4dff; padding: 10px 14px; margin: 12px 0 4px; border-radius: 0 6px 6px 0; font-size: 10.5pt; line-height: 1.5; }
+.root-cause-teaser b { color: #5c2dcc; }
+.growth-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+.growth-chip.mixed { background: #fff8e8; color: #b35900; border: 1.5px solid #ffe0b2; }
+.growth-chip.weak { background: #fff3f3; color: #cc0000; border: 1.5px solid #ffcdd2; }
+@media print { body { background: #fff; padding: 0; min-height: auto; } .progress-bar, .nav, .print-btn, .card-breadcrumb, .sticky-indicator, .completion-overlay, #confettiCanvas, .reveal-cover, .checklist-progress, .checklist-progress-label, .discrim-challenge, .discrim-parallel, .quick-check, .recall-box, .yt-btn, .guide-block { display: none !important; } .card-container { width: 100%; min-height: auto; } .card { display: none !important; } .card.print-target { display: block !important; opacity: 1 !important; pointer-events: auto !important; position: relative !important; transform: none !important; box-shadow: none; border: 2px solid #b8860b; page-break-inside: avoid; } .reveal-content, .yt-model, .checklist-wrap { display: block !important; max-height: none !important; opacity: 1 !important; margin: 8px 0 !important; } }
+@media (max-width: 720px) { .card-container { width: 100%; } .score-grid { grid-template-columns: 1fr; } .timeline-score { font-size: 10pt; } }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progressBar"></div>
+<div class="card-breadcrumb" id="breadcrumb"></div>
+<div class="sticky-indicator" id="stickyIndicator"></div>
+<div class="card-container" id="cardContainer">
+
+<!-- Card 1: Your Starting Point -->
+<div class="card active" data-title="Your Starting Point">
+  <div class="card-header"><h2>Amelia Barakat</h2><div class="card-subtitle">Alpha Standardized Writing G3.3. October 2026. Passages: &ldquo;Sally&rsquo;s Rescue&rdquo; / &ldquo;From Collecting to Designing: The Story of Pok&eacute;mon&rdquo;</div></div>
+  <div class="card-body">
+    <div class="score-grid">
+      <div class="score-box score-good"><div class="big">84%</div><div class="label">Overall Score</div></div>
+      <div class="score-box score-good"><div class="big">22/25</div><div class="label">Questions 1&ndash;10</div></div>
+      <div class="score-box score-good"><div class="big">16/20</div><div class="label">Paragraph (Question 11)</div></div>
+    </div>
+    <p>Amelia, 84% is your best score, and it is three points from a pass. The first page is nearly perfect: a real question with <i>What</i> at the front, a sentence expanded with a when and a where (<i>At sunrise &hellip; in the garden</i>), <i>Since</i> in the blank, and three one-sentence answers with a because that said something. In April the paragraph was two fragments and 8 points; now it is three whole sentences and 16.</p>
+    <p>Seven points went missing. Four are in the paragraph: it tells Tajiri&rsquo;s story in order, bugs then video games then a game, and never says how the bugs got into the game, which is what the question asked. One is Q8, which asked whether naming the seal Sally was a good idea and got an answer about a different name. One is Q9, an answer with no because. One is Q3, where the instruction asked for an appositive and got <i>happily</i>.</p>
+    <div class="root-cause-teaser"><b>The plan:</b> a paragraph that answers the question first and puts a <i>This shows</i> after each fact; a one-sentence answer that answers the exact question asked, then because; an appositive that renames with a noun.</div>
+    <div class="journey-section strengths-header">Skills you do well</div>
+    <div class="strength-chips">
+      <span class="strength-chip">Question, expanding, combining, Since <span class="chip-course">&middot; Q1, Q2, Q4, Q5, 8 of 8</span></span>
+      <span class="strength-chip">Answer, then because <span class="chip-course">&middot; Q6, Q7, Q10, 9 of 9</span></span>
+      <span class="strength-chip">A paragraph in whole sentences, in order <span class="chip-course">&middot; Q11, up from two fragments in April</span></span>
+    </div>
+    <div class="journey-section growth-header">What to work on</div>
+    <div class="growth-chips">
+      <span class="growth-chip weak">Paragraph: answer the question first, connect the bugs to the game, This shows, an ending <span class="chip-avg">Q11: 16 of 20</span></span>
+      <span class="growth-chip mixed">Answer the question that was asked, then because <span class="chip-avg">Q8, Q9; G3.2 Q4, Q9</span></span>
+      <span class="growth-chip mixed">An appositive renames with a noun <span class="chip-avg">Q3; also G3.1 Q1</span></span>
+      <span class="growth-chip mixed">Read-back: wanted, Pok&eacute;mon, fishnet, responsibility, Sally with a capital <span class="chip-avg">Q4, Q8, Q10, Q11</span></span>
+    </div>
+  </div>
+</div>
+
+<!-- Card 2: Writing Journey -->
+<div class="card" data-title="Your Writing Journey">
+  <div class="card-header"><h2>Your Writing Journey</h2><div class="card-subtitle">Three tests since April</div></div>
+  <div class="card-body">
+    <div class="score-timeline">
+      <div class="timeline-item"><div class="timeline-score score-red">60%</div><div class="timeline-bar bar-red" style="height:54px;"></div><div class="timeline-label">G3.1 (Apr 14)<br><span class="tl-time">31m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">82%</div><div class="timeline-bar bar-green" style="height:74px;"></div><div class="timeline-label">G3.2 (Sep 23)<br><span class="tl-time">35m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">84%</div><div class="timeline-bar bar-green" style="height:76px;"></div><div class="timeline-label">G3.3 (Oct 8)<br><span class="tl-time">31m</span></div></div>
+    </div>
+    <span class="time-toggle" onclick="toggleTimes(this)">Show how long each test took</span>
+    <p>From 60% in April to 84% now. In April the appositive question earned nothing, the question in Q2 ended with a period, three one-sentence answers had no reason, and the paragraph was <i>Soil brings life to Earth. Wirggling worms and burrowing groundhogs.</i> By September the paragraph had a first sentence that named a main idea and two facts from the article, 14 of 20. Now the first page is 22 of 25 and the paragraph is 16. The same two things have cost points on all three paragraphs: no sentence says what a fact shows, and there is no ending. Those two sentences are the three points you need.</p>
+    <div class="journey-section strengths-header">Skills you do well</div>
+    <div class="strength-chips">
+      <span class="strength-chip">A paragraph that grew every test <span class="chip-course">&middot; 8, then 14, then 16 of 20</span></span>
+      <span class="strength-chip">Because in the one-sentence answers <span class="chip-course">&middot; G3.1 two of five; G3.3 three of five</span></span>
+      <span class="strength-chip">A question mark on a question <span class="chip-course">&middot; G3.1 missed it; G3.3 full marks</span></span>
+    </div>
+    <div class="journey-section growth-header">What to work on</div>
+    <div class="growth-chips">
+      <span class="growth-chip weak">After each fact, This shows; then an ending <span class="chip-avg">all three paragraphs</span></span>
+      <span class="growth-chip mixed">The appositive <span class="chip-avg">G3.1 Q1: no appositive; G3.3 Q3: happily</span></span>
+      <span class="growth-chip mixed">Answer the question that was asked <span class="chip-avg">G3.2 Q4: the sentence rewritten; G3.3 Q8: a different name</span></span>
+    </div>
+    <div class="root-cause-teaser"><b>Three points from a pass.</b> The paragraph frame is worth four. Card 3 builds it on your own three sentences. Cards 4 and 5 are the other three points.</div>
+  </div>
+</div>
+
+<!-- Card 3: Fix 1, the paragraph -->
+<div class="card" data-title="Fix 1: Answer First, Then This Shows">
+  <div class="card-header"><h2>Fix 1: Answer First, Then This Shows</h2><div class="card-subtitle">Q11: the story in order, with the question never answered</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: THE ANSWER, THEN TWO FACTS WITH A THIS SHOWS EACH, THEN AN ENDING</div>The first sentence answers the question and names the two reasons. The question was <i>how did Tajiri&rsquo;s childhood influence Pok&eacute;mon</i>, so the first sentence has to say how. Then each reason gets a <span class="lbl lbl-show">DETAIL &middot; SHOW</span>, a fact from the article, and a <span class="lbl lbl-sowhat">DETAIL &middot; SO WHAT</span>: <i>This shows</i> plus what the fact proves. Then an ending that puts the two together. <b>The check:</b> does your first sentence answer the question, or does it start the story?</div>
+
+    <div class="you-wrote"><div class="label">YOU WROTE (Q11, 16 OUT OF 20)</div>&ldquo;<span class="error-mark">When Satoshi Tajiri was a kid he loved catching and collecting bugs which made him happy.</span> When he got older he started loving video games and <span class="error-mark">whated</span> to make one of his own. He thought that most games were not <span class="error-mark">good,so</span> he made <span class="error-mark">a card game</span> and named it <span class="error-mark">Pokemon</span>.&rdquo; <span class="lbl lbl-miss">THE STORY IN ORDER; THE QUESTION NOT ANSWERED; NO THIS SHOWS; NO ENDING</span><br><span style="font-size:9.5pt;color:#666;">Three true facts, in the article&rsquo;s order. But the first sentence starts the story instead of answering, nothing says how the bugs got into the game, and the paragraph stops when the story stops. The article has the link ready: <i>he remembered his bug collecting and used that idea</i>, and <i>catching Pok&eacute;mon was like catching bugs</i>. One more thing: he made a game; it became a card game later.</span></div>
+    <div class="model-box"><div class="label">A FIRST SENTENCE THAT ANSWERS</div><span class="lbl lbl-say">POINT</span>Satoshi Tajiri&rsquo;s childhood shaped Pok&eacute;mon in two ways: <span class="lbl lbl-say">HOW</span>his love of catching bugs gave him the idea for the game, and his wish for a better video game gave him a reason to build it.<br><span style="font-size:9.5pt;color:#666;">Your two facts, bugs and video games, turned into an answer. Now each gets a <i>This shows</i>.</span></div>
+
+    <p style="margin-top:10px;"><b>Three sentences that say what a fact shows</b>, and one that is the next fact:</p>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">THIS SHOWS</span>This shows that the hunt for a new creature was his favorite feeling long before there was a game.</div>
+      <div class="ex pos"><span class="tag">THIS SHOWS</span>This shows that the game is his bug collecting turned into something other children could play.</div>
+      <div class="ex pos"><span class="tag">THIS SHOWS</span>This shows that he wanted players to feel what he felt as a boy, the joy of catching something new.</div>
+      <div class="ex neg"><span class="tag">THE NEXT FACT</span>When he got older he started loving video games.<br><span style="font-size:9.5pt;color:#666;">True, and it is the next thing that happened. A <i>This shows</i> says what the fact before it proves.</span></div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which first sentence answers the question <i>how did Tajiri&rsquo;s childhood influence Pok&eacute;mon</i>?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Your first sentence: it starts the story. The reader does not yet know how the bugs matter." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>When Satoshi Tajiri was a kid he loved catching and collecting bugs, which made him happy.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="The answer, with two reasons named." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Tajiri&rsquo;s childhood shaped Pok&eacute;mon in two ways: his bug catching gave him the idea, and his wish for a better game gave him the reason to build it.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which first sentence answers the question <i>how did the family help Sally</i>?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="The answer, with two ways named." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>The family helped Sally in two ways: Dad freed her from the net, and they took her by boat to the seals on the ledge.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="The start of the story. It does not say how they helped." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Anna and Jim were eating breakfast after two days of storms.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="your-turn build-frame" id="build-para">
+      <div class="label">YOUR TURN: BUILD THE PARAGRAPH FROM YOUR OWN SENTENCES. TAP EACH THIS SHOWS AND THE FIXED SECOND FACT</div>
+      <div class="frame-row"><span class="lbl lbl-say">TOPIC SENTENCE &middot; POINT + HOW</span><div class="given">Satoshi Tajiri&rsquo;s childhood shaped Pok&eacute;mon in two ways: his love of catching bugs gave him the idea for the game, and his wish for a better video game gave him a reason to build it.</div></div>
+      <div class="frame-row"><span class="lbl lbl-show">DETAIL 1 &middot; SHOW</span><div class="given">When Satoshi Tajiri was a kid he loved catching and collecting bugs, and his friends called him &ldquo;Dr. Bug.&rdquo;</div></div>
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">DETAIL 1 &middot; SO WHAT: which sentence goes next?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;This shows&rdquo; plus what the bug fact proves." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>This shows that the hunt for a new creature was his favorite feeling long before there was a game.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Your second sentence: the next fact, not a This shows." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>When he got older he started loving video games and wanted to make one of his own.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">DETAIL 2 &middot; SHOW: your video-game fact, with the link to the bugs. Which one?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Your third sentence. The article says he made a game, not a card game, and this version never says where the idea came from." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>He thought that most games were not good, so he made a card game and named it Pok&eacute;mon.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Your fact, plus the link from paragraphs 3 and 4: he used his bug collecting." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>When he got older he thought most video games were not very good, so he remembered his bug collecting and made a game where players catch creatures called Pok&eacute;mon.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">DETAIL 2 &middot; SO WHAT: which sentence goes next?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A fact from paragraph 5. A SHOW, not a SO WHAT." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Pok&eacute;mon sold millions of copies and became a card game, an app, a TV show, and movies.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;This shows&rdquo; plus what the game fact proves." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>This shows that the game is his bug collecting turned into something other children could play.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="frame-row"><span class="lbl lbl-close">CONCLUDING SENTENCE &middot; TOGETHER</span><div class="given">The bugs gave him the idea and the bad games gave him the push, and that is why Pok&eacute;mon feels like a childhood anyone can join.</div></div>
+      <div class="assembled">
+        <div class="model-box"><div class="label">THE PARAGRAPH, SIX SENTENCES</div><span class="lbl lbl-say">TOPIC SENTENCE &middot; POINT + HOW</span>Satoshi Tajiri&rsquo;s childhood shaped Pok&eacute;mon in two ways: his love of catching bugs gave him the idea for the game, and his wish for a better video game gave him a reason to build it. <span class="lbl lbl-show">DETAIL 1 &middot; SHOW</span>When Satoshi Tajiri was a kid he loved catching and collecting bugs, and his friends called him &ldquo;Dr. Bug.&rdquo; <span class="lbl lbl-sowhat">DETAIL 1 &middot; SO WHAT</span>This shows that the hunt for a new creature was his favorite feeling long before there was a game. <span class="lbl lbl-show">DETAIL 2 &middot; SHOW</span>When he got older he thought most video games were not very good, so he remembered his bug collecting and made a game where players catch creatures called Pok&eacute;mon. <span class="lbl lbl-sowhat">DETAIL 2 &middot; SO WHAT</span>This shows that the game is his bug collecting turned into something other children could play. <span class="lbl lbl-close">CONCLUDING SENTENCE &middot; TOGETHER</span>The bugs gave him the idea and the bad games gave him the push, and that is why Pok&eacute;mon feels like a childhood anyone can join.<br><span style="font-size:9.5pt;color:#666;">Your three facts, kept. An answer in front, a <i>This shows</i> after each fact, an ending. That is the four points.</span></div>
+      </div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Before you write a paragraph, say the answer to the question in one sentence. Write that first. Then each fact, then <i>This shows</i>, then an ending that puts your two reasons together.</div>
+  </div>
+</div>
+
+<!-- Card 4: Fix 2, answer the question asked -->
+<div class="card" data-title="Fix 2: Answer the Question That Was Asked, Then Because">
+  <div class="card-header"><h2>Fix 2: Answer the Question That Was Asked, Then Because</h2><div class="card-subtitle">Q8 answered a different question. Q9 stopped before the because</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: YOUR FIRST WORDS ANSWER THE EXACT QUESTION, THEN BECAUSE</div>Each one-sentence answer is three points: one for answering the question that was asked, one for a reason or example, one for spelling, capitals and punctuation. <b>The check:</b> read the question again, then your first words. Do they answer that question, yes or no, this or that? Then is there a because with a reason after it?</div>
+
+    <div class="you-wrote"><div class="label">YOU WROTE (Q8, 2 OUT OF 3)</div>&ldquo;A good idea to name the seal <span class="error-mark">sally</span> is <span class="error-mark">Acqua</span> because she lives in the water.&rdquo; <span class="lbl lbl-miss">A DIFFERENT QUESTION ANSWERED</span><br><span style="font-size:9.5pt;color:#666;">The question was <i>Was it a good idea to name the seal Sally?</i> Your sentence answers <i>What would be a good name?</i> The because is good; the first words answer the wrong question. And <i>Sally</i> is a name, so it takes a capital.</span></div>
+    <div class="model-box"><div class="label">THE QUESTION ASKED, THEN BECAUSE</div>No, I do not think Sally was the best name for the seal, because a name like Acqua would say where she lives.<br><span style="font-size:9.5pt;color:#666;">Your idea, kept. The first words now answer yes or no to the question that was asked.</span></div>
+    <div class="you-wrote"><div class="label">YOU WROTE (Q9, 2 OUT OF 3)</div>&ldquo;Nothing, I like the way they did it.&rdquo; <span class="lbl lbl-miss">AN ANSWER, NO BECAUSE</span><br><span style="font-size:9.5pt;color:#666;">A clear answer that stops before the reason. The third point is the because.</span></div>
+    <div class="model-box"><div class="label">WITH ITS BECAUSE</div>I would not do anything differently, because Anna and Jim gave the seals space and still helped Sally find her family.</div>
+    <div class="you-wrote"><div class="label">YOU WROTE (SEPTEMBER, G3.2 Q4, 1 OUT OF 2)</div>&ldquo;Workers spent over 30 minutes clearing the ice!&rdquo; <span class="lbl lbl-miss">THE QUESTION WAS WHAT TYPE OF SENTENCE</span><br><span style="font-size:9.5pt;color:#666;">The answer was one word, <i>declarative</i>. The sentence was rewritten instead. Same habit, different page: read the question, then answer that.</span></div>
+
+    <p style="margin-top:10px;"><b>Three answers that answer the question asked and carry a because</b>, and one that answers a different question:</p>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">WAS IT A GOOD IDEA?</span>Yes, naming the seal Sally was a good idea because a name made her part of the family for a day.</div>
+      <div class="ex pos"><span class="tag">WHAT WOULD YOU DO DIFFERENTLY?</span>I would have called a wildlife rescue because trained people know how to find a seal&rsquo;s family.</div>
+      <div class="ex pos"><span class="tag">WHAT LESSON?</span>The story teaches that responsibility means finishing the job, because the family did not stop until Sally was with other seals.</div>
+      <div class="ex neg"><span class="tag">A DIFFERENT QUESTION</span>Was it a good idea to name the seal Sally? &rarr; The seal should have been named Pearl because she was found on the beach.<br><span style="font-size:9.5pt;color:#666;">A fine name and a because. The first words never say yes or no to the question asked.</span></div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Was it a good idea to name the seal Sally? Which answer answers that question?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Answers which name is best. Not the question that was asked." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>A better name for the seal is Splash because she jumps out of the water.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="Yes or no first, then because." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Yes, it was a good idea to name the seal Sally because a name helped the family care about her.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Would you have helped the seal the way the family did? Which answer earns all three points?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Yes, then because, then a reason." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Yes, I would have helped the seal because leaving her in the net would have hurt her.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="An answer with no because. Two points, like your Q9." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Yes, I would have helped the seal.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">What type of sentence is this? <i>Sally whimpered and leapt from the boat.</i> Which answer answers the question asked?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="true" data-right-feedback="One word. It tells, so declarative." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Declarative.</span></div>
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="The sentence rewritten with an exclamation mark. The question asked for the type, like September&rsquo;s Q4." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Sally whimpered and leapt from the boat!</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Read the question twice. Make your first words answer it, yes or no, this or that, one word if it asks for a type. Then because, then the reason.</div>
+  </div>
+</div>
+
+<!-- Card 5: Fix 3, appositive -->
+<div class="card" data-title="Fix 3: An Appositive Renames with a Noun">
+  <div class="card-header"><h2>Fix 3: An Appositive Renames with a Noun</h2><div class="card-subtitle">Q3: how Sally swam, instead of who Sally is</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: AN APPOSITIVE IS A NOUN PHRASE THAT RENAMES THE NOUN NEXT TO IT, INSIDE COMMAS</div><i>Sally, the baby seal, swam to the other seals.</i> The appositive says who or what Sally is. It does not say how she swam or where. <b>The check:</b> swap the appositive in for the name. <i>The baby seal swam to the other seals</i> is still a sentence, so it passes. <i>Happily swam to the other seals</i> is not, so it fails.</div>
+
+    <div class="you-wrote"><div class="label">YOU WROTE (Q3, 1 OUT OF 2)</div>&ldquo;Sally swam to the other seals <span class="error-mark">happily</span>.&rdquo; <span class="lbl lbl-miss">HOW, NOT WHO</span><br><span style="font-size:9.5pt;color:#666;">A good detail, and the wrong job. <i>Happily</i> says how she swam. The instruction asked for a renaming.</span></div>
+    <div class="model-box"><div class="label">THE APPOSITIVE</div>Sally, <b>the baby seal</b>, swam to the other seals.<br><span style="font-size:9.5pt;color:#666;">A noun phrase, inside commas, right after the name it renames. You can keep your detail too: <i>Sally, the baby seal, swam happily to the other seals.</i></span></div>
+    <div class="you-wrote"><div class="label">YOU WROTE (APRIL, G3.1 Q1, 0 OUT OF 2)</div>&ldquo;The cat loved the dog<span class="error-mark">,they</span> played fetch together.&rdquo; <span class="lbl lbl-miss">NO APPOSITIVE; TWO SENTENCES ON ONE COMMA</span><br><span style="font-size:9.5pt;color:#666;">The sentences were about two dogs, Lucy and Rocket. The appositive version: <i>My family has two dogs, Lucy and Rocket.</i></span></div>
+
+    <p style="margin-top:10px;"><b>Three appositives that pass the swap test</b>, and one that is not an appositive:</p>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">WHO</span>Dad, <b>Anna and Jim&rsquo;s father</b>, freed the pup.</div>
+      <div class="ex pos"><span class="tag">WHO</span>Jim, <b>Anna&rsquo;s brother</b>, ran to get their parents.</div>
+      <div class="ex pos"><span class="tag">WHAT</span>Pok&eacute;mon, <b>a game about catching creatures</b>, sold millions of copies.</div>
+      <div class="ex neg"><span class="tag">WHERE, NOT WHO</span>Sally swam to the other seals in the bay.<br><span style="font-size:9.5pt;color:#666;">Says where. Swap test: <i>In the bay swam to the other seals.</i> Fails.</span></div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Add an appositive: <i>Anna wondered if they had found her family.</i> Which answer does it?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="true" data-right-feedback="A noun phrase in commas that renames Anna." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Anna, the girl who named the seal, wondered if they had found her family.</span></div>
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Quietly says how. The same slip as happily." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Anna quietly wondered if they had found her family.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Add an appositive: <i>Tajiri made a game.</i> Which answer does it?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="In Japan says where. Not a renaming." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Tajiri made a game in Japan.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="A boy who loved bugs renames Tajiri. Swap test passes." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Tajiri, a boy who loved bugs, made a game.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which fills the blank with an appositive? <i>Sally, ___, leapt from the boat.</i></div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Very fast is how, not a noun. Swap test fails." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>very fast</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="A noun phrase. Swap test: A rescued seal pup leapt from the boat." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>a rescued seal pup</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>When the instruction says <i>appositive</i>, ask who or what the noun is, write that as a noun phrase, and put commas around it. Then run the swap test.</div>
+  </div>
+</div>
+
+<!-- Card 6: Quick Check, Checklist -->
+<div class="card" data-title="Quick Check &amp; Checklist">
+  <div class="card-header"><h2>Quick Check</h2><div class="card-subtitle">Six new ones. Then your checklist</div></div>
+  <div class="card-body">
+    <div class="quick-check" data-back="cards 3 to 5">
+      <div class="qc-title">Answer first, This shows, the question asked, and the appositive, six questions</div>
+      <div class="qc-sub">All new sentences. Answer each one once.</div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which first sentence answers the question <i>why did Pok&eacute;mon become popular</i>?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="The start of the story, not an answer." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>For many years, people around the world have played a game called Pok&eacute;mon.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="The answer, with two reasons named." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Pok&eacute;mon became popular because players could catch more than 150 creatures and because they could trade them with friends.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence is a This shows?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;This shows&rdquo; plus what the fact proves." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>This shows that a game built from one boy&rsquo;s hobby reached children all over the world.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A fact from the article. A SHOW." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Pok&eacute;mon became a card game, an app, a TV show, and movies.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Was it a good idea to take Sally out in the boat? Which answer answers that question?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Answers what the family should have done instead. A different question." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>The family should have waited on the beach because the seals might have come back.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Yes first, then because." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Yes, taking Sally out in the boat was a good idea because the two seals on the ledge turned out to be her family.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which fills the blank with an appositive? <i>Satoshi Tajiri, ___, loved bugs as a boy.</i></div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="A noun phrase that renames him. Swap test passes." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>the maker of Pok&eacute;mon</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="For many hours says how long. Swap test: For many hours loved bugs. Fails." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>for many hours</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence is the ending of a paragraph about how Tajiri&rsquo;s childhood shaped Pok&eacute;mon?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="The first sentence again, in new words. An ending puts the two reasons together." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>So that is how Tajiri&rsquo;s childhood influenced Pok&eacute;mon.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="The two reasons, added up." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>A boy&rsquo;s bug hunt and a teenager&rsquo;s wish for a better game met in one idea, and that idea became Pok&eacute;mon.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence is ready to submit?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Whated, Pokemon, sally, and a comma with no space: four from your test." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Tajiri whated to make Pokemon,so he did, and the family named the seal sally.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Wanted, Pok&eacute;mon, Sally, a space after the comma. Clean." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Tajiri wanted to make Pok&eacute;mon, so he did, and the family named the seal Sally.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="qc-result"></div>
+    </div>
+
+    <div class="checklist-wrap shown">
+      <div id="mainChecklist">
+        <div class="checklist-progress-label" id="checkProgressLabel">0 of 6 checked</div>
+        <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Paragraph, sentence one:</b> the answer to the question, with my two reasons. Not the start of the story.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>After each fact,</b> <i>This shows</i> plus what it proves. Then an ending that puts the two reasons together.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Q6 to Q10:</b> read the question twice, make my first words answer it, then because.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Q1 to Q5:</b> do the job the instruction names. A type is one word. An appositive is a noun phrase in commas.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Appositive swap test:</b> can the phrase stand in for the name and still make a sentence?</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Read-back:</b> wanted, Pok&eacute;mon, fishnet, responsibility, Sally with a capital, a space after every comma.</div></div>
+      </div>
+      <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>Print Checklist</button>
+    </div>
+  </div>
+</div>
+
+</div>
+<div class="nav"><button id="prevBtn" onclick="navigate(-1)">&larr; Back</button><button id="nextBtn" onclick="navigate(1)">Next &rarr;</button></div>
+<div class="completion-overlay" id="completionOverlay"><div class="completion-card"><div class="completion-emoji">&#9997;</div><div class="completion-title">Good luck on your next test!</div><div class="completion-sub">Answer first, a This shows after each fact, the question that was asked, an appositive that renames.</div><button class="completion-close" onclick="closeCompletion()">Got it</button></div></div>
+<canvas id="confettiCanvas"></canvas>
+<script>
+var cards=document.querySelectorAll('.card'),bar=document.getElementById('progressBar'),breadcrumb=document.getElementById('breadcrumb'),stickyEl=document.getElementById('stickyIndicator'),current=0,visited=[0];
+cards.forEach(function(card,i){var dot=document.createElement('div');dot.className='progress-dot'+(i===0?' active':'');var tooltip=document.createElement('span');tooltip.className='dot-tooltip';tooltip.textContent=card.getAttribute('data-title')||('Card '+(i+1));dot.appendChild(tooltip);dot.addEventListener('click',function(){goTo(i);});bar.appendChild(dot);});
+function updateBreadcrumb(){var title=cards[current].getAttribute('data-title')||('Card '+(current+1));breadcrumb.innerHTML='Card <b>'+(current+1)+'</b> of '+cards.length+' &mdash; '+title;stickyEl.textContent=(current+1)+' / '+cards.length;}
+function checkSticky(){var r=bar.getBoundingClientRect();stickyEl.classList.toggle('visible',r.bottom<0);}
+window.addEventListener('scroll',checkSticky);
+function goTo(idx){if(idx<0||idx>=cards.length)return;cards[current].classList.remove('active');bar.children[current].classList.remove('active');current=idx;if(visited.indexOf(current)===-1)visited.push(current);cards[current].classList.add('active');bar.children[current].classList.add('active');visited.forEach(function(v){if(v!==current)bar.children[v].classList.add('visited');});var p=document.getElementById('prevBtn'),n=document.getElementById('nextBtn');if(p){p.style.visibility=current===0?'hidden':'visible';p.disabled=current===0;}if(n){n.textContent=current===cards.length-1?'Done ✓':'Next →';}updateBreadcrumb();window.scrollTo({top:0,behavior:'smooth'});}
+function navigate(dir){if(dir===1&&current===cards.length-1){showCompletion();return;}goTo(current+dir);}
+document.addEventListener('keydown',function(e){if(e.target&&e.target.tagName==='TEXTAREA')return;if(e.key==='ArrowRight'||e.key==='ArrowDown')navigate(1);if(e.key==='ArrowLeft'||e.key==='ArrowUp')navigate(-1);});
+function revealBetter(cover){cover.nextElementSibling.classList.add('shown');cover.classList.add('hidden');}
+function shuffleOptions(){document.querySelectorAll('.discrim-options').forEach(function(box){var opts=Array.prototype.slice.call(box.querySelectorAll('.discrim-option'));for(var i=opts.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=opts[i];opts[i]=opts[j];opts[j]=t;}opts.forEach(function(o,i){box.appendChild(o);var l=o.querySelector('.discrim-label');if(l)l.textContent=String.fromCharCode(65+i);});});}
+function handleDiscrim(option){var ch=option.closest('.discrim-challenge');if(ch.classList.contains('done'))return;var fb=ch.querySelector('.discrim-feedback');var opts=ch.querySelectorAll('.discrim-option');var ok=option.getAttribute('data-correct')==='true';ch.classList.add('done');
+if(ok){option.classList.add('correct');opts.forEach(function(o){if(o!==option)o.classList.add('locked');});fb.innerHTML=option.getAttribute('data-right-feedback')||'Correct.';fb.className='discrim-feedback shown right-fb';ch.setAttribute('data-first-try','1');}
+else{option.classList.add('wrong');var right=ch.querySelector('.discrim-option[data-correct="true"]');right.classList.add('model');opts.forEach(function(o){if(o!==option&&o!==right)o.classList.add('locked');});var rl=right.querySelector('.discrim-label');fb.innerHTML='<span style="color:#cc0000"><b>Not this one.</b> '+(option.getAttribute('data-wrong-feedback')||'')+'</span><br><span style="color:#2d6a2d"><b>The answer is '+(rl?rl.textContent:'')+'.</b> '+(right.getAttribute('data-right-feedback')||'')+'</span>';fb.className='discrim-feedback shown';ch.setAttribute('data-first-try','0');var par=ch.nextElementSibling;if(par&&par.classList.contains('discrim-parallel')){fb.innerHTML+=' <b style="color:#5c2dcc">Try one more like it below.</b>';setTimeout(function(){par.classList.add('shown');},600);}}
+var bf=ch.closest('.build-frame');if(bf){var all=bf.querySelectorAll('.discrim-challenge'),dn=0;all.forEach(function(c){if(c.classList.contains('done'))dn++;});if(dn===all.length){var a=bf.querySelector('.assembled');if(a)setTimeout(function(){a.classList.add('shown');},500);}}
+var qc=ch.closest('.quick-check');if(qc)updateQC(qc);}
+function updateQC(qc){var items=qc.querySelectorAll('.discrim-challenge');var done=0,first=0;items.forEach(function(c){if(c.classList.contains('done')){done++;if(c.getAttribute('data-first-try')==='1')first++;}});if(done<items.length)return;var r=qc.querySelector('.qc-result');r.textContent=first+' of '+items.length+' right first time. '+(first>=items.length-1?'The moves are in your head. Now the checklist.':'Look back at '+qc.getAttribute('data-back')+' for the ones you missed, then come back to the checklist.');r.style.display='block';launchConfetti();}
+function toggleTimes(el){var body=el.closest('.card-body');body.classList.toggle('show-times');el.textContent=body.classList.contains('show-times')?'Hide test times':'Show how long each test took';}
+function toggleCheck(item){item.classList.toggle('checked');updateCheckProgress();}
+function updateCheckProgress(){var items=document.querySelectorAll('#mainChecklist .check-item');if(!items.length)return;var checked=document.querySelectorAll('#mainChecklist .check-item.checked').length;var fill=document.getElementById('checkProgressFill'),lbl=document.getElementById('checkProgressLabel');if(fill)fill.style.width=Math.round((checked/items.length)*100)+'%';if(lbl)lbl.innerHTML=checked===items.length?'<b style="color:#2d6a2d;">All done.</b>':checked+' of '+items.length+' checked';}
+function printChecklist(btn){var card=btn.closest('.card');var ci=card.querySelectorAll('.check-item.checked');ci.forEach(function(i){i.classList.remove('checked');});card.classList.add('print-target');window.print();card.classList.remove('print-target');ci.forEach(function(i){i.classList.add('checked');});}
+function showCompletion(){document.getElementById('completionOverlay').classList.add('visible');}
+function closeCompletion(){document.getElementById('completionOverlay').classList.remove('visible');}
+function launchConfetti(){var canvas=document.getElementById('confettiCanvas');var ctx=canvas.getContext('2d');canvas.width=window.innerWidth;canvas.height=window.innerHeight;var colors=['#b8860b','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b','#42a5f5'];var particles=[];for(var i=0;i<120;i++){particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height-canvas.height,w:Math.random()*10+5,h:Math.random()*6+3,color:colors[Math.floor(Math.random()*colors.length)],vx:(Math.random()-0.5)*4,vy:Math.random()*3+2,rot:Math.random()*360,rotV:(Math.random()-0.5)*10,life:1});}var frame=0;function animate(){ctx.clearRect(0,0,canvas.width,canvas.height);var alive=false;particles.forEach(function(p){if(p.life<=0)return;alive=true;p.x+=p.vx;p.y+=p.vy;p.vy+=0.05;p.rot+=p.rotV;if(p.y>canvas.height+20){p.life=0;return;}if(frame>60)p.life-=0.01;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();});frame++;if(alive)requestAnimationFrame(animate);else ctx.clearRect(0,0,canvas.width,canvas.height);}animate();}
+shuffleOptions();goTo(0);
+</script>
+<script src="../tracking.js"></script>
+</body>
+</html>
