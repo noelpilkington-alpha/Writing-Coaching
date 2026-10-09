@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sydney Liu: Writing Coaching Cards</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Calibri, 'Segoe UI', sans-serif; font-size: 12pt; color: #1a1a2e; background: #f0f0f5; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; padding: 20px; }
+.progress-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
+.progress-dot { width: 12px; height: 12px; border-radius: 50%; background: #ccc; transition: background 0.3s, transform 0.2s; cursor: pointer; position: relative; }
+.progress-dot.active { background: #b8860b; transform: scale(1.25); }
+.progress-dot.visited { background: #d9b56a; }
+.progress-dot:hover { transform: scale(1.3); }
+.progress-dot .dot-tooltip { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: #b8860b; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 8.5pt; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 100; }
+.progress-dot .dot-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #b8860b; }
+.progress-dot:hover .dot-tooltip { opacity: 1; }
+.card-breadcrumb { font-size: 9.5pt; color: #888; margin-bottom: 14px; text-align: center; transition: opacity 0.3s; min-height: 1.2em; }
+.card-breadcrumb b { color: #b8860b; }
+.sticky-indicator { position: fixed; top: 12px; right: 16px; background: #b8860b; color: #fff; padding: 5px 14px; border-radius: 20px; font-size: 9pt; font-weight: 700; opacity: 0; transition: opacity 0.3s; z-index: 200; pointer-events: none; letter-spacing: 0.5px; }
+.sticky-indicator.visible { opacity: 1; }
+.card-container { position: relative; width: 640px; min-height: 420px; }
+.card { position: absolute; top: 0; left: 0; width: 100%; background: #fff; border: 2.5px solid #b8860b; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.10); opacity: 0; pointer-events: none; transform: translateX(40px); transition: opacity 0.35s, transform 0.35s; }
+.card.active { opacity: 1; pointer-events: auto; transform: translateX(0); position: relative; }
+.card-header { background: #b8860b; color: #fff; padding: 14px 20px; border-radius: 11px 11px 0 0; }
+.card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+.card-header .card-subtitle { font-size: 9.5pt; color: #f0e2bd; margin-top: 2px; }
+.card-body { padding: 18px 22px 22px; line-height: 1.55; }
+.card-body p { margin: 6px 0; }
+.score-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; }
+.score-box { background: #f8f8fc; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 10px 14px; text-align: center; }
+.score-box .big { font-size: 20pt; font-weight: 700; }
+.score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+.score-good .big { color: #2d6a2d; }
+.score-warn .big { color: #cc6600; }
+.score-low .big { color: #cc0000; }
+.you-wrote { background: #fff3f3; border-left: 3px solid #cc0000; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.you-wrote .label { font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+.better, .model-box { background: #e8f5e9; border-left: 3px solid #2d6a2d; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.better .label, .model-box .label { font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+.tip-box { background: #e8edf5; border-left: 3px solid #b8860b; padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0; }
+.tip-box .label { font-weight: 700; font-size: 9.5pt; color: #b8860b; margin-bottom: 3px; }
+.rule-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 10px 14px; margin: 10px 0; font-size: 11pt; }
+.rule-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 3px; }
+.lbl { display: inline-block; font-size: 7.5pt; font-weight: 800; letter-spacing: 0.5px; padding: 1px 6px; border-radius: 4px; margin: 0 4px 0 0; vertical-align: middle; color: #fff; line-height: 1.5; }
+.lbl-say, .lbl-echo { background: #5c2dcc; } .lbl-show, .lbl-because { background: #2d6a2d; } .lbl-sowhat { background: #cc6600; } .lbl-close { background: #457b9d; } .lbl-miss { background: #cc0000; } .lbl-reason { background: #888; } .lbl-general { background: #6d4c41; } .lbl-specific { background: #00838f; } .evidence-block { margin: 10px 0 12px; border: 1.5px solid #e0e0e8; border-radius: 8px; overflow: hidden; } .ev-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 12px; font-size: 10.5pt; } .ev-row + .ev-row { border-top: 1px solid #e0e0e8; } .ev-row.paced { background: #e8f5e9; } .ev-row.rushed { background: #fff3f3; } .ev-tag { flex-shrink: 0; font-size: 8.5pt; font-weight: 800; letter-spacing: 0.5px; padding: 2px 7px; border-radius: 8px; color: #fff; margin-top: 2px; } .ev-row.paced .ev-tag { background: #2d6a2d; } .ev-row.rushed .ev-tag { background: #cc0000; } .format-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; } .format-box { background: #fbf7ea; border: 1.5px solid #e6d3a3; border-radius: 8px; padding: 10px 14px; } .format-box .format-title { font-weight: 700; font-size: 10pt; color: #b8860b; margin-bottom: 4px; } .format-box .format-detail { font-size: 9.5pt; color: #555; line-height: 1.4; } .format-box .format-pts { display: inline-block; background: #b8860b; color: #fff; font-size: 8.5pt; font-weight: 700; padding: 1px 7px; border-radius: 8px; margin-bottom: 4px; } @media (max-width: 640px) { .format-grid { grid-template-columns: 1fr; } }
+.ex-list { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+.ex { padding: 8px 12px; border-radius: 6px; font-size: 10.5pt; border-left: 3px solid; }
+.ex.pos { background: #e8f5e9; border-color: #2d6a2d; } .ex.neg { background: #fff3f3; border-color: #cc0000; }
+.ex .tag { font-weight: 800; font-size: 8.5pt; margin-right: 6px; } .ex.pos .tag { color: #2d6a2d; } .ex.neg .tag { color: #cc0000; }
+.think { background: #f8f8fc; border-left: 3px solid #888; padding: 8px 14px; margin: 8px 0; font-size: 10.5pt; font-style: italic; color: #444; }
+.think .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #666; margin-bottom: 2px; }
+.highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+.error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+.discrim-option .error-mark { background: transparent; text-decoration: none; padding: 0; border-radius: 0; }
+.essay-excerpt { background: #fafafa; border: 1px solid #e0e0e8; border-radius: 6px; padding: 10px 14px; font-size: 10.5pt; margin: 8px 0; line-height: 1.7; }
+.discrim-challenge { background: #f8f5ff; border: 1.5px solid #d4c5ff; border-radius: 8px; padding: 14px; margin: 10px 0; }
+.discrim-prompt { font-weight: 700; font-size: 10.5pt; margin-bottom: 10px; color: #5c2dcc; }
+.discrim-options { display: flex; flex-direction: column; gap: 8px; }
+.discrim-option { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border: 2px solid #d4c5ff; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 10.5pt; background: #fff; }
+.discrim-option:hover { border-color: #7c4dff; background: #f5f0ff; }
+.discrim-label { font-weight: 800; color: #7c4dff; min-width: 20px; flex-shrink: 0; }
+.discrim-option.correct, .discrim-option.model { border-color: #2d6a2d; background: #e8f5e9; cursor: default; }
+.discrim-option.correct .discrim-label, .discrim-option.model .discrim-label { color: #2d6a2d; }
+.discrim-option.wrong { border-color: #cc0000; background: #fff3f3; cursor: default; }
+.discrim-option.wrong .discrim-label { color: #cc0000; }
+.discrim-option.locked { pointer-events: none; opacity: 0.5; }
+.discrim-challenge.done .discrim-option { cursor: default; }
+.discrim-feedback { margin-top: 0; font-size: 10pt; line-height: 1.45; max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.3s, opacity 0.3s, margin 0.3s; }
+.discrim-feedback.shown { max-height: 400px; opacity: 1; margin-top: 10px; }
+.discrim-feedback.right-fb { color: #2d6a2d; font-weight: 600; }
+.discrim-parallel { display: none; }
+.discrim-parallel.shown { display: block; }
+.discrim-parallel .discrim-prompt::before { content: 'One more like it. '; color: #888; font-weight: 600; }
+.reveal-wrapper { position: relative; }
+.reveal-cover { background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%); border-left: 3px solid #2d6a2d; padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 10px; transition: background 0.2s, box-shadow 0.2s; }
+.reveal-cover:hover { box-shadow: 0 2px 8px rgba(45,106,45,0.15); }
+.reveal-cover .reveal-icon { width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
+.reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #2d6a2d; }
+.reveal-cover .reveal-hint { font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px; }
+.reveal-content { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0; }
+.reveal-content.shown { max-height: 1200px; opacity: 1; margin: 8px 0; }
+.reveal-cover.hidden { display: none; }
+.your-turn { background: #f8f8fc; border: 1.5px dashed #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.your-turn .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.your-turn textarea { width: 100%; min-height: 64px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; margin: 4px 0; }
+.frame-row { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0; font-size: 10.5pt; }
+.frame-row .lbl { margin-top: 4px; }
+.frame-row .given { background: #fff; border: 1.5px solid #e0e0e8; border-radius: 6px; padding: 8px; flex: 1; color: #555; }
+.frame-row textarea { flex: 1; min-height: 48px; margin: 0; }
+.yt-btn { margin-top: 8px; padding: 7px 16px; border: 2px solid #2d6a2d; background: #fff; color: #2d6a2d; border-radius: 8px; font-family: inherit; font-weight: 600; font-size: 10pt; cursor: pointer; }
+.yt-btn:hover { background: #2d6a2d; color: #fff; }
+.yt-btn:disabled { opacity: 0.6; cursor: default; }
+.yt-model { display: none; margin-top: 10px; }
+.assembled { display: none; margin-top: 8px; }
+.assembled.shown { display: block; }
+.xp-link { display: inline-block; margin: 8px 6px 0 0; padding: 6px 14px; border-radius: 6px; background: #2d6a2d; color: #fff; font-weight: 700; font-size: 10pt; text-decoration: none; }
+.xp-link:hover { background: #1b5e1b; }
+.yt-model.shown { display: block; }
+.self-check .check-item { font-size: 10pt; padding: 6px 8px; }
+.check-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 8px; cursor: pointer; border-bottom: 1px solid #eee; border-radius: 6px; transition: background 0.15s; user-select: none; font-size: 11pt; }
+.check-item:last-child { border-bottom: none; }
+.check-item:hover { background: #f8f8fc; }
+.check-item.checked { background: #f0f8f0; }
+.check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
+.check-item.checked .check-box::after { content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
+.check-box { width: 28px; height: 28px; border: 2.5px solid #b8860b; border-radius: 6px; flex-shrink: 0; margin-top: 1px; position: relative; transition: background 0.2s, border-color 0.2s; }
+.self-check .check-box { width: 22px; height: 22px; }
+.checklist-progress { background: #eee; border-radius: 10px; height: 8px; margin: 12px 0 6px; overflow: hidden; }
+.checklist-progress-fill { background: linear-gradient(90deg, #2d6a2d, #4caf50); height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%; }
+.checklist-progress-label { font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px; }
+.quick-check { background: #f8f5ff; border: 2px solid #7c4dff; border-radius: 10px; padding: 12px 14px; margin: 10px 0; }
+.quick-check .qc-title { font-weight: 800; color: #5c2dcc; font-size: 10.5pt; margin-bottom: 4px; }
+.quick-check .qc-sub { font-size: 9.5pt; color: #666; margin-bottom: 6px; }
+.quick-check .discrim-challenge { background: #fff; margin: 8px 0; padding: 10px 12px; }
+.qc-result { display: none; font-weight: 700; margin-top: 8px; font-size: 10.5pt; color: #5c2dcc; }
+.recall-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.recall-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.recall-box textarea { width: 100%; min-height: 56px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; }
+.checklist-wrap { display: none; }
+.checklist-wrap.shown { display: block; }
+.time-toggle { font-size: 9pt; color: #b8860b; cursor: pointer; text-decoration: underline; display: inline-block; margin: 0 0 6px; }
+.tl-time { display: none; font-weight: 400; color: #aaa; }
+.show-times .tl-time { display: inline; }
+.guide-block { margin-top: 16px; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 8px 12px; background: #fafafa; font-size: 10pt; }
+.guide-block summary { cursor: pointer; font-weight: 700; color: #666; font-size: 9.5pt; }
+.guide-block ul { margin: 6px 0 4px 18px; }
+.guide-block li { margin: 4px 0; }
+.practice-recommendations { margin-top: 16px; border-top: 2px solid #e0e0e8; padding-top: 14px; }
+.practice-recs-title { font-size: 10pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #b8860b; margin-bottom: 10px; }
+.practice-tier { border-radius: 8px; padding: 12px 14px; margin: 8px 0; }
+.tier-primary { background: #e8f5e9; border: 1.5px solid #a5d6a7; }
+.tier-extra { background: #f8f8fc; border: 1.5px solid #e0e0e8; }
+.tier-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.tier-label { font-size: 8.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 2px 10px; border-radius: 10px; }
+.tier-primary .tier-label { background: #2d6a2d; color: #fff; }
+.tier-extra .tier-label { background: #888; color: #fff; }
+.tier-note { font-size: 9pt; color: #666; margin-bottom: 6px; line-height: 1.4; }
+.practice-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.practice-link { display: inline-block; padding: 5px 12px; border-radius: 6px; font-size: 9.5pt; font-weight: 600; text-decoration: none; transition: background 0.2s, transform 0.1s; }
+.tier-primary .practice-link { background: #c8e6c9; color: #1b5e1b; }
+.tier-extra .practice-link { background: #e8edf5; color: #b8860b; }
+.nav { display: flex; gap: 12px; margin-top: 16px; }
+.nav button { padding: 8px 28px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; transition: background 0.2s, color 0.2s; }
+.nav button:hover { background: #b8860b; color: #fff; }
+.print-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 8px 20px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 10.5pt; font-weight: 600; cursor: pointer; }
+.print-btn:hover { background: #b8860b; color: #fff; }
+.print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+.completion-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(184,134,11,0.6); z-index: 500; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s; }
+.completion-overlay.visible { opacity: 1; pointer-events: auto; }
+.completion-card { background: #fff; border-radius: 16px; padding: 40px 48px; text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2); transform: scale(0.8); transition: transform 0.4s ease; max-width: 420px; }
+.completion-overlay.visible .completion-card { transform: scale(1); }
+.completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+.completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; color: #b8860b; }
+.completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+.completion-close { margin-top: 20px; padding: 10px 32px; background: #b8860b; color: #fff; border: none; border-radius: 8px; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; }
+#confettiCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 501; }
+.score-timeline { display: flex; align-items: flex-end; gap: 0; margin: 12px 0 10px; padding: 0 6px; justify-content: space-between; }
+.timeline-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.timeline-score { font-size: 13pt; font-weight: 700; margin-bottom: 4px; }
+.timeline-bar { width: 70%; border-radius: 4px 4px 0 0; min-height: 8px; }
+.timeline-label { font-size: 8.5pt; color: #888; margin-top: 6px; font-weight: 600; text-align: center; }
+.score-green { color: #2d6a2d; } .score-amber { color: #cc6600; } .score-red { color: #cc0000; }
+.bar-green { background: linear-gradient(to top, #c8e6c9, #81c784); } .bar-amber { background: linear-gradient(to top, #ffe0b2, #ffb74d); } .bar-red { background: linear-gradient(to top, #ffcdd2, #ef9a9a); }
+.strength-chips, .growth-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; }
+.strength-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; background: #e8f5e9; color: #2d6a2d; border: 1.5px solid #a5d6a7; display: inline-flex; align-items: center; gap: 4px; }
+.strength-chip .chip-course, .growth-chip .chip-avg { font-size: 7.5pt; color: #888; font-weight: 400; }
+.journey-section { font-size: 9.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; margin: 10px 0 4px; padding-bottom: 3px; border-bottom: 1.5px solid; }
+.journey-section.strengths-header { color: #2d6a2d; border-color: #c8e6c9; }
+.journey-section.growth-header { color: #cc6600; border-color: #ffe0b2; }
+.root-cause-teaser { background: #f5f0ff; border-left: 3px solid #7c4dff; padding: 10px 14px; margin: 12px 0 4px; border-radius: 0 6px 6px 0; font-size: 10.5pt; line-height: 1.5; }
+.root-cause-teaser b { color: #5c2dcc; }
+.growth-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+.growth-chip.mixed { background: #fff8e8; color: #b35900; border: 1.5px solid #ffe0b2; }
+.growth-chip.weak { background: #fff3f3; color: #cc0000; border: 1.5px solid #ffcdd2; }
+@media print { body { background: #fff; padding: 0; min-height: auto; } .progress-bar, .nav, .print-btn, .card-breadcrumb, .sticky-indicator, .completion-overlay, #confettiCanvas, .reveal-cover, .checklist-progress, .checklist-progress-label, .discrim-challenge, .discrim-parallel, .quick-check, .recall-box, .yt-btn, .guide-block { display: none !important; } .card-container { width: 100%; min-height: auto; } .card { display: none !important; } .card.print-target { display: block !important; opacity: 1 !important; pointer-events: auto !important; position: relative !important; transform: none !important; box-shadow: none; border: 2px solid #b8860b; page-break-inside: avoid; } .reveal-content, .yt-model, .checklist-wrap { display: block !important; max-height: none !important; opacity: 1 !important; margin: 8px 0 !important; } }
+@media (max-width: 720px) { .card-container { width: 100%; } .score-grid { grid-template-columns: 1fr; } .timeline-score { font-size: 10pt; } }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progressBar"></div>
+<div class="card-breadcrumb" id="breadcrumb"></div>
+<div class="sticky-indicator" id="stickyIndicator"></div>
+<div class="card-container" id="cardContainer">
+
+<!-- Card 1: Your Starting Point -->
+<div class="card active" data-title="Your Starting Point">
+  <div class="card-header"><h2>Sydney Liu</h2><div class="card-subtitle">Alpha Standardized Writing G4.3. October 2026. Passages: &ldquo;The Big Change&rdquo; / &ldquo;Trees Rise in the Desert&rdquo;</div></div>
+  <div class="card-body">
+    <div class="score-grid">
+      <div class="score-box score-good"><div class="big">80%</div><div class="label">Overall Score</div></div>
+      <div class="score-box score-good"><div class="big">22/25</div><div class="label">Questions 1&ndash;10</div></div>
+      <div class="score-box score-warn"><div class="big">14/20</div><div class="label">Paragraph (Question 11)</div></div>
+    </div>
+    <p>Sydney, 80% on your third Grade 4 test, after passing Grade 3 with a 91 in June. Your ideas have never been the problem. Across all three Grade 4 tests, every one of the fifteen one-sentence answers earned both idea points, and on this test Q7, Q8 and Q10 earned all three (<i>because they have spent a while with it and they don&rsquo;t know if they will ever see it ever again</i>). The exclamation, the word order, the fragment and the <i>so</i> combine were all 2 of 2. The paragraph found both things the prompt asked about, Yacouba&rsquo;s idea and his character.</p>
+    <p>Nine points went missing. A pass is 90%, which is 40.5 of 45, so five of them have to come back. Six are in the paragraph: it opens by asking the prompt&rsquo;s question back, gives each part one sentence with no <i>This shows</i>, and ends with advice to the reader. One is the appositive in Q3, a miss on all four of your tests. Two are the third point on one-sentence answers: Q9, where commas hold three sentences together, and Q6, with three slips in one line.</p>
+    <div class="root-cause-teaser"><b>The plan:</b> one sentence that stops at its period, with a because or a so inside it. An appositive that renames with a noun phrase and no verb. The paragraph given the time it needs, a first sentence with the point and two hows, and a This shows after every detail.</div>
+    <div class="journey-section strengths-header">Skills you do well</div>
+    <div class="strength-chips">
+      <span class="strength-chip">Exclamation, word order, fragment, so-combine <span class="chip-course">&middot; Q1, Q2, Q4, Q5, 8 of 8</span></span>
+      <span class="strength-chip">Idea points on every one-sentence answer <span class="chip-course">&middot; Q6 to Q10, 10 of 10, and 30 of 30 across Grade 4</span></span>
+      <span class="strength-chip">A paragraph that quotes and says This shows <span class="chip-course">&middot; G4.1 Q11, 18 of 20</span></span>
+    </div>
+    <div class="journey-section growth-header">What to work on</div>
+    <div class="growth-chips">
+      <span class="growth-chip weak">Paragraph: a This shows after each detail, an ending about Yacouba <span class="chip-avg">Q11: 14 of 20</span></span>
+      <span class="growth-chip weak">One sentence: a comma cannot hold two sentences <span class="chip-avg">Q9 now, 8 of 15 across Grade 4</span></span>
+      <span class="growth-chip mixed">An appositive is a naming phrase, not a who clause <span class="chip-avg">Q3 now, and G4.2, G4.1, G3.1</span></span>
+      <span class="growth-chip mixed">Paragraph time <span class="chip-avg">24 minutes, your fastest test, your lowest paragraph</span></span>
+      <span class="growth-chip mixed">Read-back: natural, its, method, terrified, melancholy, if, hung, below <span class="chip-avg">Q5, Q6, Q7, Q10, Q11</span></span>
+    </div>
+  </div>
+</div>
+
+<!-- Card 2: Writing Journey -->
+<div class="card" data-title="Your Writing Journey">
+  <div class="card-header"><h2>Your Writing Journey</h2><div class="card-subtitle">Four tests in four months</div></div>
+  <div class="card-body">
+    <div class="score-timeline">
+      <div class="timeline-item"><div class="timeline-score score-green">91%</div><div class="timeline-bar bar-green" style="height:82px;"></div><div class="timeline-label">G3.1 (Jun 2026)<br><span class="tl-time">31m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">82%</div><div class="timeline-bar bar-green" style="height:74px;"></div><div class="timeline-label">G4.1 (Jun 2026)<br><span class="tl-time">37m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-amber">79%</div><div class="timeline-bar bar-amber" style="height:71px;"></div><div class="timeline-label">G4.2 (Aug 2026)<br><span class="tl-time">30m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">80%</div><div class="timeline-bar bar-green" style="height:72px;"></div><div class="timeline-label">G4.3 (Oct 2026)<br><span class="tl-time">24m</span></div></div>
+    </div>
+    <span class="time-toggle" onclick="toggleTimes(this)">Show how long each test took</span>
+    <p>Grade 3 took one test: 91 in June, with the paragraph at 18 of 20. The same day you sat your first Grade 4 test and scored 82, with the paragraph again at 18. Then 79 in August and 80 in October. Three Grade 4 scores within three points of each other is a plateau, and a plateau means the knowledge is there and habits are holding the score. The first habit is the comma between two whole sentences. It, a tangled verb, or three slips in one line, cost the third point on eleven of your fifteen Grade 4 one-sentence answers. The second is the appositive, missing on all four tests. Under both runs the paragraph: 18, then 17, then 14, while the whole test went from 37 minutes to 30 to 24.</p>
+    <div class="journey-section strengths-header">Skills you do well</div>
+    <div class="strength-chips">
+      <span class="strength-chip">Passing Grade 3 on the first try <span class="chip-course">&middot; G3.1, 91</span></span>
+      <span class="strength-chip">Idea points on every one-sentence answer <span class="chip-course">&middot; 30 of 30 across Grade 4</span></span>
+      <span class="strength-chip">A paragraph that quotes and explains <span class="chip-course">&middot; G3.1 and G4.1, 18 of 20 each</span></span>
+    </div>
+    <div class="journey-section growth-header">What to work on</div>
+    <div class="growth-chips">
+      <span class="growth-chip weak">One sentence: a comma cannot hold two <span class="chip-avg">11 of 15 lost the third point</span></span>
+      <span class="growth-chip weak">Paragraph: a This shows after each detail <span class="chip-avg">18, 17, 14</span></span>
+      <span class="growth-chip mixed">The appositive <span class="chip-avg">0 of 4</span></span>
+      <span class="growth-chip mixed">Test time <span class="chip-avg">37m, 30m, 24m</span></span>
+    </div>
+    <div class="root-cause-teaser"><b>Five points from a pass.</b> Two of them are the one-sentence answers, card 3. One is the appositive, card 4. The paragraph has six, cards 5 and 6: the time it needs, then a This shows after every detail.</div>
+  </div>
+</div>
+
+<!-- Card 3: Fix 1, one sentence -->
+<div class="card" data-title="Fix 1: One Sentence Means One Sentence">
+  <div class="card-header"><h2>Fix 1: One Sentence Means One Sentence</h2><div class="card-subtitle">Q9 held three sentences together with commas. Eight of your fifteen Grade 4 one-sentence answers did the same</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: A COMMA CANNOT HOLD TWO SENTENCES TOGETHER</div>A sentence ends at its period. If a second whole sentence follows, the seam needs a joining word: <b>because</b>, <b>so</b>, <b>and</b>, <b>but</b>, <b>when</b>. A comma on its own is not enough. Each one-sentence answer is three points: one for the answer, one for a reason, explanation or example, one for spelling, capitals and punctuation. A comma seam, or three slips in one line, costs that third point every time. <b>The check:</b> at every comma, read the words after it on their own. If they could stand as a sentence, the comma needs a joining word.</div>
+
+    <div class="you-wrote"><div class="label">YOU WROTE (Q9, 2 OUT OF 3)</div>&ldquo;There was a time when me and my friends decided to want to go shopping by ourselfs<span class="error-mark">,</span> my mom was shocked<span class="error-mark">,</span> we had never done it before and she didn&rsquo;t get any notice earlier.&rdquo; <span class="lbl lbl-miss">THREE SENTENCES, TWO COMMA SEAMS</span><br><span style="font-size:9.5pt;color:#666;">Read the words after the first comma: <i>my mom was shocked</i> is a whole sentence. After the second: <i>we had never done it before</i> is another. Both idea points were earned, the answer and the reason. The seams cost the third. Also <i>my friends and I</i>, and <i>ourselves</i>.</span></div>
+    <div class="model-box"><div class="label">THE SAME IDEAS, ONE SENTENCE</div>One time my friends and I asked to go shopping by ourselves<b>, and</b> my mom was shocked <b>because</b> we had never done it before.<br><span style="font-size:9.5pt;color:#666;">Two seams, two joining words.</span></div>
+    <div class="you-wrote"><div class="label">YOU WROTE (AUGUST, G4.2 Q10, 2 OUT OF 3)</div>&ldquo;In fall during thanksgiving we always host a big party and invite friends and extended family<span class="error-mark">,</span> I always love it because I always get to make a giant pie with my friends.&rdquo; <span class="lbl lbl-miss">A COMMA HOLDING TWO SENTENCES</span><br><span style="font-size:9.5pt;color:#666;">The second half already has its <i>because</i>. The seam in front of <i>I always love it</i> needed an <i>and</i>. Thanksgiving takes a capital.</span></div>
+    <div class="model-box"><div class="label">YOURS, Q10 THIS TEST, 3 OUT OF 3</div>&ldquo;A person might feel <span class="error-mark">mealancoly</span> and depressed for a while <span class="error-mark">is</span> they have to let go of something they love <b>because</b> they have spent a while with it <b>and</b> they don&rsquo;t know if they will ever see it ever again.&rdquo;<br><span style="font-size:9.5pt;color:#666;">Four ideas in one sentence, and every seam has a joining word: <i>if</i>, <i>because</i>, <i>and</i>. Two slips, <i>melancholy</i> and <i>if</i>, and still all three points, because one or two slips are forgiven and a comma seam is not. This is the shape.</span></div>
+
+    <p style="margin-top:10px;"><b>Three seams with a joining word</b>, and one with only a comma:</p>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">AND</span>Noah asked his mom for some lettuce<b>, and</b> she looked confused because he never ate vegetables.</div>
+      <div class="ex pos"><span class="tag">BECAUSE</span>The villagers laughed at Yacouba <b>because</b> they did not believe seeds could grow without water.</div>
+      <div class="ex pos"><span class="tag">SO</span>The holes caught and held the rain<b>, so</b> the soil stayed wet longer.</div>
+      <div class="ex neg"><span class="tag">COMMA SEAM</span>Noah added stones to the tank, the frogs could climb on them when they were ready.<br><span style="font-size:9.5pt;color:#666;">Read the words after the comma: <i>the frogs could climb on them</i> is a whole sentence. Comma plus <i>so</i>.</span></div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which is one sentence, not two held by a comma?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="true" data-right-feedback="Comma plus so: a joining word at the seam." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Yacouba filled the holes with manure and leaves, so the seeds had food when the rain came.</span></div>
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Read the words after the comma: the seeds had food is a whole sentence. The same seam as Q9." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Yacouba filled the holes with manure and leaves, the seeds had food when the rain came.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Write one sentence about a time you asked for something unusual. Which answer earns all three points?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A comma holding two sentences. Two points, like your Q9." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>I asked to stay up late to finish my book, my mom said yes because it was a Friday.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="And at the seam, because for the reason. Three points." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>I asked to stay up late to finish my book, and my mom said yes because it was a Friday.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which sentence is ready to submit?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Close to your Q6, with its three slips: is feed, it&rsquo;s, natual. Three slips in one line cost the third point." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>One way to take care of a small animal is feed it the food it eats in it&rsquo;s natual habitat.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="To feed, its, natural. Clean." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>One way to take care of a small animal is to feed it the food it eats in its natural habitat.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence has a seam that needs a joining word?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="After the comma, it had purple spots is a whole sentence. It needs an and." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>It was my first time seeing a frog, it had purple spots lining its back.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="This one already has the and. The seam is fine." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>It was my first time seeing a frog, and it had purple spots lining its back.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>On Q7 and Q8 you wrote two separate sentences and kept the points. Do not count on that: the instruction says one sentence. Every time you type a comma, read the words after it on their own. A whole sentence gets a joining word. One answer, one because or so, one period.</div>
+  </div>
+</div>
+
+<!-- Card 4: Fix 2, appositive -->
+<div class="card" data-title="Fix 2: An Appositive Is a Naming Phrase">
+  <div class="card-header"><h2>Fix 2: An Appositive Is a Naming Phrase</h2><div class="card-subtitle">Q3 now, Q4 in August, Q3 in June, Q1 on Grade 3. Four tries, four different guesses</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: AN APPOSITIVE IS A NOUN PHRASE THAT RENAMES THE NOUN NEXT TO IT, INSIDE COMMAS</div><i>He asked his mom, a sleepy early riser, for some lettuce.</i> The appositive sits right beside the noun and gives it another name. It has no verb of its own. It is not a <i>who was</i> clause, not describing words in front of the noun, not a second sentence joined with <i>and</i>. <b>The check:</b> swap the appositive in for the noun. <i>He asked a sleepy early riser for some lettuce</i> is still a sentence, so it passes.</div>
+
+    <div class="you-wrote"><div class="label">YOU WROTE (Q3, 1 OUT OF 2)</div>&ldquo;He asked his mom, <span class="error-mark">who was still tired from the morning</span>, for some lettuce.&rdquo; <span class="lbl lbl-miss">A WHO CLAUSE, NOT A NAMING PHRASE</span><br><span style="font-size:9.5pt;color:#666;">Right place, right commas, and the spelling-and-punctuation point was kept. But <i>who was still tired</i> has its own verb. It tells about Mom instead of renaming her. Swap test: <i>He asked who was still tired from the morning for some lettuce.</i> Fails.</span></div>
+    <div class="model-box"><div class="label">THE APPOSITIVE</div>He asked his mom, <b>a tired early riser</b>, for some lettuce.<br><span style="font-size:9.5pt;color:#666;">Swap test: <i>He asked a tired early riser for some lettuce.</i> Passes.</span></div>
+    <div class="you-wrote"><div class="label">YOU WROTE (AUGUST, G4.2 Q4, 1 OUT OF 2)</div>&ldquo;Many people attend <span class="error-mark">lively, and loud</span> bluebonnet festivals in small towns all over Texas.&rdquo; <span class="lbl lbl-miss">DESCRIBING WORDS IN FRONT, NO RENAMING</span><br><span style="font-size:9.5pt;color:#666;">Two describing words before the noun. Nothing renames the festivals, and the instruction asked for more information about them.</span></div>
+    <div class="model-box"><div class="label">THE APPOSITIVE</div>Many people attend bluebonnet festivals, <b>spring celebrations of the state flower</b>, in small towns all over Texas.</div>
+    <div class="you-wrote"><div class="label">YOU WROTE (THE TWO EARLIER TRIES)</div>&ldquo;Peter Tabichi <span class="error-mark">was born in</span> Kenya, Africa, and teaches high school science <span class="error-mark">right now</span>.&rdquo; (June, G4.1 Q3) and &ldquo;My family has two big dogs <span class="error-mark">and thier names are</span> Lucy and Rocket.&rdquo; (Grade 3, Q1) <span class="lbl lbl-miss">REWORDED, OR JOINED WITH AND</span><br><span style="font-size:9.5pt;color:#666;">The first changed words and added no phrase. The second kept both sentences and glued them with <i>and</i>. The appositive version of the second: <i>My family has two big dogs, Lucy and Rocket.</i> The names rename the dogs.</span></div>
+
+    <p style="margin-top:10px;"><b>Three appositives that pass the swap test</b>, and one that is not an appositive:</p>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">WHO</span>Noah, <b>a boy with three tadpoles in a tank</b>, asked his mom for lettuce.</div>
+      <div class="ex pos"><span class="tag">WHO</span>Yacouba Sawadogo, <b>a farmer in Burkina Faso</b>, dug small holes in the dry ground.</div>
+      <div class="ex pos"><span class="tag">WHAT</span>Each hole, <b>a za&iuml; about a foot wide</b>, caught and held the rain.</div>
+      <div class="ex neg"><span class="tag">A WHO CLAUSE</span>Yacouba, who believed the rain would return, planted seeds in the holes.<br><span style="font-size:9.5pt;color:#666;">Swap test: <i>Who believed the rain would return planted seeds.</i> Fails. A clause tells about the noun. An appositive names it.</span></div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Add an appositive about the villagers: <i>The villagers laughed at Yacouba.</i> Which answer does it?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="A who clause, the same as Q3. Swap test: Who did not believe him laughed at Yacouba. Fails." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>The villagers, who did not believe him, laughed at Yacouba.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="A noun phrase in commas renames the villagers. Swap test: Farmers with dry and cracked fields laughed at Yacouba." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The villagers, farmers with dry and cracked fields, laughed at Yacouba.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Add an appositive about the tadpoles: <i>The tadpoles swished their tiny tails.</i> Which answer does it?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Noah&rsquo;s new little pets renames the tadpoles, inside commas. Swap test passes." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>The tadpoles, Noah&rsquo;s new little pets, swished their tiny tails.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Two sentences glued with and, the Grade 3 miss. Nothing sits beside the noun." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The tadpoles swished their tiny tails, and they were Noah&rsquo;s new little pets.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which fills the blank with an appositive? <i>Noah&rsquo;s mom, ___, looked confused.</i></div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="true" data-right-feedback="A noun phrase. Swap test: A tired early riser looked confused." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>a tired early riser</span></div>
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Says where and when. Swap test: In the kitchen that morning looked confused. Fails." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>in the kitchen that morning</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which fills the blank with an appositive? <i>Burkina Faso, ___, had not had good rain for ten years.</i></div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A which clause, with its own verb. Swap test: Which is in Africa had not had good rain. Fails." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>which is in Africa</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="A noun phrase that renames the country. Swap test passes." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>a country between the Sahara and the rain forests</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>When the instruction says appositive, ask who or what the noun is, write that as a noun phrase with no verb, put commas around it, and run the swap test. One name. Not a who, not an and.</div>
+  </div>
+</div>
+
+<!-- Card 5: Fix 3, rushing -->
+<div class="card" data-title="Fix 3: You Are Rushing the Paragraph">
+  <div class="card-header"><h2>Fix 3: You Are Rushing the Paragraph</h2><div class="card-subtitle">24 minutes for the whole test, your fastest. The paragraph was your lowest, 14 of 20</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: GIVE THE PARAGRAPH THE TIME IT NEEDS</div>You are rushing. The paragraph is 20 of the 45 points, and it is the part that drops when the test gets quick. Most students who do well take about 30 to 40 minutes for the whole test. Your 37-minute test scored 18 of 20 on the paragraph. Your 24-minute test scored 14. The points between them are a plan, a <i>This shows</i> after each detail and a read-back, which are exactly the things that take minutes.</div>
+
+    <div class="evidence-block">
+      <div class="ev-row paced"><span class="ev-tag">37 MIN</span><span><b>G4.1, June.</b> Paragraph 18 of 20: a quote from the story, a <i>This shows</i> after it, then the change.</span></div>
+      <div class="ev-row"><span class="ev-tag" style="background:#888;">30 MIN</span><span><b>G4.2, August.</b> 17 of 20: five examples listed, none explained.</span></div>
+      <div class="ev-row rushed"><span class="ev-tag">24 MIN</span><span><b>G4.3, October.</b> 14 of 20: the question asked back, one sentence per part, no <i>This shows</i>, an ending for the reader.</span></div>
+    </div>
+
+    <div class="model-box"><div class="label">SLOW DOWN: FOUR STEPS, IN ORDER</div>
+      <b>1. Read the prompt twice.</b> Count its parts. <i>Ideas and character</i> is two parts, so the paragraph needs two hows.<br>
+      <b>2. Type a four-line plan at the top of the answer box.</b> The point with its two hows, detail 1, detail 2, the ending. Short notes, not sentences.<br>
+      <b>3. Write the paragraph under the plan.</b> After each detail, a sentence that starts <i>This shows</i>. Then delete the plan.<br>
+      <b>4. Read it back once.</b> Look for the words you know you miss: method, natural, its. Then check the ending: is it about Yacouba, not the reader?<br>
+      <span style="font-size:9.5pt;color:#666;">Aim to spend at least 15 minutes on the paragraph, and give the whole test about 35 minutes, the pace of your 18 of 20.</span></div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">The one-sentence answers are done and the paragraph box is empty. Which choice earns more?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="That is the 24-minute test: 14 of 20." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Write four sentences straight from memory of the article and submit right away, because the one-sentence answers went well and the paragraph is only one question.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="That is the 37-minute test: 18 of 20." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Reread the prompt, type the four-line plan, write a detail and a This shows for each how, read it back, then submit.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">The prompt says <i>ideas and character</i>. Which plan is complete?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Two parts in the prompt, two hows in the plan, a detail for each, and an ending." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Point with hows: his idea and his character grew the trees. Detail 1: the za&iuml; holes held the rain. Detail 2: he kept believing while the villagers laughed. Ending: both together turned the desert green.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="One detail and no ending. The prompt asked for two parts, and character is missing." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Point: Yacouba grew trees in the desert. Detail: he dug holes.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>In every paragraph lesson, write the plan line before the first sentence. The plan is where the two hows get counted, and it is what the extra minutes are for.</div>
+  </div>
+</div>
+
+<!-- Card 6: Fix 4, the paragraph -->
+<div class="card" data-title="Fix 4: The Point, the Hows, and This Shows">
+  <div class="card-header"><h2>Fix 4: The Point, the Hows, and This Shows</h2><div class="card-subtitle">Q11 asked how Yacouba&rsquo;s ideas and character helped. The paragraph named both and explained neither</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: FIRST SENTENCE = THE POINT + THE HOWS. EACH DETAIL, THEN THIS SHOWS. THE ENDING ADDS THE HOWS UP</div>The prompt hands you the hows: <b>ideas</b> and <b>character</b>. The first sentence answers the question as a statement and names both. Each how gets one <span class="lbl lbl-show">DETAIL &middot; SHOW</span>, a fact you can point to in the article, and one <span class="lbl lbl-sowhat">DETAIL &middot; SO WHAT</span> that says what the fact proves. The ending names both hows and says what they add up to. Not a question, not <i>In conclusion I think</i>, not advice to the reader. <b>The check:</b> after each detail, is there a sentence that starts <i>This shows</i>?</div>
+
+    <div class="you-wrote"><div class="label">YOU WROTE (Q11, 14 OUT OF 20)</div>&ldquo;<span class="error-mark">How does Yacouba&rsquo;s ideas and character help him find a way to grow life in a barren desert with almost no rain?</span> Yacouba believes that there is hope for growing plants in the dry, cracked soil so he used a <span class="error-mark">meathod</span> that he said people long ago used. His character shows that he cares so he attempts to plant <span class="error-mark">a tree in a wide 8 inches deep hole</span> to trap water. <span class="error-mark">In conclusion, next time you plant a tree, think about what Yacouba did to bring life to a desert.</span>&rdquo; <span class="lbl lbl-miss">THE QUESTION ASKED BACK, TWO DETAILS, NO THIS SHOWS, AN ENDING FOR THE READER</span><br><span style="font-size:9.5pt;color:#666;">You found both hows: the old method is the idea, and hope is the character. But the first sentence is the prompt turned into a question, each how gets one sentence with nothing after it, the second detail is not quite the article&rsquo;s (he planted seeds, not a tree, in holes a foot wide and eight inches deep), and the ending talks to the reader instead of about Yacouba. Details that are listed and never explained stop at about 6 of the 10 idea points. A <i>This shows</i> after each one is what lifts them.</span></div>
+    <div class="model-box"><div class="label">YOURS, Q10, SPELLING FIXED: THE SHAPE, ALREADY</div><span class="lbl lbl-say">POINT</span>A person might feel melancholy and depressed if they have to let go of something they love <span class="lbl lbl-say">HOW</span>because they have spent a while with it and they don&rsquo;t know if they will ever see it again.<br><span style="font-size:9.5pt;color:#666;">Your Q10 states the point and then the how. The first sentence of a paragraph is the same move, with two hows.</span></div>
+    <div class="model-box"><div class="label">A FIRST SENTENCE WITH THE POINT AND BOTH HOWS</div><span class="lbl lbl-say">POINT</span>Yacouba found a way to grow plants in dry land <span class="lbl lbl-say">HOW</span>because his idea, the za&iuml; holes, caught the rain that hard ground lets run away, and because his character kept him digging while the villagers laughed.<br><span style="font-size:9.5pt;color:#666;">Two hows, one for ideas and one for character. Each will get a detail and a <i>This shows</i>.</span></div>
+
+    <p style="margin-top:10px;"><b>Three details you can point to in the article</b>, and one that is not there:</p>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">IDEAS</span>Each hole, called a za&iuml;, was about a foot wide and eight inches deep, filled with manure, leaves and other waste, with seeds planted inside.</div>
+      <div class="ex pos"><span class="tag">IDEAS</span>On hard ground water runs away, but his holes would catch and hold the rain so the soil stayed wet longer.</div>
+      <div class="ex pos"><span class="tag">CHARACTER</span>The villagers laughed, someone shouted that the seeds would never grow without water, and he told them rain would return.</div>
+      <div class="ex neg"><span class="tag">NOT IN THE ARTICLE</span>Yacouba watered each hole every morning until the seeds came up.<br><span style="font-size:9.5pt;color:#666;">Nothing in the article says he watered them. The whole idea was that the holes caught the rain. A detail is a fact you can point to.</span></div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which first sentence answers <i>how did Yacouba&rsquo;s ideas and character help him grow plants in dry land</i>?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="The prompt&rsquo;s question, asked back. A first sentence is a statement with the point and the hows." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>How did Yacouba&rsquo;s ideas and character help him grow plants in dry land?</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="The point as a statement, then two hows: the idea and the character." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Yacouba grew plants in dry land because his za&iuml; holes held the rain and because he kept digging while the villagers laughed.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt"><i>How do robots help people at home?</i> Which first sentence has the point and the hows?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="The point, then two hows that the details will prove." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Robots help people at home by doing chores that save time and by keeping lonely people company.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Your August first sentence, spelling fixed: a point with no hows. Many ways is not a plan." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>There are many ways that humans can benefit from having robots in homes or workplaces.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="your-turn build-frame" id="build-para">
+      <div class="label">YOUR TURN: BUILD THE PARAGRAPH. TAP EACH THIS SHOWS AND THE SECOND DETAIL</div>
+      <div class="frame-row"><span class="lbl lbl-say">TOPIC SENTENCE &middot; POINT + HOW</span><div class="given">Yacouba found a way to grow plants in dry land because his idea, the za&iuml; holes, caught the rain that hard ground lets run away, and because his character kept him digging while the villagers laughed.</div></div>
+      <div class="frame-row"><span class="lbl lbl-show">DETAIL 1 &middot; SHOW</span><div class="given">He dug holes about a foot wide and eight inches deep, filled them with manure, leaves and other waste, and planted seeds inside, so that the holes would catch and hold the rain and the soil would stay wet longer.</div></div>
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">DETAIL 1 &middot; SO WHAT: which sentence goes next?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Another fact from the article. A SHOW with no This shows." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Burkina Faso had not had good rain for ten years.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="This shows, then what the detail proves about his idea." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>This shows that his idea solved the real problem: on hard ground water runs away, and the holes made it stay where the seeds were.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">DETAIL 2 &middot; SHOW: the character detail. Which one?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="You can point to all of it: the laughing, the shout, the digging, the promise of rain." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>When the villagers laughed and someone shouted that seeds would never grow without water, Yacouba kept digging and told them the rain would return.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Your sentence. Cares is a judgment, and the tree is not in the article. A detail is a fact you can point to." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>His character shows that he cares so he attempts to plant a tree in a wide 8 inches deep hole to trap water.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">DETAIL 2 &middot; SO WHAT: which sentence goes next?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Your ending: advice to the reader, not what the detail shows about Yacouba." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>In conclusion, next time you plant a tree, think about what Yacouba did.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="This shows, then what the detail proves about his character." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>This shows the character the prompt asks about: he kept believing in a method from long ago while his neighbors did not, which is the only reason the holes were there when the rain came.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="frame-row"><span class="lbl lbl-close">CONCLUDING SENTENCE &middot; TOGETHER</span><div class="given">Together, an idea that caught the rain and a farmer who would not stop believing in it turned desert back into green trees, and today farmers across West Africa dig za&iuml; holes because he did.</div></div>
+      <div class="assembled">
+        <div class="model-box"><div class="label">THE PARAGRAPH, SIX SENTENCES</div><span class="lbl lbl-say">TOPIC SENTENCE &middot; POINT + HOW</span>Yacouba found a way to grow plants in dry land because his idea, the za&iuml; holes, caught the rain that hard ground lets run away, and because his character kept him digging while the villagers laughed. <span class="lbl lbl-show">DETAIL 1 &middot; SHOW</span>He dug holes about a foot wide and eight inches deep, filled them with manure, leaves and other waste, and planted seeds inside, so that the holes would catch and hold the rain and the soil would stay wet longer. <span class="lbl lbl-sowhat">DETAIL 1 &middot; SO WHAT</span>This shows that his idea solved the real problem: on hard ground water runs away, and the holes made it stay where the seeds were. <span class="lbl lbl-show">DETAIL 2 &middot; SHOW</span>When the villagers laughed and someone shouted that seeds would never grow without water, Yacouba kept digging and told them the rain would return. <span class="lbl lbl-sowhat">DETAIL 2 &middot; SO WHAT</span>This shows the character the prompt asks about: he kept believing in a method from long ago while his neighbors did not, which is the only reason the holes were there when the rain came. <span class="lbl lbl-close">CONCLUDING SENTENCE &middot; TOGETHER</span>Together, an idea that caught the rain and a farmer who would not stop believing in it turned desert back into green trees, and today farmers across West Africa dig za&iuml; holes because he did.<br><span style="font-size:9.5pt;color:#666;">Your two hows, the old method and hope, kept and explained. A first sentence that states the point, a <i>This shows</i> after each detail, an ending that names both hows and says what they add up to. That is the six points.</span></div>
+      </div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>In every paragraph lesson: say the point and the hows before you write. After each detail, type <i>This shows</i> and finish the sentence. The ending names both hows, about the person in the article.</div>
+  </div>
+</div>
+
+<!-- Card 7: Quick Check, Checklist -->
+<div class="card" data-title="Quick Check &amp; Checklist">
+  <div class="card-header"><h2>Quick Check</h2><div class="card-subtitle">Six new ones. Then your checklist</div></div>
+  <div class="card-body">
+    <div class="quick-check" data-back="cards 3 to 6">
+      <div class="qc-title">The comma seam, the appositive, the plan, the point and the hows, This shows, the read-back: six questions</div>
+      <div class="qc-sub">All new sentences. Answer each one once.</div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which is one sentence, not two held by a comma?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Read the words after the comma: a caterpillar was waiting nearby is a whole sentence." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Noah returned the frogs to the creek, a caterpillar was waiting nearby.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Comma plus and at the seam." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Noah returned the frogs to the creek, and a caterpillar was waiting nearby.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which fills the blank with an appositive? <i>Za&iuml; holes, ___, catch and hold the rain.</i></div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="A noun phrase that renames the holes. Swap test: Small pits about a foot wide catch and hold the rain." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>small pits about a foot wide</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A which clause with its own verb. Swap test fails." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>which Yacouba dug</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">The paragraph box is empty and the rest of the test is done. What comes first?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Writing before counting the parts is how a two-part prompt gets a one-sentence answer." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>The first sentence, straight away, while the article is fresh.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Plan first. The hows get counted before the first sentence." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>A four-line plan: the point with its two hows, detail 1, detail 2, the ending.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt"><i>How did Noah help the tadpoles grow?</i> Which first sentence has the point and the hows?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="The point, then two hows from the story: the food and the stones." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Noah helped the tadpoles grow by feeding them lettuce and by adding stones to climb on when their legs came in.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A point with no hows. Many ways is not a plan." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Noah helped the tadpoles grow in many ways.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">After the detail <i>Yacouba travels to teach people how to bring life back to dry land</i>, which sentence is the SO WHAT?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="The next fact from the article. A SHOW." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>He still believes there is hope for the future.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="This shows, then what the detail proves." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>This shows that his idea outgrew his own field: a method the village laughed at is now one he is asked to teach.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence is ready to submit?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Method, its, natural. Clean." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Yacouba&rsquo;s method gave the land its natural green back.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Meathod, it&rsquo;s, natual: three from your test. Three slips cost the point." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Yacouba&rsquo;s meathod gave the land it&rsquo;s natual green back.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="qc-result"></div>
+    </div>
+
+    <div class="checklist-wrap shown">
+      <div id="mainChecklist">
+        <div class="checklist-progress-label" id="checkProgressLabel">0 of 7 checked</div>
+        <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Plan first.</b> Read the prompt twice, count its parts, and type a four-line plan at the top of the box: the point with its two hows, detail 1, detail 2, the ending.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Paragraph, sentence one:</b> the point as a statement, then the hows. Never the prompt&rsquo;s question asked back.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Each detail from the article,</b> then <i>This shows</i>. The ending names both hows and says what they add up to, about the person in the article, not advice for the reader.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Q6 to Q10, one sentence:</b> at every comma, read the words after it. A whole sentence gets a joining word, not a comma.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Appositive:</b> a noun phrase with no verb, inside commas, that renames. Run the swap test.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Aim to spend at least 15 minutes on the paragraph,</b> about 35 minutes on the whole test.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Read back:</b> method, natural, its, terrified, melancholy, if, hung, below, ourselves, my friends and I.</div></div>
+      </div>
+      <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>Print Checklist</button>
+    </div>
+  </div>
+</div>
+
+</div>
+<div class="nav"><button id="prevBtn" onclick="navigate(-1)">&larr; Back</button><button id="nextBtn" onclick="navigate(1)">Next &rarr;</button></div>
+<div class="completion-overlay" id="completionOverlay"><div class="completion-card"><div class="completion-emoji">&#9997;</div><div class="completion-title">Good luck on your next test!</div><div class="completion-sub">One sentence that stops at its period, an appositive that renames with a noun phrase, the paragraph given the time it needs, the point and two hows first, and a This shows after every detail.</div><button class="completion-close" onclick="closeCompletion()">Got it</button></div></div>
+<canvas id="confettiCanvas"></canvas>
+<script>
+var cards=document.querySelectorAll('.card'),bar=document.getElementById('progressBar'),breadcrumb=document.getElementById('breadcrumb'),stickyEl=document.getElementById('stickyIndicator'),current=0,visited=[0];
+cards.forEach(function(card,i){var dot=document.createElement('div');dot.className='progress-dot'+(i===0?' active':'');var tooltip=document.createElement('span');tooltip.className='dot-tooltip';tooltip.textContent=card.getAttribute('data-title')||('Card '+(i+1));dot.appendChild(tooltip);dot.addEventListener('click',function(){goTo(i);});bar.appendChild(dot);});
+function updateBreadcrumb(){var title=cards[current].getAttribute('data-title')||('Card '+(current+1));breadcrumb.innerHTML='Card <b>'+(current+1)+'</b> of '+cards.length+' &mdash; '+title;stickyEl.textContent=(current+1)+' / '+cards.length;}
+function checkSticky(){var r=bar.getBoundingClientRect();stickyEl.classList.toggle('visible',r.bottom<0);}
+window.addEventListener('scroll',checkSticky);
+function goTo(idx){if(idx<0||idx>=cards.length)return;cards[current].classList.remove('active');bar.children[current].classList.remove('active');current=idx;if(visited.indexOf(current)===-1)visited.push(current);cards[current].classList.add('active');bar.children[current].classList.add('active');visited.forEach(function(v){if(v!==current)bar.children[v].classList.add('visited');});var p=document.getElementById('prevBtn'),n=document.getElementById('nextBtn');if(p){p.style.visibility=current===0?'hidden':'visible';p.disabled=current===0;}if(n){n.textContent=current===cards.length-1?'Done ✓':'Next →';}updateBreadcrumb();window.scrollTo({top:0,behavior:'smooth'});}
+function navigate(dir){if(dir===1&&current===cards.length-1){showCompletion();return;}goTo(current+dir);}
+document.addEventListener('keydown',function(e){if(e.target&&e.target.tagName==='TEXTAREA')return;if(e.key==='ArrowRight'||e.key==='ArrowDown')navigate(1);if(e.key==='ArrowLeft'||e.key==='ArrowUp')navigate(-1);});
+function revealBetter(cover){cover.nextElementSibling.classList.add('shown');cover.classList.add('hidden');}
+function shuffleOptions(){document.querySelectorAll('.discrim-options').forEach(function(box){var opts=Array.prototype.slice.call(box.querySelectorAll('.discrim-option'));for(var i=opts.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=opts[i];opts[i]=opts[j];opts[j]=t;}opts.forEach(function(o,i){box.appendChild(o);var l=o.querySelector('.discrim-label');if(l)l.textContent=String.fromCharCode(65+i);});});}
+function handleDiscrim(option){var ch=option.closest('.discrim-challenge');if(ch.classList.contains('done'))return;var fb=ch.querySelector('.discrim-feedback');var opts=ch.querySelectorAll('.discrim-option');var ok=option.getAttribute('data-correct')==='true';ch.classList.add('done');
+if(ok){option.classList.add('correct');opts.forEach(function(o){if(o!==option)o.classList.add('locked');});fb.innerHTML=option.getAttribute('data-right-feedback')||'Correct.';fb.className='discrim-feedback shown right-fb';ch.setAttribute('data-first-try','1');}
+else{option.classList.add('wrong');var right=ch.querySelector('.discrim-option[data-correct="true"]');right.classList.add('model');opts.forEach(function(o){if(o!==option&&o!==right)o.classList.add('locked');});var rl=right.querySelector('.discrim-label');fb.innerHTML='<span style="color:#cc0000"><b>Not this one.</b> '+(option.getAttribute('data-wrong-feedback')||'')+'</span><br><span style="color:#2d6a2d"><b>The answer is '+(rl?rl.textContent:'')+'.</b> '+(right.getAttribute('data-right-feedback')||'')+'</span>';fb.className='discrim-feedback shown';ch.setAttribute('data-first-try','0');var par=ch.nextElementSibling;if(par&&par.classList.contains('discrim-parallel')){fb.innerHTML+=' <b style="color:#5c2dcc">Try one more like it below.</b>';setTimeout(function(){par.classList.add('shown');},600);}}
+var bf=ch.closest('.build-frame');if(bf){var all=bf.querySelectorAll('.discrim-challenge'),dn=0;all.forEach(function(c){if(c.classList.contains('done'))dn++;});if(dn===all.length){var a=bf.querySelector('.assembled');if(a)setTimeout(function(){a.classList.add('shown');},500);}}
+var qc=ch.closest('.quick-check');if(qc)updateQC(qc);}
+function updateQC(qc){var items=qc.querySelectorAll('.discrim-challenge');var done=0,first=0;items.forEach(function(c){if(c.classList.contains('done')){done++;if(c.getAttribute('data-first-try')==='1')first++;}});if(done<items.length)return;var r=qc.querySelector('.qc-result');r.textContent=first+' of '+items.length+' right first time. '+(first>=items.length-1?'The moves are in your head. Now the checklist.':'Look back at '+qc.getAttribute('data-back')+' for the ones you missed, then come back to the checklist.');r.style.display='block';launchConfetti();}
+function toggleTimes(el){var body=el.closest('.card-body');body.classList.toggle('show-times');el.textContent=body.classList.contains('show-times')?'Hide test times':'Show how long each test took';}
+function toggleCheck(item){item.classList.toggle('checked');updateCheckProgress();}
+function updateCheckProgress(){var items=document.querySelectorAll('#mainChecklist .check-item');if(!items.length)return;var checked=document.querySelectorAll('#mainChecklist .check-item.checked').length;var fill=document.getElementById('checkProgressFill'),lbl=document.getElementById('checkProgressLabel');if(fill)fill.style.width=Math.round((checked/items.length)*100)+'%';if(lbl)lbl.innerHTML=checked===items.length?'<b style="color:#2d6a2d;">All done.</b>':checked+' of '+items.length+' checked';}
+function printChecklist(btn){var card=btn.closest('.card');var ci=card.querySelectorAll('.check-item.checked');ci.forEach(function(i){i.classList.remove('checked');});card.classList.add('print-target');window.print();card.classList.remove('print-target');ci.forEach(function(i){i.classList.add('checked');});}
+function showCompletion(){document.getElementById('completionOverlay').classList.add('visible');}
+function closeCompletion(){document.getElementById('completionOverlay').classList.remove('visible');}
+function launchConfetti(){var canvas=document.getElementById('confettiCanvas');var ctx=canvas.getContext('2d');canvas.width=window.innerWidth;canvas.height=window.innerHeight;var colors=['#b8860b','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b','#42a5f5'];var particles=[];for(var i=0;i<120;i++){particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height-canvas.height,w:Math.random()*10+5,h:Math.random()*6+3,color:colors[Math.floor(Math.random()*colors.length)],vx:(Math.random()-0.5)*4,vy:Math.random()*3+2,rot:Math.random()*360,rotV:(Math.random()-0.5)*10,life:1});}var frame=0;function animate(){ctx.clearRect(0,0,canvas.width,canvas.height);var alive=false;particles.forEach(function(p){if(p.life<=0)return;alive=true;p.x+=p.vx;p.y+=p.vy;p.vy+=0.05;p.rot+=p.rotV;if(p.y>canvas.height+20){p.life=0;return;}if(frame>60)p.life-=0.01;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();});frame++;if(alive)requestAnimationFrame(animate);else ctx.clearRect(0,0,canvas.width,canvas.height);}animate();}
+shuffleOptions();goTo(0);
+</script>
+<script src="../tracking.js"></script>
+</body>
+</html>
