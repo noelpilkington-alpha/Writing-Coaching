@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Greyson Boyle: Writing Coaching Cards</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Calibri, 'Segoe UI', sans-serif; font-size: 12pt; color: #1a1a2e; background: #f0f0f5; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; padding: 20px; }
+.progress-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
+.progress-dot { width: 12px; height: 12px; border-radius: 50%; background: #ccc; transition: background 0.3s, transform 0.2s; cursor: pointer; position: relative; }
+.progress-dot.active { background: #b8860b; transform: scale(1.25); }
+.progress-dot.visited { background: #d9b56a; }
+.progress-dot:hover { transform: scale(1.3); }
+.progress-dot .dot-tooltip { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: #b8860b; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 8.5pt; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 100; }
+.progress-dot .dot-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #b8860b; }
+.progress-dot:hover .dot-tooltip { opacity: 1; }
+.card-breadcrumb { font-size: 9.5pt; color: #888; margin-bottom: 14px; text-align: center; transition: opacity 0.3s; min-height: 1.2em; }
+.card-breadcrumb b { color: #b8860b; }
+.sticky-indicator { position: fixed; top: 12px; right: 16px; background: #b8860b; color: #fff; padding: 5px 14px; border-radius: 20px; font-size: 9pt; font-weight: 700; opacity: 0; transition: opacity 0.3s; z-index: 200; pointer-events: none; letter-spacing: 0.5px; }
+.sticky-indicator.visible { opacity: 1; }
+.card-container { position: relative; width: 640px; min-height: 420px; }
+.card { position: absolute; top: 0; left: 0; width: 100%; background: #fff; border: 2.5px solid #b8860b; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.10); opacity: 0; pointer-events: none; transform: translateX(40px); transition: opacity 0.35s, transform 0.35s; }
+.card.active { opacity: 1; pointer-events: auto; transform: translateX(0); position: relative; }
+.card-header { background: #b8860b; color: #fff; padding: 14px 20px; border-radius: 11px 11px 0 0; }
+.card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+.card-header .card-subtitle { font-size: 9.5pt; color: #f0e2bd; margin-top: 2px; }
+.card-body { padding: 18px 22px 22px; line-height: 1.55; }
+.card-body p { margin: 6px 0; }
+.score-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; }
+.score-box { background: #f8f8fc; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 10px 14px; text-align: center; }
+.score-box .big { font-size: 20pt; font-weight: 700; }
+.score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+.score-good .big { color: #2d6a2d; }
+.score-warn .big { color: #cc6600; }
+.score-low .big { color: #cc0000; }
+.you-wrote { background: #fff3f3; border-left: 3px solid #cc0000; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.you-wrote .label { font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+.better, .model-box { background: #e8f5e9; border-left: 3px solid #2d6a2d; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.better .label, .model-box .label { font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+.tip-box { background: #e8edf5; border-left: 3px solid #b8860b; padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0; }
+.tip-box .label { font-weight: 700; font-size: 9.5pt; color: #b8860b; margin-bottom: 3px; }
+.rule-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 10px 14px; margin: 10px 0; font-size: 11pt; }
+.rule-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 3px; }
+.lbl { display: inline-block; font-size: 7.5pt; font-weight: 800; letter-spacing: 0.5px; padding: 1px 6px; border-radius: 4px; margin: 0 4px 0 0; vertical-align: middle; color: #fff; line-height: 1.5; }
+.lbl-say, .lbl-echo { background: #5c2dcc; } .lbl-show, .lbl-because { background: #2d6a2d; } .lbl-sowhat { background: #cc6600; } .lbl-close { background: #457b9d; } .lbl-miss { background: #cc0000; } .lbl-reason { background: #888; } .lbl-general { background: #6d4c41; } .lbl-specific { background: #00838f; } .evidence-block { margin: 10px 0 12px; border: 1.5px solid #e0e0e8; border-radius: 8px; overflow: hidden; } .ev-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 12px; font-size: 10.5pt; } .ev-row + .ev-row { border-top: 1px solid #e0e0e8; } .ev-row.paced { background: #e8f5e9; } .ev-row.rushed { background: #fff3f3; } .ev-tag { flex-shrink: 0; font-size: 8.5pt; font-weight: 800; letter-spacing: 0.5px; padding: 2px 7px; border-radius: 8px; color: #fff; margin-top: 2px; } .ev-row.paced .ev-tag { background: #2d6a2d; } .ev-row.rushed .ev-tag { background: #cc0000; } .format-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; } .format-box { background: #fbf7ea; border: 1.5px solid #e6d3a3; border-radius: 8px; padding: 10px 14px; } .format-box .format-title { font-weight: 700; font-size: 10pt; color: #b8860b; margin-bottom: 4px; } .format-box .format-detail { font-size: 9.5pt; color: #555; line-height: 1.4; } .format-box .format-pts { display: inline-block; background: #b8860b; color: #fff; font-size: 8.5pt; font-weight: 700; padding: 1px 7px; border-radius: 8px; margin-bottom: 4px; } @media (max-width: 640px) { .format-grid { grid-template-columns: 1fr; } }
+.ex-list { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+.ex { padding: 8px 12px; border-radius: 6px; font-size: 10.5pt; border-left: 3px solid; }
+.ex.pos { background: #e8f5e9; border-color: #2d6a2d; } .ex.neg { background: #fff3f3; border-color: #cc0000; }
+.ex .tag { font-weight: 800; font-size: 8.5pt; margin-right: 6px; } .ex.pos .tag { color: #2d6a2d; } .ex.neg .tag { color: #cc0000; }
+.think { background: #f8f8fc; border-left: 3px solid #888; padding: 8px 14px; margin: 8px 0; font-size: 10.5pt; font-style: italic; color: #444; }
+.think .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #666; margin-bottom: 2px; }
+.highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+.error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+.discrim-option .error-mark { background: transparent; text-decoration: none; padding: 0; border-radius: 0; }
+.essay-excerpt { background: #fafafa; border: 1px solid #e0e0e8; border-radius: 6px; padding: 10px 14px; font-size: 10.5pt; margin: 8px 0; line-height: 1.7; }
+.discrim-challenge { background: #f8f5ff; border: 1.5px solid #d4c5ff; border-radius: 8px; padding: 14px; margin: 10px 0; }
+.discrim-prompt { font-weight: 700; font-size: 10.5pt; margin-bottom: 10px; color: #5c2dcc; }
+.discrim-options { display: flex; flex-direction: column; gap: 8px; }
+.discrim-option { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border: 2px solid #d4c5ff; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 10.5pt; background: #fff; }
+.discrim-option:hover { border-color: #7c4dff; background: #f5f0ff; }
+.discrim-label { font-weight: 800; color: #7c4dff; min-width: 20px; flex-shrink: 0; }
+.discrim-option.correct, .discrim-option.model { border-color: #2d6a2d; background: #e8f5e9; cursor: default; }
+.discrim-option.correct .discrim-label, .discrim-option.model .discrim-label { color: #2d6a2d; }
+.discrim-option.wrong { border-color: #cc0000; background: #fff3f3; cursor: default; }
+.discrim-option.wrong .discrim-label { color: #cc0000; }
+.discrim-option.locked { pointer-events: none; opacity: 0.5; }
+.discrim-challenge.done .discrim-option { cursor: default; }
+.discrim-feedback { margin-top: 0; font-size: 10pt; line-height: 1.45; max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.3s, opacity 0.3s, margin 0.3s; }
+.discrim-feedback.shown { max-height: 400px; opacity: 1; margin-top: 10px; }
+.discrim-feedback.right-fb { color: #2d6a2d; font-weight: 600; }
+.discrim-parallel { display: none; }
+.discrim-parallel.shown { display: block; }
+.discrim-parallel .discrim-prompt::before { content: 'One more like it. '; color: #888; font-weight: 600; }
+.reveal-wrapper { position: relative; }
+.reveal-cover { background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%); border-left: 3px solid #2d6a2d; padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 10px; transition: background 0.2s, box-shadow 0.2s; }
+.reveal-cover:hover { box-shadow: 0 2px 8px rgba(45,106,45,0.15); }
+.reveal-cover .reveal-icon { width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
+.reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #2d6a2d; }
+.reveal-cover .reveal-hint { font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px; }
+.reveal-content { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0; }
+.reveal-content.shown { max-height: 1200px; opacity: 1; margin: 8px 0; }
+.reveal-cover.hidden { display: none; }
+.your-turn { background: #f8f8fc; border: 1.5px dashed #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.your-turn .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.your-turn textarea { width: 100%; min-height: 64px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; margin: 4px 0; }
+.frame-row { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0; font-size: 10.5pt; }
+.frame-row .lbl { margin-top: 4px; }
+.frame-row .given { background: #fff; border: 1.5px solid #e0e0e8; border-radius: 6px; padding: 8px; flex: 1; color: #555; }
+.frame-row textarea { flex: 1; min-height: 48px; margin: 0; }
+.yt-btn { margin-top: 8px; padding: 7px 16px; border: 2px solid #2d6a2d; background: #fff; color: #2d6a2d; border-radius: 8px; font-family: inherit; font-weight: 600; font-size: 10pt; cursor: pointer; }
+.yt-btn:hover { background: #2d6a2d; color: #fff; }
+.yt-btn:disabled { opacity: 0.6; cursor: default; }
+.yt-model { display: none; margin-top: 10px; }
+.assembled { display: none; margin-top: 8px; }
+.assembled.shown { display: block; }
+.xp-link { display: inline-block; margin: 8px 6px 0 0; padding: 6px 14px; border-radius: 6px; background: #2d6a2d; color: #fff; font-weight: 700; font-size: 10pt; text-decoration: none; }
+.xp-link:hover { background: #1b5e1b; }
+.yt-model.shown { display: block; }
+.self-check .check-item { font-size: 10pt; padding: 6px 8px; }
+.check-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 8px; cursor: pointer; border-bottom: 1px solid #eee; border-radius: 6px; transition: background 0.15s; user-select: none; font-size: 11pt; }
+.check-item:last-child { border-bottom: none; }
+.check-item:hover { background: #f8f8fc; }
+.check-item.checked { background: #f0f8f0; }
+.check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
+.check-item.checked .check-box::after { content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
+.check-box { width: 28px; height: 28px; border: 2.5px solid #b8860b; border-radius: 6px; flex-shrink: 0; margin-top: 1px; position: relative; transition: background 0.2s, border-color 0.2s; }
+.self-check .check-box { width: 22px; height: 22px; }
+.checklist-progress { background: #eee; border-radius: 10px; height: 8px; margin: 12px 0 6px; overflow: hidden; }
+.checklist-progress-fill { background: linear-gradient(90deg, #2d6a2d, #4caf50); height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%; }
+.checklist-progress-label { font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px; }
+.quick-check { background: #f8f5ff; border: 2px solid #7c4dff; border-radius: 10px; padding: 12px 14px; margin: 10px 0; }
+.quick-check .qc-title { font-weight: 800; color: #5c2dcc; font-size: 10.5pt; margin-bottom: 4px; }
+.quick-check .qc-sub { font-size: 9.5pt; color: #666; margin-bottom: 6px; }
+.quick-check .discrim-challenge { background: #fff; margin: 8px 0; padding: 10px 12px; }
+.qc-result { display: none; font-weight: 700; margin-top: 8px; font-size: 10.5pt; color: #5c2dcc; }
+.recall-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.recall-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.recall-box textarea { width: 100%; min-height: 56px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; }
+.checklist-wrap { display: none; }
+.checklist-wrap.shown { display: block; }
+.time-toggle { font-size: 9pt; color: #b8860b; cursor: pointer; text-decoration: underline; display: inline-block; margin: 0 0 6px; }
+.tl-time { display: none; font-weight: 400; color: #aaa; }
+.show-times .tl-time { display: inline; }
+.guide-block { margin-top: 16px; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 8px 12px; background: #fafafa; font-size: 10pt; }
+.guide-block summary { cursor: pointer; font-weight: 700; color: #666; font-size: 9.5pt; }
+.guide-block ul { margin: 6px 0 4px 18px; }
+.guide-block li { margin: 4px 0; }
+.practice-recommendations { margin-top: 16px; border-top: 2px solid #e0e0e8; padding-top: 14px; }
+.practice-recs-title { font-size: 10pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #b8860b; margin-bottom: 10px; }
+.practice-tier { border-radius: 8px; padding: 12px 14px; margin: 8px 0; }
+.tier-primary { background: #e8f5e9; border: 1.5px solid #a5d6a7; }
+.tier-extra { background: #f8f8fc; border: 1.5px solid #e0e0e8; }
+.tier-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.tier-label { font-size: 8.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 2px 10px; border-radius: 10px; }
+.tier-primary .tier-label { background: #2d6a2d; color: #fff; }
+.tier-extra .tier-label { background: #888; color: #fff; }
+.tier-note { font-size: 9pt; color: #666; margin-bottom: 6px; line-height: 1.4; }
+.practice-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.practice-link { display: inline-block; padding: 5px 12px; border-radius: 6px; font-size: 9.5pt; font-weight: 600; text-decoration: none; transition: background 0.2s, transform 0.1s; }
+.tier-primary .practice-link { background: #c8e6c9; color: #1b5e1b; }
+.tier-extra .practice-link { background: #e8edf5; color: #b8860b; }
+.nav { display: flex; gap: 12px; margin-top: 16px; }
+.nav button { padding: 8px 28px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; transition: background 0.2s, color 0.2s; }
+.nav button:hover { background: #b8860b; color: #fff; }
+.print-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 8px 20px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 10.5pt; font-weight: 600; cursor: pointer; }
+.print-btn:hover { background: #b8860b; color: #fff; }
+.print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+.completion-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(184,134,11,0.6); z-index: 500; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s; }
+.completion-overlay.visible { opacity: 1; pointer-events: auto; }
+.completion-card { background: #fff; border-radius: 16px; padding: 40px 48px; text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2); transform: scale(0.8); transition: transform 0.4s ease; max-width: 420px; }
+.completion-overlay.visible .completion-card { transform: scale(1); }
+.completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+.completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; color: #b8860b; }
+.completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+.completion-close { margin-top: 20px; padding: 10px 32px; background: #b8860b; color: #fff; border: none; border-radius: 8px; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; }
+#confettiCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 501; }
+.score-timeline { display: flex; align-items: flex-end; gap: 0; margin: 12px 0 10px; padding: 0 6px; justify-content: space-between; }
+.timeline-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.timeline-score { font-size: 13pt; font-weight: 700; margin-bottom: 4px; }
+.timeline-bar { width: 70%; border-radius: 4px 4px 0 0; min-height: 8px; }
+.timeline-label { font-size: 8.5pt; color: #888; margin-top: 6px; font-weight: 600; text-align: center; }
+.score-green { color: #2d6a2d; } .score-amber { color: #cc6600; } .score-red { color: #cc0000; }
+.bar-green { background: linear-gradient(to top, #c8e6c9, #81c784); } .bar-amber { background: linear-gradient(to top, #ffe0b2, #ffb74d); } .bar-red { background: linear-gradient(to top, #ffcdd2, #ef9a9a); }
+.strength-chips, .growth-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; }
+.strength-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; background: #e8f5e9; color: #2d6a2d; border: 1.5px solid #a5d6a7; display: inline-flex; align-items: center; gap: 4px; }
+.strength-chip .chip-course, .growth-chip .chip-avg { font-size: 7.5pt; color: #888; font-weight: 400; }
+.journey-section { font-size: 9.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; margin: 10px 0 4px; padding-bottom: 3px; border-bottom: 1.5px solid; }
+.journey-section.strengths-header { color: #2d6a2d; border-color: #c8e6c9; }
+.journey-section.growth-header { color: #cc6600; border-color: #ffe0b2; }
+.root-cause-teaser { background: #f5f0ff; border-left: 3px solid #7c4dff; padding: 10px 14px; margin: 12px 0 4px; border-radius: 0 6px 6px 0; font-size: 10.5pt; line-height: 1.5; }
+.root-cause-teaser b { color: #5c2dcc; }
+.growth-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+.growth-chip.mixed { background: #fff8e8; color: #b35900; border: 1.5px solid #ffe0b2; }
+.growth-chip.weak { background: #fff3f3; color: #cc0000; border: 1.5px solid #ffcdd2; }
+@media print { body { background: #fff; padding: 0; min-height: auto; } .progress-bar, .nav, .print-btn, .card-breadcrumb, .sticky-indicator, .completion-overlay, #confettiCanvas, .reveal-cover, .checklist-progress, .checklist-progress-label, .discrim-challenge, .discrim-parallel, .quick-check, .recall-box, .yt-btn, .guide-block { display: none !important; } .card-container { width: 100%; min-height: auto; } .card { display: none !important; } .card.print-target { display: block !important; opacity: 1 !important; pointer-events: auto !important; position: relative !important; transform: none !important; box-shadow: none; border: 2px solid #b8860b; page-break-inside: avoid; } .reveal-content, .yt-model, .checklist-wrap { display: block !important; max-height: none !important; opacity: 1 !important; margin: 8px 0 !important; } }
+@media (max-width: 720px) { .card-container { width: 100%; } .score-grid { grid-template-columns: 1fr; } .timeline-score { font-size: 10pt; } }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progressBar"></div>
+<div class="card-breadcrumb" id="breadcrumb"></div>
+<div class="sticky-indicator" id="stickyIndicator"></div>
+<div class="card-container" id="cardContainer">
+
+<!-- Card 1: Your Starting Point -->
+<div class="card active" data-title="Your Starting Point">
+  <div class="card-header"><h2>Greyson Boyle</h2><div class="card-subtitle">Alpha Standardized Writing G8.5. October 2026. Passage: &ldquo;The Road Ahead: How Self-Driving Cars Work&rdquo;</div></div>
+  <div class="card-body">
+    <div class="score-grid">
+      <div class="score-box score-good"><div class="big">80%</div><div class="label">Overall Score</div></div>
+      <div class="score-box score-good"><div class="big">9/10</div><div class="label">Questions 1&ndash;10</div></div>
+      <div class="score-box score-warn"><div class="big">15/20</div><div class="label">Essay (Question 11)</div></div>
+    </div>
+    <p>Greyson, you passed Grades 3 to 7 with a 96, a 98, a 96, a 90 and a 93, and Grade 8 is now five tests between 73 and 87. The multiple choice is not the problem: 9 or 10 of 10 every time. The essay is, and it is three points from a pass. Your essays already have the skeleton the rubric asks for: five paragraphs, a thesis, a topic sentence on every body paragraph, transitions, a conclusion. The G8.5 essay covers benefits, concerns and legal questions in order, with the Arizona crash and the millions of drivers in the right places.</p>
+    <p>Six points went missing, and three habits explain them. The prompt asked <b>why</b> readers need to understand both sides before the cars become common; the essay explains <b>what</b> the sides are, and only the conclusion turns to why. After each fact there is no sentence saying what it shows, which is the note the grader has now written on two of your essays running. And the editing: <i>understant</i>, <i>otherhand</i>, <i>fail to stop</i>, <i>desision</i>, <i>becomming</i> here, and more than a dozen slips on each of the three essays before it. The one multiple-choice point is a subordinating conjunction, for the second test running.</p>
+    <div class="root-cause-teaser"><b>The plan:</b> a thesis that answers the question&rsquo;s why and a <i>This shows</i> after every fact; formal sentences instead of <i>let&rsquo;s talk about</i> and <i>tons of</i>; a two-pass read-back built around your own spelling patterns; the conjunction that matches the relationship.</div>
+    <div class="journey-section strengths-header">Skills you do well</div>
+    <div class="strength-chips">
+      <span class="strength-chip">Multiple choice, 9 or 10 of 10 <span class="chip-course">&middot; every Grade 8 test</span></span>
+      <span class="strength-chip">Five paragraphs, thesis, topic sentences, transitions <span class="chip-course">&middot; First, On the other hand, There are also</span></span>
+      <span class="strength-chip">The passage&rsquo;s facts in the right body paragraphs <span class="chip-course">&middot; Arizona, the drivers, the legal questions</span></span>
+    </div>
+    <div class="journey-section growth-header">What to work on</div>
+    <div class="growth-chips">
+      <span class="growth-chip weak">Answer the prompt&rsquo;s why, then This shows after each fact <span class="chip-avg">essays 12, 14, 15 of 20</span></span>
+      <span class="growth-chip weak">Read-back: letters swapped in long words, lowercase starts, there/their <span class="chip-avg">four essays running</span></span>
+      <span class="growth-chip mixed">Formal sentences: no let&rsquo;s talk about, no tons of, no question chains <span class="chip-avg">strong sentences, 3 points</span></span>
+      <span class="growth-chip mixed">Subordinating conjunction matches the relationship <span class="chip-avg">G8.4 Q5, G8.5 Q6</span></span>
+    </div>
+  </div>
+</div>
+
+<!-- Card 2: Writing Journey -->
+<div class="card" data-title="Your Writing Journey">
+  <div class="card-header"><h2>Your Writing Journey</h2><div class="card-subtitle">Five grades passed. Then five Grade 8 tests</div></div>
+  <div class="card-body">
+    <div class="score-timeline">
+      <div class="timeline-item"><div class="timeline-score score-green">80%</div><div class="timeline-bar bar-green" style="height:72px;"></div><div class="timeline-label">G8.1 (May 18)<br><span class="tl-time">41m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">87%</div><div class="timeline-bar bar-green" style="height:78px;"></div><div class="timeline-label">G8.2 (Sep 23)<br><span class="tl-time">49m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-amber">73%</div><div class="timeline-bar bar-amber" style="height:66px;"></div><div class="timeline-label">G8.3 (Sep 28)<br><span class="tl-time">57m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-amber">77%</div><div class="timeline-bar bar-amber" style="height:69px;"></div><div class="timeline-label">G8.4 (Oct 6)<br><span class="tl-time">&ndash;</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">80%</div><div class="timeline-bar bar-green" style="height:72px;"></div><div class="timeline-label">G8.5 (Oct 12)<br><span class="tl-time">&ndash;</span></div></div>
+    </div>
+    <span class="time-toggle" onclick="toggleTimes(this)">Show how long each test took</span>
+    <p>Fifteen tests since September 2025. Grade 3 took five tests and passed at 96; Grade 4 took four and passed at 98; Grades 5, 6 and 7 passed first time at 96, 90 and 93. Grade 8 has gone 80, 87, 73, 77, 80. The multiple choice has been 9 or 10 on every one, so the whole gap is the essay: 16, then 12, then 14, then 15 out of 20. A pass needs 17 or 18. You take the time the test needs, 41 to 57 minutes, so this is not about minutes. It is about what the minutes buy. The times for the last two tests are not in the records.</p>
+    <div class="journey-section strengths-header">Skills you do well</div>
+    <div class="strength-chips">
+      <span class="strength-chip">Five grades passed <span class="chip-course">&middot; 96, 98, 96, 90, 93</span></span>
+      <span class="strength-chip">Time given to the test <span class="chip-course">&middot; 41 to 57 minutes</span></span>
+      <span class="strength-chip">Every essay in five paragraphs <span class="chip-course">&middot; G8.2 to G8.5</span></span>
+    </div>
+    <div class="journey-section growth-header">What to work on</div>
+    <div class="growth-chips">
+      <span class="growth-chip weak">After each fact, This shows <span class="chip-avg">the grader&rsquo;s note on G8.3 and G8.4</span></span>
+      <span class="growth-chip weak">Spelling and capitals on the read-back <span class="chip-avg">G8.2 to G8.5</span></span>
+      <span class="growth-chip mixed">A thesis that answers the question asked <span class="chip-avg">G8.5: what instead of why</span></span>
+    </div>
+    <div class="root-cause-teaser"><b>Three points from a pass.</b> Card 3 is the thesis and the <i>This shows</i>. Card 4 is the register. Card 5 is the read-back. Card 6 is the one multiple-choice point. Card 7 is your G8.5 essay rebuilt to 20.</div>
+  </div>
+</div>
+
+<!-- Card 3: Fix 1 -->
+<div class="card" data-title="Fix 1: Answer the Why, Then This Shows">
+  <div class="card-header"><h2>Fix 1: Answer the Why, Then This Shows</h2><div class="card-subtitle">The prompt asked why readers need to understand both sides. The essay explained what the sides are</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: THE THESIS ANSWERS THE QUESTION ASKED; EVERY FACT GETS A SENTENCE THAT SAYS WHAT IT SHOWS</div>Read the prompt&rsquo;s question word. <i>Why is it important for readers to understand</i> is a why question, so the thesis has to give reasons, and the body paragraphs prove them. After each fact from the passage comes a sentence that starts <b><i>This shows</i></b> and ties the fact back to the thesis. The last sentence of a body paragraph is one of these, not a summary of the paragraph. <b>The check:</b> could a reader list your reasons from the thesis alone? After each number or example, is the next sentence about what it proves, or the next fact?</div>
+
+    <div class="you-wrote"><div class="label">YOURS, G8.5 THESIS</div>&ldquo;However, it is important for people to understant both the benefits and the concerns of self-driving cars before they become more common.&rdquo; <span class="lbl lbl-miss">THE PROMPT IN OTHER WORDS; NO WHY</span><br><span style="font-size:9.5pt;color:#666;">The prompt said that already. A thesis for a why question gives the reasons, and then each body paragraph proves one of them.</span></div>
+    <div class="model-box"><div class="label">A THESIS THAT ANSWERS WHY</div><span class="lbl lbl-say">THESIS</span>Readers need to understand both sides for three reasons: the benefits are large enough to change who gets to travel, the failures are serious enough to cost lives, and the legal and job questions will be settled by voters and courts before the first car arrives in their town.<br><span style="font-size:9.5pt;color:#666;">Three reasons, in the order your body paragraphs already take: benefits, concerns, legal questions.</span></div>
+
+    <div class="you-wrote"><div class="label">YOURS, G8.5 BODY 1</div>&ldquo;First, let&rsquo;s talk about the benefits of new self-driving cars. One benefit is that self-driving cars should stay focused and stop crashes caused by human error. The self-driving aspect of it would allow people who might not be able to drive, like elderly or disabled people, to have the freedom to travel again. <span class="error-mark">Self-driving cars give many benefits to the community.</span>&rdquo; <span class="lbl lbl-miss">TWO FACTS, NO NUMBERS, A SUMMARY WHERE THE THIS SHOWS GOES</span><br><span style="font-size:9.5pt;color:#666;">The grader wrote on G8.4: <i>go beyond saying that astronauts adapted and explain exactly why each change helps</i>. And on G8.3: <i>after each fact, explain exactly how it proves that preferences develop or change</i>. Same note, third essay. The passage also had the number you left out: 94% of serious crashes involve human error.</span></div>
+    <div class="model-box"><div class="label">THE SAME PARAGRAPH, EACH FACT WITH ITS THIS SHOWS</div><span class="lbl lbl-say">TOPIC SENTENCE</span>First, readers need to understand the benefits because they are large enough to change who can travel. <span class="lbl lbl-show">FACT</span>About 94% of serious crashes involve human error, and a self-driving car does not get tired, distracted or angry. <span class="lbl lbl-sowhat">THIS SHOWS</span>This shows that a reader who knows the number is weighing a real saving of lives, not a slogan, when the cars come up for a vote. <span class="lbl lbl-show">FACT</span>Elderly people who have lost their licences and people with disabilities could travel independently again. <span class="lbl lbl-sowhat">THIS SHOWS</span>This shows that the benefit reaches people who have no other option, which is exactly the kind of fact a community has to understand before it decides to say no.</div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">The prompt: <i>why is it important for readers to understand both the benefits and the concerns</i>. Which thesis answers it?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="The prompt in other words. It says understanding matters and never says why." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>It is important for people to understand both the benefits and the concerns of self-driving cars before they become common.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="Three reasons a reader can list." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Readers need to understand both sides because the benefits could change who gets to travel, the failures have already cost a life, and the legal questions will be decided before most people have thought about them.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">The prompt: <i>explain how astronauts adapt their daily routines to microgravity</i>. After the fact <i>astronauts secure their clothes to a rack</i>, which sentence is the This shows?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="The grader&rsquo;s own example of what the fact shows." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>This shows that the adaptation works by removing the one thing microgravity takes away, a place where objects stay put, so astronauts can find what they need.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Your G8.4 ending: the body paragraph summarised, not the fact explained." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>In conclusion, the normal morning routine would not work in microgravity so astronauts adapted it.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">After the fact <i>in 2018 a test vehicle in Arizona detected a pedestrian but the software failed to react in time</i>, which sentence goes next?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="The next concern from the passage. A fact, not a This shows." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>One other concern is that many people will lose their jobs.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;This shows&rdquo; plus why the fact matters to the thesis." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>This shows that the sensors are not the weak point, the decisions are, which is why a reader needs to understand the failure before trusting the car.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Read the prompt&rsquo;s question word first and make the thesis answer it. Then every body paragraph: topic sentence, fact with its number, <i>This shows</i>, second fact, <i>This shows</i>. No summary sentence at the end of a body paragraph.</div>
+  </div>
+</div>
+
+<!-- Card 4: Fix 2, register -->
+<div class="card" data-title="Fix 2: Formal Sentences">
+  <div class="card-header"><h2>Fix 2: Formal Sentences</h2><div class="card-subtitle">Three of the twenty points: clear, formal language, varied sentences</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: THE ESSAY TALKS ABOUT THE PASSAGE IN FORMAL SENTENCES, NEVER TO THE READER</div>No <i>let&rsquo;s</i>, no <i>tons of</i>, no chains of questions, no slang. A question the passage asks is stated in the essay as a fact: <i>the passage asks who is responsible</i>. <b>The check:</b> read each sentence and ask whether you would say it to a stranger in a formal letter. If not, rewrite it.</div>
+
+    <p>Where the four essays slipped:</p>
+    <div class="ex-list">
+      <div class="ex neg"><span class="tag">TO THE READER</span>First, <b>let&rsquo;s talk about</b> the benefits of new self-driving cars. &middot; Have you ever really disliked a food? &middot; <b>you</b> might wake up and realize you were wrong</div>
+      <div class="ex neg"><span class="tag">CHAT</span><b>tons of</b> people have concerns &middot; <b>Tons of</b> people go through this &middot; <b>tip top shape</b> &middot; <b>super important</b> &middot; <b>lively up</b> the bridge &middot; <b>frousty</b></div>
+      <div class="ex neg"><span class="tag">QUESTION CHAIN</span>Such as, what happens when a self-driving car gets into a crash? Who would be to blame? The owner? The manufacturer? The software company?<br><span style="font-size:9.5pt;color:#666;">The passage asked these. The essay states them: <i>The passage asks who would be responsible after a crash: the owner, the manufacturer or the software company.</i></span></div>
+      <div class="ex neg"><span class="tag">AN UNSOURCED QUOTE</span>As a famous scientist said, &ldquo;without adaption equals extiction.&rdquo;<br><span style="font-size:9.5pt;color:#666;">Evidence comes from the passage. A quotation nobody can check earns nothing.</span></div>
+      <div class="ex pos"><span class="tag">FORMAL</span>Self-driving cars would restore independence to people who have lost their licences, which is the benefit most readers never hear about.</div>
+    </div>
+
+    <div class="model-box"><div class="label">YOUR SENTENCES, MADE FORMAL</div>
+      <i>First, let&rsquo;s talk about the benefits</i> &rarr; First, the benefits are large enough to change who can travel.<br>
+      <i>In summary, tons of people have concerns about self-driving cars</i> &rarr; These concerns come from the people with the most to lose: pedestrians and the millions who drive for a living.<br>
+      <i>One concern is what happens if a car fails?</i> &rarr; The first concern is what happens when the technology fails.
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which sentence earns the strong-sentences points?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Let&rsquo;s talk and tons of. Chat, not formal." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Let&rsquo;s talk about the concerns, because tons of people have them.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="Formal, specific, about the passage." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The concerns deserve the same attention as the benefits, because the people raising them include the millions of Americans who drive for a living.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence earns the strong-sentences points?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="The passage&rsquo;s question, stated as a fact." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>The passage asks who would be responsible after a crash, the owner, the manufacturer or the software company, and notes that courts have not decided.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Four questions in a row, three of them fragments. Your G8.5 body 3." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Who would be to blame? The owner? The manufacturer? The software company?</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which sentence belongs in an expository essay?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="true" data-right-feedback="A fact from the passage, formally stated." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Astronauts exercise for two hours each day because muscles weaken quickly without gravity.</span></div>
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Super important, tip top shape: chat. Your G8.4." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Exercising in microgravity is super important so astronauts stay in tip top shape.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>After you draft, search your essay for <i>let&rsquo;s</i>, <i>tons</i>, <i>super</i>, <i>you</i> and <i>?</i>. Each one is a sentence to rewrite as a statement about the passage.</div>
+  </div>
+</div>
+
+<!-- Card 5: Fix 3, read-back -->
+<div class="card" data-title="Fix 3: The Read-Back, Built from Your Own Patterns">
+  <div class="card-header"><h2>Fix 3: The Read-Back, Built from Your Own Patterns</h2><div class="card-subtitle">Three of the twenty points, lost on all four Grade 8 essays</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: TWO READ-BACKS, EACH LOOKING FOR ONE THING</div>Your spelling slips are not random. Across four essays they fall into four patterns, and a read-back that knows the patterns catches them. <b>Pass one:</b> every sentence starts with a capital, and every <i>there</i>, <i>their</i>, <i>to</i>, <i>too</i>, <i>affect</i>, <i>effect</i> is the right one. <b>Pass two:</b> every long word, one at a time, and any word that is in the passage gets spelled the way the passage spells it.</div>
+
+    <div class="ex-list">
+      <div class="ex neg"><span class="tag">1. LETTERS SWAPPED OR DROPPED</span>becuase (three times in one essay) &middot; thrid &middot; brigde, birge &middot; relize &middot; desision &middot; understant &middot; devises &middot; reture &middot; mircogravity &middot; reasearch<br><span style="font-size:9.5pt;color:#666;">Typed fast, read never. Pass two catches these: be-cause, third, bridge, re-al-ize, de-ci-sion, un-der-stand, re-search.</span></div>
+      <div class="ex neg"><span class="tag">2. ENDINGS</span>socialy &middot; economicaly &middot; positvely &middot; daylie &middot; becomming &middot; likeing &middot; preferances<br><span style="font-size:9.5pt;color:#666;">-ally keeps both l&rsquo;s: socially, economically. -ing drops the e: becoming, liking. -ence: preferences.</span></div>
+      <div class="ex neg"><span class="tag">3. THE WRONG WORD</span>there lives (their) &middot; like it to (too) &middot; effected (affected) &middot; mourning routine (morning) &middot; a new beard (bread) &middot; Have you every (ever) &middot; fail to stop (failed)<br><span style="font-size:9.5pt;color:#666;">Spelled correctly, wrong word. Only pass one catches these, because the spell-check in your head says they look fine.</span></div>
+      <div class="ex neg"><span class="tag">4. CAPITALS</span>before the bridge was fixed &middot; tourists would even stop &middot; the change also allowed &middot; in conclusion, the bridge &middot; without adapting &middot; university of Brimingham<br><span style="font-size:9.5pt;color:#666;">Six sentences in one essay started lowercase. Pass one, first thing you look for.</span></div>
+    </div>
+
+    <div class="model-box"><div class="label">THE PASSAGE SPELLS THE HARD WORDS FOR YOU</div>microgravity, Birmingham, refurbished, cyclists, manufacturer, pedestrian, autonomous: every one of these was on the page while you wrote. When a long word comes from the passage, find it and copy it letter for letter.</div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which sentence is ready to submit?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Becuase, understant, desision: pattern one, three times." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>People need to understant the risks becuase the desision will be made soon.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="Understand, because, decision. Clean." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>People need to understand the risks because the decision will be made soon.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence is ready to submit? Read it at speaking speed.</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Their, too, affected, and a capital at the start." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Before the bridge was fixed, cyclists avoided it too, and the cafes nearby were affected.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Lowercase start, to for too, effected for affected: patterns three and four." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>before the bridge was fixed, cyclists avoided it to, and the cafes nearby were effected.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which sentence is ready to submit?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="true" data-right-feedback="Socially, economically, becoming: both l&rsquo;s, one m." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>The bridge changed the city socially and economically, and it is becoming a landmark.</span></div>
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Socialy, economicaly, becomming: pattern two." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The bridge changed the city socialy and economicaly, and it is becomming a landmark.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Last ten minutes, two passes. Capitals and wrong words first, then long words one at a time with the passage open beside you.</div>
+  </div>
+</div>
+
+<!-- Card 6: Fix 4, subordinating conjunction -->
+<div class="card" data-title="Fix 4: The Conjunction Matches the Relationship">
+  <div class="card-header"><h2>Fix 4: The Conjunction Matches the Relationship</h2><div class="card-subtitle">The one multiple-choice point, on G8.4 and again on G8.5</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: NAME THE RELATIONSHIP FIRST, THEN PICK THE WORD</div>A subordinating conjunction states how two ideas connect. <b>Because</b> gives the cause. <b>If</b> and <b>unless</b> give a condition that may or may not happen. <b>Although</b> gives a contrast. <b>When</b>, <b>after</b>, <b>before</b> give the time. <b>The check:</b> say the relationship in plain words before you look at the options. Is the first idea the reason for the second, a condition for it, a contrast to it, or the time it happens?</div>
+
+    <div class="you-wrote"><div class="label">YOU CHOSE (G8.5 Q6)</div>&ldquo;<span class="error-mark">Because</span> the technology fails, difficult questions arise about safety and trust.&rdquo; <span class="lbl lbl-miss">A CAUSE WORD FOR A CONDITION</span><br><span style="font-size:9.5pt;color:#666;">The passage does not say the technology fails; it asks what happens <i>if</i> it does. <i>Because</i> turns a possibility into a fact. <i>If the technology fails, difficult questions arise.</i></span></div>
+    <div class="you-wrote"><div class="label">YOU CHOSE (G8.4 Q5)</div>&ldquo;Astronauts exercise daily <span class="error-mark">because they must stay strong</span> in microgravity.&rdquo; <span class="lbl lbl-miss">A GOAL WHERE THE CAUSE GOES</span><br><span style="font-size:9.5pt;color:#666;">The question asked which sentence best uses a subordinating conjunction. <i>Because they must stay strong</i> gives the goal, not the cause. The cause is in the passage: <i>Because their muscles weaken without gravity, astronauts exercise daily.</i> Your own G8.4 essay had it right: <i>Exercise is very important on the ISS because muscles weaken faster in microgravity.</i></span></div>
+
+    <p style="margin-top:10px;"><b>Four relationships, four words:</b></p>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">CAUSE: BECAUSE</span><b>Because</b> 94% of serious crashes involve human error, supporters believe the cars could save lives.</div>
+      <div class="ex pos"><span class="tag">CONDITION: IF</span><b>If</b> vehicles drive themselves, millions of drivers may lose their jobs.</div>
+      <div class="ex pos"><span class="tag">CONTRAST: ALTHOUGH</span><b>Although</b> the sensors detected the pedestrian, the software failed to react in time.</div>
+      <div class="ex pos"><span class="tag">TIME: WHEN</span><b>When</b> a child chases a ball into the road, the computer has milliseconds to decide.</div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt"><i>_____ a self-driving car causes a crash, who is responsible?</i> Which conjunction matches the relationship?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Because makes the crash a fact. The passage is asking about a possibility." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Because</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="A condition that may or may not happen. If." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>If</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence best uses a subordinating conjunction?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="The real cause, then the effect." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Because crumbs can float into equipment, astronauts eat only foods that stay together.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Although signals a contrast, and there is none here: the crumbs are the reason." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Although crumbs can float into equipment, astronauts eat only foods that stay together.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt"><i>_____ public transportation is limited in rural areas, autonomous vehicles could connect isolated communities.</i> Which conjunction matches?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="true" data-right-feedback="The limited transport is the reason the cars would help. Because." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Because</span></div>
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Unless means the opposite: the cars would help only if transport were not limited." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Unless</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Every conjunction question: say the relationship in plain words first, cause, condition, contrast or time, then find the word that names it.</div>
+  </div>
+</div>
+
+<!-- Card 7: Essay Review -->
+<div class="card" data-title="Essay Review">
+  <div class="card-header"><h2>Your Essay, Reviewed</h2><div class="card-subtitle">Your G8.5 essay, labelled. Then the same ideas at 20</div></div>
+  <div class="card-body">
+    <div class="essay-excerpt">
+      Most people believe that self-driving cars will be the future of transportation. They believe this because they will allow people who cannot drive to have the freedom to travel. <span class="lbl lbl-miss">THESIS: THE PROMPT RESTATED</span>However, it is important for people to understant both the benefits and the concerns of self-driving cars before they become more common.<br><br>
+      <span class="lbl lbl-miss">TO THE READER</span>First, let&rsquo;s talk about the benefits of new self-driving cars. <span class="lbl lbl-show">FACT, NO NUMBER</span>One benefit is that self-driving cars should stay focused and stop crashes caused by human error. <span class="lbl lbl-show">FACT</span>The self-driving aspect of it would allow people who might not be able to drive, like elderly or disabled people, to have the freedom to travel again. <span class="lbl lbl-miss">SUMMARY, NOT A THIS SHOWS</span>Self-driving cars give many benefits to the community.<br><br>
+      On the otherhand, many people have concerns about self-driving cars. One concern is what happens if a car fails? <span class="lbl lbl-show">FACT</span>In one driving test conducted in Arizona, the car sensed the person but fail to stop in time. <span class="lbl lbl-show">FACT</span>One other concern is that many people will lose their jobs. Right now in the USA, millions of people work driving cars and trucks. <span class="lbl lbl-miss">SUMMARY, NOT A THIS SHOWS</span>In summary, tons of people have concerns about self-driving cars, such as that many people will lose their jobs.<br><br>
+      There are also some legal questions about self-driving cars. <span class="lbl lbl-miss">QUESTION CHAIN</span>Such as, what happens when a self-driving car gets into a crash? Who would be to blame? The owner? The manufacturer? The software company? Who would the other rider sue? These questions also need to be answered before self-driving cars become more common.<br><br>
+      It&rsquo;s important for people to understand the benefits and concerns before making a desision, or explaining the conflict to other people. Self-driving cars, like all new inventions, should always be questioned before becomming common. <span class="lbl lbl-sowhat">THE WHY, AT LAST</span>The benefits and concerns for making any new product or invention are always important for people to understand, so that they can grasp what they are voting for.
+    </div>
+    <p style="font-size:10pt;color:#555;">The skeleton is all there, and the facts are in the right body paragraphs. The why arrives in the last sentence of the essay instead of the first. The version below keeps your three body topics and your facts, adds the passage&rsquo;s numbers, and puts a <i>This shows</i> after each fact.</p>
+
+    <div class="reveal-wrapper">
+      <button class="reveal-btn" onclick="toggleReveal(this)">Show the same ideas at 20</button>
+      <div class="reveal-content">
+        <div class="model-box"><div class="label">THE ESSAY, REBUILT</div>
+          <p><span class="lbl lbl-general">GENERAL</span>Most people assume that self-driving cars are the future of transportation. <span class="lbl lbl-specific">SPECIFIC</span>The passage describes a technology that is already being tested in Phoenix, San Francisco and Austin, and that has already killed a pedestrian. <span class="lbl lbl-say">THESIS</span>Readers need to understand both sides before the cars become common for three reasons: the benefits are large enough to change who gets to travel, the failures are serious enough to cost lives, and the legal and job questions will be settled by voters and courts before the first car arrives in their town.</p>
+          <p><span class="lbl lbl-say">TOPIC SENTENCE</span>First, readers need to understand the benefits because they are large enough to change who can travel. <span class="lbl lbl-show">FACT</span>About 94% of serious crashes involve human error, and a self-driving car does not get tired, distracted or angry. <span class="lbl lbl-sowhat">THIS SHOWS</span>This shows that a reader who knows the number is weighing a real saving of lives, not a slogan. <span class="lbl lbl-show">FACT</span>Elderly people who have lost their licences and people with disabilities could travel independently again. <span class="lbl lbl-sowhat">THIS SHOWS</span>This shows that the benefit reaches people with no other option, which a community has to understand before it decides to say no.</p>
+          <p><span class="lbl lbl-say">TOPIC SENTENCE</span>Second, readers need to understand the concerns because the failures are not theoretical. <span class="lbl lbl-show">FACT</span>In 2018 a test vehicle in Arizona detected a pedestrian, but the software failed to react in time, and the pedestrian was killed. <span class="lbl lbl-sowhat">THIS SHOWS</span>This shows that the weak point is the decision, not the sensors, which is exactly what a reader must understand before trusting the car. <span class="lbl lbl-show">FACT</span>Millions of Americans work as truck, taxi and delivery drivers, and the passage notes that experts disagree about whether new jobs will replace theirs. <span class="lbl lbl-sowhat">THIS SHOWS</span>This shows that the cost of the technology will fall on particular families, and a reader who understands that will ask harder questions than one who does not.</p>
+          <p><span class="lbl lbl-say">TOPIC SENTENCE</span>Finally, readers need to understand the legal questions because they will be answered soon, with or without the public. <span class="lbl lbl-show">FACT</span>The passage asks who is responsible when a self-driving car causes a crash, the owner, the manufacturer or the software company, and says that courts and lawmakers are still deciding. <span class="lbl lbl-sowhat">THIS SHOWS</span>This shows that the rules are being written now, so a reader who understands the question can influence the answer, and one who does not will simply inherit it.</p>
+          <p><span class="lbl lbl-say">THESIS, IN NEW WORDS</span>Lives saved, lives lost and laws not yet written are the three reasons the public cannot wait to understand this technology. <span class="lbl lbl-specific">SPECIFIC</span>The 94% and the Arizona crash belong in the same conversation, and so does the question of who pays. <span class="lbl lbl-general">GENERAL</span>Every new invention arrives before the rules for it, and the people who understand it first are the ones who get to write them.</p>
+        </div>
+        <div class="tip-box"><div class="label">WHAT CHANGED</div>Your three body topics and your facts, kept. Added: a thesis that answers why, the passage&rsquo;s numbers, a <i>This shows</i> after every fact, and a conclusion that walks the introduction back. Removed: <i>let&rsquo;s talk about</i>, <i>tons of</i>, the question chain, and five spellings. That is the five points, and the pass.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 8: Quick Check, Checklist -->
+<div class="card" data-title="Quick Check &amp; Checklist">
+  <div class="card-header"><h2>Quick Check</h2><div class="card-subtitle">Six new ones. Then your checklist</div></div>
+  <div class="card-body">
+    <div class="quick-check" data-back="cards 3 to 6">
+      <div class="qc-title">The why, the This shows, the register, the read-back, the conjunction, six questions</div>
+      <div class="qc-sub">All new sentences. Answer each one once.</div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">The prompt: <i>explain why people&rsquo;s food preferences can change over time</i>. Which thesis answers it?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A question to the reader, then the prompt restated. No reasons." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Have you ever disliked a food and then liked it? Food preferences can change over time.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Three reasons a reader can list." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Food preferences change because the flavor window can reopen, because the body links flavors to how they make it feel, and because people learn to like what the people around them like.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">After the fact <i>toddlers may need five to ten tries before they accept a new food</i>, which sentence is the This shows?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="The grader&rsquo;s own example on G8.3." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>This shows that repeated exposure, not a single taste, is what makes an unfamiliar food feel acceptable.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="The next fact. A SHOW." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Researchers at the University of Birmingham call this period the flavor window.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence earns the strong-sentences points?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Let&rsquo;s talk, tons of, and a question to the reader." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Let&rsquo;s talk about jobs, because tons of people drive for a living, right?</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Formal and specific." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Millions of Americans drive trucks, taxis and delivery vans, and the passage does not promise that new jobs will replace theirs.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence is ready to submit? Read it at speaking speed.</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Capital start, their, too, research. Clean." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Before the test, the crew checked their equipment too, and the research began on time.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Lowercase start, there, to, reasearch: patterns one, three and four." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>before the test, the crew checked there equipment to, and the reasearch began on time.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt"><i>_____ the sensors detected the pedestrian, the software did not react in time.</i> Which conjunction matches the relationship?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Because says the detecting caused the failure. The two ideas pull against each other." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Because</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="A contrast: detected, and still failed. Although." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Although</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence ends a body paragraph the way the rubric rewards?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A summary of the body paragraph. The points are in what the fact shows." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>In summary, there are many legal questions about self-driving cars.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;This shows&rdquo; plus what the facts prove about the thesis." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>This shows that the rules are being written now, so a reader who understands the question can still shape the answer.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="qc-result"></div>
+    </div>
+
+    <div class="checklist-wrap shown">
+      <div id="mainChecklist">
+        <div class="checklist-progress-label" id="checkProgressLabel">0 of 7 checked</div>
+        <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Read the prompt&rsquo;s question word.</b> A why prompt gets a thesis with reasons a reader could list.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Every body paragraph:</b> topic sentence, fact with its number from the passage, <i>This shows</i>, second fact, <i>This shows</i>. No summary sentence at the end.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Conclusion:</b> thesis in new words, specific, general.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Formal sentences:</b> no <i>let&rsquo;s</i>, <i>tons of</i>, <i>super</i>, no questions to the reader, no quotes from outside the passage.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Read-back one:</b> capitals at every sentence start; there, their, to, too, affect, effect, ever, every.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Read-back two:</b> long words one at a time, and any word from the passage copied letter for letter.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Conjunction questions:</b> name the relationship first, cause, condition, contrast or time, then pick the word.</div></div>
+      </div>
+      <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>Print Checklist</button>
+    </div>
+  </div>
+</div>
+
+</div>
+<div class="nav"><button id="prevBtn" onclick="navigate(-1)">&larr; Back</button><button id="nextBtn" onclick="navigate(1)">Next &rarr;</button></div>
+<div class="completion-overlay" id="completionOverlay"><div class="completion-card"><div class="completion-emoji">&#9997;</div><div class="completion-title">Good luck on your next test!</div><div class="completion-sub">A thesis that answers the why, a This shows after every fact, formal sentences, two read-backs, and the conjunction that matches.</div><button class="completion-close" onclick="closeCompletion()">Got it</button></div></div>
+<canvas id="confettiCanvas"></canvas>
+<script>
+var cards=document.querySelectorAll('.card'),bar=document.getElementById('progressBar'),breadcrumb=document.getElementById('breadcrumb'),stickyEl=document.getElementById('stickyIndicator'),current=0,visited=[0];
+cards.forEach(function(card,i){var dot=document.createElement('div');dot.className='progress-dot'+(i===0?' active':'');var tooltip=document.createElement('span');tooltip.className='dot-tooltip';tooltip.textContent=card.getAttribute('data-title')||('Card '+(i+1));dot.appendChild(tooltip);dot.addEventListener('click',function(){goTo(i);});bar.appendChild(dot);});
+function updateBreadcrumb(){var title=cards[current].getAttribute('data-title')||('Card '+(current+1));breadcrumb.innerHTML='Card <b>'+(current+1)+'</b> of '+cards.length+' &mdash; '+title;stickyEl.textContent=(current+1)+' / '+cards.length;}
+function checkSticky(){var r=bar.getBoundingClientRect();stickyEl.classList.toggle('visible',r.bottom<0);}
+window.addEventListener('scroll',checkSticky);
+function goTo(idx){if(idx<0||idx>=cards.length)return;cards[current].classList.remove('active');bar.children[current].classList.remove('active');current=idx;if(visited.indexOf(current)===-1)visited.push(current);cards[current].classList.add('active');bar.children[current].classList.add('active');visited.forEach(function(v){if(v!==current)bar.children[v].classList.add('visited');});var p=document.getElementById('prevBtn'),n=document.getElementById('nextBtn');if(p){p.style.visibility=current===0?'hidden':'visible';p.disabled=current===0;}if(n){n.textContent=current===cards.length-1?'Done ✓':'Next →';}updateBreadcrumb();window.scrollTo({top:0,behavior:'smooth'});}
+function navigate(dir){if(dir===1&&current===cards.length-1){showCompletion();return;}goTo(current+dir);}
+document.addEventListener('keydown',function(e){if(e.target&&e.target.tagName==='TEXTAREA')return;if(e.key==='ArrowRight'||e.key==='ArrowDown')navigate(1);if(e.key==='ArrowLeft'||e.key==='ArrowUp')navigate(-1);});
+function revealBetter(cover){cover.nextElementSibling.classList.add('shown');cover.classList.add('hidden');}
+function shuffleOptions(){document.querySelectorAll('.discrim-options').forEach(function(box){var opts=Array.prototype.slice.call(box.querySelectorAll('.discrim-option'));for(var i=opts.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=opts[i];opts[i]=opts[j];opts[j]=t;}opts.forEach(function(o,i){box.appendChild(o);var l=o.querySelector('.discrim-label');if(l)l.textContent=String.fromCharCode(65+i);});});}
+function handleDiscrim(option){var ch=option.closest('.discrim-challenge');if(ch.classList.contains('done'))return;var fb=ch.querySelector('.discrim-feedback');var opts=ch.querySelectorAll('.discrim-option');var ok=option.getAttribute('data-correct')==='true';ch.classList.add('done');
+if(ok){option.classList.add('correct');opts.forEach(function(o){if(o!==option)o.classList.add('locked');});fb.innerHTML=option.getAttribute('data-right-feedback')||'Correct.';fb.className='discrim-feedback shown right-fb';ch.setAttribute('data-first-try','1');}
+else{option.classList.add('wrong');var right=ch.querySelector('.discrim-option[data-correct="true"]');right.classList.add('model');opts.forEach(function(o){if(o!==option&&o!==right)o.classList.add('locked');});var rl=right.querySelector('.discrim-label');fb.innerHTML='<span style="color:#cc0000"><b>Not this one.</b> '+(option.getAttribute('data-wrong-feedback')||'')+'</span><br><span style="color:#2d6a2d"><b>The answer is '+(rl?rl.textContent:'')+'.</b> '+(right.getAttribute('data-right-feedback')||'')+'</span>';fb.className='discrim-feedback shown';ch.setAttribute('data-first-try','0');var par=ch.nextElementSibling;if(par&&par.classList.contains('discrim-parallel')){fb.innerHTML+=' <b style="color:#5c2dcc">Try one more like it below.</b>';setTimeout(function(){par.classList.add('shown');},600);}}
+var bf=ch.closest('.build-frame');if(bf){var all=bf.querySelectorAll('.discrim-challenge'),dn=0;all.forEach(function(c){if(c.classList.contains('done'))dn++;});if(dn===all.length){var a=bf.querySelector('.assembled');if(a)setTimeout(function(){a.classList.add('shown');},500);}}
+var qc=ch.closest('.quick-check');if(qc)updateQC(qc);}
+function updateQC(qc){var items=qc.querySelectorAll('.discrim-challenge');var done=0,first=0;items.forEach(function(c){if(c.classList.contains('done')){done++;if(c.getAttribute('data-first-try')==='1')first++;}});if(done<items.length)return;var r=qc.querySelector('.qc-result');r.textContent=first+' of '+items.length+' right first time. '+(first>=items.length-1?'The moves are in your head. Now the checklist.':'Look back at '+qc.getAttribute('data-back')+' for the ones you missed, then come back to the checklist.');r.style.display='block';launchConfetti();}
+function toggleTimes(el){var body=el.closest('.card-body');body.classList.toggle('show-times');el.textContent=body.classList.contains('show-times')?'Hide test times':'Show how long each test took';}
+function toggleCheck(item){item.classList.toggle('checked');updateCheckProgress();}
+function updateCheckProgress(){var items=document.querySelectorAll('#mainChecklist .check-item');if(!items.length)return;var checked=document.querySelectorAll('#mainChecklist .check-item.checked').length;var fill=document.getElementById('checkProgressFill'),lbl=document.getElementById('checkProgressLabel');if(fill)fill.style.width=Math.round((checked/items.length)*100)+'%';if(lbl)lbl.innerHTML=checked===items.length?'<b style="color:#2d6a2d;">All done.</b>':checked+' of '+items.length+' checked';}
+function printChecklist(btn){var card=btn.closest('.card');var ci=card.querySelectorAll('.check-item.checked');ci.forEach(function(i){i.classList.remove('checked');});card.classList.add('print-target');window.print();card.classList.remove('print-target');ci.forEach(function(i){i.classList.add('checked');});}
+function showCompletion(){document.getElementById('completionOverlay').classList.add('visible');}
+function closeCompletion(){document.getElementById('completionOverlay').classList.remove('visible');}
+function launchConfetti(){var canvas=document.getElementById('confettiCanvas');var ctx=canvas.getContext('2d');canvas.width=window.innerWidth;canvas.height=window.innerHeight;var colors=['#b8860b','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b','#42a5f5'];var particles=[];for(var i=0;i<120;i++){particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height-canvas.height,w:Math.random()*10+5,h:Math.random()*6+3,color:colors[Math.floor(Math.random()*colors.length)],vx:(Math.random()-0.5)*4,vy:Math.random()*3+2,rot:Math.random()*360,rotV:(Math.random()-0.5)*10,life:1});}var frame=0;function animate(){ctx.clearRect(0,0,canvas.width,canvas.height);var alive=false;particles.forEach(function(p){if(p.life<=0)return;alive=true;p.x+=p.vx;p.y+=p.vy;p.vy+=0.05;p.rot+=p.rotV;if(p.y>canvas.height+20){p.life=0;return;}if(frame>60)p.life-=0.01;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();});frame++;if(alive)requestAnimationFrame(animate);else ctx.clearRect(0,0,canvas.width,canvas.height);}animate();}
+shuffleOptions();goTo(0);
+</script>
+<script src="../tracking.js"></script>
+</body>
+</html>
