@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laura Smater: Writing Coaching Cards</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Calibri, 'Segoe UI', sans-serif; font-size: 12pt; color: #1a1a2e; background: #f0f0f5; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; padding: 20px; }
+.progress-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
+.progress-dot { width: 12px; height: 12px; border-radius: 50%; background: #ccc; transition: background 0.3s, transform 0.2s; cursor: pointer; position: relative; }
+.progress-dot.active { background: #b8860b; transform: scale(1.25); }
+.progress-dot.visited { background: #d9b56a; }
+.progress-dot:hover { transform: scale(1.3); }
+.progress-dot .dot-tooltip { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: #b8860b; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 8.5pt; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 100; }
+.progress-dot .dot-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #b8860b; }
+.progress-dot:hover .dot-tooltip { opacity: 1; }
+.card-breadcrumb { font-size: 9.5pt; color: #888; margin-bottom: 14px; text-align: center; transition: opacity 0.3s; min-height: 1.2em; }
+.card-breadcrumb b { color: #b8860b; }
+.sticky-indicator { position: fixed; top: 12px; right: 16px; background: #b8860b; color: #fff; padding: 5px 14px; border-radius: 20px; font-size: 9pt; font-weight: 700; opacity: 0; transition: opacity 0.3s; z-index: 200; pointer-events: none; letter-spacing: 0.5px; }
+.sticky-indicator.visible { opacity: 1; }
+.card-container { position: relative; width: 640px; min-height: 420px; }
+.card { position: absolute; top: 0; left: 0; width: 100%; background: #fff; border: 2.5px solid #b8860b; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.10); opacity: 0; pointer-events: none; transform: translateX(40px); transition: opacity 0.35s, transform 0.35s; }
+.card.active { opacity: 1; pointer-events: auto; transform: translateX(0); position: relative; }
+.card-header { background: #b8860b; color: #fff; padding: 14px 20px; border-radius: 11px 11px 0 0; }
+.card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+.card-header .card-subtitle { font-size: 9.5pt; color: #f0e2bd; margin-top: 2px; }
+.card-body { padding: 18px 22px 22px; line-height: 1.55; }
+.card-body p { margin: 6px 0; }
+.score-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; }
+.score-box { background: #f8f8fc; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 10px 14px; text-align: center; }
+.score-box .big { font-size: 20pt; font-weight: 700; }
+.score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+.score-good .big { color: #2d6a2d; }
+.score-warn .big { color: #cc6600; }
+.score-low .big { color: #cc0000; }
+.you-wrote { background: #fff3f3; border-left: 3px solid #cc0000; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.you-wrote .label { font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+.better, .model-box { background: #e8f5e9; border-left: 3px solid #2d6a2d; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.better .label, .model-box .label { font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+.tip-box { background: #e8edf5; border-left: 3px solid #b8860b; padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0; }
+.tip-box .label { font-weight: 700; font-size: 9.5pt; color: #b8860b; margin-bottom: 3px; }
+.rule-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 10px 14px; margin: 10px 0; font-size: 11pt; }
+.rule-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 3px; }
+.lbl { display: inline-block; font-size: 7.5pt; font-weight: 800; letter-spacing: 0.5px; padding: 1px 6px; border-radius: 4px; margin: 0 4px 0 0; vertical-align: middle; color: #fff; line-height: 1.5; }
+.lbl-say, .lbl-echo { background: #5c2dcc; } .lbl-show, .lbl-because { background: #2d6a2d; } .lbl-sowhat { background: #cc6600; } .lbl-close { background: #457b9d; } .lbl-miss { background: #cc0000; } .lbl-reason { background: #888; } .lbl-general { background: #6d4c41; } .lbl-specific { background: #00838f; } .evidence-block { margin: 10px 0 12px; border: 1.5px solid #e0e0e8; border-radius: 8px; overflow: hidden; } .ev-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 12px; font-size: 10.5pt; } .ev-row + .ev-row { border-top: 1px solid #e0e0e8; } .ev-row.paced { background: #e8f5e9; } .ev-row.rushed { background: #fff3f3; } .ev-tag { flex-shrink: 0; font-size: 8.5pt; font-weight: 800; letter-spacing: 0.5px; padding: 2px 7px; border-radius: 8px; color: #fff; margin-top: 2px; } .ev-row.paced .ev-tag { background: #2d6a2d; } .ev-row.rushed .ev-tag { background: #cc0000; } .format-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; } .format-box { background: #fbf7ea; border: 1.5px solid #e6d3a3; border-radius: 8px; padding: 10px 14px; } .format-box .format-title { font-weight: 700; font-size: 10pt; color: #b8860b; margin-bottom: 4px; } .format-box .format-detail { font-size: 9.5pt; color: #555; line-height: 1.4; } .format-box .format-pts { display: inline-block; background: #b8860b; color: #fff; font-size: 8.5pt; font-weight: 700; padding: 1px 7px; border-radius: 8px; margin-bottom: 4px; } @media (max-width: 640px) { .format-grid { grid-template-columns: 1fr; } }
+.ex-list { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+.ex { padding: 8px 12px; border-radius: 6px; font-size: 10.5pt; border-left: 3px solid; }
+.ex.pos { background: #e8f5e9; border-color: #2d6a2d; } .ex.neg { background: #fff3f3; border-color: #cc0000; }
+.ex .tag { font-weight: 800; font-size: 8.5pt; margin-right: 6px; } .ex.pos .tag { color: #2d6a2d; } .ex.neg .tag { color: #cc0000; }
+.think { background: #f8f8fc; border-left: 3px solid #888; padding: 8px 14px; margin: 8px 0; font-size: 10.5pt; font-style: italic; color: #444; }
+.think .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #666; margin-bottom: 2px; }
+.highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+.error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+.discrim-option .error-mark { background: transparent; text-decoration: none; padding: 0; border-radius: 0; }
+.essay-excerpt { background: #fafafa; border: 1px solid #e0e0e8; border-radius: 6px; padding: 10px 14px; font-size: 10.5pt; margin: 8px 0; line-height: 1.7; }
+.discrim-challenge { background: #f8f5ff; border: 1.5px solid #d4c5ff; border-radius: 8px; padding: 14px; margin: 10px 0; }
+.discrim-prompt { font-weight: 700; font-size: 10.5pt; margin-bottom: 10px; color: #5c2dcc; }
+.discrim-options { display: flex; flex-direction: column; gap: 8px; }
+.discrim-option { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border: 2px solid #d4c5ff; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 10.5pt; background: #fff; }
+.discrim-option:hover { border-color: #7c4dff; background: #f5f0ff; }
+.discrim-label { font-weight: 800; color: #7c4dff; min-width: 20px; flex-shrink: 0; }
+.discrim-option.correct, .discrim-option.model { border-color: #2d6a2d; background: #e8f5e9; cursor: default; }
+.discrim-option.correct .discrim-label, .discrim-option.model .discrim-label { color: #2d6a2d; }
+.discrim-option.wrong { border-color: #cc0000; background: #fff3f3; cursor: default; }
+.discrim-option.wrong .discrim-label { color: #cc0000; }
+.discrim-option.locked { pointer-events: none; opacity: 0.5; }
+.discrim-challenge.done .discrim-option { cursor: default; }
+.discrim-feedback { margin-top: 0; font-size: 10pt; line-height: 1.45; max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.3s, opacity 0.3s, margin 0.3s; }
+.discrim-feedback.shown { max-height: 400px; opacity: 1; margin-top: 10px; }
+.discrim-feedback.right-fb { color: #2d6a2d; font-weight: 600; }
+.discrim-parallel { display: none; }
+.discrim-parallel.shown { display: block; }
+.discrim-parallel .discrim-prompt::before { content: 'One more like it. '; color: #888; font-weight: 600; }
+.reveal-wrapper { position: relative; }
+.reveal-cover { background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%); border-left: 3px solid #2d6a2d; padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 10px; transition: background 0.2s, box-shadow 0.2s; }
+.reveal-cover:hover { box-shadow: 0 2px 8px rgba(45,106,45,0.15); }
+.reveal-cover .reveal-icon { width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
+.reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #2d6a2d; }
+.reveal-cover .reveal-hint { font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px; }
+.reveal-content { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0; }
+.reveal-content.shown { max-height: 1200px; opacity: 1; margin: 8px 0; }
+.reveal-cover.hidden { display: none; }
+.your-turn { background: #f8f8fc; border: 1.5px dashed #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.your-turn .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.your-turn textarea { width: 100%; min-height: 64px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; margin: 4px 0; }
+.frame-row { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0; font-size: 10.5pt; }
+.frame-row .lbl { margin-top: 4px; }
+.frame-row .given { background: #fff; border: 1.5px solid #e0e0e8; border-radius: 6px; padding: 8px; flex: 1; color: #555; }
+.frame-row textarea { flex: 1; min-height: 48px; margin: 0; }
+.yt-btn { margin-top: 8px; padding: 7px 16px; border: 2px solid #2d6a2d; background: #fff; color: #2d6a2d; border-radius: 8px; font-family: inherit; font-weight: 600; font-size: 10pt; cursor: pointer; }
+.yt-btn:hover { background: #2d6a2d; color: #fff; }
+.yt-btn:disabled { opacity: 0.6; cursor: default; }
+.yt-model { display: none; margin-top: 10px; }
+.assembled { display: none; margin-top: 8px; }
+.assembled.shown { display: block; }
+.xp-link { display: inline-block; margin: 8px 6px 0 0; padding: 6px 14px; border-radius: 6px; background: #2d6a2d; color: #fff; font-weight: 700; font-size: 10pt; text-decoration: none; }
+.xp-link:hover { background: #1b5e1b; }
+.yt-model.shown { display: block; }
+.self-check .check-item { font-size: 10pt; padding: 6px 8px; }
+.check-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 8px; cursor: pointer; border-bottom: 1px solid #eee; border-radius: 6px; transition: background 0.15s; user-select: none; font-size: 11pt; }
+.check-item:last-child { border-bottom: none; }
+.check-item:hover { background: #f8f8fc; }
+.check-item.checked { background: #f0f8f0; }
+.check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
+.check-item.checked .check-box::after { content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
+.check-box { width: 28px; height: 28px; border: 2.5px solid #b8860b; border-radius: 6px; flex-shrink: 0; margin-top: 1px; position: relative; transition: background 0.2s, border-color 0.2s; }
+.self-check .check-box { width: 22px; height: 22px; }
+.checklist-progress { background: #eee; border-radius: 10px; height: 8px; margin: 12px 0 6px; overflow: hidden; }
+.checklist-progress-fill { background: linear-gradient(90deg, #2d6a2d, #4caf50); height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%; }
+.checklist-progress-label { font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px; }
+.quick-check { background: #f8f5ff; border: 2px solid #7c4dff; border-radius: 10px; padding: 12px 14px; margin: 10px 0; }
+.quick-check .qc-title { font-weight: 800; color: #5c2dcc; font-size: 10.5pt; margin-bottom: 4px; }
+.quick-check .qc-sub { font-size: 9.5pt; color: #666; margin-bottom: 6px; }
+.quick-check .discrim-challenge { background: #fff; margin: 8px 0; padding: 10px 12px; }
+.qc-result { display: none; font-weight: 700; margin-top: 8px; font-size: 10.5pt; color: #5c2dcc; }
+.recall-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.recall-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.recall-box textarea { width: 100%; min-height: 56px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; }
+.checklist-wrap { display: none; }
+.checklist-wrap.shown { display: block; }
+.time-toggle { font-size: 9pt; color: #b8860b; cursor: pointer; text-decoration: underline; display: inline-block; margin: 0 0 6px; }
+.tl-time { display: none; font-weight: 400; color: #aaa; }
+.show-times .tl-time { display: inline; }
+.guide-block { margin-top: 16px; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 8px 12px; background: #fafafa; font-size: 10pt; }
+.guide-block summary { cursor: pointer; font-weight: 700; color: #666; font-size: 9.5pt; }
+.guide-block ul { margin: 6px 0 4px 18px; }
+.guide-block li { margin: 4px 0; }
+.practice-recommendations { margin-top: 16px; border-top: 2px solid #e0e0e8; padding-top: 14px; }
+.practice-recs-title { font-size: 10pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #b8860b; margin-bottom: 10px; }
+.practice-tier { border-radius: 8px; padding: 12px 14px; margin: 8px 0; }
+.tier-primary { background: #e8f5e9; border: 1.5px solid #a5d6a7; }
+.tier-extra { background: #f8f8fc; border: 1.5px solid #e0e0e8; }
+.tier-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.tier-label { font-size: 8.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 2px 10px; border-radius: 10px; }
+.tier-primary .tier-label { background: #2d6a2d; color: #fff; }
+.tier-extra .tier-label { background: #888; color: #fff; }
+.tier-note { font-size: 9pt; color: #666; margin-bottom: 6px; line-height: 1.4; }
+.practice-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.practice-link { display: inline-block; padding: 5px 12px; border-radius: 6px; font-size: 9.5pt; font-weight: 600; text-decoration: none; transition: background 0.2s, transform 0.1s; }
+.tier-primary .practice-link { background: #c8e6c9; color: #1b5e1b; }
+.tier-extra .practice-link { background: #e8edf5; color: #b8860b; }
+.nav { display: flex; gap: 12px; margin-top: 16px; }
+.nav button { padding: 8px 28px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; transition: background 0.2s, color 0.2s; }
+.nav button:hover { background: #b8860b; color: #fff; }
+.print-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 8px 20px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 10.5pt; font-weight: 600; cursor: pointer; }
+.print-btn:hover { background: #b8860b; color: #fff; }
+.print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+.completion-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(184,134,11,0.6); z-index: 500; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s; }
+.completion-overlay.visible { opacity: 1; pointer-events: auto; }
+.completion-card { background: #fff; border-radius: 16px; padding: 40px 48px; text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2); transform: scale(0.8); transition: transform 0.4s ease; max-width: 420px; }
+.completion-overlay.visible .completion-card { transform: scale(1); }
+.completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+.completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; color: #b8860b; }
+.completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+.completion-close { margin-top: 20px; padding: 10px 32px; background: #b8860b; color: #fff; border: none; border-radius: 8px; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; }
+#confettiCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 501; }
+.score-timeline { display: flex; align-items: flex-end; gap: 0; margin: 12px 0 10px; padding: 0 6px; justify-content: space-between; }
+.timeline-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.timeline-score { font-size: 13pt; font-weight: 700; margin-bottom: 4px; }
+.timeline-bar { width: 70%; border-radius: 4px 4px 0 0; min-height: 8px; }
+.timeline-label { font-size: 8.5pt; color: #888; margin-top: 6px; font-weight: 600; text-align: center; }
+.score-green { color: #2d6a2d; } .score-amber { color: #cc6600; } .score-red { color: #cc0000; }
+.bar-green { background: linear-gradient(to top, #c8e6c9, #81c784); } .bar-amber { background: linear-gradient(to top, #ffe0b2, #ffb74d); } .bar-red { background: linear-gradient(to top, #ffcdd2, #ef9a9a); }
+.strength-chips, .growth-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; }
+.strength-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; background: #e8f5e9; color: #2d6a2d; border: 1.5px solid #a5d6a7; display: inline-flex; align-items: center; gap: 4px; }
+.strength-chip .chip-course, .growth-chip .chip-avg { font-size: 7.5pt; color: #888; font-weight: 400; }
+.journey-section { font-size: 9.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; margin: 10px 0 4px; padding-bottom: 3px; border-bottom: 1.5px solid; }
+.journey-section.strengths-header { color: #2d6a2d; border-color: #c8e6c9; }
+.journey-section.growth-header { color: #cc6600; border-color: #ffe0b2; }
+.root-cause-teaser { background: #f5f0ff; border-left: 3px solid #7c4dff; padding: 10px 14px; margin: 12px 0 4px; border-radius: 0 6px 6px 0; font-size: 10.5pt; line-height: 1.5; }
+.root-cause-teaser b { color: #5c2dcc; }
+.growth-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+.growth-chip.mixed { background: #fff8e8; color: #b35900; border: 1.5px solid #ffe0b2; }
+.growth-chip.weak { background: #fff3f3; color: #cc0000; border: 1.5px solid #ffcdd2; }
+@media print { body { background: #fff; padding: 0; min-height: auto; } .progress-bar, .nav, .print-btn, .card-breadcrumb, .sticky-indicator, .completion-overlay, #confettiCanvas, .reveal-cover, .checklist-progress, .checklist-progress-label, .discrim-challenge, .discrim-parallel, .quick-check, .recall-box, .yt-btn, .guide-block { display: none !important; } .card-container { width: 100%; min-height: auto; } .card { display: none !important; } .card.print-target { display: block !important; opacity: 1 !important; pointer-events: auto !important; position: relative !important; transform: none !important; box-shadow: none; border: 2px solid #b8860b; page-break-inside: avoid; } .reveal-content, .yt-model, .checklist-wrap { display: block !important; max-height: none !important; opacity: 1 !important; margin: 8px 0 !important; } }
+@media (max-width: 720px) { .card-container { width: 100%; } .score-grid { grid-template-columns: 1fr; } .timeline-score { font-size: 10pt; } }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progressBar"></div>
+<div class="card-breadcrumb" id="breadcrumb"></div>
+<div class="sticky-indicator" id="stickyIndicator"></div>
+<div class="card-container" id="cardContainer">
+
+<!-- Card 1: Your Starting Point -->
+<div class="card active" data-title="Your Starting Point">
+  <div class="card-header"><h2>Laura Smater</h2><div class="card-subtitle">Alpha Standardized Writing G3.3. October 2026. Passages: &ldquo;Sally&rsquo;s Rescue&rdquo; / &ldquo;From Collecting to Designing: The Story of Pok&eacute;mon&rdquo;</div></div>
+  <div class="card-body">
+    <div class="score-grid">
+      <div class="score-box score-good"><div class="big">82%</div><div class="label">Overall Score</div></div>
+      <div class="score-box score-good"><div class="big">20/25</div><div class="label">Questions 1&ndash;10</div></div>
+      <div class="score-box score-good"><div class="big">18/20</div><div class="label">Paragraph (Question 11)</div></div>
+    </div>
+    <p>Laura, 82% is four points from a pass, and the paragraph is already there: 18 of 20, up from 14 a week earlier. It answers the question in the first sentence, follows Tajiri from the bugs to the game in order, and ends on the point. The question in Q1, the expanded sentence in Q2 (<i>Dad gently freed the pup from the fishnet and placed her in the shallow water</i>), and the Q10 lesson with its because and its so all earned full marks.</p>
+    <p>Eight points went missing, and five of them are the same mark. In Q4, Q7, Q8 and Q9, and twice inside the paragraph, two complete sentences are joined by a comma and nothing else: <i>ran to the beach, they had found</i>; <i>find the baby seals family, I think this shows</i>; <i>call the baby seal, this way the family</i>; <i>create him game, this game is now</i>. The grader wrote the same note four times. The other three points: Q3 asked for an appositive and got <i>Then,</i>; Q5 asked for one joining word in a blank and got a rewritten sentence; and the appositive has now been missed on three tests.</p>
+    <div class="root-cause-teaser"><b>The plan:</b> two sentences never share one comma. Cover the comma; if both sides are whole sentences, use a period or a joining word. Then the appositive: a noun phrase in commas that renames. And do the exact job the instruction names.</div>
+    <div class="journey-section strengths-header">Skills you do well</div>
+    <div class="strength-chips">
+      <span class="strength-chip">A paragraph that answers first and follows through <span class="chip-course">&middot; Q11, 18 of 20</span></span>
+      <span class="strength-chip">Question, expanding, a lesson with its because <span class="chip-course">&middot; Q1, Q2, Q10, full marks</span></span>
+      <span class="strength-chip">Reasons in every one-sentence answer <span class="chip-course">&middot; Q6&ndash;Q10, the reason point every time</span></span>
+    </div>
+    <div class="journey-section growth-header">What to work on</div>
+    <div class="growth-chips">
+      <span class="growth-chip weak">Two sentences on one comma <span class="chip-avg">Q4, Q7, Q8, Q9, Q11: 5 points</span></span>
+      <span class="growth-chip mixed">An appositive renames with a noun <span class="chip-avg">Q3; also G4.1 Q3, G3.1 Q1</span></span>
+      <span class="growth-chip mixed">Do the job the instruction names <span class="chip-avg">Q5: a word for the blank, not a new sentence</span></span>
+      <span class="growth-chip mixed">Read-back: probably, nutrients, exciting, Pok&eacute;mon, its <span class="chip-avg">Q9, Q11</span></span>
+    </div>
+  </div>
+</div>
+
+<!-- Card 2: Writing Journey -->
+<div class="card" data-title="Your Writing Journey">
+  <div class="card-header"><h2>Your Writing Journey</h2><div class="card-subtitle">Five tests in a month</div></div>
+  <div class="card-body">
+    <div class="score-timeline">
+      <div class="timeline-item"><div class="timeline-score score-green">80%</div><div class="timeline-bar bar-green" style="height:72px;"></div><div class="timeline-label">G5.1 (Sep 16)<br><span class="tl-time">40m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">80%</div><div class="timeline-bar bar-green" style="height:72px;"></div><div class="timeline-label">G4.1 (Sep 17)<br><span class="tl-time">31m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-amber">73%</div><div class="timeline-bar bar-amber" style="height:66px;"></div><div class="timeline-label">G3.1 (Sep 18)<br><span class="tl-time">19m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">87%</div><div class="timeline-bar bar-green" style="height:78px;"></div><div class="timeline-label">G3.2 (Oct 9)<br><span class="tl-time">22m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">82%</div><div class="timeline-bar bar-green" style="height:74px;"></div><div class="timeline-label">G3.3 (Oct 16)<br><span class="tl-time">20m</span></div></div>
+    </div>
+    <span class="time-toggle" onclick="toggleTimes(this)">Show how long each test took</span>
+    <p>Five tests, and one mark on all five. On G3.1, five answers joined two sentences with a comma, and the grader called the paragraph a run-on. On G4.1, Q1 did it, Q5 did it, and the Cody paragraph did it (<i>all the time, It could be about</i>). On G3.3, four short answers and the paragraph. Count them and it is at least twelve points across the three tests, every one of them the same comma. Meanwhile the paragraph itself has grown from 14 to 18, and the first page scored 20 of 25 twice. The Grade 3 tests took 19 to 22 minutes. A read-back of five minutes catches a comma between two whole sentences, and <i>probobaly</i>, and <i>nutriens</i>. Aim to spend at least 25 minutes, and keep the last five for reading back.</p>
+    <div class="journey-section strengths-header">Skills you do well</div>
+    <div class="strength-chips">
+      <span class="strength-chip">The paragraph, climbing <span class="chip-course">&middot; 14, then 18 of 20</span></span>
+      <span class="strength-chip">A reason in every one-sentence answer <span class="chip-course">&middot; three tests running</span></span>
+      <span class="strength-chip">Expanding and rewriting sentences <span class="chip-course">&middot; G3.3 Q1, Q2</span></span>
+    </div>
+    <div class="journey-section growth-header">What to work on</div>
+    <div class="growth-chips">
+      <span class="growth-chip weak">Two sentences never share one comma <span class="chip-avg">G3.1, G4.1, G3.3: twelve points</span></span>
+      <span class="growth-chip mixed">The appositive <span class="chip-avg">G3.1 Q1, G4.1 Q3, G3.3 Q3</span></span>
+      <span class="growth-chip mixed">A five-minute read-back <span class="chip-avg">19 to 22 minutes on the G3 tests</span></span>
+    </div>
+    <div class="root-cause-teaser"><b>Four points from a pass.</b> The comma is worth five. Card 3 fixes it on your own sentences. Card 4 is the appositive and the job the instruction names.</div>
+  </div>
+</div>
+
+<!-- Card 3: Fix 1, the comma splice -->
+<div class="card" data-title="Fix 1: Two Sentences Never Share One Comma">
+  <div class="card-header"><h2>Fix 1: Two Sentences Never Share One Comma</h2><div class="card-subtitle">Five points on this test, twelve across three. One habit</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: COVER THE COMMA. IF BOTH SIDES ARE WHOLE SENTENCES, THE COMMA CANNOT HOLD THEM</div>A comma on its own cannot join two complete sentences. You have three choices: a <b>period</b> and a capital letter; a <b>joining word</b> after the comma (<i>, and</i> / <i>, so</i> / <i>, but</i>); or <b>because</b> or <b>so</b> with no comma at all. <b>The check:</b> put your finger over the comma. Read the left side alone. Read the right side alone. If each one could end with a period, the comma is holding two sentences, and it has to change.</div>
+
+    <p>Your four short answers, with the comma covered:</p>
+    <div class="you-wrote"><div class="label">Q4, 1 OUT OF 2</div>&ldquo;Anna and Jim ran to the beach<span class="error-mark">, they had found</span> a baby seal stuck in a fishnet.&rdquo; <span class="lbl lbl-miss">TWO SENTENCES, ONE COMMA</span><br><span style="font-size:9.5pt;color:#666;">Left side: <i>Anna and Jim ran to the beach.</i> Right side: <i>They had found a baby seal.</i> Both whole. Fix: <i>Anna and Jim ran to the beach, <b>where</b> they found a baby seal stuck in a fishnet.</i></span></div>
+    <div class="you-wrote"><div class="label">Q7, 2 OUT OF 3</div>&ldquo;I think the most meaningful moment of the story was when, Sally, Jim, and their whole family tried to find the baby seals family<span class="error-mark">, I think this shows</span> the family has a good heart.&rdquo; <span class="lbl lbl-miss">TWO SENTENCES, ONE COMMA</span><br><span style="font-size:9.5pt;color:#666;">Fix: <i>&hellip;tried to find the baby seal&rsquo;s family <b>because</b> it shows the family has a good heart.</i> No comma needed; because does the joining. (The comma after <i>when</i> goes too.)</span></div>
+    <div class="you-wrote"><div class="label">Q8, 2 OUT OF 3</div>&ldquo;I think naming the seal Sally was a good idea because it was a way to connect to the baby seal<span class="error-mark">, this way the family</span> had a way to call the baby seal.&rdquo; <span class="lbl lbl-miss">TWO SENTENCES, ONE COMMA</span><br><span style="font-size:9.5pt;color:#666;">The because half is already right. Fix: stop after <i>baby seal</i>, or <i>&hellip;connect to the baby seal<b>, and</b> it gave the family a way to call her.</i></span></div>
+    <div class="you-wrote"><div class="label">Q9, 2 OUT OF 3</div>&ldquo;&hellip;I would have <span class="error-mark">probobaly gave</span> the baby seal some <span class="error-mark">nutriens</span> before I would release her<span class="error-mark">, this way the baby seal</span> would be strong enough to find <span class="error-mark">it&rsquo;s</span> way back to its family.&rdquo; <span class="lbl lbl-miss">TWO SENTENCES, ONE COMMA; FOUR READ-BACK SLIPS</span><br><span style="font-size:9.5pt;color:#666;">Fix: <i>&hellip;given the baby seal some nutrients before releasing her <b>so</b> she would be strong enough to find <b>its</b> way back to her family.</i></span></div>
+
+    <p>You already join sentences correctly when you use the words. Your Q10, full marks:</p>
+    <div class="model-box"><div class="label">YOURS, Q10, 3 OUT OF 3</div>&ldquo;This story teaches the reader to always be kind <b>because</b> you never know if someone or something is struggling<b>, so</b> lending a helping hand can be an amazing thing to do.&rdquo;<br><span style="font-size:9.5pt;color:#666;">Three ideas, two joining words, no bare comma. This sentence is the model for the other four.</span></div>
+
+    <p style="margin-top:10px;">Even the 18-point paragraph lost its two points here:</p>
+    <div class="you-wrote"><div class="label">YOURS, Q11</div>&ldquo;Satoshi growing up liked bugs<span class="error-mark">, not only did he like bugs</span> he loved them. &hellip; This obsession with bugs helped Satoshi create <span class="error-mark">him</span> game<span class="error-mark">, this game is now</span> worldwide famous for its fun and <span class="error-mark">excing</span> way of catching the bugs.&rdquo; <span class="lbl lbl-miss">TWO MORE COMMAS HOLDING TWO SENTENCES</span><br><span style="font-size:9.5pt;color:#666;">Fix: <i>Satoshi liked bugs as a boy<b>.</b> He did not only like them; he loved them.</i> And: <i>&hellip;helped Satoshi create <b>his</b> game<b>, and</b> that game is now famous worldwide for its fun and exciting way of catching bugs.</i></span></div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Cover the comma. Which sentence is one sentence, not two?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Left: Sally whimpered. Right: she leapt from the boat. Two sentences, one comma." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Sally whimpered, she leapt from the boat and joined the two seals.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="Comma plus and: a joining word does the work." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Sally whimpered, and she leapt from the boat and joined the two seals.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Cover the comma. Which sentence is one sentence, not two?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Because joins the reason to the answer. No bare comma." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Tajiri made a game about catching creatures because catching bugs had been his favorite thing as a boy.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Left: Tajiri made a game about catching creatures. Right: catching bugs had been his favorite thing. Two sentences, one comma." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Tajiri made a game about catching creatures, catching bugs had been his favorite thing as a boy.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which fix for <i>The family placed Sally in a fish box, they motored into the bay</i> works?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="The comma is still alone between two sentences. Moving words around does not fix the seam." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>The family placed Sally in a fish box, into the bay they motored.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="A period, or comma plus and. Either one closes the seam." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The family placed Sally in a fish box, and they motored into the bay.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Every time you type a comma in the middle of a sentence, cover it and read both sides. Two whole sentences means a period or a joining word. Your Q10 is the shape to copy.</div>
+  </div>
+</div>
+
+<!-- Card 4: Fix 2, appositive and the job word -->
+<div class="card" data-title="Fix 2: An Appositive Renames, and the Job the Instruction Names">
+  <div class="card-header"><h2>Fix 2: An Appositive Renames, and the Job the Instruction Names</h2><div class="card-subtitle">Q3 for the third test running, and Q5</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: READ THE JOB WORD, THEN DO EXACTLY THAT JOB</div>Each editing question names a job: <i>add an appositive</i>, <i>write the best word to complete the sentence</i>, <i>combine</i>. One point is for doing that job; a good sentence doing a different job earns nothing for it. An <b>appositive</b> is a noun phrase that renames the noun beside it, inside commas: <i>Sally, the baby seal, swam</i>. <b>The check:</b> swap the appositive in for the name. <i>The baby seal swam to the other seals</i> is still a sentence, so it passes. For a blank, the job is one word in the blank, and the rest of the sentence stays exactly as printed.</div>
+
+    <div class="you-wrote"><div class="label">YOU WROTE (Q3, 1 OUT OF 2)</div>&ldquo;<span class="error-mark">Then,</span> Sally swam over to the other seals.&rdquo; <span class="lbl lbl-miss">A TRANSITION, NOT AN APPOSITIVE</span><br><span style="font-size:9.5pt;color:#666;">A clean sentence with a time word added. Nothing renames Sally.</span></div>
+    <div class="model-box"><div class="label">THE APPOSITIVE</div>Sally, <b>the baby seal</b>, swam over to the other seals.<br><span style="font-size:9.5pt;color:#666;">A noun phrase, inside commas, right after the name it renames. Swap test passes.</span></div>
+    <div class="you-wrote"><div class="label">YOU WROTE (G4.1 Q3, 1 OUT OF 2)</div>&ldquo;Peter Tabichi is from Kenya, Africa<span class="error-mark">, Peter teaches</span> high school science and is known for his dedication to his teaching.&rdquo; <span class="lbl lbl-miss">NO APPOSITIVE, AND A COMMA HOLDING TWO SENTENCES</span><br><span style="font-size:9.5pt;color:#666;">The fix does both jobs at once: <i>Peter Tabichi, <b>a high school science teacher</b>, is from Kenya, Africa.</i></span></div>
+    <div class="you-wrote"><div class="label">YOU WROTE (G3.1 Q1, 1 OUT OF 2)</div>&ldquo;My family has two dogs<span class="error-mark">, their names are</span> Lucy and Rocket.&rdquo; <span class="lbl lbl-miss">NO APPOSITIVE, AND THE SAME COMMA</span><br><span style="font-size:9.5pt;color:#666;">Drop <i>their names are</i> and the names become the appositive: <i>My family has two dogs, Lucy and Rocket.</i></span></div>
+    <div class="you-wrote"><div class="label">YOU WROTE (Q5, 1 OUT OF 2)</div>&ldquo;<span class="error-mark">Later, with</span> no sign of the seals, the family placed Sally in a fish box and motored into the bay.&rdquo; <span class="lbl lbl-miss">THE JOB WAS ONE WORD IN THE BLANK</span><br><span style="font-size:9.5pt;color:#666;">The instruction said <i>write the best word to complete the sentence</i>: one joining word, with the printed sentence kept. <i>Since there was no sign of the seals&hellip;</i> or <i>Because there was no sign&hellip;</i></span></div>
+
+    <p style="margin-top:10px;"><b>Three appositives that pass the swap test</b>, and one that is not an appositive:</p>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">WHO</span>Dad, <b>Anna and Jim&rsquo;s father</b>, freed the pup.</div>
+      <div class="ex pos"><span class="tag">WHO</span>Satoshi Tajiri, <b>the maker of Pok&eacute;mon</b>, loved bugs as a boy.</div>
+      <div class="ex pos"><span class="tag">WHAT</span>Pok&eacute;mon, <b>a game about catching creatures</b>, sold millions of copies.</div>
+      <div class="ex neg"><span class="tag">WHEN, NOT WHO</span>Later that evening, Sally swam to the other seals.<br><span style="font-size:9.5pt;color:#666;">A time phrase, like your <i>Then,</i>. Swap test: <i>Later that evening swam to the other seals.</i> Fails.</span></div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Add an appositive: <i>Jim ran to get their parents.</i> Which answer does the job named?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="true" data-right-feedback="A noun phrase in commas that renames Jim. Swap test passes." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Jim, Anna&rsquo;s brother, ran to get their parents.</span></div>
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="A time word added, like Then. Nothing renames Jim." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Quickly, Jim ran to get their parents.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Write the best word to complete the sentence: <i>___ Tajiri loved catching bugs, he made a game about catching creatures.</i> Which answer does the job named?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A rewritten sentence, like your Q5. The job was one word in the blank." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Later on, Tajiri, who loved catching bugs, made a game about catching creatures.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="One word, the reason word, with the printed sentence kept." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Because</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which fills the blank with an appositive? <i>Anna, ___, wondered if they had found Sally&rsquo;s family.</i></div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="That evening says when. Swap test: That evening wondered. Fails." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>that evening</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="A noun phrase. Swap test: The girl who named the seal wondered. Passes." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>the girl who named the seal</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Read the instruction twice and say the job in your head before you type. Appositive: a noun phrase in commas, swap test. Blank: one word, sentence unchanged.</div>
+  </div>
+</div>
+
+<!-- Card 5: Quick Check, Checklist -->
+<div class="card" data-title="Quick Check &amp; Checklist">
+  <div class="card-header"><h2>Quick Check</h2><div class="card-subtitle">Six new ones. Then your checklist</div></div>
+  <div class="card-body">
+    <div class="quick-check" data-back="cards 3 and 4">
+      <div class="qc-title">The comma, the appositive, the job word, and the read-back, six questions</div>
+      <div class="qc-sub">All new sentences. Answer each one once.</div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Cover the comma. Which sentence is one sentence, not two?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Left: Players throw balls to catch them. Right: they can trade Pokémon with friends. Two sentences, one comma." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Players throw balls to catch them, they can also trade Pok&eacute;mon with friends.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Comma plus and. One sentence." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Players throw balls to catch them, and they can also trade Pok&eacute;mon with friends.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which answer earns all three points? <i>Would you have named the seal? Explain in one sentence.</i></div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Answer, because, reason, one sentence with no bare comma." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Yes, I would have named the seal because a name makes an animal feel like part of the family.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="The reason is there, and the comma before this way is holding two sentences. Two points." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Yes, I would have named the seal, this way she would feel like part of the family.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Rewrite and add an appositive: <i>Tajiri made a game.</i> Which answer does the job named?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Eventually says when. Not a renaming." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Eventually, Tajiri made a game.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="A noun phrase in commas that renames Tajiri." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Tajiri, a boy who loved bugs, made a game.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Write the best word to complete the sentence: <i>___ the seals were spotted far out in the water, Anna asked if they were her parents.</i> Which answer does the job named?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="One word for the blank: the time word." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>When</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A rewritten sentence. The job was one word." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Later, two seals were spotted far out in the water, and Anna asked if they were her parents.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which fix for <i>Mud dribbled past two defenders, he scored the first goal</i> works?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Still two sentences on one comma, just with and moved somewhere it does no joining." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Mud dribbled past two defenders and, he scored the first goal.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="A joining word at the seam. One sentence." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Mud dribbled past two defenders and scored the first goal.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence is ready to submit?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Probobaly, nutriens, it&rsquo;s for its, and a comma holding two sentences: your Q9." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>I would probobaly give her nutriens first, this way she could find it&rsquo;s family.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Probably, nutrients, its, and so at the seam. Clean." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>I would probably give her nutrients first so she could find its family.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="qc-result"></div>
+    </div>
+
+    <div class="checklist-wrap shown">
+      <div id="mainChecklist">
+        <div class="checklist-progress-label" id="checkProgressLabel">0 of 6 checked</div>
+        <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Every comma in the middle of a sentence:</b> cover it, read both sides. Two whole sentences means a period or a joining word.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Q6 to Q10:</b> one sentence that answers and carries its because or so. My Q10 is the shape.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Appositive:</b> a noun phrase in commas that renames. Run the swap test.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Read the job word</b> and do that job only. A blank gets one word; the sentence stays as printed.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Paragraph:</b> keep doing what the 18 did. Answer first, two facts, an ending. Then cover every comma.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Aim to spend at least 25 minutes,</b> the last five reading back: probably, nutrients, exciting, Pok&eacute;mon, its, received, because, where, whether.</div></div>
+      </div>
+      <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>Print Checklist</button>
+    </div>
+  </div>
+</div>
+
+</div>
+<div class="nav"><button id="prevBtn" onclick="navigate(-1)">&larr; Back</button><button id="nextBtn" onclick="navigate(1)">Next &rarr;</button></div>
+<div class="completion-overlay" id="completionOverlay"><div class="completion-card"><div class="completion-emoji">&#9997;</div><div class="completion-title">Good luck on your next test!</div><div class="completion-sub">Cover every comma: two sentences never share one. An appositive renames with a noun. Do the job the instruction names.</div><button class="completion-close" onclick="closeCompletion()">Got it</button></div></div>
+<canvas id="confettiCanvas"></canvas>
+<script>
+var cards=document.querySelectorAll('.card'),bar=document.getElementById('progressBar'),breadcrumb=document.getElementById('breadcrumb'),stickyEl=document.getElementById('stickyIndicator'),current=0,visited=[0];
+cards.forEach(function(card,i){var dot=document.createElement('div');dot.className='progress-dot'+(i===0?' active':'');var tooltip=document.createElement('span');tooltip.className='dot-tooltip';tooltip.textContent=card.getAttribute('data-title')||('Card '+(i+1));dot.appendChild(tooltip);dot.addEventListener('click',function(){goTo(i);});bar.appendChild(dot);});
+function updateBreadcrumb(){var title=cards[current].getAttribute('data-title')||('Card '+(current+1));breadcrumb.innerHTML='Card <b>'+(current+1)+'</b> of '+cards.length+' &mdash; '+title;stickyEl.textContent=(current+1)+' / '+cards.length;}
+function checkSticky(){var r=bar.getBoundingClientRect();stickyEl.classList.toggle('visible',r.bottom<0);}
+window.addEventListener('scroll',checkSticky);
+function goTo(idx){if(idx<0||idx>=cards.length)return;cards[current].classList.remove('active');bar.children[current].classList.remove('active');current=idx;if(visited.indexOf(current)===-1)visited.push(current);cards[current].classList.add('active');bar.children[current].classList.add('active');visited.forEach(function(v){if(v!==current)bar.children[v].classList.add('visited');});var p=document.getElementById('prevBtn'),n=document.getElementById('nextBtn');if(p){p.style.visibility=current===0?'hidden':'visible';p.disabled=current===0;}if(n){n.textContent=current===cards.length-1?'Done ✓':'Next →';}updateBreadcrumb();window.scrollTo({top:0,behavior:'smooth'});}
+function navigate(dir){if(dir===1&&current===cards.length-1){showCompletion();return;}goTo(current+dir);}
+document.addEventListener('keydown',function(e){if(e.target&&e.target.tagName==='TEXTAREA')return;if(e.key==='ArrowRight'||e.key==='ArrowDown')navigate(1);if(e.key==='ArrowLeft'||e.key==='ArrowUp')navigate(-1);});
+function revealBetter(cover){cover.nextElementSibling.classList.add('shown');cover.classList.add('hidden');}
+function shuffleOptions(){document.querySelectorAll('.discrim-options').forEach(function(box){var opts=Array.prototype.slice.call(box.querySelectorAll('.discrim-option'));for(var i=opts.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=opts[i];opts[i]=opts[j];opts[j]=t;}opts.forEach(function(o,i){box.appendChild(o);var l=o.querySelector('.discrim-label');if(l)l.textContent=String.fromCharCode(65+i);});});}
+function handleDiscrim(option){var ch=option.closest('.discrim-challenge');if(ch.classList.contains('done'))return;var fb=ch.querySelector('.discrim-feedback');var opts=ch.querySelectorAll('.discrim-option');var ok=option.getAttribute('data-correct')==='true';ch.classList.add('done');
+if(ok){option.classList.add('correct');opts.forEach(function(o){if(o!==option)o.classList.add('locked');});fb.innerHTML=option.getAttribute('data-right-feedback')||'Correct.';fb.className='discrim-feedback shown right-fb';ch.setAttribute('data-first-try','1');}
+else{option.classList.add('wrong');var right=ch.querySelector('.discrim-option[data-correct="true"]');right.classList.add('model');opts.forEach(function(o){if(o!==option&&o!==right)o.classList.add('locked');});var rl=right.querySelector('.discrim-label');fb.innerHTML='<span style="color:#cc0000"><b>Not this one.</b> '+(option.getAttribute('data-wrong-feedback')||'')+'</span><br><span style="color:#2d6a2d"><b>The answer is '+(rl?rl.textContent:'')+'.</b> '+(right.getAttribute('data-right-feedback')||'')+'</span>';fb.className='discrim-feedback shown';ch.setAttribute('data-first-try','0');var par=ch.nextElementSibling;if(par&&par.classList.contains('discrim-parallel')){fb.innerHTML+=' <b style="color:#5c2dcc">Try one more like it below.</b>';setTimeout(function(){par.classList.add('shown');},600);}}
+var bf=ch.closest('.build-frame');if(bf){var all=bf.querySelectorAll('.discrim-challenge'),dn=0;all.forEach(function(c){if(c.classList.contains('done'))dn++;});if(dn===all.length){var a=bf.querySelector('.assembled');if(a)setTimeout(function(){a.classList.add('shown');},500);}}
+var qc=ch.closest('.quick-check');if(qc)updateQC(qc);}
+function updateQC(qc){var items=qc.querySelectorAll('.discrim-challenge');var done=0,first=0;items.forEach(function(c){if(c.classList.contains('done')){done++;if(c.getAttribute('data-first-try')==='1')first++;}});if(done<items.length)return;var r=qc.querySelector('.qc-result');r.textContent=first+' of '+items.length+' right first time. '+(first>=items.length-1?'The moves are in your head. Now the checklist.':'Look back at '+qc.getAttribute('data-back')+' for the ones you missed, then come back to the checklist.');r.style.display='block';launchConfetti();}
+function toggleTimes(el){var body=el.closest('.card-body');body.classList.toggle('show-times');el.textContent=body.classList.contains('show-times')?'Hide test times':'Show how long each test took';}
+function toggleCheck(item){item.classList.toggle('checked');updateCheckProgress();}
+function updateCheckProgress(){var items=document.querySelectorAll('#mainChecklist .check-item');if(!items.length)return;var checked=document.querySelectorAll('#mainChecklist .check-item.checked').length;var fill=document.getElementById('checkProgressFill'),lbl=document.getElementById('checkProgressLabel');if(fill)fill.style.width=Math.round((checked/items.length)*100)+'%';if(lbl)lbl.innerHTML=checked===items.length?'<b style="color:#2d6a2d;">All done.</b>':checked+' of '+items.length+' checked';}
+function printChecklist(btn){var card=btn.closest('.card');var ci=card.querySelectorAll('.check-item.checked');ci.forEach(function(i){i.classList.remove('checked');});card.classList.add('print-target');window.print();card.classList.remove('print-target');ci.forEach(function(i){i.classList.add('checked');});}
+function showCompletion(){document.getElementById('completionOverlay').classList.add('visible');}
+function closeCompletion(){document.getElementById('completionOverlay').classList.remove('visible');}
+function launchConfetti(){var canvas=document.getElementById('confettiCanvas');var ctx=canvas.getContext('2d');canvas.width=window.innerWidth;canvas.height=window.innerHeight;var colors=['#b8860b','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b','#42a5f5'];var particles=[];for(var i=0;i<120;i++){particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height-canvas.height,w:Math.random()*10+5,h:Math.random()*6+3,color:colors[Math.floor(Math.random()*colors.length)],vx:(Math.random()-0.5)*4,vy:Math.random()*3+2,rot:Math.random()*360,rotV:(Math.random()-0.5)*10,life:1});}var frame=0;function animate(){ctx.clearRect(0,0,canvas.width,canvas.height);var alive=false;particles.forEach(function(p){if(p.life<=0)return;alive=true;p.x+=p.vx;p.y+=p.vy;p.vy+=0.05;p.rot+=p.rotV;if(p.y>canvas.height+20){p.life=0;return;}if(frame>60)p.life-=0.01;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();});frame++;if(alive)requestAnimationFrame(animate);else ctx.clearRect(0,0,canvas.width,canvas.height);}animate();}
+shuffleOptions();goTo(0);
+</script>
+<script src="../tracking.js"></script>
+</body>
+</html>
