@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Benton Huddleston: Writing Coaching Cards</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Calibri, 'Segoe UI', sans-serif; font-size: 12pt; color: #1a1a2e; background: #f0f0f5; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; padding: 20px; }
+.progress-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
+.progress-dot { width: 12px; height: 12px; border-radius: 50%; background: #ccc; transition: background 0.3s, transform 0.2s; cursor: pointer; position: relative; }
+.progress-dot.active { background: #b8860b; transform: scale(1.25); }
+.progress-dot.visited { background: #d9b56a; }
+.progress-dot:hover { transform: scale(1.3); }
+.progress-dot .dot-tooltip { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: #b8860b; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 8.5pt; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 100; }
+.progress-dot .dot-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #b8860b; }
+.progress-dot:hover .dot-tooltip { opacity: 1; }
+.card-breadcrumb { font-size: 9.5pt; color: #888; margin-bottom: 14px; text-align: center; transition: opacity 0.3s; min-height: 1.2em; }
+.card-breadcrumb b { color: #b8860b; }
+.sticky-indicator { position: fixed; top: 12px; right: 16px; background: #b8860b; color: #fff; padding: 5px 14px; border-radius: 20px; font-size: 9pt; font-weight: 700; opacity: 0; transition: opacity 0.3s; z-index: 200; pointer-events: none; letter-spacing: 0.5px; }
+.sticky-indicator.visible { opacity: 1; }
+.card-container { position: relative; width: 640px; min-height: 420px; }
+.card { position: absolute; top: 0; left: 0; width: 100%; background: #fff; border: 2.5px solid #b8860b; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.10); opacity: 0; pointer-events: none; transform: translateX(40px); transition: opacity 0.35s, transform 0.35s; }
+.card.active { opacity: 1; pointer-events: auto; transform: translateX(0); position: relative; }
+.card-header { background: #b8860b; color: #fff; padding: 14px 20px; border-radius: 11px 11px 0 0; }
+.card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+.card-header .card-subtitle { font-size: 9.5pt; color: #f0e2bd; margin-top: 2px; }
+.card-body { padding: 18px 22px 22px; line-height: 1.55; }
+.card-body p { margin: 6px 0; }
+.score-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; }
+.score-box { background: #f8f8fc; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 10px 14px; text-align: center; }
+.score-box .big { font-size: 20pt; font-weight: 700; }
+.score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+.score-good .big { color: #2d6a2d; }
+.score-warn .big { color: #cc6600; }
+.score-low .big { color: #cc0000; }
+.you-wrote { background: #fff3f3; border-left: 3px solid #cc0000; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.you-wrote .label { font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+.better, .model-box { background: #e8f5e9; border-left: 3px solid #2d6a2d; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.better .label, .model-box .label { font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+.tip-box { background: #e8edf5; border-left: 3px solid #b8860b; padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0; }
+.tip-box .label { font-weight: 700; font-size: 9.5pt; color: #b8860b; margin-bottom: 3px; }
+.rule-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 10px 14px; margin: 10px 0; font-size: 11pt; }
+.rule-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 3px; }
+.lbl { display: inline-block; font-size: 7.5pt; font-weight: 800; letter-spacing: 0.5px; padding: 1px 6px; border-radius: 4px; margin: 0 4px 0 0; vertical-align: middle; color: #fff; line-height: 1.5; }
+.lbl-say, .lbl-echo { background: #5c2dcc; } .lbl-show, .lbl-because { background: #2d6a2d; } .lbl-sowhat { background: #cc6600; } .lbl-close { background: #457b9d; } .lbl-miss { background: #cc0000; } .lbl-reason { background: #888; } .lbl-general { background: #6d4c41; } .lbl-specific { background: #00838f; } .evidence-block { margin: 10px 0 12px; border: 1.5px solid #e0e0e8; border-radius: 8px; overflow: hidden; } .ev-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 12px; font-size: 10.5pt; } .ev-row + .ev-row { border-top: 1px solid #e0e0e8; } .ev-row.paced { background: #e8f5e9; } .ev-row.rushed { background: #fff3f3; } .ev-tag { flex-shrink: 0; font-size: 8.5pt; font-weight: 800; letter-spacing: 0.5px; padding: 2px 7px; border-radius: 8px; color: #fff; margin-top: 2px; } .ev-row.paced .ev-tag { background: #2d6a2d; } .ev-row.rushed .ev-tag { background: #cc0000; } .format-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; } .format-box { background: #fbf7ea; border: 1.5px solid #e6d3a3; border-radius: 8px; padding: 10px 14px; } .format-box .format-title { font-weight: 700; font-size: 10pt; color: #b8860b; margin-bottom: 4px; } .format-box .format-detail { font-size: 9.5pt; color: #555; line-height: 1.4; } .format-box .format-pts { display: inline-block; background: #b8860b; color: #fff; font-size: 8.5pt; font-weight: 700; padding: 1px 7px; border-radius: 8px; margin-bottom: 4px; } @media (max-width: 640px) { .format-grid { grid-template-columns: 1fr; } }
+.ex-list { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+.ex { padding: 8px 12px; border-radius: 6px; font-size: 10.5pt; border-left: 3px solid; }
+.ex.pos { background: #e8f5e9; border-color: #2d6a2d; } .ex.neg { background: #fff3f3; border-color: #cc0000; }
+.ex .tag { font-weight: 800; font-size: 8.5pt; margin-right: 6px; } .ex.pos .tag { color: #2d6a2d; } .ex.neg .tag { color: #cc0000; }
+.think { background: #f8f8fc; border-left: 3px solid #888; padding: 8px 14px; margin: 8px 0; font-size: 10.5pt; font-style: italic; color: #444; }
+.think .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #666; margin-bottom: 2px; }
+.highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+.error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+.discrim-option .error-mark { background: transparent; text-decoration: none; padding: 0; border-radius: 0; }
+.essay-excerpt { background: #fafafa; border: 1px solid #e0e0e8; border-radius: 6px; padding: 10px 14px; font-size: 10.5pt; margin: 8px 0; line-height: 1.7; }
+.discrim-challenge { background: #f8f5ff; border: 1.5px solid #d4c5ff; border-radius: 8px; padding: 14px; margin: 10px 0; }
+.discrim-prompt { font-weight: 700; font-size: 10.5pt; margin-bottom: 10px; color: #5c2dcc; }
+.discrim-options { display: flex; flex-direction: column; gap: 8px; }
+.discrim-option { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border: 2px solid #d4c5ff; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 10.5pt; background: #fff; }
+.discrim-option:hover { border-color: #7c4dff; background: #f5f0ff; }
+.discrim-label { font-weight: 800; color: #7c4dff; min-width: 20px; flex-shrink: 0; }
+.discrim-option.correct, .discrim-option.model { border-color: #2d6a2d; background: #e8f5e9; cursor: default; }
+.discrim-option.correct .discrim-label, .discrim-option.model .discrim-label { color: #2d6a2d; }
+.discrim-option.wrong { border-color: #cc0000; background: #fff3f3; cursor: default; }
+.discrim-option.wrong .discrim-label { color: #cc0000; }
+.discrim-option.locked { pointer-events: none; opacity: 0.5; }
+.discrim-challenge.done .discrim-option { cursor: default; }
+.discrim-feedback { margin-top: 0; font-size: 10pt; line-height: 1.45; max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.3s, opacity 0.3s, margin 0.3s; }
+.discrim-feedback.shown { max-height: 400px; opacity: 1; margin-top: 10px; }
+.discrim-feedback.right-fb { color: #2d6a2d; font-weight: 600; }
+.discrim-parallel { display: none; }
+.discrim-parallel.shown { display: block; }
+.discrim-parallel .discrim-prompt::before { content: 'One more like it. '; color: #888; font-weight: 600; }
+.reveal-wrapper { position: relative; }
+.reveal-cover { background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%); border-left: 3px solid #2d6a2d; padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 10px; transition: background 0.2s, box-shadow 0.2s; }
+.reveal-cover:hover { box-shadow: 0 2px 8px rgba(45,106,45,0.15); }
+.reveal-cover .reveal-icon { width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
+.reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #2d6a2d; }
+.reveal-cover .reveal-hint { font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px; }
+.reveal-content { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0; }
+.reveal-content.shown { max-height: 1200px; opacity: 1; margin: 8px 0; }
+.reveal-cover.hidden { display: none; }
+.your-turn { background: #f8f8fc; border: 1.5px dashed #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.your-turn .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.your-turn textarea { width: 100%; min-height: 64px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; margin: 4px 0; }
+.frame-row { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0; font-size: 10.5pt; }
+.frame-row .lbl { margin-top: 4px; }
+.frame-row .given { background: #fff; border: 1.5px solid #e0e0e8; border-radius: 6px; padding: 8px; flex: 1; color: #555; }
+.frame-row textarea { flex: 1; min-height: 48px; margin: 0; }
+.yt-btn { margin-top: 8px; padding: 7px 16px; border: 2px solid #2d6a2d; background: #fff; color: #2d6a2d; border-radius: 8px; font-family: inherit; font-weight: 600; font-size: 10pt; cursor: pointer; }
+.yt-btn:hover { background: #2d6a2d; color: #fff; }
+.yt-btn:disabled { opacity: 0.6; cursor: default; }
+.yt-model { display: none; margin-top: 10px; }
+.assembled { display: none; margin-top: 8px; }
+.assembled.shown { display: block; }
+.xp-link { display: inline-block; margin: 8px 6px 0 0; padding: 6px 14px; border-radius: 6px; background: #2d6a2d; color: #fff; font-weight: 700; font-size: 10pt; text-decoration: none; }
+.xp-link:hover { background: #1b5e1b; }
+.yt-model.shown { display: block; }
+.self-check .check-item { font-size: 10pt; padding: 6px 8px; }
+.check-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 8px; cursor: pointer; border-bottom: 1px solid #eee; border-radius: 6px; transition: background 0.15s; user-select: none; font-size: 11pt; }
+.check-item:last-child { border-bottom: none; }
+.check-item:hover { background: #f8f8fc; }
+.check-item.checked { background: #f0f8f0; }
+.check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
+.check-item.checked .check-box::after { content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
+.check-box { width: 28px; height: 28px; border: 2.5px solid #b8860b; border-radius: 6px; flex-shrink: 0; margin-top: 1px; position: relative; transition: background 0.2s, border-color 0.2s; }
+.self-check .check-box { width: 22px; height: 22px; }
+.checklist-progress { background: #eee; border-radius: 10px; height: 8px; margin: 12px 0 6px; overflow: hidden; }
+.checklist-progress-fill { background: linear-gradient(90deg, #2d6a2d, #4caf50); height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%; }
+.checklist-progress-label { font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px; }
+.quick-check { background: #f8f5ff; border: 2px solid #7c4dff; border-radius: 10px; padding: 12px 14px; margin: 10px 0; }
+.quick-check .qc-title { font-weight: 800; color: #5c2dcc; font-size: 10.5pt; margin-bottom: 4px; }
+.quick-check .qc-sub { font-size: 9.5pt; color: #666; margin-bottom: 6px; }
+.quick-check .discrim-challenge { background: #fff; margin: 8px 0; padding: 10px 12px; }
+.qc-result { display: none; font-weight: 700; margin-top: 8px; font-size: 10.5pt; color: #5c2dcc; }
+.recall-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.recall-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.recall-box textarea { width: 100%; min-height: 56px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; }
+.checklist-wrap { display: none; }
+.checklist-wrap.shown { display: block; }
+.time-toggle { font-size: 9pt; color: #b8860b; cursor: pointer; text-decoration: underline; display: inline-block; margin: 0 0 6px; }
+.tl-time { display: none; font-weight: 400; color: #aaa; }
+.show-times .tl-time { display: inline; }
+.guide-block { margin-top: 16px; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 8px 12px; background: #fafafa; font-size: 10pt; }
+.guide-block summary { cursor: pointer; font-weight: 700; color: #666; font-size: 9.5pt; }
+.guide-block ul { margin: 6px 0 4px 18px; }
+.guide-block li { margin: 4px 0; }
+.practice-recommendations { margin-top: 16px; border-top: 2px solid #e0e0e8; padding-top: 14px; }
+.practice-recs-title { font-size: 10pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #b8860b; margin-bottom: 10px; }
+.practice-tier { border-radius: 8px; padding: 12px 14px; margin: 8px 0; }
+.tier-primary { background: #e8f5e9; border: 1.5px solid #a5d6a7; }
+.tier-extra { background: #f8f8fc; border: 1.5px solid #e0e0e8; }
+.tier-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.tier-label { font-size: 8.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 2px 10px; border-radius: 10px; }
+.tier-primary .tier-label { background: #2d6a2d; color: #fff; }
+.tier-extra .tier-label { background: #888; color: #fff; }
+.tier-note { font-size: 9pt; color: #666; margin-bottom: 6px; line-height: 1.4; }
+.practice-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.practice-link { display: inline-block; padding: 5px 12px; border-radius: 6px; font-size: 9.5pt; font-weight: 600; text-decoration: none; transition: background 0.2s, transform 0.1s; }
+.tier-primary .practice-link { background: #c8e6c9; color: #1b5e1b; }
+.tier-extra .practice-link { background: #e8edf5; color: #b8860b; }
+.nav { display: flex; gap: 12px; margin-top: 16px; }
+.nav button { padding: 8px 28px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; transition: background 0.2s, color 0.2s; }
+.nav button:hover { background: #b8860b; color: #fff; }
+.print-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 8px 20px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 10.5pt; font-weight: 600; cursor: pointer; }
+.print-btn:hover { background: #b8860b; color: #fff; }
+.print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+.completion-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(184,134,11,0.6); z-index: 500; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s; }
+.completion-overlay.visible { opacity: 1; pointer-events: auto; }
+.completion-card { background: #fff; border-radius: 16px; padding: 40px 48px; text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2); transform: scale(0.8); transition: transform 0.4s ease; max-width: 420px; }
+.completion-overlay.visible .completion-card { transform: scale(1); }
+.completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+.completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; color: #b8860b; }
+.completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+.completion-close { margin-top: 20px; padding: 10px 32px; background: #b8860b; color: #fff; border: none; border-radius: 8px; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; }
+#confettiCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 501; }
+.score-timeline { display: flex; align-items: flex-end; gap: 0; margin: 12px 0 10px; padding: 0 6px; justify-content: space-between; }
+.timeline-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.timeline-score { font-size: 13pt; font-weight: 700; margin-bottom: 4px; }
+.timeline-bar { width: 70%; border-radius: 4px 4px 0 0; min-height: 8px; }
+.timeline-label { font-size: 8.5pt; color: #888; margin-top: 6px; font-weight: 600; text-align: center; }
+.score-green { color: #2d6a2d; } .score-amber { color: #cc6600; } .score-red { color: #cc0000; }
+.bar-green { background: linear-gradient(to top, #c8e6c9, #81c784); } .bar-amber { background: linear-gradient(to top, #ffe0b2, #ffb74d); } .bar-red { background: linear-gradient(to top, #ffcdd2, #ef9a9a); }
+.strength-chips, .growth-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; }
+.strength-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; background: #e8f5e9; color: #2d6a2d; border: 1.5px solid #a5d6a7; display: inline-flex; align-items: center; gap: 4px; }
+.strength-chip .chip-course, .growth-chip .chip-avg { font-size: 7.5pt; color: #888; font-weight: 400; }
+.journey-section { font-size: 9.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; margin: 10px 0 4px; padding-bottom: 3px; border-bottom: 1.5px solid; }
+.journey-section.strengths-header { color: #2d6a2d; border-color: #c8e6c9; }
+.journey-section.growth-header { color: #cc6600; border-color: #ffe0b2; }
+.root-cause-teaser { background: #f5f0ff; border-left: 3px solid #7c4dff; padding: 10px 14px; margin: 12px 0 4px; border-radius: 0 6px 6px 0; font-size: 10.5pt; line-height: 1.5; }
+.root-cause-teaser b { color: #5c2dcc; }
+.growth-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+.growth-chip.mixed { background: #fff8e8; color: #b35900; border: 1.5px solid #ffe0b2; }
+.growth-chip.weak { background: #fff3f3; color: #cc0000; border: 1.5px solid #ffcdd2; }
+@media print { body { background: #fff; padding: 0; min-height: auto; } .progress-bar, .nav, .print-btn, .card-breadcrumb, .sticky-indicator, .completion-overlay, #confettiCanvas, .reveal-cover, .checklist-progress, .checklist-progress-label, .discrim-challenge, .discrim-parallel, .quick-check, .recall-box, .yt-btn, .guide-block { display: none !important; } .card-container { width: 100%; min-height: auto; } .card { display: none !important; } .card.print-target { display: block !important; opacity: 1 !important; pointer-events: auto !important; position: relative !important; transform: none !important; box-shadow: none; border: 2px solid #b8860b; page-break-inside: avoid; } .reveal-content, .yt-model, .checklist-wrap { display: block !important; max-height: none !important; opacity: 1 !important; margin: 8px 0 !important; } }
+@media (max-width: 720px) { .card-container { width: 100%; } .score-grid { grid-template-columns: 1fr; } .timeline-score { font-size: 10pt; } }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progressBar"></div>
+<div class="card-breadcrumb" id="breadcrumb"></div>
+<div class="sticky-indicator" id="stickyIndicator"></div>
+<div class="card-container" id="cardContainer">
+
+<!-- Card 1: Your Starting Point -->
+<div class="card active" data-title="Your Starting Point">
+  <div class="card-header"><h2>Benton Huddleston</h2><div class="card-subtitle">Alpha Standardized Writing G4.6. October 2026. Passages: &ldquo;Garrett Morgan Makes Streets Safer&rdquo; / &ldquo;Why Inventors and Problem-Solvers Matter&rdquo;</div></div>
+  <div class="card-body">
+    <div class="score-grid">
+      <div class="score-box score-good"><div class="big">87%</div><div class="label">Overall Score</div></div>
+      <div class="score-box score-good"><div class="big">23/25</div><div class="label">Questions 1&ndash;10</div></div>
+      <div class="score-box score-good"><div class="big">16/20</div><div class="label">Paragraph (Question 11)</div></div>
+    </div>
+    <p>Benton, 87% is your best Grade 4 score and it is two points from a pass. The first page did almost everything: four editing questions full marks, including the appositive that cost points on G3.5 and G4.2 (<i>a safe but controlling device</i> landed), and four of the five one-sentence answers earned every point with a reason from the passage.</p>
+    <p>Six points went missing. Four are in the paragraph, and they are the same kind of point as on G4.1 and G4.2: the paragraph says problem-solvers matter and that they <i>notice many problems like people getting hurt</i>, but it never gives one specific invention from the article and never says what it shows. The grader wrote it out: <i>traffic signals help drivers and people walking cross the street safely, so fewer people get hurt</i>. One point is Q2, where fixing the fragment changed what it meant, the same slip as G4.1. One is Q10, where the question asked for an invention and an explanation and got two sentences about a problem. And all of this in 18 minutes, your usual pace.</p>
+    <div class="root-cause-teaser"><b>The plan:</b> give the paragraph the minutes it is worth and put one specific invention in it with a <i>This shows</i>; keep the meaning when you repair a fragment; answer the whole question in one sentence.</div>
+    <div class="journey-section strengths-header">Skills you do well</div>
+    <div class="strength-chips">
+      <span class="strength-chip">Combining with so, a question, an appositive <span class="chip-course">&middot; Q1, Q3, Q4, Q5, 8 of 8</span></span>
+      <span class="strength-chip">Answer, then because, from the passage <span class="chip-course">&middot; Q6&ndash;Q9, 12 of 12</span></span>
+      <span class="strength-chip">A paragraph with an opening and a closing <span class="chip-course">&middot; Q11, both in place</span></span>
+    </div>
+    <div class="journey-section growth-header">What to work on</div>
+    <div class="growth-chips">
+      <span class="growth-chip weak">Paragraph: one specific invention from the article, then This shows <span class="chip-avg">Q11: 16 of 20; G4.2 15; G4.1 13</span></span>
+      <span class="growth-chip weak">Time: 18 minutes on this test <span class="chip-avg">aim to spend at least 25</span></span>
+      <span class="growth-chip mixed">Fix the fragment, keep the meaning <span class="chip-avg">Q2; also G4.1 Q2</span></span>
+      <span class="growth-chip mixed">Answer the whole question in one sentence <span class="chip-avg">Q10: a problem, then a second sentence</span></span>
+    </div>
+  </div>
+</div>
+
+<!-- Card 2: Writing Journey -->
+<div class="card" data-title="Your Writing Journey">
+  <div class="card-header"><h2>Your Writing Journey</h2><div class="card-subtitle">Ten tests since June. Grade 3 passed in September</div></div>
+  <div class="card-body">
+    <div class="score-timeline">
+      <div class="timeline-item"><div class="timeline-score score-green">80%</div><div class="timeline-bar bar-green" style="height:72px;"></div><div class="timeline-label">G3.1<br><span class="tl-time">&ndash;</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-amber">76%</div><div class="timeline-bar bar-amber" style="height:68px;"></div><div class="timeline-label">G3.2<br><span class="tl-time">&ndash;</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">84%</div><div class="timeline-bar bar-green" style="height:76px;"></div><div class="timeline-label">G3.1<br><span class="tl-time">18m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-amber">78%</div><div class="timeline-bar bar-amber" style="height:70px;"></div><div class="timeline-label">G3.2<br><span class="tl-time">11m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">84%</div><div class="timeline-bar bar-green" style="height:76px;"></div><div class="timeline-label">G3.3<br><span class="tl-time">8m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-amber">76%</div><div class="timeline-bar bar-amber" style="height:68px;"></div><div class="timeline-label">G3.4<br><span class="tl-time">9m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">91%</div><div class="timeline-bar bar-green" style="height:82px;"></div><div class="timeline-label">G3.5<br><span class="tl-time">14m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-amber">76%</div><div class="timeline-bar bar-amber" style="height:68px;"></div><div class="timeline-label">G4.1<br><span class="tl-time">12m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">84%</div><div class="timeline-bar bar-green" style="height:76px;"></div><div class="timeline-label">G4.2<br><span class="tl-time">14m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">87%</div><div class="timeline-bar bar-green" style="height:78px;"></div><div class="timeline-label">G4.6<br><span class="tl-time">18m</span></div></div>
+    </div>
+    <span class="time-toggle" onclick="toggleTimes(this)">Show how long each test took</span>
+    <div class="evidence-block">
+      <div class="ev-row rushed"><span class="ev-tag">8&ndash;18 MIN</span><span><b>Every test since August.</b> No test has taken more than 18 minutes. Paragraphs: 17, 13, 15, 16 of 20. The first page climbs; the paragraph stays short and general.</span></div>
+      <div class="ev-row rushed"><span class="ev-tag">12 MIN</span><span><b>G4.1, 76%.</b> Paragraph 13 of 20: five sentences about Cody, no event from the story quoted, <i>All in all</i>.</span></div>
+      <div class="ev-row rushed"><span class="ev-tag">18 MIN</span><span><b>G4.6, 87%.</b> Paragraph 16 of 20: five sentences, the article&rsquo;s general sentences repeated, no invention named, <i>All in all</i>.</span></div>
+    </div>
+    <p>Grade 3 took seven tests and passed at 91 in September. Grade 4 is three tests at 76, 84 and 87, and the first page has gone 19, 21, 23 out of 25 while the paragraph has gone 13, 15, 16. The paragraph is 20 of the 45 points, and every one of these tests gave it a few minutes. The same two sentences are missing each time: one specific fact from the article, and the sentence after it that says what the fact shows.</p>
+    <div class="journey-section strengths-header">Skills you do well</div>
+    <div class="strength-chips">
+      <span class="strength-chip">Grade 3 passed <span class="chip-course">&middot; G3.5, 91%</span></span>
+      <span class="strength-chip">The first page, climbing <span class="chip-course">&middot; 19, 21, 23 of 25 on Grade 4</span></span>
+      <span class="strength-chip">The appositive, fixed <span class="chip-course">&middot; G3.5 and G4.2 partial, G4.6 full marks</span></span>
+    </div>
+    <div class="journey-section growth-header">What to work on</div>
+    <div class="growth-chips">
+      <span class="growth-chip weak">The paragraph: one specific fact, then This shows <span class="chip-avg">13, 15, 16 of 20</span></span>
+      <span class="growth-chip weak">Minutes: at least 25 on the test, 12 of them on the paragraph <span class="chip-avg">8 to 18 so far</span></span>
+      <span class="growth-chip mixed">Fix the fragment, keep the meaning <span class="chip-avg">G4.1 Q2, G4.6 Q2</span></span>
+    </div>
+    <div class="root-cause-teaser"><b>Two points from a pass.</b> Card 3 is the minutes. Card 4 builds the paragraph with the invention the article hands you. Card 5 is the two editing points.</div>
+  </div>
+</div>
+
+<!-- Card 3: Fix 1, rushing -->
+<div class="card" data-title="Fix 1: You Are Rushing. Here Is the Plan">
+  <div class="card-header"><h2>Fix 1: You Are Rushing. Here Is the Plan</h2><div class="card-subtitle">Ten tests, none longer than 18 minutes, and the 20-point box gets the least</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: NOTHING ON THIS TEST REWARDS SPEED. AIM TO SPEND AT LEAST 25 MINUTES, 12 OF THEM ON THE PARAGRAPH</div>You are rushing. Your first page is fast and good, and the paragraph gets whatever minutes are left, which is why it comes out as five general sentences. The paragraph is 20 of the 45 points. The two sentences it is missing, a specific fact and a <i>This shows</i>, each take about a minute to write and two minutes to find. That is the pass.</div>
+
+    <div class="model-box"><div class="label">WHERE THE MINUTES GO</div>
+      <b>1. Read the first text twice.</b> About 4 minutes. You already own these ten questions; the second read is for keeping the meaning on the editing questions.<br>
+      <b>2. Q1 to Q10.</b> About 8 minutes. For every fragment, find what the original sentence was saying before you repair it.<br>
+      <b>3. Read the article twice.</b> About 4 minutes. On the second read, find the one specific thing in it: a name, a number, an invention. Put your finger on it.<br>
+      <b>4. Six sentences in the box.</b> About 8 minutes. The answer with two reasons, the specific fact, <i>This shows</i>, a second fact, <i>This shows</i>, an ending.<br>
+      <b>5. Read back.</b> About 3 minutes. Capitals on names, a question mark on every question, no comma holding two sentences.
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">You finish Q10 at the nine-minute mark and open the paragraph box. What is the better move?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Five general sentences in four minutes is how the last three paragraphs scored 13, 15 and 16." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Write five sentences about why problem-solvers matter and submit; the first page is done.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="Steps 3 and 4. The specific fact is on the page; the minutes are yours." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Read the article again, put a finger on the one specific invention it names, and build six sentences around it.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Your paragraph is five sentences and you are at the fourteen-minute mark. What is the better move?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="There is plenty of test time. The fact and the This shows are the four points." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Go back to the article for one specific example, add it with a This shows, then read the whole thing back once.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Fourteen minutes is your usual finish, and your usual paragraph score comes with it." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Submit. Fourteen minutes is about how long these take you.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Run the five steps on every paragraph lesson. The habit that scores is the second read of the article, with your finger on the one specific thing.</div>
+  </div>
+</div>
+
+<!-- Card 4: Fix 2, the paragraph -->
+<div class="card" data-title="Fix 2: One Specific Fact, Then This Shows">
+  <div class="card-header"><h2>Fix 2: One Specific Fact, Then This Shows</h2><div class="card-subtitle">Q11: the article&rsquo;s general sentences repeated, and the one invention it names left out</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: A GENERAL SENTENCE FROM THE ARTICLE IS NOT A FACT. FIND THE SPECIFIC ONE, THEN SAY WHAT IT SHOWS</div><i>Inventors notice problems</i> is the article&rsquo;s claim, and repeating it earns the ideas points only up to a cap. The article also gives one specific example, <i>traffic signals help cars and people move safely</i>, and that is the fact. After it comes <span class="lbl lbl-sowhat">DETAIL &middot; SO WHAT</span>: <i>This shows</i> plus what the example proves about the question. <b>The check:</b> could you underline each of your facts in the article as a name, a number, or a thing? If every sentence in your paragraph could have been written without reading the article, there is no fact in it yet.</div>
+
+    <div class="you-wrote"><div class="label">YOU WROTE (Q11, 16 OUT OF 20)</div>&ldquo;Inventors and problem solvers are important in many communities. <span class="error-mark">Some problems are small, and some are larger and serious.</span> Problem solvers notice many problems like people getting hurt or in trouble. Problem solvers are the people that take time out of their day to create something that will <span class="error-mark">help everybody</span> in the long run. <span class="error-mark">All in all, problem solvers are very important people you need to have in society.</span>&rdquo; <span class="lbl lbl-miss">THE ARTICLE&rsquo;S GENERAL SENTENCES; NO INVENTION; NO THIS SHOWS</span><br><span style="font-size:9.5pt;color:#666;">Every sentence is true and could have been written without the article. The grader wrote: <i>add more explanation about how an invention helps a whole community, not just that it helps everybody. For example, traffic signals help drivers and people walking cross the street safely, so fewer people get hurt.</i> That sentence is in paragraph 4 of the article. Your G4.2 paragraph had the same shape: <i>robots can work in greater speeds</i>, no example, <i>All in all</i>.</span></div>
+    <div class="model-box"><div class="label">THE TOPIC SENTENCE, POINT + HOW</div><span class="lbl lbl-say">POINT</span>Inventors and problem-solvers are important to communities for two reasons: <span class="lbl lbl-say">HOW</span>they notice the problems that hurt people, and the things they build go on protecting whole communities at once.<br><span style="font-size:9.5pt;color:#666;">Your point, with the two reasons the article gives, named.</span></div>
+
+    <p style="margin-top:10px;"><b>Facts you can underline in the article</b>, and one sentence that is not a fact:</p>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">PARAGRAPH 4</span>&ldquo;Traffic signals help cars and people move safely.&rdquo;</div>
+      <div class="ex pos"><span class="tag">PARAGRAPH 4</span>&ldquo;Tools and machines can protect workers or make jobs easier.&rdquo;</div>
+      <div class="ex pos"><span class="tag">PARAGRAPH 3</span>&ldquo;The inventor learns from mistakes and tries again. Each change helps make the idea better.&rdquo;</div>
+      <div class="ex neg"><span class="tag">NOT A FACT</span>Some problems are small, and some are larger and serious.<br><span style="font-size:9.5pt;color:#666;">True of the whole world. It names nothing from the article and proves nothing about the question.</span></div>
+    </div>
+
+    <div class="your-turn build-frame" id="build-para">
+      <div class="label">YOUR TURN: BUILD THE PARAGRAPH. TAP THE FACTS AND EACH THIS SHOWS</div>
+      <div class="frame-row"><span class="lbl lbl-say">TOPIC SENTENCE &middot; POINT + HOW</span><div class="given">Inventors and problem-solvers are important to communities for two reasons: they notice the problems that hurt people, and the things they build go on protecting whole communities at once.</div></div>
+      <div class="frame-row"><span class="lbl lbl-show">DETAIL 1 &middot; SHOW</span><div class="given">The article says that an inventor may notice people getting hurt or having trouble and, instead of walking away, thinks of a better way to help.</div></div>
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">DETAIL 1 &middot; SO WHAT: which sentence goes next?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;This shows&rdquo; plus what the noticing proves." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>This shows that the first thing a community gets from an inventor is attention: someone who treats a daily danger as a problem to solve rather than a fact of life.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Your fourth sentence: the claim again, in new words." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Problem solvers are the people that take time out of their day to create something that will help everybody.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">DETAIL 2 &middot; SHOW: the specific fact. Which one?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Your second sentence. True everywhere, from nowhere in the article." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Some problems are small, and some are larger and serious.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Paragraph 4: the one invention the article names." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The article gives one example: traffic signals, which help cars and people move safely through busy streets.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">DETAIL 2 &middot; SO WHAT: which sentence goes next?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Your ending: the claim repeated with All in all. Not a This shows." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>All in all, problem solvers are very important people you need to have in society.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;This shows&rdquo; plus what the example proves about communities." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>This shows how one invention keeps protecting a whole community: every driver and every person crossing is safer, every day, long after the inventor has gone.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="frame-row"><span class="lbl lbl-close">CONCLUDING SENTENCE &middot; TOGETHER</span><div class="given">Noticing the danger and building the signal are the two halves of what a problem-solver gives a community, and that is why the article calls them important.</div></div>
+      <div class="assembled">
+        <div class="model-box"><div class="label">THE PARAGRAPH, SIX SENTENCES</div><span class="lbl lbl-say">TOPIC SENTENCE &middot; POINT + HOW</span>Inventors and problem-solvers are important to communities for two reasons: they notice the problems that hurt people, and the things they build go on protecting whole communities at once. <span class="lbl lbl-show">DETAIL 1 &middot; SHOW</span>The article says that an inventor may notice people getting hurt or having trouble and, instead of walking away, thinks of a better way to help. <span class="lbl lbl-sowhat">DETAIL 1 &middot; SO WHAT</span>This shows that the first thing a community gets from an inventor is attention: someone who treats a daily danger as a problem to solve rather than a fact of life. <span class="lbl lbl-show">DETAIL 2 &middot; SHOW</span>The article gives one example: traffic signals, which help cars and people move safely through busy streets. <span class="lbl lbl-sowhat">DETAIL 2 &middot; SO WHAT</span>This shows how one invention keeps protecting a whole community: every driver and every person crossing is safer, every day, long after the inventor has gone. <span class="lbl lbl-close">CONCLUDING SENTENCE &middot; TOGETHER</span>Noticing the danger and building the signal are the two halves of what a problem-solver gives a community, and that is why the article calls them important.<br><span style="font-size:9.5pt;color:#666;">Your point and your noticing sentence, kept. One specific invention from the page, a <i>This shows</i> after each fact, an ending that adds the two up. That is the four points.</span></div>
+      </div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Before you write a paragraph, underline in your head the one specific thing in the article: a name, a number, an invention. If your draft could have been written without reading the article, go back for it.</div>
+  </div>
+</div>
+
+<!-- Card 5: Fix 3, keep the meaning; answer the whole question -->
+<div class="card" data-title="Fix 3: Keep the Meaning, Answer the Whole Question">
+  <div class="card-header"><h2>Fix 3: Keep the Meaning, Answer the Whole Question</h2><div class="card-subtitle">Q2 for the second test running, and Q10</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: A REPAIRED FRAGMENT SAYS WHAT THE ORIGINAL WAS TRYING TO SAY</div>A fragment is a piece of a sentence from the passage. Fixing it means finding the sentence it belongs to and completing that idea, not inventing a new person or a new verb. <b>The check:</b> read the sentences on either side of the fragment. Does your repaired sentence say what they say? For Q6 to Q10, the check is simpler: read the question again and count what it asks for. One sentence has to hold all of it.</div>
+
+    <div class="you-wrote"><div class="label">YOU WROTE (Q2, 1 OUT OF 2)</div>Fragment: <i>Because cars and wagons crossed streets at once.</i> &rarr; &ldquo;<span class="error-mark">He stopped and waited</span> because carts and wagons crossed the streets at once.&rdquo; <span class="lbl lbl-miss">A WHOLE SENTENCE WITH A NEW MEANING</span><br><span style="font-size:9.5pt;color:#666;">Nobody stopped and waited in the passage. Sentence 14, right after the fragment, says what it was about: <i>Crashes happened often.</i></span></div>
+    <div class="model-box"><div class="label">THE FRAGMENT, COMPLETED WITH THE PASSAGE&rsquo;S IDEA</div>Crashes happened often because cars and wagons crossed streets at once.</div>
+    <div class="you-wrote"><div class="label">YOU WROTE (SEPTEMBER, G4.1 Q2, 1 OUT OF 2)</div>Fragment: <i>His dedication to education and his impact on students&rsquo; lives.</i> &rarr; &ldquo;The science teacher <span class="error-mark">left</span> his dedication to education and his impact on students&rsquo; lives.&rdquo; <span class="lbl lbl-miss">A NEW VERB THAT REVERSED THE MEANING</span><br><span style="font-size:9.5pt;color:#666;">The passage said these were the reasons he won the prize. <i>His dedication to education and his impact on students&rsquo; lives earned him the award.</i> Same slip, two tests: a verb invented instead of found.</span></div>
+    <div class="you-wrote"><div class="label">YOU WROTE (Q10, 2 OUT OF 3)</div>&ldquo;One problem in my community is homelessness. More people can start handing out food and water to help.&rdquo; <span class="lbl lbl-miss">TWO SENTENCES; THE INVENTION NEVER NAMED</span><br><span style="font-size:9.5pt;color:#666;">The question asked for a problem that could be solved <i>with a new idea or invention</i>, with an explanation, in one sentence. The problem is here; the idea is not; and it is two sentences.</span></div>
+    <div class="model-box"><div class="label">THE WHOLE QUESTION, ONE SENTENCE</div>Homelessness in my community could be eased by an app that shows where free meals and open shelter beds are tonight, because the hardest part of getting help is knowing where it is.</div>
+
+    <p style="margin-top:10px;"><b>Three repairs that keep the meaning</b>, and one that invents it:</p>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">FRAGMENT</span><i>To collect sweet nectar.</i> &rarr; The bees fly outside to find flowers and collect sweet nectar.</div>
+      <div class="ex pos"><span class="tag">FRAGMENT</span><i>When more people began using cars.</i> &rarr; Streets became dangerous when more people began using cars.</div>
+      <div class="ex pos"><span class="tag">FRAGMENT</span><i>Instead of letting traffic move all at once.</i> &rarr; Instead of letting traffic move all at once, the signal guided each direction in turn.</div>
+      <div class="ex neg"><span class="tag">INVENTED</span><i>Because cars and wagons crossed streets at once.</i> &rarr; The mayor was angry because cars and wagons crossed streets at once.<br><span style="font-size:9.5pt;color:#666;">A complete sentence, and there is no mayor. The sentence next door said crashes happened.</span></div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Fragment: <i>When to stop and when to go.</i> The sentence before it says drivers did not always know. Which repair keeps the meaning?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="true" data-right-feedback="The passage&rsquo;s own idea, completed." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Drivers did not always know when to stop and when to go.</span></div>
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="A whole sentence about a child. The passage was about drivers." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The child learned when to stop and when to go.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">The question: <i>What is one problem in your school that an invention could solve? Write one sentence including an explanation.</i> Which answer does the whole job?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A problem, then a second sentence, and no invention. The same shape as your Q10." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>One problem in my school is the long lunch line. People should be faster.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Problem, invention, explanation, one sentence." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The long lunch line could be fixed by an ordering app that lets students pick their meal in the morning, because the line is slow mostly from deciding, not serving.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Fragment: <i>A short wait time between directions.</i> Which repair keeps the passage&rsquo;s meaning?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Drivers did not ask for anything in the passage. The signal had the wait time." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Drivers asked for a short wait time between directions.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="Sentence 25&rsquo;s idea, completed." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The signal had a short wait time between directions so cars could clear the road.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Before you repair a fragment, read the sentence before it and the sentence after it. The missing half is usually sitting there. Before you submit a one-sentence answer, count the parts the question asked for.</div>
+  </div>
+</div>
+
+<!-- Card 6: Quick Check, Checklist -->
+<div class="card" data-title="Quick Check &amp; Checklist">
+  <div class="card-header"><h2>Quick Check</h2><div class="card-subtitle">Six new ones. Then your checklist</div></div>
+  <div class="card-body">
+    <div class="quick-check" data-back="cards 3 to 5">
+      <div class="qc-title">The specific fact, the This shows, the fragment, the whole question, six questions</div>
+      <div class="qc-sub">All new sentences. Answer each one once.</div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence is a fact you could underline in the Garrett Morgan passage?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="True everywhere, from nowhere in the passage." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Inventors are people who make life better for everyone.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="A name, a place, a decade, a thing: paragraph 2." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Garrett Morgan, an inventor from Ohio, lived in Cleveland in the early 1900s and built a signal with moving arms.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">After the fact <i>the signal had a short wait time so cars could clear the road</i>, which sentence is the This shows?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;This shows&rdquo; plus what the detail proves." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>This shows that Morgan was solving the exact problem he had watched: two directions moving at once.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="The next fact from the passage. A SHOW." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Cities began using traffic signals on busy streets.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Fragment: <i>Because the acorns were buried and forgotten.</i> The sentence before it says new oak trees grew. Which repair keeps the meaning?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A new person and a new feeling. The passage was about trees growing." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>The farmer was upset because the acorns were buried and forgotten.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="The idea from the sentence next door, completed." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>New oak trees grew because the acorns were buried and forgotten.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">The question: <i>Why did Garrett Morgan&rsquo;s signal include a wait time? Write one sentence with an explanation.</i> Which answer earns all three points?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Answer, because, the passage&rsquo;s reason, one sentence." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>The signal included a wait time because cars already in the crossing needed a moment to clear the road before the other direction moved.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Two sentences, and the second does not explain the wait time." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>The signal had a wait time. Garrett Morgan was a careful inventor.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which paragraph ending adds the two reasons up instead of repeating the first sentence?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="All in all plus the first sentence again. Your last three paragraphs ended this way." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>All in all, inventors are very important people to have in a community.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="The two reasons, put together." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Seeing the danger and building the signal are the two gifts an inventor gives a community, and the second one keeps giving long after the first.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence is ready to submit?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A lowercase morgan and a comma holding two sentences, like your Q3." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Garrett Morgan built an early traffic signal, morgan&rsquo;s idea helped save lives.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Capital M, and at the seam." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Garrett Morgan built an early traffic signal, and Morgan&rsquo;s idea helped save lives.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="qc-result"></div>
+    </div>
+
+    <div class="checklist-wrap shown">
+      <div id="mainChecklist">
+        <div class="checklist-progress-label" id="checkProgressLabel">0 of 6 checked</div>
+        <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Aim to spend at least 25 minutes,</b> 12 of them on the paragraph. Read the article twice before I write.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Paragraph, sentence one:</b> the answer with my two reasons.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>One specific fact I can underline in the article,</b> a name, a number or an invention, then <i>This shows</i>. Then a second fact and its <i>This shows</i>.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Ending:</b> my two reasons added up. Not <i>All in all</i> and the first sentence again.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Fragments:</b> read the sentence before and after, then complete the passage&rsquo;s idea. No invented verbs or people.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Q6 to Q10:</b> count the parts the question asks for and put them all in one sentence. Capitals on names.</div></div>
+      </div>
+      <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>Print Checklist</button>
+    </div>
+  </div>
+</div>
+
+</div>
+<div class="nav"><button id="prevBtn" onclick="navigate(-1)">&larr; Back</button><button id="nextBtn" onclick="navigate(1)">Next &rarr;</button></div>
+<div class="completion-overlay" id="completionOverlay"><div class="completion-card"><div class="completion-emoji">&#9997;</div><div class="completion-title">Good luck on your next test!</div><div class="completion-sub">At least 25 minutes, 12 on the paragraph. One specific fact from the article, then This shows. Keep the meaning when you fix a fragment.</div><button class="completion-close" onclick="closeCompletion()">Got it</button></div></div>
+<canvas id="confettiCanvas"></canvas>
+<script>
+var cards=document.querySelectorAll('.card'),bar=document.getElementById('progressBar'),breadcrumb=document.getElementById('breadcrumb'),stickyEl=document.getElementById('stickyIndicator'),current=0,visited=[0];
+cards.forEach(function(card,i){var dot=document.createElement('div');dot.className='progress-dot'+(i===0?' active':'');var tooltip=document.createElement('span');tooltip.className='dot-tooltip';tooltip.textContent=card.getAttribute('data-title')||('Card '+(i+1));dot.appendChild(tooltip);dot.addEventListener('click',function(){goTo(i);});bar.appendChild(dot);});
+function updateBreadcrumb(){var title=cards[current].getAttribute('data-title')||('Card '+(current+1));breadcrumb.innerHTML='Card <b>'+(current+1)+'</b> of '+cards.length+' &mdash; '+title;stickyEl.textContent=(current+1)+' / '+cards.length;}
+function checkSticky(){var r=bar.getBoundingClientRect();stickyEl.classList.toggle('visible',r.bottom<0);}
+window.addEventListener('scroll',checkSticky);
+function goTo(idx){if(idx<0||idx>=cards.length)return;cards[current].classList.remove('active');bar.children[current].classList.remove('active');current=idx;if(visited.indexOf(current)===-1)visited.push(current);cards[current].classList.add('active');bar.children[current].classList.add('active');visited.forEach(function(v){if(v!==current)bar.children[v].classList.add('visited');});var p=document.getElementById('prevBtn'),n=document.getElementById('nextBtn');if(p){p.style.visibility=current===0?'hidden':'visible';p.disabled=current===0;}if(n){n.textContent=current===cards.length-1?'Done ✓':'Next →';}updateBreadcrumb();window.scrollTo({top:0,behavior:'smooth'});}
+function navigate(dir){if(dir===1&&current===cards.length-1){showCompletion();return;}goTo(current+dir);}
+document.addEventListener('keydown',function(e){if(e.target&&e.target.tagName==='TEXTAREA')return;if(e.key==='ArrowRight'||e.key==='ArrowDown')navigate(1);if(e.key==='ArrowLeft'||e.key==='ArrowUp')navigate(-1);});
+function revealBetter(cover){cover.nextElementSibling.classList.add('shown');cover.classList.add('hidden');}
+function shuffleOptions(){document.querySelectorAll('.discrim-options').forEach(function(box){var opts=Array.prototype.slice.call(box.querySelectorAll('.discrim-option'));for(var i=opts.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=opts[i];opts[i]=opts[j];opts[j]=t;}opts.forEach(function(o,i){box.appendChild(o);var l=o.querySelector('.discrim-label');if(l)l.textContent=String.fromCharCode(65+i);});});}
+function handleDiscrim(option){var ch=option.closest('.discrim-challenge');if(ch.classList.contains('done'))return;var fb=ch.querySelector('.discrim-feedback');var opts=ch.querySelectorAll('.discrim-option');var ok=option.getAttribute('data-correct')==='true';ch.classList.add('done');
+if(ok){option.classList.add('correct');opts.forEach(function(o){if(o!==option)o.classList.add('locked');});fb.innerHTML=option.getAttribute('data-right-feedback')||'Correct.';fb.className='discrim-feedback shown right-fb';ch.setAttribute('data-first-try','1');}
+else{option.classList.add('wrong');var right=ch.querySelector('.discrim-option[data-correct="true"]');right.classList.add('model');opts.forEach(function(o){if(o!==option&&o!==right)o.classList.add('locked');});var rl=right.querySelector('.discrim-label');fb.innerHTML='<span style="color:#cc0000"><b>Not this one.</b> '+(option.getAttribute('data-wrong-feedback')||'')+'</span><br><span style="color:#2d6a2d"><b>The answer is '+(rl?rl.textContent:'')+'.</b> '+(right.getAttribute('data-right-feedback')||'')+'</span>';fb.className='discrim-feedback shown';ch.setAttribute('data-first-try','0');var par=ch.nextElementSibling;if(par&&par.classList.contains('discrim-parallel')){fb.innerHTML+=' <b style="color:#5c2dcc">Try one more like it below.</b>';setTimeout(function(){par.classList.add('shown');},600);}}
+var bf=ch.closest('.build-frame');if(bf){var all=bf.querySelectorAll('.discrim-challenge'),dn=0;all.forEach(function(c){if(c.classList.contains('done'))dn++;});if(dn===all.length){var a=bf.querySelector('.assembled');if(a)setTimeout(function(){a.classList.add('shown');},500);}}
+var qc=ch.closest('.quick-check');if(qc)updateQC(qc);}
+function updateQC(qc){var items=qc.querySelectorAll('.discrim-challenge');var done=0,first=0;items.forEach(function(c){if(c.classList.contains('done')){done++;if(c.getAttribute('data-first-try')==='1')first++;}});if(done<items.length)return;var r=qc.querySelector('.qc-result');r.textContent=first+' of '+items.length+' right first time. '+(first>=items.length-1?'The moves are in your head. Now the checklist.':'Look back at '+qc.getAttribute('data-back')+' for the ones you missed, then come back to the checklist.');r.style.display='block';launchConfetti();}
+function toggleTimes(el){var body=el.closest('.card-body');body.classList.toggle('show-times');el.textContent=body.classList.contains('show-times')?'Hide test times':'Show how long each test took';}
+function toggleCheck(item){item.classList.toggle('checked');updateCheckProgress();}
+function updateCheckProgress(){var items=document.querySelectorAll('#mainChecklist .check-item');if(!items.length)return;var checked=document.querySelectorAll('#mainChecklist .check-item.checked').length;var fill=document.getElementById('checkProgressFill'),lbl=document.getElementById('checkProgressLabel');if(fill)fill.style.width=Math.round((checked/items.length)*100)+'%';if(lbl)lbl.innerHTML=checked===items.length?'<b style="color:#2d6a2d;">All done.</b>':checked+' of '+items.length+' checked';}
+function printChecklist(btn){var card=btn.closest('.card');var ci=card.querySelectorAll('.check-item.checked');ci.forEach(function(i){i.classList.remove('checked');});card.classList.add('print-target');window.print();card.classList.remove('print-target');ci.forEach(function(i){i.classList.add('checked');});}
+function showCompletion(){document.getElementById('completionOverlay').classList.add('visible');}
+function closeCompletion(){document.getElementById('completionOverlay').classList.remove('visible');}
+function launchConfetti(){var canvas=document.getElementById('confettiCanvas');var ctx=canvas.getContext('2d');canvas.width=window.innerWidth;canvas.height=window.innerHeight;var colors=['#b8860b','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b','#42a5f5'];var particles=[];for(var i=0;i<120;i++){particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height-canvas.height,w:Math.random()*10+5,h:Math.random()*6+3,color:colors[Math.floor(Math.random()*colors.length)],vx:(Math.random()-0.5)*4,vy:Math.random()*3+2,rot:Math.random()*360,rotV:(Math.random()-0.5)*10,life:1});}var frame=0;function animate(){ctx.clearRect(0,0,canvas.width,canvas.height);var alive=false;particles.forEach(function(p){if(p.life<=0)return;alive=true;p.x+=p.vx;p.y+=p.vy;p.vy+=0.05;p.rot+=p.rotV;if(p.y>canvas.height+20){p.life=0;return;}if(frame>60)p.life-=0.01;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();});frame++;if(alive)requestAnimationFrame(animate);else ctx.clearRect(0,0,canvas.width,canvas.height);}animate();}
+shuffleOptions();goTo(0);
+</script>
+<script src="../tracking.js"></script>
+</body>
+</html>
