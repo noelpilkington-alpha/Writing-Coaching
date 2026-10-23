@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laura Smater: Writing Coaching Cards</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Calibri, 'Segoe UI', sans-serif; font-size: 12pt; color: #1a1a2e; background: #f0f0f5; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; padding: 20px; }
+.progress-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
+.progress-dot { width: 12px; height: 12px; border-radius: 50%; background: #ccc; transition: background 0.3s, transform 0.2s; cursor: pointer; position: relative; }
+.progress-dot.active { background: #b8860b; transform: scale(1.25); }
+.progress-dot.visited { background: #d9b56a; }
+.progress-dot:hover { transform: scale(1.3); }
+.progress-dot .dot-tooltip { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: #b8860b; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 8.5pt; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 100; }
+.progress-dot .dot-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #b8860b; }
+.progress-dot:hover .dot-tooltip { opacity: 1; }
+.card-breadcrumb { font-size: 9.5pt; color: #888; margin-bottom: 14px; text-align: center; transition: opacity 0.3s; min-height: 1.2em; }
+.card-breadcrumb b { color: #b8860b; }
+.sticky-indicator { position: fixed; top: 12px; right: 16px; background: #b8860b; color: #fff; padding: 5px 14px; border-radius: 20px; font-size: 9pt; font-weight: 700; opacity: 0; transition: opacity 0.3s; z-index: 200; pointer-events: none; letter-spacing: 0.5px; }
+.sticky-indicator.visible { opacity: 1; }
+.card-container { position: relative; width: 640px; min-height: 420px; }
+.card { position: absolute; top: 0; left: 0; width: 100%; background: #fff; border: 2.5px solid #b8860b; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.10); opacity: 0; pointer-events: none; transform: translateX(40px); transition: opacity 0.35s, transform 0.35s; }
+.card.active { opacity: 1; pointer-events: auto; transform: translateX(0); position: relative; }
+.card-header { background: #b8860b; color: #fff; padding: 14px 20px; border-radius: 11px 11px 0 0; }
+.card-header h2 { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+.card-header .card-subtitle { font-size: 9.5pt; color: #f0e2bd; margin-top: 2px; }
+.card-body { padding: 18px 22px 22px; line-height: 1.55; }
+.card-body p { margin: 6px 0; }
+.score-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; }
+.score-box { background: #f8f8fc; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 10px 14px; text-align: center; }
+.score-box .big { font-size: 20pt; font-weight: 700; }
+.score-box .label { font-size: 9pt; color: #888; margin-top: 2px; }
+.score-good .big { color: #2d6a2d; }
+.score-warn .big { color: #cc6600; }
+.score-low .big { color: #cc0000; }
+.you-wrote { background: #fff3f3; border-left: 3px solid #cc0000; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.you-wrote .label { font-weight: 700; font-size: 9pt; color: #cc0000; margin-bottom: 2px; }
+.better, .model-box { background: #e8f5e9; border-left: 3px solid #2d6a2d; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; font-size: 10.5pt; }
+.better .label, .model-box .label { font-weight: 700; font-size: 9pt; color: #2d6a2d; margin-bottom: 2px; }
+.tip-box { background: #e8edf5; border-left: 3px solid #b8860b; padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0; }
+.tip-box .label { font-weight: 700; font-size: 9.5pt; color: #b8860b; margin-bottom: 3px; }
+.rule-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 10px 14px; margin: 10px 0; font-size: 11pt; }
+.rule-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 3px; }
+.lbl { display: inline-block; font-size: 7.5pt; font-weight: 800; letter-spacing: 0.5px; padding: 1px 6px; border-radius: 4px; margin: 0 4px 0 0; vertical-align: middle; color: #fff; line-height: 1.5; }
+.lbl-say, .lbl-echo { background: #5c2dcc; } .lbl-show, .lbl-because { background: #2d6a2d; } .lbl-sowhat { background: #cc6600; } .lbl-close { background: #457b9d; } .lbl-miss { background: #cc0000; } .lbl-reason { background: #888; } .lbl-general { background: #6d4c41; } .lbl-specific { background: #00838f; } .evidence-block { margin: 10px 0 12px; border: 1.5px solid #e0e0e8; border-radius: 8px; overflow: hidden; } .ev-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 12px; font-size: 10.5pt; } .ev-row + .ev-row { border-top: 1px solid #e0e0e8; } .ev-row.paced { background: #e8f5e9; } .ev-row.rushed { background: #fff3f3; } .ev-tag { flex-shrink: 0; font-size: 8.5pt; font-weight: 800; letter-spacing: 0.5px; padding: 2px 7px; border-radius: 8px; color: #fff; margin-top: 2px; } .ev-row.paced .ev-tag { background: #2d6a2d; } .ev-row.rushed .ev-tag { background: #cc0000; } .format-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; } .format-box { background: #fbf7ea; border: 1.5px solid #e6d3a3; border-radius: 8px; padding: 10px 14px; } .format-box .format-title { font-weight: 700; font-size: 10pt; color: #b8860b; margin-bottom: 4px; } .format-box .format-detail { font-size: 9.5pt; color: #555; line-height: 1.4; } .format-box .format-pts { display: inline-block; background: #b8860b; color: #fff; font-size: 8.5pt; font-weight: 700; padding: 1px 7px; border-radius: 8px; margin-bottom: 4px; } @media (max-width: 640px) { .format-grid { grid-template-columns: 1fr; } }
+.ex-list { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+.ex { padding: 8px 12px; border-radius: 6px; font-size: 10.5pt; border-left: 3px solid; }
+.ex.pos { background: #e8f5e9; border-color: #2d6a2d; } .ex.neg { background: #fff3f3; border-color: #cc0000; }
+.ex .tag { font-weight: 800; font-size: 8.5pt; margin-right: 6px; } .ex.pos .tag { color: #2d6a2d; } .ex.neg .tag { color: #cc0000; }
+.think { background: #f8f8fc; border-left: 3px solid #888; padding: 8px 14px; margin: 8px 0; font-size: 10.5pt; font-style: italic; color: #444; }
+.think .label { font-style: normal; font-weight: 700; font-size: 9pt; color: #666; margin-bottom: 2px; }
+.highlight { background: #fff3cd; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+.error-mark { background: #ffe0e0; text-decoration: underline wavy #cc0000; padding: 0 2px; border-radius: 2px; }
+.discrim-option .error-mark { background: transparent; text-decoration: none; padding: 0; border-radius: 0; }
+.essay-excerpt { background: #fafafa; border: 1px solid #e0e0e8; border-radius: 6px; padding: 10px 14px; font-size: 10.5pt; margin: 8px 0; line-height: 1.7; }
+.discrim-challenge { background: #f8f5ff; border: 1.5px solid #d4c5ff; border-radius: 8px; padding: 14px; margin: 10px 0; }
+.discrim-prompt { font-weight: 700; font-size: 10.5pt; margin-bottom: 10px; color: #5c2dcc; }
+.discrim-options { display: flex; flex-direction: column; gap: 8px; }
+.discrim-option { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border: 2px solid #d4c5ff; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 10.5pt; background: #fff; }
+.discrim-option:hover { border-color: #7c4dff; background: #f5f0ff; }
+.discrim-label { font-weight: 800; color: #7c4dff; min-width: 20px; flex-shrink: 0; }
+.discrim-option.correct, .discrim-option.model { border-color: #2d6a2d; background: #e8f5e9; cursor: default; }
+.discrim-option.correct .discrim-label, .discrim-option.model .discrim-label { color: #2d6a2d; }
+.discrim-option.wrong { border-color: #cc0000; background: #fff3f3; cursor: default; }
+.discrim-option.wrong .discrim-label { color: #cc0000; }
+.discrim-option.locked { pointer-events: none; opacity: 0.5; }
+.discrim-challenge.done .discrim-option { cursor: default; }
+.discrim-feedback { margin-top: 0; font-size: 10pt; line-height: 1.45; max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.3s, opacity 0.3s, margin 0.3s; }
+.discrim-feedback.shown { max-height: 400px; opacity: 1; margin-top: 10px; }
+.discrim-feedback.right-fb { color: #2d6a2d; font-weight: 600; }
+.discrim-parallel { display: none; }
+.discrim-parallel.shown { display: block; }
+.discrim-parallel .discrim-prompt::before { content: 'One more like it. '; color: #888; font-weight: 600; }
+.reveal-wrapper { position: relative; }
+.reveal-cover { background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%); border-left: 3px solid #2d6a2d; padding: 14px 18px; margin: 8px 0; border-radius: 0 6px 6px 0; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 10px; transition: background 0.2s, box-shadow 0.2s; }
+.reveal-cover:hover { box-shadow: 0 2px 8px rgba(45,106,45,0.15); }
+.reveal-cover .reveal-icon { width: 32px; height: 32px; background: #2d6a2d; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.reveal-cover .reveal-icon svg { width: 16px; height: 16px; fill: #fff; }
+.reveal-cover .reveal-text { font-weight: 600; font-size: 10.5pt; color: #2d6a2d; }
+.reveal-cover .reveal-hint { font-size: 8.5pt; color: #5a8a5a; font-weight: 400; margin-top: 1px; }
+.reveal-content { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.3s ease; margin: 0; }
+.reveal-content.shown { max-height: 1200px; opacity: 1; margin: 8px 0; }
+.reveal-cover.hidden { display: none; }
+.your-turn { background: #f8f8fc; border: 1.5px dashed #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.your-turn .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.your-turn textarea { width: 100%; min-height: 64px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; margin: 4px 0; }
+.frame-row { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0; font-size: 10.5pt; }
+.frame-row .lbl { margin-top: 4px; }
+.frame-row .given { background: #fff; border: 1.5px solid #e0e0e8; border-radius: 6px; padding: 8px; flex: 1; color: #555; }
+.frame-row textarea { flex: 1; min-height: 48px; margin: 0; }
+.yt-btn { margin-top: 8px; padding: 7px 16px; border: 2px solid #2d6a2d; background: #fff; color: #2d6a2d; border-radius: 8px; font-family: inherit; font-weight: 600; font-size: 10pt; cursor: pointer; }
+.yt-btn:hover { background: #2d6a2d; color: #fff; }
+.yt-btn:disabled { opacity: 0.6; cursor: default; }
+.yt-model { display: none; margin-top: 10px; }
+.assembled { display: none; margin-top: 8px; }
+.assembled.shown { display: block; }
+.xp-link { display: inline-block; margin: 8px 6px 0 0; padding: 6px 14px; border-radius: 6px; background: #2d6a2d; color: #fff; font-weight: 700; font-size: 10pt; text-decoration: none; }
+.xp-link:hover { background: #1b5e1b; }
+.yt-model.shown { display: block; }
+.self-check .check-item { font-size: 10pt; padding: 6px 8px; }
+.check-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 8px; cursor: pointer; border-bottom: 1px solid #eee; border-radius: 6px; transition: background 0.15s; user-select: none; font-size: 11pt; }
+.check-item:last-child { border-bottom: none; }
+.check-item:hover { background: #f8f8fc; }
+.check-item.checked { background: #f0f8f0; }
+.check-item.checked .check-box { background: #2d6a2d; border-color: #2d6a2d; }
+.check-item.checked .check-box::after { content: '\2713'; color: #fff; font-size: 14pt; font-weight: 700; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.check-item.checked > div:last-child { text-decoration: line-through; color: #999; }
+.check-box { width: 28px; height: 28px; border: 2.5px solid #b8860b; border-radius: 6px; flex-shrink: 0; margin-top: 1px; position: relative; transition: background 0.2s, border-color 0.2s; }
+.self-check .check-box { width: 22px; height: 22px; }
+.checklist-progress { background: #eee; border-radius: 10px; height: 8px; margin: 12px 0 6px; overflow: hidden; }
+.checklist-progress-fill { background: linear-gradient(90deg, #2d6a2d, #4caf50); height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%; }
+.checklist-progress-label { font-size: 8.5pt; color: #888; text-align: right; margin-bottom: 6px; }
+.quick-check { background: #f8f5ff; border: 2px solid #7c4dff; border-radius: 10px; padding: 12px 14px; margin: 10px 0; }
+.quick-check .qc-title { font-weight: 800; color: #5c2dcc; font-size: 10.5pt; margin-bottom: 4px; }
+.quick-check .qc-sub { font-size: 9.5pt; color: #666; margin-bottom: 6px; }
+.quick-check .discrim-challenge { background: #fff; margin: 8px 0; padding: 10px 12px; }
+.qc-result { display: none; font-weight: 700; margin-top: 8px; font-size: 10.5pt; color: #5c2dcc; }
+.recall-box { background: #fff8e1; border: 2px solid #b8860b; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+.recall-box .label { font-weight: 800; font-size: 9pt; color: #b8860b; letter-spacing: 0.6px; margin-bottom: 6px; }
+.recall-box textarea { width: 100%; min-height: 56px; font-family: inherit; font-size: 10.5pt; padding: 8px; border: 1.5px solid #ccc; border-radius: 6px; resize: vertical; }
+.checklist-wrap { display: none; }
+.checklist-wrap.shown { display: block; }
+.time-toggle { font-size: 9pt; color: #b8860b; cursor: pointer; text-decoration: underline; display: inline-block; margin: 0 0 6px; }
+.tl-time { display: none; font-weight: 400; color: #aaa; }
+.show-times .tl-time { display: inline; }
+.guide-block { margin-top: 16px; border: 1.5px solid #e0e0e8; border-radius: 8px; padding: 8px 12px; background: #fafafa; font-size: 10pt; }
+.guide-block summary { cursor: pointer; font-weight: 700; color: #666; font-size: 9.5pt; }
+.guide-block ul { margin: 6px 0 4px 18px; }
+.guide-block li { margin: 4px 0; }
+.practice-recommendations { margin-top: 16px; border-top: 2px solid #e0e0e8; padding-top: 14px; }
+.practice-recs-title { font-size: 10pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #b8860b; margin-bottom: 10px; }
+.practice-tier { border-radius: 8px; padding: 12px 14px; margin: 8px 0; }
+.tier-primary { background: #e8f5e9; border: 1.5px solid #a5d6a7; }
+.tier-extra { background: #f8f8fc; border: 1.5px solid #e0e0e8; }
+.tier-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.tier-label { font-size: 8.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 2px 10px; border-radius: 10px; }
+.tier-primary .tier-label { background: #2d6a2d; color: #fff; }
+.tier-extra .tier-label { background: #888; color: #fff; }
+.tier-note { font-size: 9pt; color: #666; margin-bottom: 6px; line-height: 1.4; }
+.practice-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.practice-link { display: inline-block; padding: 5px 12px; border-radius: 6px; font-size: 9.5pt; font-weight: 600; text-decoration: none; transition: background 0.2s, transform 0.1s; }
+.tier-primary .practice-link { background: #c8e6c9; color: #1b5e1b; }
+.tier-extra .practice-link { background: #e8edf5; color: #b8860b; }
+.nav { display: flex; gap: 12px; margin-top: 16px; }
+.nav button { padding: 8px 28px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; transition: background 0.2s, color 0.2s; }
+.nav button:hover { background: #b8860b; color: #fff; }
+.print-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 8px 20px; border: 2px solid #b8860b; border-radius: 8px; background: #fff; color: #b8860b; font-family: inherit; font-size: 10.5pt; font-weight: 600; cursor: pointer; }
+.print-btn:hover { background: #b8860b; color: #fff; }
+.print-btn svg { width: 16px; height: 16px; fill: currentColor; }
+.completion-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(184,134,11,0.6); z-index: 500; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s; }
+.completion-overlay.visible { opacity: 1; pointer-events: auto; }
+.completion-card { background: #fff; border-radius: 16px; padding: 40px 48px; text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.2); transform: scale(0.8); transition: transform 0.4s ease; max-width: 420px; }
+.completion-overlay.visible .completion-card { transform: scale(1); }
+.completion-emoji { font-size: 48pt; margin-bottom: 12px; }
+.completion-title { font-size: 18pt; font-weight: 700; margin-bottom: 8px; color: #b8860b; }
+.completion-sub { font-size: 11pt; color: #666; line-height: 1.5; }
+.completion-close { margin-top: 20px; padding: 10px 32px; background: #b8860b; color: #fff; border: none; border-radius: 8px; font-family: inherit; font-size: 11pt; font-weight: 600; cursor: pointer; }
+#confettiCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 501; }
+.score-timeline { display: flex; align-items: flex-end; gap: 0; margin: 12px 0 10px; padding: 0 6px; justify-content: space-between; }
+.timeline-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.timeline-score { font-size: 13pt; font-weight: 700; margin-bottom: 4px; }
+.timeline-bar { width: 70%; border-radius: 4px 4px 0 0; min-height: 8px; }
+.timeline-label { font-size: 8.5pt; color: #888; margin-top: 6px; font-weight: 600; text-align: center; }
+.score-green { color: #2d6a2d; } .score-amber { color: #cc6600; } .score-red { color: #cc0000; }
+.bar-green { background: linear-gradient(to top, #c8e6c9, #81c784); } .bar-amber { background: linear-gradient(to top, #ffe0b2, #ffb74d); } .bar-red { background: linear-gradient(to top, #ffcdd2, #ef9a9a); }
+.strength-chips, .growth-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; }
+.strength-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; background: #e8f5e9; color: #2d6a2d; border: 1.5px solid #a5d6a7; display: inline-flex; align-items: center; gap: 4px; }
+.strength-chip .chip-course, .growth-chip .chip-avg { font-size: 7.5pt; color: #888; font-weight: 400; }
+.journey-section { font-size: 9.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; margin: 10px 0 4px; padding-bottom: 3px; border-bottom: 1.5px solid; }
+.journey-section.strengths-header { color: #2d6a2d; border-color: #c8e6c9; }
+.journey-section.growth-header { color: #cc6600; border-color: #ffe0b2; }
+.root-cause-teaser { background: #f5f0ff; border-left: 3px solid #7c4dff; padding: 10px 14px; margin: 12px 0 4px; border-radius: 0 6px 6px 0; font-size: 10.5pt; line-height: 1.5; }
+.root-cause-teaser b { color: #5c2dcc; }
+.growth-chip { padding: 4px 10px; border-radius: 14px; font-size: 9pt; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+.growth-chip.mixed { background: #fff8e8; color: #b35900; border: 1.5px solid #ffe0b2; }
+.growth-chip.weak { background: #fff3f3; color: #cc0000; border: 1.5px solid #ffcdd2; }
+@media print { body { background: #fff; padding: 0; min-height: auto; } .progress-bar, .nav, .print-btn, .card-breadcrumb, .sticky-indicator, .completion-overlay, #confettiCanvas, .reveal-cover, .checklist-progress, .checklist-progress-label, .discrim-challenge, .discrim-parallel, .quick-check, .recall-box, .yt-btn, .guide-block { display: none !important; } .card-container { width: 100%; min-height: auto; } .card { display: none !important; } .card.print-target { display: block !important; opacity: 1 !important; pointer-events: auto !important; position: relative !important; transform: none !important; box-shadow: none; border: 2px solid #b8860b; page-break-inside: avoid; } .reveal-content, .yt-model, .checklist-wrap { display: block !important; max-height: none !important; opacity: 1 !important; margin: 8px 0 !important; } }
+@media (max-width: 720px) { .card-container { width: 100%; } .score-grid { grid-template-columns: 1fr; } .timeline-score { font-size: 10pt; } }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progressBar"></div>
+<div class="card-breadcrumb" id="breadcrumb"></div>
+<div class="sticky-indicator" id="stickyIndicator"></div>
+<div class="card-container" id="cardContainer">
+
+<!-- Card 1: Score Overview -->
+<div class="card active" data-title="Score Overview">
+  <div class="card-header"><h2>Laura Smater</h2><div class="card-subtitle">Alpha Standardized Writing G3.4. October 2026. Passages: &ldquo;A Gift from Nature&rdquo; / &ldquo;Sports and Society&rdquo;</div></div>
+  <div class="card-body">
+    <div class="score-grid">
+      <div class="score-box score-good"><div class="big">80%</div><div class="label">Overall Score</div></div>
+      <div class="score-box score-good"><div class="big">20/25</div><div class="label">Questions 1&ndash;10</div></div>
+      <div class="score-box score-warn"><div class="big">14/20</div><div class="label">Paragraph (Question 11)</div></div>
+    </div>
+    <p>Laura, your last card asked for two things on the editing questions: the exact job the instruction names, and an appositive that renames. Both landed, all five: <i>Since Layla saw a butterfly she took out her camera</i> used the very word the instruction named, the interrogative got its question mark, the fragment got its subject and verb. Ten of ten on the first five questions for the first time. And the comma that held two sentences together five times on G3.3 did it three times here. Fewer, and still there.</p>
+    <p>Nine points went missing, and six of them are in the paragraph, which went from 18 to 14. The question was how modern sports developed <b>and</b> became popular, and your seven sentences retell the article in order without answering it first: no sentence names the two reasons, no sentence says what a fact shows, and the first sentence is two sentences on one comma. The other three points are the one-sentence answers: Q8 and Q10 have the comma again, and Q9 names the breeze and the birds without saying what they helped Layla understand.</p>
+    <div class="root-cause-teaser"><b>The plan:</b> sentence one answers the question with two reasons, each fact gets a <i>This shows</i>, the ending adds the reasons up. And the last three commas: cover each one and check both sides.</div>
+    <div class="journey-section strengths-header">Skills you do well</div>
+    <div class="strength-chips">
+      <span class="strength-chip">Every editing job, with the word it named <span class="chip-course">&middot; Q1&ndash;Q5, 10 of 10, up from 7</span></span>
+      <span class="strength-chip">Answer, then because that says something <span class="chip-course">&middot; Q6, Q7, 6 of 6</span></span>
+      <span class="strength-chip">Facts from the whole article, in order <span class="chip-course">&middot; Q11: rules, records, schools, worldwide</span></span>
+    </div>
+    <div class="journey-section growth-header">What to work on</div>
+    <div class="growth-chips">
+      <span class="growth-chip weak">Paragraph: answer first with two reasons, then This shows after each fact <span class="chip-avg">Q11: 14 of 20</span></span>
+      <span class="growth-chip mixed">The comma, round two: three left <span class="chip-avg">Q8, Q10, Q11 sentence one</span></span>
+      <span class="growth-chip mixed">A reason that says what it shows <span class="chip-avg">Q9: the breeze and birds, and then what?</span></span>
+      <span class="growth-chip mixed">Read-back: began, Britain, as well, birds, affect, environment <span class="chip-avg">Q7, Q9, Q11</span></span>
+    </div>
+  </div>
+</div>
+
+<!-- Card 2: Writing Journey -->
+<div class="card" data-title="Your Writing Journey">
+  <div class="card-header"><h2>Your Writing Journey</h2><div class="card-subtitle">Six tests in five weeks</div></div>
+  <div class="card-body">
+    <div class="score-timeline">
+      <div class="timeline-item"><div class="timeline-score score-green">80%</div><div class="timeline-bar bar-green" style="height:72px;"></div><div class="timeline-label">G5.1 (Sep 16)<br><span class="tl-time">40m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">80%</div><div class="timeline-bar bar-green" style="height:72px;"></div><div class="timeline-label">G4.1 (Sep 17)<br><span class="tl-time">31m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-amber">73%</div><div class="timeline-bar bar-amber" style="height:66px;"></div><div class="timeline-label">G3.1 (Sep 18)<br><span class="tl-time">19m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">87%</div><div class="timeline-bar bar-green" style="height:78px;"></div><div class="timeline-label">G3.2 (Oct 9)<br><span class="tl-time">22m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">82%</div><div class="timeline-bar bar-green" style="height:74px;"></div><div class="timeline-label">G3.3 (Oct 16)<br><span class="tl-time">20m</span></div></div>
+      <div class="timeline-item"><div class="timeline-score score-green">80%</div><div class="timeline-bar bar-green" style="height:72px;"></div><div class="timeline-label">G3.4 (Oct 22)<br><span class="tl-time">22m</span></div></div>
+    </div>
+    <span class="time-toggle" onclick="toggleTimes(this)">Show how long each test took</span>
+    <p>Look at where the points moved between G3.3 and G3.4. The editing questions went from 7 of 10 to 10 of 10, the thing your last card worked on. The paragraph went from 18 to 14. The G3.3 paragraph answered the question in its first sentence and followed Tajiri from bugs to game; this one retells the sports article from the 1700s to today and never says, in one sentence, how sports developed and became popular. The facts are all there. The frame around them is not. The comma held two sentences five times on G3.3 and three times here, so that fix is half landed. The Grade 3 tests still take 19 to 22 minutes; the paragraph frame on card 3 is worth five minutes of that.</p>
+    <div class="journey-section strengths-header">Skills you do well</div>
+    <div class="strength-chips">
+      <span class="strength-chip">Editing questions, fixed <span class="chip-course">&middot; G3.3 7 of 10, G3.4 10 of 10</span></span>
+      <span class="strength-chip">One-sentence answers with a because <span class="chip-course">&middot; the reason point every time, five tests running</span></span>
+      <span class="strength-chip">A paragraph that answers first, when the article is about one person <span class="chip-course">&middot; G3.3, 18 of 20</span></span>
+    </div>
+    <div class="journey-section growth-header">What to work on</div>
+    <div class="growth-chips">
+      <span class="growth-chip weak">A how-and-why paragraph: answer with two reasons, then This shows <span class="chip-avg">G3.4: a retelling, 14</span></span>
+      <span class="growth-chip mixed">Two sentences never share one comma <span class="chip-avg">five on G3.3, three on G3.4</span></span>
+      <span class="growth-chip mixed">Aim to spend at least 25 minutes, five of them planning the paragraph <span class="chip-avg">19 to 22 so far</span></span>
+    </div>
+    <div class="root-cause-teaser"><b>Five points from a pass.</b> Card 3 rebuilds the sports paragraph from your own seven sentences. Card 4 is the last three commas and the Q9 reason.</div>
+  </div>
+</div>
+
+<!-- Card 3: Fix 1, the paragraph frame -->
+<div class="card" data-title="Fix 1: Answer First with Two Reasons, Then This Shows">
+  <div class="card-header"><h2>Fix 1: Answer First with Two Reasons, Then This Shows</h2><div class="card-subtitle">Q11: all the facts, in order, and no answer to the question</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: SENTENCE ONE ANSWERS THE QUESTION AND NAMES TWO REASONS; EACH FACT GETS A THIS SHOWS</div>When the question asks <i>how</i> something developed and became popular, a retelling in date order lists the facts and never answers. The <span class="lbl lbl-say">TOPIC SENTENCE</span> answers with the two reasons the paragraph will prove. Each reason gets a <span class="lbl lbl-show">DETAIL &middot; SHOW</span>, a fact from the article, and a <span class="lbl lbl-sowhat">DETAIL &middot; SO WHAT</span>: <i>This shows</i> plus what the fact proves. The <span class="lbl lbl-close">CONCLUDING SENTENCE</span> puts the two reasons together. <b>The check:</b> could a reader say your two reasons after sentence one? After each fact, does the next sentence say what it shows, or is it the next date?</div>
+
+    <div class="you-wrote"><div class="label">YOU WROTE (Q11, 14 OUT OF 20)</div>&ldquo;Modern sports <span class="error-mark">begain</span> in <span class="error-mark">Britan</span> in the 1700s<span class="error-mark">, this is when</span> games like golf and cricket were played by rich people. Later people in middle class started playing these sports <span class="error-mark">aswell</span>. Every year these sports became more developed and started including more rules. Modern sports also used scores and records to see who was giving the best results. Sports grew and British schools gave students fields and training. By the late 1800s many teams and schools had started playing these sports. <span class="error-mark">Sports spread worldwide and now are sports loved by the whole world.</span>&rdquo; <span class="lbl lbl-miss">A RETELLING IN DATE ORDER; NO ANSWER FIRST; NO THIS SHOWS</span><br><span style="font-size:9.5pt;color:#666;">Seven sentences, six facts from the article, all true and in order. The question was how sports developed and became popular, and no sentence answers it. The first sentence is a date and two sentences on one comma; the last sentence says sports are loved, which is the question again, not an answer. The grader&rsquo;s note on the first sentence: separate the two complete thoughts with a period.</span></div>
+    <div class="model-box"><div class="label">A FIRST SENTENCE THAT ANSWERS, FROM YOUR OWN FACTS</div><span class="lbl lbl-say">POINT</span>Modern sports developed and became popular for two reasons: <span class="lbl lbl-say">HOW</span>written rules and records turned games into contests anyone could follow, and British schools and workers turned those contests into something crowds wanted.<br><span style="font-size:9.5pt;color:#666;">Your rules, your records, your schools, named as the reasons before the facts arrive.</span></div>
+
+    <p style="margin-top:10px;"><b>Your sentences, sorted into the frame</b>, and one that does not belong in it:</p>
+    <div class="ex-list">
+      <div class="ex pos"><span class="tag">FACT FOR REASON ONE</span>Every year these sports became more developed and started including more rules, and they used scores and records to see who was giving the best results. <span style="font-size:9.5pt;color:#666;">Your sentences three and four, joined.</span></div>
+      <div class="ex pos"><span class="tag">FACT FOR REASON TWO</span>British schools gave students fields and training, and by the late 1800s many teams and schools were playing. <span style="font-size:9.5pt;color:#666;">Your sentences five and six.</span></div>
+      <div class="ex pos"><span class="tag">THIS SHOWS</span>This shows that once a game had rules and a record book, a team in one town could challenge a team in another and everyone would know who won.</div>
+      <div class="ex neg"><span class="tag">THE QUESTION AGAIN</span>Sports spread worldwide and now are sports loved by the whole world.<br><span style="font-size:9.5pt;color:#666;">An ending has to add your two reasons up, not say that the thing the question asked about happened.</span></div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Which first sentence answers <i>how did modern sports develop and become popular</i>?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Your first sentence, with the comma fixed. A date and a fact, and still no answer." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Modern sports began in Britain in the 1700s. This is when games like golf and cricket were played by rich people.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="The answer, with two reasons a reader can list." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Modern sports developed and became popular for two reasons: rules and records turned games into contests anyone could follow, and schools and workers gave those contests their crowds.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which first sentence answers <i>how did Layla&rsquo;s day in the park change her</i>?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="The answer, with two reasons named." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Layla&rsquo;s day in the park changed her in two ways: she learned to look closely at small things, and she learned that doing the right thing can feel like giving something up.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="The start of the story. No answer yet." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Layla could not stop grinning, because nothing was better than a school day in a national park.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="your-turn build-frame" id="build-para">
+      <div class="label">YOUR TURN: BUILD THE PARAGRAPH FROM YOUR OWN SENTENCES. TAP EACH THIS SHOWS AND THE ENDING</div>
+      <div class="frame-row"><span class="lbl lbl-say">TOPIC SENTENCE &middot; POINT + HOW</span><div class="given">Modern sports developed and became popular for two reasons: written rules and records turned games into contests anyone could follow, and British schools and workers turned those contests into something crowds wanted.</div></div>
+      <div class="frame-row"><span class="lbl lbl-show">DETAIL 1 &middot; SHOW</span><div class="given">Games like golf and cricket began in Britain in the 1700s among rich people, and as the years went on they gained written rules and used scores and records to see who was giving the best results.</div></div>
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">DETAIL 1 &middot; SO WHAT: which sentence goes next?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;This shows&rdquo; plus what the rules and records prove." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>This shows that rules and records are what made a game a sport: a team in one town could challenge a team in another, and everyone would agree on who had won.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Your next fact, the middle class. A SHOW, not a SO WHAT." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Later, people in the middle class started playing these sports as well.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="frame-row"><span class="lbl lbl-show">DETAIL 2 &middot; SHOW</span><div class="given">British schools gave students fields and training, factory workers wanted excitement after boring, repeated work, and by the late 1800s many teams and schools were playing.</div></div>
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">DETAIL 2 &middot; SO WHAT: which sentence goes next?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Your ending: the question said again. Not a This shows." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Sports spread worldwide and now are loved by the whole world.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;This shows&rdquo; plus what the schools and workers prove." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>This shows that sports became popular because ordinary people needed them, students for respect and workers for excitement, not because the rich kept playing.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">CONCLUDING SENTENCE &middot; TOGETHER: which ending adds the two reasons up?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Both reasons, put together, and what they add up to." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Rules gave sports their shape and schools and workers gave them their crowds, and that is how games for a few rich men spread to the whole world.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="The first sentence again, in new words." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>In conclusion, that is how modern sports developed and became popular.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="assembled">
+        <div class="model-box"><div class="label">THE PARAGRAPH, SIX SENTENCES</div><span class="lbl lbl-say">TOPIC SENTENCE &middot; POINT + HOW</span>Modern sports developed and became popular for two reasons: written rules and records turned games into contests anyone could follow, and British schools and workers turned those contests into something crowds wanted. <span class="lbl lbl-show">DETAIL 1 &middot; SHOW</span>Games like golf and cricket began in Britain in the 1700s among rich people, and as the years went on they gained written rules and used scores and records to see who was giving the best results. <span class="lbl lbl-sowhat">DETAIL 1 &middot; SO WHAT</span>This shows that rules and records are what made a game a sport: a team in one town could challenge a team in another, and everyone would agree on who had won. <span class="lbl lbl-show">DETAIL 2 &middot; SHOW</span>British schools gave students fields and training, factory workers wanted excitement after boring, repeated work, and by the late 1800s many teams and schools were playing. <span class="lbl lbl-sowhat">DETAIL 2 &middot; SO WHAT</span>This shows that sports became popular because ordinary people needed them, students for respect and workers for excitement, not because the rich kept playing. <span class="lbl lbl-close">CONCLUDING SENTENCE &middot; TOGETHER</span>Rules gave sports their shape and schools and workers gave them their crowds, and that is how games for a few rich men spread to the whole world.<br><span style="font-size:9.5pt;color:#666;">Six of your seven sentences are in here, sorted under two reasons, with a <i>This shows</i> after each pair and an ending that adds them up. That is the six points.</span></div>
+      </div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>When the question says <i>how</i> or <i>why</i>, write the answer with two reasons before any date. Then sort the facts under the reasons, <i>This shows</i> after each, and end by adding the reasons up.</div>
+  </div>
+</div>
+
+<!-- Card 4: Fix 2, the comma round two and the reason that says something -->
+<div class="card" data-title="Fix 2: The Comma, Round Two, and a Reason That Says Something">
+  <div class="card-header"><h2>Fix 2: The Comma, Round Two, and a Reason That Says Something</h2><div class="card-subtitle">Three commas left, and one because that stops early</div></div>
+  <div class="card-body">
+    <div class="rule-box"><div class="label">THE RULE: COVER THE COMMA. IF BOTH SIDES ARE WHOLE SENTENCES, A PERIOD OR A JOINING WORD GOES THERE</div>Five of these on G3.3, three on G3.4. The check is the same: put your finger over the comma and read each side alone. If both could end with a period, the comma cannot hold them; use a period, or <i>because</i>, <i>so</i>, <i>and</i>. And a because has to say something the answer did not: <i>because of the breeze and the birds</i> names them; <i>because the breeze and birds reminded her the geode belonged to the park</i> explains them.</div>
+
+    <div class="you-wrote"><div class="label">Q8, 2 OUT OF 3</div>&ldquo;I think the most important moment in the story was when Layla realized that she had to do the right thing and give the geode away<span class="error-mark">, this part shows</span> Layla has a good heart and is a good person.&rdquo; <span class="lbl lbl-miss">TWO SENTENCES, ONE COMMA</span><br><span style="font-size:9.5pt;color:#666;">Left side a whole sentence, right side a whole sentence. Fix: <i>&hellip;give the geode away<b>, because</b> that moment shows Layla has a good heart.</i></span></div>
+    <div class="you-wrote"><div class="label">Q10, 2 OUT OF 3</div>&ldquo;When visiting natural places everyone should respect and uphold standards<span class="error-mark">, nature is</span> a beautiful thing but it is fragile so we need to care for it. So one rule everyone should follow is never take what is not yours.&rdquo; <span class="lbl lbl-miss">THREE STATEMENTS, ONE COMMA, AND THE RULE LAST</span><br><span style="font-size:9.5pt;color:#666;">The question asked for one rule and why. Rule first, because, reason, one sentence: <i>One rule for natural places is never take what is not yours, because nature is beautiful but fragile and needs our care.</i></span></div>
+    <div class="you-wrote"><div class="label">Q9, 2 OUT OF 3</div>&ldquo;Nature helped Layla make her decision because of the breeze and the <span class="error-mark">brids</span> who seemed to guide her to make a choice.&rdquo; <span class="lbl lbl-miss">A BECAUSE THAT NAMES, BUT DOES NOT EXPLAIN</span><br><span style="font-size:9.5pt;color:#666;">The breeze and the birds are the right detail. The sentence stops before saying what they helped her understand. <i>The breeze and birds reminded Layla to protect nature, so she decided to leave the geode in the park.</i></span></div>
+
+    <p>Your Q7 did all of it, for all three points:</p>
+    <div class="model-box"><div class="label">YOURS, Q7, 3 OUT OF 3</div>&ldquo;If I was Layla I would have shown the geode to the guide, <b>because</b> it is the right thing to do and I would not want to affect the environment by taking it away.&rdquo;<br><span style="font-size:9.5pt;color:#666;">Because at the seam, and a reason that says why. The shape for Q8, Q9 and Q10.</span></div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">Cover the comma. Which sentence is one sentence, not two?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Left: Layla hesitated. Right: the geode felt like a burden. Two sentences, one comma." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Layla hesitated, the geode felt like a burden as well as a souvenir.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="Because at the seam joins the reason to the answer." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Layla hesitated because the geode felt like a burden as well as a souvenir.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+    <div class="discrim-parallel">
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">How did nature help Layla decide? Which because says what nature helped her understand?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Names the detail and says what it meant to her." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Nature helped Layla decide because the breeze and the birds reminded her that the geode belonged to the park, not to her.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Names the breeze and the birds and stops. Your Q9." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Nature helped Layla decide because of the breeze and the birds.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+    </div>
+
+    <div class="discrim-challenge">
+      <div class="discrim-prompt">One rule for natural places, and why. Which answer earns all three points?</div>
+      <div class="discrim-options">
+        <div class="discrim-option" data-correct="false" data-wrong-feedback="Two sentences on one comma, and the rule arrives last. Your Q10." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Nature is fragile, everyone should respect it, so never take what is not yours.</span></div>
+        <div class="discrim-option" data-correct="true" data-right-feedback="Rule first, because, the why, one sentence." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Visitors should never take what is not theirs, because nature is fragile and what they take cannot be put back.</span></div>
+      </div>
+      <div class="discrim-feedback"></div>
+    </div>
+
+    <div class="tip-box"><div class="label">PRACTICE IT IN YOUR ALPHAWRITE LESSONS</div>Every comma in the middle of a sentence: cover it, read both sides. Every because: read what follows it and ask whether it explains or only names. Your Q7 is the shape.</div>
+  </div>
+</div>
+
+<!-- Card 5: Quick Check, Checklist -->
+<div class="card" data-title="Quick Check &amp; Checklist">
+  <div class="card-header"><h2>Quick Check</h2><div class="card-subtitle">Six new ones. Then your checklist</div></div>
+  <div class="card-body">
+    <div class="quick-check" data-back="cards 3 and 4">
+      <div class="qc-title">Answer first, This shows, the comma, the because, six questions</div>
+      <div class="qc-sub">All new sentences. Answer each one once.</div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which first sentence answers <i>why do records matter to modern sports</i>?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="A fact from the article with no answer to why." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Modern sports use scores and records, and even gymnastics gives points.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="The answer, with two reasons named." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Records matter to modern sports for two reasons: they let athletes compete with players from the past, and they turned playing into progress.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">After the fact <i>people wrote the rules down to stop fights about how games were played</i>, which sentence is the This shows?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="&ldquo;This shows&rdquo; plus what the rules made possible." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>This shows that one set of rules let teams from different towns play each other for the first time.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="The next fact from the article. A SHOW." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>When rules were set, sports groups called leagues began.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Cover the comma. Which sentence is one sentence, not two?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Left: Factory work was boring. Right: people wanted excitement. Two sentences, one comma." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Factory work was boring and repeated, people wanted excitement in their free time.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Comma plus so: a joining word at the seam." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Factory work was boring and repeated, so people wanted excitement in their free time.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which paragraph ending adds the two reasons up?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="true" data-right-feedback="Both reasons, put together." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Written rules and eager crowds are the two halves of every modern sport, and Britain in the 1800s is where they met.</span></div>
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="The question said again. Your G3.4 ending." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Sports spread worldwide and are now loved by the whole world.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">What do Layla&rsquo;s actions tell us about her? Which because says something the answer did not?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="The because repeats the answer in other words." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Layla is honest because she is an honest person who does honest things.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="The because gives the story&rsquo;s proof." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Layla is honest because she remembered the guide&rsquo;s rule and showed the geode instead of keeping it.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+
+      <div class="discrim-challenge">
+        <div class="discrim-prompt">Which sentence is ready to submit?</div>
+        <div class="discrim-options">
+          <div class="discrim-option" data-correct="false" data-wrong-feedback="Begain, Britan, aswell, brids: four from your test." onclick="handleDiscrim(this)"><span class="discrim-label">A</span><span>Sports begain in Britan, and the brids watched the games aswell.</span></div>
+          <div class="discrim-option" data-correct="true" data-right-feedback="Began, Britain, birds, as well. Clean." onclick="handleDiscrim(this)"><span class="discrim-label">B</span><span>Sports began in Britain, and the birds watched the games as well.</span></div>
+        </div>
+        <div class="discrim-feedback"></div>
+      </div>
+      <div class="qc-result"></div>
+    </div>
+
+    <div class="checklist-wrap shown">
+      <div id="mainChecklist">
+        <div class="checklist-progress-label" id="checkProgressLabel">0 of 6 checked</div>
+        <div class="checklist-progress"><div class="checklist-progress-fill" id="checkProgressFill"></div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Paragraph, sentence one:</b> the answer to the question with my two reasons. Before any date.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Sort the facts under the reasons,</b> then <i>This shows</i> after each pair. The ending adds the reasons up.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Every comma in the middle of a sentence:</b> cover it, read both sides. Two whole sentences means a period or a joining word.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Every because:</b> does it explain, or only name? My Q7 is the shape.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Editing questions:</b> keep doing what the 10 of 10 did. The exact job, the exact word.</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div><b>Aim to spend at least 25 minutes,</b> five of them planning the paragraph and the last five reading back: began, Britain, as well, birds, affect, environment.</div></div>
+      </div>
+      <button class="print-btn" onclick="printChecklist(this)"><svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>Print Checklist</button>
+    </div>
+  </div>
+</div>
+
+</div>
+<div class="nav"><button id="prevBtn" onclick="navigate(-1)">&larr; Back</button><button id="nextBtn" onclick="navigate(1)">Next &rarr;</button></div>
+<div class="completion-overlay" id="completionOverlay"><div class="completion-card"><div class="completion-emoji">&#9997;</div><div class="completion-title">Good luck on your next test!</div><div class="completion-sub">Answer first with two reasons, a This shows after each fact, an ending that adds them up, and no comma left holding two sentences.</div><button class="completion-close" onclick="closeCompletion()">Got it</button></div></div>
+<canvas id="confettiCanvas"></canvas>
+<script>
+var cards=document.querySelectorAll('.card'),bar=document.getElementById('progressBar'),breadcrumb=document.getElementById('breadcrumb'),stickyEl=document.getElementById('stickyIndicator'),current=0,visited=[0];
+cards.forEach(function(card,i){var dot=document.createElement('div');dot.className='progress-dot'+(i===0?' active':'');var tooltip=document.createElement('span');tooltip.className='dot-tooltip';tooltip.textContent=card.getAttribute('data-title')||('Card '+(i+1));dot.appendChild(tooltip);dot.addEventListener('click',function(){goTo(i);});bar.appendChild(dot);});
+function updateBreadcrumb(){var title=cards[current].getAttribute('data-title')||('Card '+(current+1));breadcrumb.innerHTML='Card <b>'+(current+1)+'</b> of '+cards.length+' &mdash; '+title;stickyEl.textContent=(current+1)+' / '+cards.length;}
+function checkSticky(){var r=bar.getBoundingClientRect();stickyEl.classList.toggle('visible',r.bottom<0);}
+window.addEventListener('scroll',checkSticky);
+function goTo(idx){if(idx<0||idx>=cards.length)return;cards[current].classList.remove('active');bar.children[current].classList.remove('active');current=idx;if(visited.indexOf(current)===-1)visited.push(current);cards[current].classList.add('active');bar.children[current].classList.add('active');visited.forEach(function(v){if(v!==current)bar.children[v].classList.add('visited');});var p=document.getElementById('prevBtn'),n=document.getElementById('nextBtn');if(p){p.style.visibility=current===0?'hidden':'visible';p.disabled=current===0;}if(n){n.textContent=current===cards.length-1?'Done ✓':'Next →';}updateBreadcrumb();window.scrollTo({top:0,behavior:'smooth'});}
+function navigate(dir){if(dir===1&&current===cards.length-1){showCompletion();return;}goTo(current+dir);}
+document.addEventListener('keydown',function(e){if(e.target&&e.target.tagName==='TEXTAREA')return;if(e.key==='ArrowRight'||e.key==='ArrowDown')navigate(1);if(e.key==='ArrowLeft'||e.key==='ArrowUp')navigate(-1);});
+function revealBetter(cover){cover.nextElementSibling.classList.add('shown');cover.classList.add('hidden');}
+function shuffleOptions(){document.querySelectorAll('.discrim-options').forEach(function(box){var opts=Array.prototype.slice.call(box.querySelectorAll('.discrim-option'));for(var i=opts.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=opts[i];opts[i]=opts[j];opts[j]=t;}opts.forEach(function(o,i){box.appendChild(o);var l=o.querySelector('.discrim-label');if(l)l.textContent=String.fromCharCode(65+i);});});}
+function handleDiscrim(option){var ch=option.closest('.discrim-challenge');if(ch.classList.contains('done'))return;var fb=ch.querySelector('.discrim-feedback');var opts=ch.querySelectorAll('.discrim-option');var ok=option.getAttribute('data-correct')==='true';ch.classList.add('done');
+if(ok){option.classList.add('correct');opts.forEach(function(o){if(o!==option)o.classList.add('locked');});fb.innerHTML=option.getAttribute('data-right-feedback')||'Correct.';fb.className='discrim-feedback shown right-fb';ch.setAttribute('data-first-try','1');}
+else{option.classList.add('wrong');var right=ch.querySelector('.discrim-option[data-correct="true"]');right.classList.add('model');opts.forEach(function(o){if(o!==option&&o!==right)o.classList.add('locked');});var rl=right.querySelector('.discrim-label');fb.innerHTML='<span style="color:#cc0000"><b>Not this one.</b> '+(option.getAttribute('data-wrong-feedback')||'')+'</span><br><span style="color:#2d6a2d"><b>The answer is '+(rl?rl.textContent:'')+'.</b> '+(right.getAttribute('data-right-feedback')||'')+'</span>';fb.className='discrim-feedback shown';ch.setAttribute('data-first-try','0');var par=ch.nextElementSibling;if(par&&par.classList.contains('discrim-parallel')){fb.innerHTML+=' <b style="color:#5c2dcc">Try one more like it below.</b>';setTimeout(function(){par.classList.add('shown');},600);}}
+var bf=ch.closest('.build-frame');if(bf){var all=bf.querySelectorAll('.discrim-challenge'),dn=0;all.forEach(function(c){if(c.classList.contains('done'))dn++;});if(dn===all.length){var a=bf.querySelector('.assembled');if(a)setTimeout(function(){a.classList.add('shown');},500);}}
+var qc=ch.closest('.quick-check');if(qc)updateQC(qc);}
+function updateQC(qc){var items=qc.querySelectorAll('.discrim-challenge');var done=0,first=0;items.forEach(function(c){if(c.classList.contains('done')){done++;if(c.getAttribute('data-first-try')==='1')first++;}});if(done<items.length)return;var r=qc.querySelector('.qc-result');r.textContent=first+' of '+items.length+' right first time. '+(first>=items.length-1?'The moves are in your head. Now the checklist.':'Look back at '+qc.getAttribute('data-back')+' for the ones you missed, then come back to the checklist.');r.style.display='block';launchConfetti();}
+function toggleTimes(el){var body=el.closest('.card-body');body.classList.toggle('show-times');el.textContent=body.classList.contains('show-times')?'Hide test times':'Show how long each test took';}
+function toggleCheck(item){item.classList.toggle('checked');updateCheckProgress();}
+function updateCheckProgress(){var items=document.querySelectorAll('#mainChecklist .check-item');if(!items.length)return;var checked=document.querySelectorAll('#mainChecklist .check-item.checked').length;var fill=document.getElementById('checkProgressFill'),lbl=document.getElementById('checkProgressLabel');if(fill)fill.style.width=Math.round((checked/items.length)*100)+'%';if(lbl)lbl.innerHTML=checked===items.length?'<b style="color:#2d6a2d;">All done.</b>':checked+' of '+items.length+' checked';}
+function printChecklist(btn){var card=btn.closest('.card');var ci=card.querySelectorAll('.check-item.checked');ci.forEach(function(i){i.classList.remove('checked');});card.classList.add('print-target');window.print();card.classList.remove('print-target');ci.forEach(function(i){i.classList.add('checked');});}
+function showCompletion(){document.getElementById('completionOverlay').classList.add('visible');}
+function closeCompletion(){document.getElementById('completionOverlay').classList.remove('visible');}
+function launchConfetti(){var canvas=document.getElementById('confettiCanvas');var ctx=canvas.getContext('2d');canvas.width=window.innerWidth;canvas.height=window.innerHeight;var colors=['#b8860b','#2d6a2d','#cc6600','#4caf50','#e6a800','#ff6b6b','#42a5f5'];var particles=[];for(var i=0;i<120;i++){particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height-canvas.height,w:Math.random()*10+5,h:Math.random()*6+3,color:colors[Math.floor(Math.random()*colors.length)],vx:(Math.random()-0.5)*4,vy:Math.random()*3+2,rot:Math.random()*360,rotV:(Math.random()-0.5)*10,life:1});}var frame=0;function animate(){ctx.clearRect(0,0,canvas.width,canvas.height);var alive=false;particles.forEach(function(p){if(p.life<=0)return;alive=true;p.x+=p.vx;p.y+=p.vy;p.vy+=0.05;p.rot+=p.rotV;if(p.y>canvas.height+20){p.life=0;return;}if(frame>60)p.life-=0.01;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();});frame++;if(alive)requestAnimationFrame(animate);else ctx.clearRect(0,0,canvas.width,canvas.height);}animate();}
+shuffleOptions();goTo(0);
+</script>
+<script src="../tracking.js"></script>
+</body>
+</html>
